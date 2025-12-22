@@ -1,0 +1,363 @@
+{
+  "LUVIKA": "LUVIKA",
+  "tagline": "Révèle qui tu es — carte de visite intelligente NFC · QR Code · Abonnements · Événements",
+  "cta": {
+    "create": "Créer mon profil",
+    "discover": "Découvrir"
+  },
+  "features": {
+    "title": "Pourquoi LUVIKA ?",
+    "nfc": {
+      "title": "NFC & QR Code",
+      "desc": "Partagez votre profil en un tap ou scan"
+    },
+    "stats": {
+      "title": "Statistiques",
+      "desc": "Scans, visites, présences — tout est tracé"
+    },
+    "multi": {
+      "title": "Multi-cartes",
+      "desc": "Professionnel ? Gérez plusieurs cartes NFC"
+    }
+  },
+  "event": {
+    "checkin": {
+      "success": "✅ Présence confirmée !",
+      "thanks": "Merci d’avoir participé à {title}.",
+      "view_participants": "Voir les participants"
+    }
+  },
+  "dashboard": {
+    "greeting": "Bonjour, {name} 👋",
+    "subtitle": "Gérez votre identité numérique intelligente",
+    "view_public": "Voir mon profil public",
+    "export_csv": "Exporter (.csv)",
+    "subscription": {
+      "title": "Abonnement",
+      "plans": {
+        "basic": "Freemium",
+        "premium": "Premium",
+        "entreprise": "Entreprise"
+      },
+      "active": "✅ Actif",
+      "inactive": "⚠️ Inactif",
+      "active_until": "Votre plan est actif jusqu’au {date}.",
+      "upgrade_prompt": "Votre compte est en mode Freemium. Contactez l’administrateur pour activer un plan.",
+      "request_upgrade": "Demander une mise à niveau"
+    },
+    "qr": {
+      "title": "QR Code de profil",
+      "alt": "QR Code pour {username}",
+      "instructions": "Scannez pour accéder à votre profil",
+      "open_link": "Ouvrir le lien"
+    },
+    "nfc": {
+      "title": "Cartes NFC ({count})",
+      "empty": "Aucune carte NFC associée.",
+      "ago": "il y a",
+      "status": {
+        "active": "Active",
+        "lost": "Perdue",
+        "blocked": "Bloquée",
+        "inactive": "Inactive"
+      },
+      "upgrade_required": "⚠️ Plan Premium requis",
+      "add_card": "Ajouter une carte NFC"
+    },
+    "stats": {
+      "title": "Statistiques d’engagement",
+      "total_scans": "Scans totaux",
+      "nfc_scans": "Scans NFC",
+      "qr_scans": "Scans QR",
+      "recent_visitors": "Derniers visiteurs",
+      "no_scans": "Aucun scan récent.",
+      "anonymous": "Visiteur anonyme",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
+    }
+  },
+  "auth": {
+    "signup": {
+      "title": "Créer un compte",
+      "full_name": "Nom complet",
+      "full_name_placeholder": "ex: Nestor PHAKU",
+      "username": "Nom d’utilisateur (URL)",
+      "username_hint": "Votre profil sera à : {url}",
+      "email": "Email",
+      "password": "Mot de passe",
+      "password_hint": "Au moins 6 caractères",
+      "submit": "S’inscrire",
+      "creating": "Création...",
+      "success": "✅ Inscription réussie ! Vérifiez vos emails pour confirmer.",
+      "error_generic": "Erreur inconnue. Réessayez plus tard.",
+      "error_email": "Email invalide ou déjà utilisé.",
+      "error_password": "Mot de passe trop court (min. 6 caractères).",
+      "error_username": "Nom d’utilisateur invalide (lettres, chiffres, _ ou -).",
+      "already_have_account": "Déjà membre ?",
+      "sign_in": "Connectez-vous",
+      "privacy": "En continuant, vous acceptez nos",
+      "terms": "Conditions d’utilisation",
+      "identity_desc": "Commencez par nous dire qui vous êtes.",
+"email_step": "Vérification de l'email",
+"email_desc": "Nous allons vous envoyer un code de vérification.",
+"security_step": "Sécurité de votre compte",
+"security_desc": "Choisissez un mot de passe fort. La 2FA est activée par défaut.",
+"code_sent": "✅ Code envoyé ! Vérifiez vos emails (y compris les spams).",
+"invalid_code": "Code invalide ou expiré.",
+"sending": "Envoi...",
+"send_code": "Envoyer le code",
+"verify_code": "Vérifier le code",
+"otp": "Code de vérification (6 chiffres)",
+"password_length": "Au moins 8 caractères",
+"password_uppercase": "Une lettre majuscule",
+"password_lowercase": "Une lettre minuscule",
+"password_number": "Un chiffre",
+"password_special": "Un caractère spécial",
+"password_match": "Les mots de passe correspondent",
+"2fa_enabled": "🔒 L'authentification à deux facteurs (2FA) est activée par défaut pour votre sécurité.",
+"back": "Retour",
+"next": "Suivant",
+"create_account": "Créer mon compte",
+"error_name": "Le nom doit comporter au moins 2 caractères.",
+"error_email_format": "Adresse email invalide.",
+"username_hint_plain": "Votre profil : luvika.me/{username}"
+    },
+    "signin": {
+      "title": "Connexion",
+      "email": "Email",
+      "password": "Mot de passe",
+      "forgot_password": "Mot de passe oublié ?",
+      "submit": "Se connecter",
+      "connecting": "Connexion...",
+      "error_generic": "Erreur inconnue. Réessayez plus tard.",
+      "error_credentials": "Email ou mot de passe incorrect.",
+      "error_email": "Adresse email invalide.",
+      "error_password": "Mot de passe requis.",
+      "no_account": "Pas encore inscrit ?",
+      "sign_up": "Créer un compte",
+      "subtitle": "Connectez-vous à votre compte LUVIKA."
+    },
+    "forgot_password": {
+      "title": "Mot de passe oublié",
+      "subtitle": "Entrez votre email pour recevoir un lien de réinitialisation.",
+      "otp_subtitle": "Un code vous a été envoyé par email.",
+      "reset_subtitle": "Choisissez un nouveau mot de passe sécurisé.",
+      "email": "Email",
+      "otp": "Code de vérification",
+      "new_password": "Nouveau mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "submit": "Envoyer le lien",
+      "verify": "Vérifier le code",
+      "reset": "Réinitialiser",
+      "sending": "Envoi...",
+      "email_sent": "✅ Lien envoyé ! Vérifiez vos emails.",
+      "back_to_login": "Retour à la connexion",
+      "error": "Adresse email introuvable.",
+      "error_generic": "Erreur inconnue.",
+      "success": "✅ Mot de passe mis à jour !",
+      "password_length": "Au moins 8 caractères",
+      "password_uppercase": "Une majuscule",
+      "password_lowercase": "Une minuscule",
+      "password_number": "Un chiffre",
+      "password_special": "Un caractère spécial",
+      "password_match": "Les mots de passe correspondent"
+    }
+  },
+  "admin": {
+    "title": "💼 Espace Administrateur",
+    "subtitle": "Gérez les utilisateurs, abonnements et cartes NFC",
+    "stats": {
+      "total_users": "Utilisateurs",
+      "active_subscriptions": "Abonnements actifs",
+      "total_scans": "Scans totaux"
+    },
+    "actions": {
+      "title": "Actions rapides",
+      "welcome_email": {
+        "title": "📧 Email de bienvenue",
+        "description": "Envoyez un email avec QR Code à un nouvel utilisateur",
+        "button": "Envoyer maintenant"
+      },
+      "email_success": "✅ Email envoyé avec succès !",
+      "email_error": "❌ Erreur",
+      "error_generic": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "modules": {
+      "subscriptions": {
+        "title": "Gestion des abonnements",
+        "description": "Activez ou changez le plan d’un utilisateur.",
+        "action": "Gérer les abonnements"
+      },
+      "nfc": {
+        "title": "Cartes NFC",
+        "description": "Bloquez une carte perdue ou inactive.",
+        "action": "Superviser les cartes"
+      },
+      "users": {
+        "title": "Utilisateurs",
+        "description": "Modérez les profils et déclarations de perte.",
+        "action": "Gérer les utilisateurs"
+      },
+      "analytics": {
+        "title": "Statistiques globales",
+        "description": "Analysez les tendances et performances.",
+        "action": "Voir les analytics"
+      }
+    },
+    "orders": {
+      "title": "Commandes de cartes",
+      "subtitle": "Suivez et validez les demandes de cartes physiques.",
+      "no_orders": "Aucune commande pour le moment."
+    }
+  },
+  "navbar": {
+    "home": "Accueil",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "about": "À propos",
+    "contact": "Contact",
+    "download": "Télécharger",
+    "sign_in": "Connexion",
+    "sign_up": "S’inscrire",
+    "language": "Langue"
+  },
+  "about": {
+    "title": "À propos",
+    "subtitle": "LUVIKA est né d’une vision simple : redonner du sens au networking professionnel, avec élégance, sécurité, et fierté africaine.",
+    "mission": {
+      "title": "Notre mission",
+      "content": "Transformer la carte de visite physique en une identité numérique intelligente, contrôlable, sécurisée, et accessible à tous — en particulier aux entrepreneurs, développeurs, et leaders africains."
+    },
+    "values": {
+      "security": "Sécurité",
+      "security_desc": "Vos données restent sous votre contrôle. Rien n’est partagé sans votre consentement.",
+      "accessibility": "Accessibilité",
+      "accessibility_desc": "Une interface simple, multilingue (français, lingála, anglais), conçue pour tous.",
+      "african_pride": "Fierté africaine",
+      "african_pride_desc": "Une solution pensée à Kinshasa, pour l’Afrique et le monde."
+    },
+    "team": {
+      "title": "Notre équipe",
+      "content": "Une équipe passionnée de développeurs, designers, et entrepreneurs basée à Kinshasa, RDC.",
+      "cta": "Rejoignez-nous"
+    }
+  },
+  "contact": {
+    "title": "Contact",
+    "subtitle": "Une question, une idée, une collaboration ? On adore échanger.",
+    "address": "Adresse",
+    "email": "Email",
+    "phone": "Téléphone",
+    "form_title": "Envoyez-nous un message",
+    "name": "Nom",
+    "name_placeholder": "Votre nom",
+    "message": "Message",
+    "message_placeholder": "Bonjour, je voudrais...",
+    "send": "Envoyer"
+  },
+  "download": {
+    "title": "Télécharger",
+    "subtitle": "LUVIKA est gratuit, ouvert à tous, et fonctionne sans installation.",
+    "step1": {
+      "title": "1. Créez votre profil",
+      "desc": "En 2 minutes, remplissez vos infos et personnalisez votre identité."
+    },
+    "step2": {
+      "title": "2. Générez votre QR Code",
+      "desc": "Ou associez une carte NFC (option Premium)."
+    },
+    "step3": {
+      "title": "3. Partagez !",
+      "desc": "Scan → contact sauvegardé → connexion établie."
+    },
+    "cta_title": "Prêt à révéler qui tu es ?",
+    "cta_desc": "Commencez gratuitement — aucune carte bancaire requise.",
+    "download_now": "Commencer maintenant"
+  },
+  "footer": {
+    "product": "Produit",
+    "features": "Fonctionnalités",
+    "pricing": "Tarifs",
+    "download": "Télécharger",
+    "company": "Entreprise",
+    "about": "À propos",
+    "contact": "Contact",
+    "blog": "Blog",
+    "legal": "Légal",
+    "privacy": "Confidentialité",
+    "terms": "Conditions d'utilisation",
+    "cookies": "Gestion des cookies",
+    "tagline": "LUVIKA — Révèle qui tu es. Une identité numérique intelligente, africaine, et sécurisée.",
+    "copyright": "Tous droits réservés. Conçu à Kinshasa avec ❤️."
+  },
+  "pricing": {
+    "title": "Plans & Tarifs",
+    "billing": {
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "per_month": "/mois",
+      "per_year": "/an"
+    },
+    "cta": {
+      "choose": "Choisir {plan}"
+    },
+    "footer": {
+      "custom_plan": "Besoin d’un plan personnalisé ?",
+      "contact_us": "Contactez-nous"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Freemium",
+        "desc": "Pour commencer",
+        "features": {
+          "nfc": "1 carte NFC",
+          "users": "1 utilisateur",
+          "events": "Événements : Non",
+          "presence": "Présence QR : Non",
+          "stats": "Statistiques : Basique",
+          "roles": "Rôles : Non",
+          "dashboard": "Dashboard : Basique"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "desc": "Pour les pros ambitieux",
+        "popular": "Le plus populaire",
+        "features": {
+          "nfc": "Plusieurs cartes NFC",
+          "users": "1 utilisateur",
+          "events": "Événements : Basique",
+          "presence": "Présence QR : Basique",
+          "stats": "Statistiques : Avancées",
+          "roles": "Rôles : Non",
+          "dashboard": "Dashboard : Avancé"
+        }
+      },
+      "enterprise": {
+        "title": "Entreprise",
+        "desc": "Pour équipes & entreprises",
+        "features": {
+          "nfc": "Cartes NFC : Illimité",
+          "users": "Utilisateurs : Illimité",
+          "events": "Événements : Avancés",
+          "presence": "Présence QR : Avancée",
+          "stats": "Statistiques : Consolidées",
+          "roles": "Rôles : Oui",
+          "dashboard": "Dashboard : Global"
+        }
+      },
+  "time": {
+    "seconds": "{count} seconde",
+    "seconds_plural": "{count} secondes",
+    "minutes": "{count} minute",
+    "minutes_plural": "{count} minutes",
+    "hours": "{count} heure",
+    "hours_plural": "{count} heures",
+    "days": "{count} jour",
+    "days_plural": "{count} jours"
+  }
+}
+    }
+  }

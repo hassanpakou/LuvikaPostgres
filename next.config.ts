@@ -1,7 +1,24 @@
+// next.config.ts
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  turbopack: {},
+  experimental: {
+    turbopackUseSystemTlsCerts: true,
+  },
+  webpack(config) {
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+    };
+    return config;
+  },
 };
 
-export default nextConfig;
+// ✅ Applique le plugin next-intl
+const withNextIntl = createNextIntlPlugin();
+
+export default withNextIntl(nextConfig);

@@ -1,0 +1,373 @@
+{
+  "LUVIKA": "LUVIKA",
+  "tagline": "Sálisa nini yo esengaka — katɛ ya koyeba bato mpo yo oyo eza na NFC · Kódi QR · Abonémá · Likambo",
+  "cta": {
+    "create": "Kobeta profil nange",
+    "discover": "Koyeba malamu"
+  },
+  "features": {
+    "title": "Ndenge nini LUVIKA esengaka ?",
+    "nfc": {
+      "title": "NFC & Kódi QR",
+      "desc": "Lobola profil na yo na kotápa to koscanner"
+    },
+    "stats": {
+      "title": "Mikanda",
+      "desc": "Mikanda ya koscanner, koyeba, kotambola — biso esengaki yango"
+    },
+    "multi": {
+      "title": "Mikate mingi",
+      "desc": "Bato ya komemi ? Yemba mikate mingi NFC"
+    }
+  },
+  "event": {
+    "checkin": {
+      "success": "✅ Lokola esimbaka !",
+      "thanks": "Matondo mingi mpo yo okotambola na {title}.",
+      "view_participants": "Koyeba bato oyo batosambaka"
+    }
+  },
+  "dashboard": {
+    "greeting": "Mbotama, {name} 👋",
+    "subtitle": "Yemba identité digitale na yo",
+    "view_public": "Koyeba profil public",
+    "export_csv": "Kotia (.csv)",
+    "subscription": {
+      "title": "Abonémá",
+      "plans": {
+        "basic": "Freemium",
+        "premium": "Premium",
+        "entreprise": "Entreprise"
+      },
+      "active": "✅ Esimbaka",
+      "inactive": "⚠️ Eza te",
+      "active_until": "Abonémá na yo eza simbakaka mpéla {date}.",
+      "upgrade_prompt": "Kont na yo eza na mode Freemium. Kotambola admin mpo okokisa plan.",
+      "request_upgrade": "Kotambola kokisa"
+    },
+    "qr": {
+      "title": "Kódi QR ya profil",
+      "alt": "Kódi QR mpo {username}",
+      "instructions": "Scannez mpo okokanisa na profil",
+      "open_link": "Kosalela lien"
+    },
+    "nfc": {
+      "title": "Mikate NFC ({count})",
+      "empty": "Aza te mikate NFC oyo ebandelaki.",
+      "ago": "mpéla",
+      "status": {
+        "active": "Esimbaka",
+        "lost": "Esalele",
+        "blocked": "Ekangaki",
+        "inactive": "Eza te"
+      },
+      "upgrade_required": "⚠️ Bese plan Premium",
+      "add_card": "Kobongisa kártɛ NFC"
+    },
+    "stats": {
+      "title": "Mikanda",
+      "total_scans": "Mikanda yonso",
+      "nfc_scans": "Mikanda ya NFC",
+      "qr_scans": "Mikanda ya QR",
+      "recent_visitors": "Bato oyo batosambaki",
+      "no_scans": "Aza te mikanda ya sika.",
+      "anonymous": "Motamboli esilaka",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
+    },
+    "visibility": {
+      "title": "Bokokanisi ya mikanda",
+      "description": "Lokola nini bato balingi koyeba na profil public na yo."
+    },
+    "orders": {
+      "title": "Commandes ya mikate",
+      "description": "Yemba balembo ya mikate NFC oyo ebandeli.",
+      "manage": "Yemba balembo"
+    }
+  },
+  "auth": {
+    "signup": {
+      "title": "Kobeta konti",
+      "full_name": "Nkombo mingi",
+      "full_name_placeholder": "ex: Nestor PHAKU",
+      "username": "Nkombo mpo yo (URL)",
+      "username_hint": "Profil na yo ekozala na : {url}",
+      "email": "Email",
+      "password": "Passworld",
+      "password_hint": "Bafaka kobetela bapuku 6.",
+      "submit": "Kobeta",
+      "creating": "Kobetela...",
+      "success": "✅ Konti ebandeli ! Yokolela mailbox na yo mpo okokonima.",
+      "error_generic": "Posa esilaka. Lokola ntango.",
+      "error_email": "Email eza te maboko to ebandeli.",
+      "error_password": "Passworld esiene (bapuku 6).",
+      "error_username": "Nkombo ya mokonzi eza te (baletre, bachiffre, _ to -).",
+      "already_have_account": "OKI ya konti ?",
+      "sign_in": "Kokanisa",
+      "privacy": "Soki olobela, yo ekokanisa na biso",
+      "terms": "Mikanda",
+      "identity_desc": "Kobanda na biso nini yo ezalaka.",
+"email_step": "Koyeba email",
+"email_desc": "Tozokotisa yo kódi ya koyeba.",
+"security_step": "Bokengi ya konti na yo",
+"security_desc": "Lokola passworld ya molunge. 2FA ekobeteli mingi mpo na bokengi.",
+"code_sent": "✅ Kódi etindami ! Lokola mailbox na yo (mpé spam).",
+"invalid_code": "Kódi eza te to ebandeli.",
+"sending": "Kotinda...",
+"send_code": "Tindisa kódi",
+"verify_code": "Koyeba kódi",
+"otp": "Kódi ya koyeba (mipuku 6)",
+"password_length": "Bapuku 8 kaka mingi",
+"password_uppercase": "Letre ya ntina mingi (A-Z)",
+"password_lowercase": "Letre ya ntina ya mpasi (a-z)",
+"password_number": "Nomba (0-9)",
+"password_special": "Mokolo oyo eza te nomba to letre (_ @ #)",
+"password_match": "Bapassworld bakotanaka",
+"2fa_enabled": "🔒 Kokanisa na mikolo míbalé (2FA) ekobeteli mingi mpo na bokengi.",
+"back": "Zonga liboso",
+"next": "Kosalisa",
+"create_account": "Kobeta konti nange",
+"error_name": "Nkombo ezalaka bapuku 2 kaka mingi.",
+"error_email_format": "Email eza te.",
+"username_hint_plain": "Profil na yo: luvika.me/{username}"
+    },
+    "signin": {
+      "title": "Kokanisa",
+      "email": "Email",
+      "password": "Passworld",
+      "forgot_password": "Okotalela passworld ?",
+      "submit": "Kokanisa",
+      "connecting": "Kokanisa...",
+      "error_generic": "Posa esilaka. Lokola ntango.",
+      "error_credentials": "Email to passworld eza te.",
+      "error_email": "Adresse email eza te.",
+      "error_password": "Bafaka passworld.",
+      "no_account": "OKI ya konti ?",
+      "sign_up": "Kobeta konti",
+      "subtitle": "Kokanisa na konti na yo ya LUVIKA."
+    },
+    "forgot_password": {
+        "title": "Mot de passe obosani",
+  "subtitle": "Tindisa email na yo mpo ozwa lien ya kozongisa mot de passe.",
+  "otp_subtitle": "Code moko etindami na email na yo.",
+  "reset_subtitle": "Pona mot de passe ya sika mpe ya sécurité.",
+  "email": "Email",
+  "otp": "Code ya vérification",
+  "new_password": "Mot de passe ya sika",
+  "confirm_password": "Zongisa mot de passe",
+  "submit": "Tindisa lien",
+  "verify": "Verifier code",
+  "reset": "Zongisa",
+  "sending": "Kotinda...",
+  "email_sent": "✅ Lien etindami ! Tala email na yo.",
+  "back_to_login": "Zonga na connexion",
+  "error": "Adresse email emonani te.",
+  "error_generic": "Erreur eyebani te.",
+  "success": "✅ Mot de passe ezongisami malamu !",
+  "password_length": "Au moins caractères 8",
+  "password_uppercase": "Lettre moko ya monene",
+  "password_lowercase": "Lettre moko ya mike",
+  "password_number": "Chiffre moko",
+  "password_special": "Caractère spécial moko",
+  "password_match": "Mot de passe ezali ndenge moko"
+    }
+  },
+  "admin": {
+    "title": "💼 Espace ya bato ya kobongisa",
+    "subtitle": "Yemba bato, abonémá, mikate NFC",
+    "stats": {
+      "total_users": "Bato",
+      "active_subscriptions": "Abonémá oyo esimbaka",
+      "total_scans": "Mikanda yonso"
+    },
+    "actions": {
+      "title": "Mikasa ya koyeba malamu",
+      "welcome_email": {
+        "title": "📧 Email ya lokola",
+        "description": "Tondisa email na kódi QR na motamboli mosusu",
+        "button": "Tondisa sika"
+      },
+      "email_success": "✅ Email esimbaka !",
+      "email_error": "❌ Posa",
+      "error_generic": "Posa ebandeli. Lokola ntango."
+    },
+    "modules": {
+      "subscriptions": {
+        "title": "Yemba abonémá",
+        "description": "Kokisa to koyeba plan ya motamboli.",
+        "action": "Yemba abonémá"
+      },
+      "nfc": {
+        "title": "Mikate NFC",
+        "description": "Kokangama kártɛ oyo esalele to eza te.",
+        "action": "Koyeba mikate"
+      },
+      "users": {
+        "title": "Bato",
+        "description": "Modérez baprofil mpé badeclaration ya kosalisa.",
+        "action": "Yemba bato"
+      },
+      "analytics": {
+        "title": "Mikanda",
+        "description": "Koyeba tendance mpé performance.",
+        "action": "Koyeba mikanda"
+      }
+    },
+    "orders": {
+      "title": "Balembo ya mikate",
+      "subtitle": "Yemba mpé lokola balembo ya mikate oyo ebandeli.",
+      "no_orders": "Aza te balembo mpo sika."
+    }
+  },
+  "navbar": {
+    "home": "Page ya liboso",
+    "features": "Bamwamba",
+    "pricing": "Mbongo",
+    "about": "A propos",
+    "contact": "Kotambola bino",
+    "download": "Kotia",
+    "sign_in": "Kokanisa",
+    "sign_up": "Kobeta konti",
+    "language": "Lokota"
+  },
+  "about": {
+    "title": "Mayele ya LUVIKA",
+    "subtitle": "LUVIKA ebimaki na likanisi moko ya pete: kozongisa ntina na networking ya mosala, na lolendo, bokengi mpe lolendo ya Afrika.",
+    "mission": {
+      "title": "Mosala na biso",
+      "content": "Kobongola carte de visite ya papier na identité numérique ya mayele, ya kokamba, ya bokengi mpe ya kofungwama mpo na bato nyonso — mingi mpenza mpo na ba entrepreneurs, développeurs mpe ba leaders ya Afrika."
+    },
+    "values": {
+      "security": "Bokengi",
+      "security_desc": "Makambo na yo etikalaka se na bokonzi na yo. Eloko moko te ekabwanaka soki oponi te.",
+      "accessibility": "Kofungwama",
+      "accessibility_desc": "Interface ya pete, ya minoko mingi (français, lingála, anglais), ebongisami mpo na bato nyonso.",
+      "african_pride": "Lolendo ya Afrika",
+      "african_pride_desc": "Solution esalemi na Kinshasa, mpo na Afrika mpe mokili mobimba."
+    },
+    "team": {
+      "title": "Ekipi na biso",
+      "content": "Ekipi ya bato oyo bazali na posa makasi — ba développeurs, ba designers mpe ba entrepreneurs — bazali kosala na Kinshasa, RDC.",
+      "cta": "Yanganá na biso"
+    }
+  },
+  "contact": {
+    "title": "Kokutana na biso",
+    "subtitle": "Motuna, likanisi to lisanga ya mosala? Tozali kolinga kosolola.",
+    "address": "Esika",
+    "email": "Email",
+    "phone": "Telefone",
+    "form_title": "Tindela biso message",
+    "name": "Kombo",
+    "name_placeholder": "Kombo na yo",
+    "message": "Message",
+    "message_placeholder": "Mbote, nalingi...",
+    "send": "Kotinda"
+  },
+  "download": {
+    "title": "Kobanda kosalela",
+    "subtitle": "LUVIKA eza ya ofele, ya bato nyonso, mpe esengaka installation te.",
+    "step1": {
+      "title": "1. Bongisa profil na yo",
+      "desc": "Na miniti 2, kotia makambo na yo mpe kopesa identité na yo lolenge olingi."
+    },
+    "step2": {
+      "title": "2. Sala QR Code na yo",
+      "desc": "To kangisa carte NFC (option Premium)."
+    },
+    "step3": {
+      "title": "3. Kabola!",
+      "desc": "Scan → contact ebombami → boyokani esalemi."
+    },
+    "cta_title": "Ozali prêt ya kolakisa nani ozali?",
+    "cta_desc": "Bandá ofele — carte bancaire esengami te.",
+    "download_now": "Bandá sik’oyo"
+  },
+  "footer": {
+    "product": "Mbongo",
+    "features": "Bamwamba",
+    "pricing": "Mbongo",
+    "download": "Kotia",
+    "company": "Société",
+    "about": "A propos",
+    "contact": "Kotambola bino",
+    "blog": "Blog",
+    "legal": "Légal",
+    "privacy": "Bokokanisi",
+    "terms": "Mikanda",
+    "cookies": "Mikanda mpona",
+    "tagline": "LUVIKA — Sálisa nini yo esengaka. Identité digitale ya ba makasi, ya Afrika, mpé ya bokokanisi.",
+    "copyright": "Mikanda nyonso ezalaka na biso. Ebeteli na Kinshasa na ❤️."
+  },
+  "pricing": {
+    "title": "Mbongo & Plans",
+    "billing": {
+      "monthly": "Kotia kati ya minoko",
+      "yearly": "Kotia kati ya mbula",
+      "per_month": "/minoko",
+      "per_year": "/mbula"
+    },
+    "cta": {
+      "choose": "Kobeta {plan}"
+    },
+    "footer": {
+      "custom_plan": "Okomema plan ya kotia mpenza nini mpona yo ?",
+      "contact_us": "Kotambola bino"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Freemium",
+        "desc": "Kobanda",
+        "features": {
+          "nfc": "1 katɛ NFC",
+          "users": "1 mobembo",
+          "events": "Likambo: te",
+          "presence": "Lokola ya QR: te",
+          "stats": "Mikanda: ya base",
+          "roles": "Bamwamba: te",
+          "dashboard": "Dashboard: ya base"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "desc": "Mpo ba pro oyo bazosala makasi",
+        "popular": "Eza na bato mingi",
+        "features": {
+          "nfc": "Mikate mingi NFC",
+          "users": "1 mobembo",
+          "events": "Likambo: ya base",
+          "presence": "Lokola ya QR: ya base",
+          "stats": "Mikanda: ya malamu",
+          "roles": "Bamwamba: te",
+          "dashboard": "Dashboard: ya malamu"
+        }
+      },
+      "enterprise": {
+        "title": "Entreprise",
+        "desc": "Mpo mikili mpé mikondo mingi",
+        "features": {
+          "nfc": "Mikate NFC: ebandeli te",
+          "users": "Bamobembo: ebandeli te",
+          "events": "Likambo: ya malamu",
+          "presence": "Lokola ya QR: ya molunge",
+          "stats": "Mikanda: ya mikili",
+          "roles": "Bamwamba: eee",
+          "dashboard": "Dashboard: ya mikili nyonso"
+        }
+      },
+  "time": {
+    "seconds": "{count} segɔnde",
+    "seconds_plural": "{count} segɔnde",
+    "minutes": "{count} minuti",
+    "minutes_plural": "{count} minuti",
+    "hours": "{count} nsima",
+    "hours_plural": "{count} nsima",
+    "days": "{count} mokolo",
+    "days_plural": "{count} mikolo"
+  }
+
+    }
+  }
+}
