@@ -28,39 +28,41 @@ export default function SignInPage() {
     passwordInputRef.current?.focus();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+  try {
+    // 🔐 1. Se connecte
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
-      if (error) throw error;
+    if (error) throw error;
 
-      if (data.user) {
-        const role = data.user.user_metadata?.role;
-        router.push(role === 'admin' ? '/admin' : '/dashboard');
-      }
-    } catch (err: any) {
-      console.error('Erreur connexion:', err);
-      let message = t('auth.signin.error_generic');
-      if (err.message?.includes('Invalid login credentials')) {
-        message = t('auth.signin.error_credentials');
-      } else if (err.message?.includes('email')) {
-        message = t('auth.signin.error_email');
-      } else if (err.message?.includes('password')) {
-        message = t('auth.signin.error_password');
-      }
-      setError(message);
-    } finally {
-      setLoading(false);
+    // 🔐 2. Récupère la session + utilisateur à jour
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) throw sessionError;
+    if (!session?.user) throw new Error('No user in session');
+
+    // 🚀 Redirige
+    const role = session.user.user_metadata?.role;
+    router.push(role === 'admin' ? '/admin' : '/dashboard');
+    
+  } catch (err: any) {
+    console.error('Erreur connexion:', err);
+    let message = t('auth.signin.error_generic');
+    if (err.message?.includes('Invalid login credentials')) {
+      message = t('auth.signin.error_credentials');
     }
-  };
-
+    setError(message);
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
       {/* Flèche retour Accueil */}

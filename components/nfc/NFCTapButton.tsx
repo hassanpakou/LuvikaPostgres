@@ -1,5 +1,5 @@
 // src/components/nfc/NFCTapButton.tsx
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import { Scan, Phone } from 'lucide-react';
 
 // ✅ Hook NFC désactivé pour le build (à réactiver plus tard)

@@ -156,16 +156,17 @@ export default function SignUpPage() {
     try {
       // Crée le compte
       const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.full_name.trim(),
-            username: formData.username.trim().toLowerCase(),
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+  email: formData.email,
+  password: formData.password,
+  options: {
+    data: {
+      full_name: formData.full_name.trim(),
+      username: formData.username.trim().toLowerCase(),
+    },
+    emailRedirectTo: `${window.location.origin}/auth/callback`,
+    // ⚠️ Pas de shouldCreateUser ici → signUp crée toujours l'utilisateur
+  },
+});
 
       if (signUpError) throw signUpError;
 
@@ -326,29 +327,44 @@ export default function SignUpPage() {
                 </div></div>
 
                 <div>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                  <Label htmlFor="email" className="sr-only">
-                    {t('auth.signup.username')}
-                  </Label>
-                  <Input
-                    id="username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    placeholder="nestor"
-                    className="pl-12 pr-4 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all"
-                    autoComplete="username"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('auth.signup.username_hint_plain', { username: formData.username || 'votre_nom' })}
-                  </p>
-                  {!isValidUsername && formData.username && (
-                    <p className="text-xs text-red-400 mt-1">
-                      {t('auth.signup.error_username')}
-                    </p>
-                  )}
-                </div>    
+              <div className="relative">
+  <Label htmlFor="username" className="sr-only">
+    {t('auth.signup.username')}
+  </Label>
+
+  <div className="relative flex items-center">
+    {/* Icône */}
+    <span className="absolute left-4 h-full flex items-center pointer-events-none">
+      <User className="w-4 h-4 text-cyan-400" />
+    </span>
+
+    {/* Input */}
+    <Input
+      id="username"
+      name="username"
+      value={formData.username}
+      onChange={handleChange}
+      placeholder="nestor"
+      autoComplete="username"
+      className="pl-12 pr-4 h-12 bg-white/5 border border-white/20
+                 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30
+                 text-white placeholder:text-gray-500 rounded-xl transition-all"
+    />
+  </div>
+
+  <p className="text-xs text-gray-500 mt-1">
+    {t('auth.signup.username_hint_plain', {
+      username: formData.username || 'votre_nom',
+    })}
+  </p>
+
+  {!isValidUsername && formData.username && (
+    <p className="text-xs text-red-400 mt-1">
+      {t('auth.signup.error_username')}
+    </p>
+  )}
+</div>
+
                 </div>
               </>
             )}
@@ -402,7 +418,7 @@ export default function SignUpPage() {
                         onChange={handleChange}
                         placeholder="123456"
               className="pl-12 pr-4 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all"
-                        maxLength={6}
+                        maxLength={8}
                       />
                     </div>  </div>
                     <Button

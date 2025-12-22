@@ -81,7 +81,7 @@ export default function ForgotPasswordPage() {
   // → Tu peux créer `/auth/reset-password/page.tsx` si tu veux un formulaire OTP
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
+    <div className="min-h-screen flex items-center justify-center p-4 ">
       <Link 
         href="/auth/sign-in" 
         className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition"
