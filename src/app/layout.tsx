@@ -12,6 +12,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'LUVIKA — Révèle qui tu es',
   description: 'Carte de visite intelligente NFC · QR Code · Abonnements · Événements',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 export default async function RootLayout({
   children,
