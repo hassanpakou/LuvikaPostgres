@@ -74,7 +74,7 @@ export default function ContactContent({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-1">{email}</h3>
-                  <p className="text-gray-300">contact@luvika.dev</p>
+                  <p className="text-gray-300">luvika@gmail.com</p>
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@ export default function ContactContent({
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold text-white mb-1">{phone}</h3>
-                  <p className="text-gray-300">+243 89 017 76 601</p>
+                  <p className="text-gray-300">+243 890 17 76 601</p>
                 </div>
               </div>
             </div>

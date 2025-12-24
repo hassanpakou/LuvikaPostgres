@@ -1,4 +1,4 @@
-// src/components/admin/UserSelector.tsx
+// src/components/(admin)/UserSelector.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -35,13 +35,23 @@ export default function UserSelector({
       
       setLoading(true);
       try {
-        // ✅ Remplace par ton API route admin (ex: /api/admin/users)
-        const res = await fetch('/api/admin/users?search=' + encodeURIComponent(search));
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        console.error('Erreur:', err);
-      } finally {
+  const res = await fetch('/api/admin/users?search=' + encodeURIComponent(search));
+  
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  
+  const data = await res.json();
+
+  // ✅ Vérifie que c’est bien un tableau
+  if (Array.isArray(data)) {
+    setUsers(data);
+  } else {
+    console.warn('⚠️ API returned non-array:', data);
+    setUsers([]);
+  }
+} catch (err: any) {
+  console.error('❌ Erreur chargement utilisateurs:', err.message || err);
+  setUsers([]); // Évite le crash
+} finally {
         setLoading(false);
       }
     };

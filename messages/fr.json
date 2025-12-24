@@ -90,8 +90,8 @@
       "password_hint": "Au moins 6 caractères",
       "submit": "S’inscrire",
       "creating": "Création...",
-      "success": "✅ Inscription réussie ! Vérifiez vos emails pour confirmer.",
-      "error_generic": "Erreur inconnue. Réessayez plus tard.",
+      "success": "✅ Compte créé avec succès ! Vous pouvez maintenant vous connecter.",
+      "error_generic": "Une erreur est survenue. Réessayez ou contactez le support.",
       "error_email": "Email invalide ou déjà utilisé.",
       "error_password": "Mot de passe trop court (min. 6 caractères).",
       "error_username": "Nom d’utilisateur invalide (lettres, chiffres, _ ou -).",
@@ -109,7 +109,7 @@
       "sending": "Envoi...",
       "send_code": "Envoyer le code",
       "verify_code": "Vérifier le code",
-      "otp": "Code de vérification (6 chiffres)",
+      "otp": "Code de vérification (8 chiffres)",
       "password_length": "Au moins 8 caractères",
       "password_uppercase": "Une lettre majuscule",
       "password_lowercase": "Une lettre minuscule",
@@ -123,7 +123,8 @@
       "create_account": "Créer mon compte",
       "error_name": "Le nom doit comporter au moins 2 caractères.",
       "error_email_format": "Adresse email invalide.",
-      "username_hint_plain": "Votre profil : luvika.me/{username}"
+      "username_hint_plain": "Votre profil : luvika.me/{username}",
+      "email_exists": "📧 Vous avez déjà un compte avec cet email. Connectez-vous ou utilisez un autre email."
     },
     "reset": {
       "title": "Nouveau mot de passe",
@@ -149,7 +150,8 @@
       "error_password": "Mot de passe requis.",
       "no_account": "Pas encore inscrit ?",
       "sign_up": "Créer un compte",
-      "subtitle": "Connectez-vous à votre compte LUVIKA."
+      "subtitle": "Connectez-vous à votre compte LUVIKA.",
+      "profile_missing": "Votre profil est incomplet. Veuillez contacter le support."
     },
     "forgot_password": {
       "title": "Mot de passe oublié",
@@ -185,6 +187,58 @@
       "active_subscriptions": "Abonnements actifs",
       "total_scans": "Scans totaux"
     },
+    "nav": {
+      "orders": "Commandes",
+      "back_to_dashboard": "Retour au tableau de bord"
+    },
+    "subscription": {
+      "plan": "Plan",
+      "activated": "Activé le",
+      "expires": "Expire le",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "never": "Jamais",
+      "activate": "Activer",
+      "deactivate": "Désactiver"
+    },
+    "nfc": {
+      "status": "Statut",
+      "created": "Créée le",
+      "no_cards": "Aucune carte NFC pour le moment.",
+      "block_card": "Bloquer la carte",
+      "status": {
+        "active": "Active",
+        "lost": "Perdue",
+        "blocked": "Bloquée"
+      }
+    },
+    "users": {
+      "name": "Nom",
+      "username": "Identifiant",
+      "email": "Email",
+      "role": "Rôle",
+      "actions": "Actions",
+      "no_users": "Aucun utilisateur pour le moment."
+    },
+    "analytics": {
+      "recent_activity": "Activité récente",
+      "coming_soon": "Graphiques et analyses détaillés bientôt disponibles."
+    },
+    "stats": {
+      "orders": "Commandes",
+      "nfc_cards": "Cartes NFC"
+    },
+    "user_selector": {
+      "placeholder": "Sélectionnez un utilisateur...",
+      "search": "Rechercher un utilisateur...",
+      "loading": "Chargement...",
+      "no_results": "Aucun utilisateur trouvé."
+    },
+    "plans": {
+      "basic": "Basic",
+      "premium": "Premium",
+      "entreprise": "Entreprise"
+    },
     "actions": {
       "title": "Actions rapides",
       "welcome_email": {
@@ -193,7 +247,7 @@
         "button": "Envoyer maintenant"
       },
       "email_success": "✅ Email envoyé avec succès !",
-      "email_error": "❌ Erreur",
+      "email_error": "❌ Erreur lors de l’envoi.",
       "error_generic": "Une erreur est survenue. Veuillez réessayer."
     },
     "modules": {
@@ -201,6 +255,11 @@
         "title": "Gestion des abonnements",
         "description": "Activez ou changez le plan d’un utilisateur.",
         "action": "Gérer les abonnements"
+      },
+      "orders": {
+        "title": "Commandes NFC",
+        "description": "Gérez les commandes de cartes NFC : validation, expédition, suivi.",
+        "action": "Voir les commandes"
       },
       "nfc": {
         "title": "Cartes NFC",
@@ -233,7 +292,8 @@
     "download": "Télécharger",
     "sign_in": "Connexion",
     "sign_up": "S’inscrire",
-    "language": "Langue"
+    "language": "Langue",
+    "sign_out": "Déconnexion"
   },
   "about": {
     "title": "À propos",
@@ -359,7 +419,9 @@
           "roles": "Rôles : Oui",
           "dashboard": "Dashboard : Global"
         }
-      },
+      }
+    }
+  },
   "time": {
     "seconds": "{count} seconde",
     "seconds_plural": "{count} secondes",
@@ -371,5 +433,3 @@
     "days_plural": "{count} jours"
   }
 }
-    }
-  }

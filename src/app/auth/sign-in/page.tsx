@@ -10,7 +10,8 @@ import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/lib/supabase';
+//import { supabase } from '@/lib/supabase';
+import { createClient } from '../../../lib/supabase/client';
 
 export default function SignInPage() {
   const t = useTranslations();
@@ -28,44 +29,46 @@ export default function SignInPage() {
     passwordInputRef.current?.focus();
   }, []);
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setLoading(true);
   setError(null);
 
+  // ✅ Instance fraîche, avec cookies synchronisés
+  const supabase = createClient();
+
   try {
-    // 🔐 1. Se connecte
-    const { error } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password,
     });
 
-    if (error) throw error;
+    if (authError) throw authError;
 
-    // 🔐 2. Récupère la session + utilisateur à jour
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError) throw sessionError;
-    if (!session?.user) throw new Error('No user in session');
+    // ⏱️ Attends que les cookies soient écrits (50–100ms suffisent)
+    await new Promise(r => setTimeout(r, 100));
 
-    // 🚀 Redirige
+    // ✅ Récupère la session avec les cookies mis à jour
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) throw new Error('No session after login');
+
     const role = session.user.user_metadata?.role;
-    router.push(role === 'admin' ? '/admin' : '/dashboard');
-    
-  } catch (err: any) {
-    console.error('Erreur connexion:', err);
-    let message = t('auth.signin.error_generic');
-    if (err.message?.includes('Invalid login credentials')) {
-      message = t('auth.signin.error_credentials');
+
+    if (role === 'admin') {
+      router.push('/admin');
+    } else {
+      router.push('/dashboard');
     }
-    setError(message);
+  } catch (err: any) {
+    console.error('💥 Login failed:', err);
+    setError(t('auth.signin.error_credentials'));
   } finally {
     setLoading(false);
   }
 };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
-      {/* Flèche retour Accueil */}
       <Link 
         href="/" 
         className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition"
@@ -74,13 +77,11 @@ const handleSubmit = async (e: React.FormEvent) => {
         <span className="text-sm">{t('navbar.home')}</span>
       </Link>
 
-      {/* Conteneur — même taille que signup */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md glass-border backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-white/15 relative overflow-hidden"
       >
-        {/* Glow subtil */}
         <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] pointer-events-none">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-cyan-500/5 animate-float" />
         </div>

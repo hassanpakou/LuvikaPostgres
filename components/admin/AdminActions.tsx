@@ -5,8 +5,8 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Send, Users, CreditCard, Shield, Scan, BarChart3 } from 'lucide-react';
-import UserSelector from '@/components/admin/UserSelector';
+import { Send, Package, Users, CreditCard, Shield, Scan, BarChart3 } from 'lucide-react';
+import UserSelector from '../../src/app/(admin)/UserSelector';
 
 type User = {
   id: string;
@@ -135,12 +135,14 @@ export default function AdminActions() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[
           { icon: CreditCard, key: 'subscriptions' },
           { icon: Shield, key: 'nfc' },
           { icon: Users, key: 'users' },
           { icon: BarChart3, key: 'analytics' },
+          // ✅ Ajouté : Commandes
+          { icon: Package, key: 'orders' },
         ].map(({ icon: Icon, key }) => (
           <Card key={key} className="glass-border">
             <CardHeader>
@@ -158,12 +160,14 @@ export default function AdminActions() {
                 className="w-full border-blue-500 text-blue-300 hover:bg-blue-500/10"
                 asChild
               >
-                <a href="#">{t(`admin.modules.${key}.action`)}</a>
+                <a href={`/admin/${key}`}>
+                  {t(`admin.modules.${key}.action`)}
+                </a>
               </Button>
             </CardContent>
           </Card>
         ))}
       </div>
-    </div>
+         </div>
   );
 }

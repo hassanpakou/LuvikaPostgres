@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
- const cookieStore = await cookies();
+  const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -16,53 +16,55 @@ export async function GET(req: NextRequest) {
       },
     }
   );
-  const { data: { session } } = await supabase.auth.getSession();
 
-  // 🔐 Vérifie admin
+  const sessionRes = await supabase.auth.getSession();
+  const session = sessionRes.data.session;
+
+  // 🔐 Vérifie admin via user_metadata
   if (!session?.user || session.user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }
 
+  // 🔍 Recherche utilisateurs
   const { searchParams } = new URL(req.url);
   const search = searchParams.get('search') || '';
 
-  // 🔍 Recherche utilisateurs
-  const query = supabase
+  // ✅ Construire la requête
+  let query = supabase
     .from('profiles')
     .select('id, full_name, username, email, subscriptions!inner(plan)')
     .limit(10);
 
   if (search) {
-    query.or(`full_name.ilike.%${search}%,username.ilike.%${search}%`);
+    query = query.or(`full_name.ilike.%${search}%,username.ilike.%${search}%`);
   }
 
-// ✅ Correct — data est un tableau
-type User = {
-  id: string;
-  full_name: string;
-  username: string;
-  email: string;
-  subscriptions: { plan: string }[];
-};
+  // ✅ Exécuter la requête
+  const { data, error } = await query;
 
-const { data, error } = await query;
-
-if (error) {
+  if (error) {
   console.error('Erreur récupération utilisateurs:', error);
-  return NextResponse.json(
-    { error: 'Erreur lors du chargement des utilisateurs' },
-    { status: 500 }
-  );
+  return NextResponse.json([]); // ✅ Tableau vide
 }
 
-const typedUsers = (data ?? []) as User[];
+  // ✅ Typage
+  type User = {
+    id: string;
+    full_name: string;
+    username: string;
+    email: string;
+    subscriptions: { plan: string }[];
+  };
 
-return NextResponse.json(
-  typedUsers.map(u => ({
-    id: u.id,
-    full_name: u.full_name,
-    username: u.username,
-    email: u.email,
-    plan: u.subscriptions?.[0]?.plan ?? 'freemium',
-  }))
-);}
+  const typedUsers = (data ?? []) as User[];
+
+  return NextResponse.json(
+    typedUsers.map(u => ({
+      id: u.id,
+      full_name: u.full_name,
+      username: u.username,
+      email: u.email,
+      plan: u.subscriptions?.[0]?.plan ?? 'freemium',
+    }))
+  );
+}

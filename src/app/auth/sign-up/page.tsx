@@ -156,17 +156,16 @@ export default function SignUpPage() {
     try {
       // Crée le compte
       const { data, error: signUpError } = await supabase.auth.signUp({
-  email: formData.email,
-  password: formData.password,
-  options: {
-    data: {
-      full_name: formData.full_name.trim(),
-      username: formData.username.trim().toLowerCase(),
-    },
-    emailRedirectTo: `${window.location.origin}/auth/callback`,
-    // ⚠️ Pas de shouldCreateUser ici → signUp crée toujours l'utilisateur
-  },
-});
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.full_name.trim(),
+            username: formData.username.trim().toLowerCase(),
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
 
       if (signUpError) throw signUpError;
 
@@ -416,9 +415,8 @@ export default function SignUpPage() {
                         name="otp"
                         value={formData.otp}
                         onChange={handleChange}
-                        placeholder="123456"
               className="pl-12 pr-4 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all"
-                        maxLength={8}
+                        maxLength={8} placeholder="12345678"
                       />
                     </div>  </div>
                     <Button

@@ -1,7 +1,34 @@
 // src/app/auth/reset-password/page.tsx
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function ResetPasswordRedirect() {
-  // Redirige immédiatement vers la vraie page
-  redirect('/auth/update-password');
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    const tokenHash = searchParams.get('token_hash');
+    const type = searchParams.get('type');
+    const next = searchParams.get('next');
+
+    // Redirige vers /auth/update-password avec les mêmes params
+    const url = new URL('/auth/update-password', window.location.origin);
+    if (tokenHash) url.searchParams.set('token_hash', tokenHash);
+    if (type) url.searchParams.set('type', type);
+    if (next) url.searchParams.set('next', next);
+
+    window.location.href = url.toString();
+  }, [searchParams]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-cyan-500 mb-4"></div>
+        <p className="text-gray-300">Redirection vers la page de réinitialisation...</p>
+      </div>
+    </div>
+  );
 }
