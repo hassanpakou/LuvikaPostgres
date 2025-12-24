@@ -185,11 +185,16 @@
     "stats": {
       "total_users": "Bato",
       "active_subscriptions": "Abonnements ya koleka",
-      "total_scans": "Scans mosusu"
+      "total_scans": "Scans mosusu",
+      "orders": "Bakomande",
+      "nfc_cards": "Bakarte NFC"
     },
     "nav": {
       "orders": "Commandes",
       "back_to_dashboard": "Zonga na tableau ya bokambi"
+    },
+    "subscriptions": {
+      "no_active": "Aza te abonnements oyo ekoki sika."
     },
     "subscription": {
       "plan": "Plan",
@@ -200,7 +205,8 @@
       "never": "Ata mokolo moko te",
       "activate": "Kopelisa",
       "deactivate": "Kolongola"
-    },"nfc": {
+    },
+    "nfc": {
       "status": "Statut",
       "created": "Esalemaki na",
       "no_cards": "Bakarte NFC ezali naino te.",
@@ -210,7 +216,8 @@
         "lost": "Elimwaki",
         "blocked": "Ekangami"
       }
-    },"users": {
+    },
+    "users": {
       "name": "Kombo",
       "username": "Identifiant",
       "email": "Email",
@@ -221,10 +228,6 @@
     "analytics": {
       "recent_activity": "Misala ya sika",
       "coming_soon": "Ba graphiques mpe ba analyses ekoya kala te."
-    },
-    "stats": {
-      "orders": "Bakomande",
-      "nfc_cards": "Bakarte NFC"
     },
     "user_selector": {
       "placeholder": "Sála moto yango...",

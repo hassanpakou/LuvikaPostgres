@@ -37,7 +37,8 @@
       "plans": {
         "basic": "Freemium",
         "premium": "Premium",
-        "entreprise": "Business"
+        "entreprise": "Business",
+          "no_active": "Aza te abonnements oyo ekoki sika."
       },
       "active": "✅ Active",
       "inactive": "⚠️ Inactive",
@@ -223,7 +224,7 @@
       "never": "Never",
       "activate": "Activate",
       "deactivate": "Deactivate"
-    },
+        },
     "users": {
       "name": "Name",
       "username": "Username",
@@ -252,7 +253,8 @@
       "subscriptions": {
         "title": "Subscription management",
         "description": "Activate or change a user’s plan.",
-        "action": "Manage subscriptions"
+        "action": "Manage subscriptions",
+        "no_active": "No active subscriptions at the moment."      
       },
       "orders": {
         "title": "NFC Orders",

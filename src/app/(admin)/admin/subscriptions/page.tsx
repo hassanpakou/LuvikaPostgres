@@ -40,13 +40,15 @@ export default async function SubscriptionsPage() {
   if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
-
+// 🔍 Débogage RLS
+console.log('🔍 Tentative de requête avec user:', user?.id, 'role:', user?.user_metadata?.role);
   // ✅ Requête directe — pas d’API route intermédiaire
-  const { data : subscriptions, error } = await supabase
+  const { data : subscriptions, error }
+   = await supabase
     .from('subscriptions')
     .select(`
       *,
-      profiles!inner (id, full_name, username, email)
+      profiles!left (id, full_name, username, email)
     `)
     .order('created_at', { ascending: false });
 

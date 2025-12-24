@@ -201,7 +201,10 @@
       "inactive": "Inactif",
       "never": "Jamais",
       "activate": "Activer",
-      "deactivate": "Désactiver"
+      "deactivate": "Désactiver",
+      "title": "Gestion des abonnements",
+      "description": "Activez ou changez le plan d’un utilisateur.",
+      "action": "Gérer les abonnements"
     },
     "nfc": {
       "status": "Statut",
@@ -250,6 +253,7 @@
     },
     "modules": {
       "subscriptions": {
+        "no_active": "Aucun abonnement actif pour le moment.",
         "title": "Gestion des abonnements",
         "description": "Activez ou changez le plan d’un utilisateur.",
         "action": "Gérer les abonnements"
