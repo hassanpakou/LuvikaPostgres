@@ -5,7 +5,8 @@ import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Users, Mail, ShieldCheck, ShieldX } from 'lucide-react';
+import { ArrowLeft, Users, ShieldCheck, ShieldX } from 'lucide-react';
+import { UserActions } from '@/components/admin/UserActions';
 
 export default async function UsersPage() {
   const cookieStore = await cookies();
@@ -17,8 +18,8 @@ export default async function UsersPage() {
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user || session.user.user_metadata?.role !== 'admin') {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
@@ -69,13 +70,13 @@ export default async function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-white/5 hover:bg-white/5">
-                  <td className="py-3 px-4 text-white">{user.full_name}</td>
-                  <td className="py-3 px-4 text-cyan-300">@{user.username}</td>
-                  <td className="py-3 px-4 text-gray-300">{user.email}</td>
+              {users.map((u) => (
+                <tr key={u.id} className="border-b border-white/5 hover:bg-white/5">
+                  <td className="py-3 px-4 text-white">{u.full_name}</td>
+                  <td className="py-3 px-4 text-cyan-300">@{u.username}</td>
+                  <td className="py-3 px-4 text-gray-300">{u.email}</td>
                   <td className="py-3 px-4">
-                    {user.id === session?.user.id ? (
+                    {u.id === user.id ? (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 text-amber-300 rounded-full text-xs">
                         <ShieldCheck className="w-3 h-3" /> Admin
                       </span>
@@ -86,17 +87,8 @@ export default async function UsersPage() {
                     )}
                   </td>
                   <td className="py-3 px-4">
-                    <button
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-red-500/20 text-red-300 rounded text-xs hover:bg-red-500/30"
-                      onClick={async () => {
-                        if (confirm('Bannir cet utilisateur ?')) {
-                          await fetch(`/api/admin/users/${user.id}/ban`, { method: 'POST' });
-                          window.location.reload();
-                        }
-                      }}
-                    >
-                      Ban
-                    </button>
+                    {/* ✅ Actions sécurisées */}
+                    <UserActions id={u.id} isSelf={u.id === user.id} />
                   </td>
                 </tr>
               ))}

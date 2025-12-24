@@ -4,8 +4,9 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, CheckCircle, XCircle } from 'lucide-react';
+import { Package, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
 
 export default async function OrdersPage() {
   const cookieStore = await cookies();
@@ -22,8 +23,9 @@ export default async function OrdersPage() {
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user || session.user.user_metadata?.role !== 'admin') {
+  // ✅ getUser() au lieu de getSession()
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
@@ -81,6 +83,13 @@ export default async function OrdersPage() {
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
       <div className="mb-8">
+        <Link 
+          href="/admin" 
+          className="inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 mb-4 transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          {t('admin.nav.back_to_dashboard')}
+        </Link>
         <h1 className="text-3xl font-bold text-white">
           {t('admin.orders.title')}
         </h1>

@@ -1,21 +1,22 @@
-// src/app/api/admin/users/route.ts
+// src/app/api/admin/nfc/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) {
-          cookieStore.set({ name, value, ...options }); // ✅ Nouvelle API
+        set(name, value, options) { 
+          cookieStore.set({ name, value, ...options }); // ✅ { name, value, ...options }
         },
-        remove(name, options) {
-          cookieStore.delete({ name, ...options }); // ✅ Nouvelle API
+        remove(name, options) { 
+          cookieStore.delete({ name, ...options }); // ✅ { name, ...options }
         },
       },
     }
@@ -26,11 +27,14 @@ export async function GET() {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
-  const { data: users, error } = await supabase
-    .from('profiles')
-    .select('*')
+  const { data: cards, error } = await supabase
+    .from('nfc_cards')
+    .select(`
+      *,
+      profiles!inner (id, full_name, username, email)
+    `)
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(users);
+  return NextResponse.json(cards);
 }

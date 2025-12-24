@@ -1,4 +1,4 @@
-// src/app/api/admin/users/route.ts
+// src/app/api/admin/subscriptions/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -26,11 +26,14 @@ export async function GET() {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
-  const { data: users, error } = await supabase
-    .from('profiles')
-    .select('*')
+  const { data: subscriptions, error } = await supabase
+    .from('subscriptions')
+    .select(`
+      *,
+      profiles!inner (id, full_name, username, email)
+    `)
     .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(users);
+  return NextResponse.json(subscriptions);
 }

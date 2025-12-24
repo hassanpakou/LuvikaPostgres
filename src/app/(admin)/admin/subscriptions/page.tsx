@@ -5,7 +5,22 @@ import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, CreditCard, Calendar, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard } from 'lucide-react';
+import { SubscriptionActions } from '@/components/admin/SubscriptionActions';
+
+// ✅ Typage
+type Subscription = {
+  id: string;
+  plan: 'basic' | 'premium' | 'entreprise';
+  active: boolean;
+  activated_at: string | null;
+  expires_at: string | null;
+  profiles: {
+    full_name: string;
+    username: string;
+    email: string;
+  } | null;
+};
 
 export default async function SubscriptionsPage() {
   const cookieStore = await cookies();
@@ -13,24 +28,32 @@ export default async function SubscriptionsPage() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: { get(name) { return cookieStore.get(name)?.value; } },
+      cookies: {
+        get(name) { return cookieStore.get(name)?.value; },
+        // ✅ Seulement `get` dans un Server Component
+      },
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user || session.user.user_metadata?.role !== 'admin') {
+  // ✅ getUser() pour auth sécurisée
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
-  const { data: subscriptions, error } = await supabase
+  // ✅ Requête directe — pas d’API route intermédiaire
+  const { data : subscriptions, error } = await supabase
     .from('subscriptions')
     .select(`
       *,
-      profiles (full_name, username, email)
+      profiles!inner (id, full_name, username, email)
     `)
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Erreur fetch subscriptions:', error);
+    throw new Error('Échec du chargement des abonnements');
+  }
 
   const t = await getTranslations();
 
@@ -100,26 +123,7 @@ export default async function SubscriptionsPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <button 
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-600 to-emerald-500 text-white text-sm rounded-lg hover:opacity-90"
-                    onClick={async () => {
-                      await fetch(`/api/admin/subscriptions/${sub.id}/activate`, { method: 'POST' });
-                      window.location.reload();
-                    }}
-                  >
-                    <CheckCircle className="w-4 h-4" /> {t('admin.subscription.activate')}
-                  </button>
-                  <button 
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-600 to-rose-500 text-white text-sm rounded-lg hover:opacity-90"
-                    onClick={async () => {
-                      await fetch(`/api/admin/subscriptions/${sub.id}/deactivate`, { method: 'POST' });
-                      window.location.reload();
-                    }}
-                  >
-                    <XCircle className="w-4 h-4" /> {t('admin.subscription.deactivate')}
-                  </button>
-                </div>
+                <SubscriptionActions id={sub.id} />
               </CardContent>
             </Card>
           ))}

@@ -185,7 +185,9 @@
     "stats": {
       "total_users": "Utilisateurs",
       "active_subscriptions": "Abonnements actifs",
-      "total_scans": "Scans totaux"
+      "total_scans": "Scans totaux",
+      "orders": "Commandes",
+      "nfc_cards": "Cartes NFC"
     },
     "nav": {
       "orders": "Commandes",
@@ -223,10 +225,6 @@
     "analytics": {
       "recent_activity": "Activité récente",
       "coming_soon": "Graphiques et analyses détaillés bientôt disponibles."
-    },
-    "stats": {
-      "orders": "Commandes",
-      "nfc_cards": "Cartes NFC"
     },
     "user_selector": {
       "placeholder": "Sélectionnez un utilisateur...",

@@ -5,7 +5,8 @@ import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, Shield, Smartphone, ArchiveX } from 'lucide-react';
+import { ArrowLeft, Smartphone } from 'lucide-react';
+import { NfcActions } from '@/components/admin/NfcActions';
 
 export default async function NfcPage() {
   const cookieStore = await cookies();
@@ -17,8 +18,8 @@ export default async function NfcPage() {
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user || session.user.user_metadata?.role !== 'admin') {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
@@ -103,19 +104,8 @@ export default async function NfcPage() {
                   </div>
                 </div>
 
-                {card.status !== 'blocked' && (
-                  <button
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-600 to-rose-500 text-white text-sm rounded-lg hover:opacity-90"
-                    onClick={async () => {
-                      if (confirm('Bloquer cette carte ?')) {
-                        await fetch(`/api/admin/nfc/${card.id}/block`, { method: 'POST' });
-                        window.location.reload();
-                      }
-                    }}
-                  >
-                    <ArchiveX className="w-4 h-4" /> {t('admin.nfc.block_card')}
-                  </button>
-                )}
+                {/* ✅ Actions sécurisées */}
+                <NfcActions id={card.id} status={card.status} />
               </CardContent>
             </Card>
           ))}

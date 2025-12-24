@@ -22,8 +22,9 @@ export default async function AdminLayout({
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user || session.user.user_metadata?.role !== 'admin') {
+  // ✅ getUser() au lieu de getSession()
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
