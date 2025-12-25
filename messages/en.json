@@ -212,7 +212,11 @@
     "total_scans": "Total scans",
     "orders": "Orders",
     "nfc_cards": "NFC cards"
-    },
+    },"plans": {
+    "basic": "Basic",
+    "premium": "Premium",
+    "entreprise": "Companies"
+  },
     "nav": {
       "orders": "Orders",
       "back_to_dashboard": "Back to dashboard"
@@ -266,7 +270,9 @@
       "welcome_email": {
         "title": "📧 Welcome email",
         "description": "Send a welcome email with QR Code to a new user",
-        "button": "Send now"
+        "button": "Send now",
+        "sending": "Shipment in progress..."
+
       },
       "email_success": "✅ Email sent successfully!",
       "email_error": "❌ Failed to send.",

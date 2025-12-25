@@ -211,7 +211,11 @@
       "total_scans": "Scans mosusu",
       "orders": "Bakomande",
       "nfc_cards": "Bakarte NFC"
-    },
+    },"plans": {
+    "basic": "Ya ntina",
+    "premium": "Ayebi mosala",
+    "entreprise": "Mosala"
+  },
     "nav": {
       "orders": "Commandes",
       "back_to_dashboard": "Zonga na tableau ya bokambi"
@@ -268,7 +272,8 @@
       "welcome_email": {
         "title": "📧 Email ya bonjou",
         "description": "Kotia email na QR Code na bato oyo esalisaki te",
-        "button": "Kotia na mabele"
+        "button": "Kotia na mabele",
+        "sending": "Kotinda na nzela..."
       },
       "email_success": "✅ Email ekotelaki na mabele !",
       "email_error": "❌ Échec ya kotia.",

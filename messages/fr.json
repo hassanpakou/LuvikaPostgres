@@ -212,7 +212,11 @@
       "total_scans": "Scans totaux",
       "orders": "Commandes",
       "nfc_cards": "Cartes NFC"
-    },
+    },"plans": {
+    "basic": "Basique",
+    "premium": "Professionnel",
+    "entreprise": "Entreprise"
+  },
     "nav": {
       "orders": "Commandes",
       "back_to_dashboard": "Retour au tableau de bord"
@@ -269,7 +273,8 @@
       "welcome_email": {
         "title": "📧 Email de bienvenue",
         "description": "Envoyez un email avec QR Code à un nouvel utilisateur",
-        "button": "Envoyer maintenant"
+        "button": "Envoyer maintenant",
+        "sending": "Envoi en cours…"
       },
       "email_success": "✅ Email envoyé avec succès !",
       "email_error": "❌ Erreur lors de l’envoi.",

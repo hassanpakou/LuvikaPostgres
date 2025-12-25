@@ -90,58 +90,65 @@ export default function AdminActions() {
         </Card>
       </div>
 
-      <Card className="glass-border">
+{/* Action : Envoi email de bienvenue */}
+      <Card className="rounded-xl bg-white/5 border border-white/10 p-4">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Send className="h-5 w-5" />
             {t('admin.actions.title')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 glass-border">
-              <div>
-                <h3 className="font-medium text-white">{t('admin.actions.welcome_email.title')}</h3>
-                <p className="text-sm text-gray-400">
-                  {t('admin.actions.welcome_email.description')}
-                </p>
-                <div className="mt-3 max-w-xs">
-                  <UserSelector 
-                    onSelect={setSelectedUser} 
-                    selectedUser={selectedUser} 
-                  />
-                </div>
+
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-white/5 rounded-lg">
+            <div className="flex-1">
+              <h3 className="font-medium text-white">
+                {t('admin.actions.welcome_email.title')}
+              </h3>
+
+              <p className="text-sm text-gray-400">
+                {t('admin.actions.welcome_email.description')}
+              </p>
+
+              <div className="mt-3 max-w-md">
+                {/* ✅ On force l'affichage de l'email */}
+                <UserSelector
+                  onSelect={setSelectedUser}
+                  selectedUser={selectedUser}
+                  displayField="email"  // ← Clé de la correction
+                />
               </div>
-              <Button
-                size="sm"
-                onClick={handleSendWelcomeEmail}
-                disabled={!selectedUser || isSending}
-                className="bg-gradient-to-r from-blue-600 to-cyan-500"
-              >
-                {isSending ? (
-                  <span className="flex items-center">
-                    <span className="animate-spin h-4 w-4 mr-2">⚙️</span>
-                    {t('admin.actions.sending')}
-                  </span>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    {t('admin.actions.welcome_email.button')}
-                  </>
-                )}
-              </Button>
             </div>
+
+            <Button
+              size="sm"
+              onClick={handleSendWelcomeEmail}
+              disabled={!selectedUser || isSending}
+              className="bg-gradient-to-r from-blue-600 to-cyan-500 shrink-0"
+            >
+              {isSending ? (
+                <span className="flex items-center">
+                  <span className="animate-spin h-4 w-4 mr-2">⚙️</span>
+                  {t('admin.actions.sending')}
+                </span>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2" />
+                  {t('admin.actions.welcome_email.button')}
+                </>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Modules admin */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[
           { icon: CreditCard, key: 'subscriptions' },
           { icon: Shield, key: 'nfc' },
           { icon: Users, key: 'users' },
           { icon: BarChart3, key: 'analytics' },
-          // ✅ Ajouté : Commandes
           { icon: Package, key: 'orders' },
         ].map(({ icon: Icon, key }) => (
           <Card key={key} className="glass-border">
@@ -155,8 +162,8 @@ export default function AdminActions() {
               <p className="text-gray-300 mb-4">
                 {t(`admin.modules.${key}.description`)}
               </p>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full border-blue-500 text-blue-300 hover:bg-blue-500/10"
                 asChild
               >
@@ -168,6 +175,6 @@ export default function AdminActions() {
           </Card>
         ))}
       </div>
-         </div>
+    </div>
   );
 }

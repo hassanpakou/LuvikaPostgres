@@ -15,43 +15,45 @@ type User = {
   subscription_plan: 'basic' | 'premium' | 'entreprise';
 };
 
+type Props = {
+  onSelect: (user: User | null) => void;
+  selectedUser: User | null;
+  displayField?: 'email' | 'username' | 'full_name'; // ← Nouvelle prop
+};
+
 export default function UserSelector({
   onSelect,
   selectedUser,
-}: {
-  onSelect: (user: User | null) => void;
-  selectedUser: User | null;
-}) {
+  displayField = 'email', // ← Par défaut : email
+}: Props) {
   const t = useTranslations();
   const [search, setSearch] = useState('');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // 🔍 Récupère les utilisateurs (à remplacer par un appel API sécurisé)
   useEffect(() => {
     const fetchUsers = async () => {
       if (!isOpen) return;
-      
+
       setLoading(true);
       try {
-  const res = await fetch('/api/admin/users?search=' + encodeURIComponent(search));
-  
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  
-  const data = await res.json();
+        const res = await fetch('/api/admin/users?search=' + encodeURIComponent(search));
 
-  // ✅ Vérifie que c’est bien un tableau
-  if (Array.isArray(data)) {
-    setUsers(data);
-  } else {
-    console.warn('⚠️ API returned non-array:', data);
-    setUsers([]);
-  }
-} catch (err: any) {
-  console.error('❌ Erreur chargement utilisateurs:', err.message || err);
-  setUsers([]); // Évite le crash
-} finally {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setUsers(data);
+        } else {
+          console.warn('⚠️ API returned non-array:', data);
+          setUsers([]);
+        }
+      } catch (err: any) {
+        console.error('❌ Erreur chargement utilisateurs:', err.message || err);
+        setUsers([]);
+      } finally {
         setLoading(false);
       }
     };
@@ -71,33 +73,67 @@ export default function UserSelector({
     onSelect(null);
   };
 
+  // Fonction pour afficher le champ principal selon la prop
+  const getPrimaryText = (user: User) => {
+    switch (displayField) {
+      case 'email':
+        return user.email;
+      case 'username':
+        return `@${user.username}`;
+      case 'full_name':
+      default:
+        return user.full_name;
+    }
+  };
+
+  const getSecondaryText = (user: User) => {
+    const parts = [];
+    if (displayField !== 'full_name' && user.full_name) parts.push(user.full_name);
+    if (displayField !== 'username') parts.push(`@${user.username}`);
+    if (displayField !== 'email') parts.push(user.email);
+    return parts.join(' • ');
+  };
+
   return (
     <div className="relative">
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between bg-white/5 border border-white/10 hover:bg-white/10"
+        className="w-full justify-between bg-white/5 border border-white/10 hover:bg-white/10 text-left"
       >
-        {selectedUser ? (
-          <div className="flex items-center gap-2">
-            <span className="font-medium text-white">
-              {selectedUser.full_name} (@{selectedUser.username})
-            </span>
-            <Badge variant="secondary" className="ml-2 bg-blue-500/20 text-blue-300">
+        <div className="flex-1 truncate">
+          {selectedUser ? (
+            <div>
+              <div className="font-medium text-white truncate">
+                {getPrimaryText(selectedUser)}
+              </div>
+              <div className="text-xs text-gray-400 truncate">
+                {getSecondaryText(selectedUser)}
+              </div>
+            </div>
+          ) : (
+            <span className="text-gray-400">{t('admin.user_selector.placeholder')}</span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 ml-4">
+          {selectedUser && (
+            <Badge variant="secondary" className="bg-blue-500/20 text-blue-300 text-xs">
               {t(`admin.plans.${selectedUser.subscription_plan}`)}
             </Badge>
-          </div>
-        ) : (
-          <span className="text-gray-400">{t('admin.user_selector.placeholder')}</span>
-        )}
-        {selectedUser ? (
-          <X className="h-4 w-4 text-gray-400 hover:text-white cursor-pointer" onClick={clearSelection} />
-        ) : (
-          <ChevronDown className="h-4 w-4 text-gray-400" />
-        )}
+          )}
+          {selectedUser ? (
+            <X
+              className="h-4 w-4 text-gray-400 hover:text-white cursor-pointer"
+              onClick={clearSelection}
+            />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-gray-400" />
+          )}
+        </div>
       </Button>
 
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full glass-border max-h-60 overflow-auto">
+        <div className="absolute z-50 mt-1 w-full glass-border backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 max-h-60 overflow-auto">
           <div className="p-2 border-b border-white/10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -105,31 +141,39 @@ export default function UserSelector({
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={t('admin.user_selector.search')}
-                className="pl-10 bg-white/5 border-white/10 text-white"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                 autoFocus
               />
             </div>
           </div>
-          
+
           <div className="p-1">
             {loading ? (
-              <div className="px-4 py-2 text-gray-400">{t('admin.user_selector.loading')}</div>
+              <div className="px-4 py-3 text-gray-400 text-center">
+                {t('admin.user_selector.loading')}
+              </div>
             ) : users.length === 0 ? (
-              <div className="px-4 py-2 text-gray-400">{t('admin.user_selector.no_results')}</div>
+              <div className="px-4 py-3 text-gray-400 text-center">
+                {t('admin.user_selector.no_results')}
+              </div>
             ) : (
               users.map((user) => (
                 <Button
                   key={user.id}
                   variant="ghost"
-                  className="w-full justify-start h-auto p-3 text-left hover:bg-white/5"
+                  className="w-full justify-start h-auto p-3 text-left hover:bg-white/10 rounded-md"
                   onClick={() => handleSelect(user)}
                 >
-                  <div>
-                    <div className="font-medium text-white">{user.full_name}</div>
-                    <div className="text-sm text-gray-400">@{user.username} • {user.email}</div>
+                  <div className="flex-1">
+                    <div className="font-medium text-white">
+                      {getPrimaryText(user)}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {getSecondaryText(user)}
+                    </div>
                   </div>
-                  <Badge variant="secondary" className="ml-2 bg-blue-500/20 text-blue-300">
-                    {t(`admin.plans.${user.subscription_plan}`)}
+                  <Badge variant="secondary" className="ml-2 bg-blue-500/20 text-blue-300 text-xs">
+                    {t(`admin.plans.${user.subscription_plan || 'basic'}`)}
                   </Badge>
                 </Button>
               ))
@@ -141,8 +185,12 @@ export default function UserSelector({
   );
 }
 
-// Composant simple pour Badge (si pas déjà créé)
-const Badge = ({ children, className, variant }: { 
+// Badge simple (si tu n’as pas déjà un composant Badge)
+const Badge = ({ 
+  children, 
+  className = '', 
+  variant = 'default' 
+}: { 
   children: React.ReactNode; 
   className?: string;
   variant?: 'default' | 'secondary';
