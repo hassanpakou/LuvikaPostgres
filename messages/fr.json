@@ -79,6 +79,25 @@
     }
   },
   "auth": {
+    "complete": {
+      "title": "Complétez votre profil",
+      "description": "Quelques informations pour personnaliser votre compte",
+      "full_name": "Nom complet",
+      "full_name_placeholder": "Nestor Kipampe",
+      "username": "Nom d'utilisateur",
+      "username_placeholder": "nestor",
+      "username_hint": "Lettres minuscules, chiffres, tirets et underscores uniquement (3-20 caractères)",
+      "username_available": "Ce nom d'utilisateur est disponible !",
+      "username_taken": "Ce nom d'utilisateur est déjà pris",
+      "username_checking": "Vérification en cours...",
+      "submit": "Finaliser mon compte",
+      "saving": "Enregistrement...",
+      "success": "Profil créé avec succès !",
+      "redirecting": "Redirection vers votre tableau de bord...",
+      "error_full_name_required": "Veuillez entrer votre nom complet",
+      "error_username_too_short": "Le nom d'utilisateur doit faire au moins 3 caractères",
+      "error_generic": "Une erreur est survenue. Réessayez."
+    },
     "signup": {
       "title": "Créer un compte",
       "full_name": "Nom complet",
@@ -124,7 +143,8 @@
       "error_name": "Le nom doit comporter au moins 2 caractères.",
       "error_email_format": "Adresse email invalide.",
       "username_hint_plain": "Votre profil : luvika.me/{username}",
-      "email_exists": "📧 Vous avez déjà un compte avec cet email. Connectez-vous ou utilisez un autre email."
+      "email_exists": "📧 Vous avez déjà un compte avec cet email. Connectez-vous ou utilisez un autre email.",
+      "check_email": "✅ Vérifiez vos emails — un lien de confirmation vous a été envoyé."
     },
     "reset": {
       "title": "Nouveau mot de passe",

@@ -1,6 +1,4 @@
 // src/app/dashboard/page.tsx
-// Dashboard utilisateur — Server Component (sécurisé)
-
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { notFound } from 'next/navigation';
@@ -8,7 +6,6 @@ import { getTranslations } from 'next-intl/server';
 import { generateQRBase64 } from '@/lib/qr';
 import DashboardContent from '../../components/dashboard/DashboardContent';
 
-// ✅ Fonction locale — remplace formatDistanceToNow (sans dépendance)
 const formatDistance = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -38,11 +35,9 @@ export default async function DashboardPage() {
     }
   );
 
-  const sessionResult = await supabase.auth.getSession();
-  const session = sessionResult.data.session;
-  const user = session?.user;
-
-  if (!user) {
+  // ✅ CORRECTION 1 : getUser() au lieu de getSession()
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
     notFound();
   }
 
@@ -58,7 +53,7 @@ export default async function DashboardPage() {
     supabase.from('nfc_cards').select('*').eq('user_id', user.id),
     supabase
       .from('scans')
-      .select('*, profiles!inner(username, full_name)', { count: 'exact' })
+      .select('*, profiles!left(username, full_name)', { count: 'exact' }) // ✅ CORRECTION 2 : !left
       .eq('profile_id', user.id)
       .order('created_at', { ascending: false })
       .limit(5),
@@ -82,10 +77,7 @@ export default async function DashboardPage() {
   
   let qrBase64 = '';
   try {
-    qrBase64 = await generateQRBase64(profileUrl, {
-      size: 300,
-      color: '#2563eb',
-    });
+    qrBase64 = await generateQRBase64(profileUrl, { size: 300, color: '#2563eb' });
   } catch (err) {
     console.error('Erreur génération QR', err);
   }
@@ -107,7 +99,9 @@ export default async function DashboardPage() {
       cards={cards}
       recentScans={recentScans.map(scan => ({
         ...scan,
-        relativeTime: formatDistance(scan.created_at),
+        // Gère les scans sans profil (ex: utilisateur supprimé)
+        relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
+        profile: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
       }))}
       totalScans={totalScans}
       qrBase64={qrBase64}

@@ -79,6 +79,25 @@
     }
   },
   "auth": {
+    "complete": {
+  "title": "Kobatela profil wane",
+  "description": "Makambo moko mpona kobatela compte wane",
+  "full_name": "Kombo ya libota mobimba",
+  "full_name_placeholder": "Nestor Kipampe",
+  "username": "Nom d'utilisateur",
+  "username_placeholder": "nestor",
+  "username_hint": "Bato ya minuscule, chiffres, tirets pe underscores te (3-20 caractères)",
+  "username_available": "Nom wana ekoki !",
+  "username_taken": "Nom wana eza kaka te !",
+  "username_checking": "Kotambola...",
+  "submit": "Kobongola compte wane",
+  "saving": "Kobongola...",
+  "success": "Profil ekotelaki na mabele !",
+  "redirecting": "Kotia na tableau wane...",
+  "error_full_name_required": "Sala kombo ya libota mobimba",
+  "error_username_too_short": "Nom ekoki kozwa minimum 3 caractères",
+  "error_generic": "Bomoyi esilaka. Soki ozotalela."
+},
     "signup": {
       "title": "Kobetela compte",
       "full_name": "Nom na libota mobimba",

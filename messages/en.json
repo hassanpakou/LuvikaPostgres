@@ -80,6 +80,25 @@
     }
   },
   "auth": {
+    "complete": {
+  "title": "Complete your profile",
+  "description": "A few details to personalize your account",
+  "full_name": "Full name",
+  "full_name_placeholder": "Nestor Kipampe",
+  "username": "Username",
+  "username_placeholder": "nestor",
+  "username_hint": "Lowercase letters, numbers, hyphens and underscores only (3-20 chars)",
+  "username_available": "This username is available!",
+  "username_taken": "This username is already taken",
+  "username_checking": "Checking...",
+  "submit": "Finalize my account",
+  "saving": "Saving...",
+  "success": "Profile created successfully!",
+  "redirecting": "Redirecting to your dashboard...",
+  "error_full_name_required": "Please enter your full name",
+  "error_username_too_short": "Username must be at least 3 characters",
+  "error_generic": "An error occurred. Please try again."
+},
     "signup": {
       "title": "Create an account",
       "full_name": "Full name",
