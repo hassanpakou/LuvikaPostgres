@@ -96,11 +96,7 @@
       "redirecting": "Redirection vers votre tableau de bord...",
       "error_full_name_required": "Veuillez entrer votre nom complet",
       "error_username_too_short": "Le nom d'utilisateur doit faire au moins 3 caractères",
-      "error_generic": "Une erreur est survenue. Réessayez.",
-      "full_name": "Nom complet",
-      "username": "Nom d'utilisateur",
-      "username_hint": "Lettres minuscules, chiffres, tirets et underscores uniquement (3-20 caractères)"
-
+      "error_generic": "Une erreur est survenue. Réessayez."
     },
     "signup": {
       "title": "Créer un compte",
@@ -148,7 +144,11 @@
       "error_email_format": "Adresse email invalide.",
       "username_hint_plain": "Votre profil : luvika.me/{username}",
       "email_exists": "📧 Vous avez déjà un compte avec cet email. Connectez-vous ou utilisez un autre email.",
-      "check_email": "✅ Vérifiez vos emails — un lien de confirmation vous a été envoyé."
+      "check_email": "✅ Vérifiez vos emails — un lien de confirmation vous a été envoyé.",
+      "choose_plan": "Choisissez votre plan",
+      "plan_desc": "Démarrez gratuitement, passez à Premium pour plus de fonctionnalités",
+      "email_step": "3. Adresse email",
+      "email_desc": "Nous vous enverrons un lien de confirmation"
     },
     "reset": {
       "title": "Nouveau mot de passe",
@@ -212,11 +212,7 @@
       "total_scans": "Scans totaux",
       "orders": "Commandes",
       "nfc_cards": "Cartes NFC"
-    },"plans": {
-    "basic": "Basique",
-    "premium": "Professionnel",
-    "entreprise": "Entreprise"
-  },
+    },
     "nav": {
       "orders": "Commandes",
       "back_to_dashboard": "Retour au tableau de bord"
@@ -414,6 +410,7 @@
       "freemium": {
         "title": "Freemium",
         "desc": "Pour commencer",
+        "popular": "",
         "features": {
           "nfc": "1 carte NFC",
           "users": "1 utilisateur",
@@ -438,9 +435,10 @@
           "dashboard": "Dashboard : Avancé"
         }
       },
-      "enterprise": {
+      "entreprise": {
         "title": "Entreprise",
         "desc": "Pour équipes & entreprises",
+        "popular": "",
         "features": {
           "nfc": "Cartes NFC : Illimité",
           "users": "Utilisateurs : Illimité",
