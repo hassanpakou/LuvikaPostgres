@@ -96,7 +96,11 @@
       "redirecting": "Redirection vers votre tableau de bord...",
       "error_full_name_required": "Veuillez entrer votre nom complet",
       "error_username_too_short": "Le nom d'utilisateur doit faire au moins 3 caractères",
-      "error_generic": "Une erreur est survenue. Réessayez."
+      "error_generic": "Une erreur est survenue. Réessayez.",
+      "full_name": "Nom complet",
+      "username": "Nom d'utilisateur",
+      "username_hint": "Lettres minuscules, chiffres, tirets et underscores uniquement (3-20 caractères)"
+
     },
     "signup": {
       "title": "Créer un compte",

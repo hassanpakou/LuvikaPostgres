@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '../../lib/supabase/client'; // ✅ Chemin corrigé et simplifié
+import { createClient } from '../../lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,20 @@ export default function CompleteProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // ✅ Vérification de la session au chargement de la page
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!session) {
+        // Pas de session → redirige vers login
+        router.push('/auth/sign-in');
+      }
+    };
+
+    checkAuth();
+  }, [router, supabase]);
+
   // Vérification en temps réel de la disponibilité du username
   useEffect(() => {
     if (!username || username.length < 3) {
@@ -38,13 +52,13 @@ export default function CompleteProfilePage() {
         .from('profiles')
         .select('id')
         .eq('username', username.toLowerCase())
-        .maybeSingle(); // ✅ Utilise maybeSingle() pour éviter erreur si pas de résultat
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 = no row found (normal)
+      if (error && error.code !== 'PGRST116') {
         console.error('Erreur vérification username:', error);
         setUsernameAvailable(null);
       } else {
-        setUsernameAvailable(!data); // true si disponible
+        setUsernameAvailable(!data);
       }
 
       setCheckingUsername(false);
@@ -75,16 +89,15 @@ export default function CompleteProfilePage() {
 
     setLoading(true);
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (authError || !user) {
-      // Session invalide ou expirée → renvoyer vers login
+    if (sessionError || !session || !session.user) {
       router.push('/auth/sign-in');
       return;
     }
 
     const { error: insertError } = await supabase.from('profiles').insert({
-      id: user.id,
+      id: session.user.id,
       full_name: fullName.trim(),
       username: username.trim().toLowerCase(),
       role: 'user',
@@ -107,18 +120,17 @@ export default function CompleteProfilePage() {
     setLoading(false);
   };
 
-  // Nettoyage et normalisation du username en temps réel
   const handleUsernameChange = (value: string) => {
     const cleaned = value
       .toLowerCase()
-      .replace(/[^a-z0-9_-]/g, '') // Autorise seulement lettres, chiffres, _ et -
-      .slice(0, 20); // Limite à 20 caractères
+      .replace(/[^a-z0-9_-]/g, '')
+      .slice(0, 20);
 
     setUsername(cleaned);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br">
       <div className="w-full max-w-md glass-border backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/15">
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-cyan-500/20 text-cyan-400 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -145,9 +157,8 @@ export default function CompleteProfilePage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Nom complet */}
             <div>
-              <Label htmlFor="full_name">{t('full_name_label')}</Label>
+<Label htmlFor="full_name">{t('full_name')}</Label>
               <Input
                 id="full_name"
                 type="text"
@@ -162,10 +173,9 @@ export default function CompleteProfilePage() {
               />
             </div>
 
-            {/* Username */}
             <div>
-              <Label htmlFor="username">{t('username_label')}</Label>
-              <div className="relative mt-2">
+<Label htmlFor="username">{t('username')}</Label> 
+             <div className="relative mt-2">
                 <Input
                   id="username"
                   type="text"
@@ -179,7 +189,6 @@ export default function CompleteProfilePage() {
                   className="pr-12 bg-white/5 border-white/20 focus:border-cyan-400"
                 />
 
-                {/* Indicateurs de statut */}
                 <div className="absolute right-3 top-3">
                   {checkingUsername && <Loader2 className="w-5 h-5 animate-spin text-gray-400" />}
                   {!checkingUsername && usernameAvailable === true && (
@@ -204,7 +213,6 @@ export default function CompleteProfilePage() {
               </p>
             </div>
 
-            {/* Bouton submit */}
             <Button
               type="submit"
               disabled={loading || checkingUsername || !usernameAvailable || !fullName.trim() || username.length < 3}

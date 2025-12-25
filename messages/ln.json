@@ -96,7 +96,11 @@
   "redirecting": "Kotia na tableau wane...",
   "error_full_name_required": "Sala kombo ya libota mobimba",
   "error_username_too_short": "Nom ekoki kozwa minimum 3 caractères",
-  "error_generic": "Bomoyi esilaka. Soki ozotalela."
+  "error_generic": "Bomoyi esilaka. Soki ozotalela.",
+  "full_name": "Kombo mobimba",
+  "username": "Kombo ya mosaleli",
+  "username_hint": "Bato ya minuscule, chiffres, tirets pe underscores te (3-20 caractères)"
+
 },
     "signup": {
       "title": "Kobetela compte",

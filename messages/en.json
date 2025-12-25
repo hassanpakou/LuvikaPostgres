@@ -97,7 +97,11 @@
   "redirecting": "Redirecting to your dashboard...",
   "error_full_name_required": "Please enter your full name",
   "error_username_too_short": "Username must be at least 3 characters",
-  "error_generic": "An error occurred. Please try again."
+  "error_generic": "An error occurred. Please try again.",
+  "full_name": "Full name",
+  "username": "Username",
+  "username_hint": "Lowercase letters, numbers, dashes and underscores only (3 to 20 characters)"
+
 },
     "signup": {
       "title": "Create an account",
