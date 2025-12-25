@@ -47,17 +47,16 @@ export default async function PublicProfilePage({
     }
   );
 
-  // 🔍 Récupère le profil
-  const { data: {  profile, error }} = await supabase
-    .from('profiles')
-    .select(`
-      *,
-      nfc_cards!inner(status, lost_reason),
-      subscriptions!inner(plan, active)
-    `)
-    .eq('username', decodedUsername) // ✅ decodedUsername
-    .single();
-
+const {  data: profile, error } = await supabase
+  .from('profiles')
+  .select(`
+    *,
+    nfc_cards!inner(status, lost_reason),
+    subscriptions!inner(plan, active)
+  `)
+  .eq('username', decodedUsername)
+  .single();
+console.log('🔍 Résultat profil:', { profile, error });
   if (error || !profile) notFound();
 
   // 🔐 Vérifie visibilité
@@ -228,7 +227,8 @@ END:VCARD
                 )}
                 {profile.instagram && (
                   <Link 
-                    href={`https://instagram.com/${profile.instagram}`} // ✅ sans espaces
+                    href={`https://instagram.com/${profile.instagram}`
+} // ✅ sans espaces
                     target="_blank" 
                     className="block"
                   >

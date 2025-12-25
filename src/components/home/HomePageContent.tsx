@@ -111,7 +111,7 @@ export function HomePageContent() {
   </Link>
 
   {/* ⚪ Bouton secondaire — sans icône + animations internes */}
-  <Link href="#pricing">
+  <Link href="/pricing">
     <motion.button
       whileHover={{ scale: 1.03, y: -2 }}
       whileTap={{ scale: 0.98 }}

@@ -32,19 +32,41 @@
     "subtitle": "Manage your smart digital identity",
     "view_public": "View my public profile",
     "export_csv": "Export (.csv)",
+"time": {
+   "seconds": "{count} segɔnde",
+  "seconds_plural": "{count} segɔnde",
+  "minutes": "{count} minute",
+  "minutes_plural": "{count} minute",
+  "hours": "{count} ngonga",
+  "hours_plural": "{count} ngonga",
+  "days": "{count} mokɔlɔ",
+  "days_plural": "{count} mikɔlɔ"
+},
+    "visibility": {
+      "title": "Section visibility",
+      "description": "Choose what visitors can see."
+    },
+     "orders": {
+      "title": "Card orders",
+      "description": "Manage your ongoing NFC card orders.",
+      "manage": "Manage orders"
+    },
+
     "subscription": {
       "title": "Subscription",
       "plans": {
+        "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "entreprise": "Enterprise"
+        "entreprise": "Business"
       },
       "active": "✅ Active",
       "inactive": "⚠️ Inactive",
       "active_until": "Your plan is active until {date}.",
-      "upgrade_prompt": "Your account is on Freemium. Contact admin to activate a plan.",
-      "request_upgrade": "Request upgrade"
+      "upgrade_prompt": "Your account is in Freemium mode. Contact the administrator to activate a plan.",
+      "request_upgrade": "Request an upgrade"
     },
+
     "qr": {
       "title": "Profile QR Code",
       "alt": "QR Code for {username}",
@@ -52,8 +74,8 @@
       "open_link": "Open link"
     },
     "nfc": {
-      "title": "NFC Cards ({count})",
-      "empty": "No NFC card linked.",
+      "title": "NFC cards ({count})",
+      "empty": "No NFC cards linked.",
       "ago": "ago",
       "status": {
         "active": "Active",
@@ -64,12 +86,13 @@
       "upgrade_required": "⚠️ Premium plan required",
       "add_card": "Add an NFC card"
     },
+
     "stats": {
-      "title": "Engagement Stats",
+      "title": "Engagement statistics",
       "total_scans": "Total scans",
       "nfc_scans": "NFC scans",
       "qr_scans": "QR scans",
-      "recent_visitors": "Latest visitors",
+      "recent_visitors": "Recent visitors",
       "no_scans": "No recent scans.",
       "anonymous": "Anonymous visitor",
       "scan_type": {
@@ -96,7 +119,25 @@
       "redirecting": "Redirecting to your dashboard...",
       "error_full_name_required": "Please enter your full name",
       "error_username_too_short": "Username must be at least 3 characters",
-      "error_generic": "An error occurred. Please try again."
+      "error_generic": "An error occurred. Please try again.",
+      "step_identity": "Identity",
+      "step_contact": "Contact",
+      "step_bio": "Bio",
+      "title_identity": "1. Who are you?",
+      "desc_identity": "Full name and username (your profile URL)",
+      "title_contact": "2. How can we contact you?",
+      "desc_contact": "Phone, WhatsApp — everything is private by default",
+      "title_bio": "3. Tell us about yourself",
+      "desc_bio": "Job title, company, short bio — customize your card",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp",
+      "job_title": "Job title",
+      "company": "Company",
+      "bio_short": "Short bio",
+      "skip": "Skip",
+      "back": "Back",
+      "next": "Next",
+      "finish": "Complete my profile"
     },
     "signup": {
       "title": "Create an account",
@@ -392,65 +433,51 @@
     "copyright": "All rights reserved. Designed in Kinshasa with ❤️."
   },
   "pricing": {
-    "title": "Plans & Pricing",
-    "billing": {
-      "monthly": "Monthly",
-      "yearly": "Yearly",
-      "per_month": "/month",
-      "per_year": "/year"
+  "plans": {
+    "freemium": {
+      "title": "Freemium",
+      "desc": "To get started",
+      "popular": "",
+      "features": {
+        "nfc": "1 NFC card",
+        "users": "1 user",
+        "events": "Events: No",
+        "presence": "QR check-in: No",
+        "stats": "Stats: Basic",
+        "roles": "Roles: No",
+        "dashboard": "Dashboard: Basic"
+      }
     },
-    "cta": {
-      "choose": "Choose {plan}"
+    "premium": {
+      "title": "Premium",
+      "desc": "For ambitious professionals",
+      "popular": "Most popular",
+      "features": {
+        "nfc": "Multiple NFC cards",
+        "users": "1 user",
+        "events": "Events: Basic",
+        "presence": "QR check-in: Basic",
+        "stats": "Stats: Advanced",
+        "roles": "Roles: No",
+        "dashboard": "Dashboard: Advanced"
+      }
     },
-    "footer": {
-      "custom_plan": "Need a custom plan?",
-      "contact_us": "Contact us"
-    },
-    "plans": {
-      "freemium": {
-        "title": "Freemium",
-        "desc": "To get started",
-        "popular": "",
-        "features": {
-          "nfc": "1 NFC card",
-          "users": "1 user",
-          "events": "Events: No",
-          "presence": "QR check-in: No",
-          "stats": "Stats: Basic",
-          "roles": "Roles: No",
-          "dashboard": "Dashboard: Basic"
-        }
-      },
-      "premium": {
-        "title": "Premium",
-        "desc": "For ambitious professionals",
-        "popular": "Most popular",
-        "features": {
-          "nfc": "Multiple NFC cards",
-          "users": "1 user",
-          "events": "Events: Basic",
-          "presence": "QR check-in: Basic",
-          "stats": "Stats: Advanced",
-          "roles": "Roles: No",
-          "dashboard": "Dashboard: Advanced"
-        }
-      },
-      "entreprise": {
-        "title": "Enterprise",
-        "desc": "For teams & companies",
-        "popular": "",
-        "features": {
-          "nfc": "NFC cards: Unlimited",
-          "users": "Users: Unlimited",
-          "events": "Events: Advanced",
-          "presence": "QR check-in: Advanced",
-          "stats": "Stats: Consolidated",
-          "roles": "Roles: Yes",
-          "dashboard": "Dashboard: Global"
-        }
+    "enterprise": {
+      "title": "Enterprise",
+      "desc": "For teams & companies",
+      "popular": "",
+      "features": {
+        "nfc": "NFC cards: Unlimited",
+        "users": "Users: Unlimited",
+        "events": "Events: Advanced",
+        "presence": "QR check-in: Advanced",
+        "stats": "Stats: Consolidated",
+        "roles": "Roles: Yes",
+        "dashboard": "Dashboard: Global"
       }
     }
-  },
+  }
+},
   "time": {
     "seconds": "{count} second",
     "seconds_plural": "{count} seconds",

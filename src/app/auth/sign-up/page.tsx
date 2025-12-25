@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
@@ -60,7 +60,6 @@ export default function SignUpPage() {
   };
   const allPasswordRulesMet = Object.values(passwordRules).every(Boolean);
 
-  // ✅ Focus automatique
   useEffect(() => {
     if (step === 'email' && emailInputRef.current) {
       emailInputRef.current.focus();
@@ -69,7 +68,6 @@ export default function SignUpPage() {
     }
   }, [step]);
 
-  // ✅ Vérification email en temps réel
   useEffect(() => {
     if (!formData.email || !isValidEmail) {
       setEmailExists(false);
@@ -79,8 +77,8 @@ export default function SignUpPage() {
     const checkEmail = async () => {
       setCheckingEmail(true);
       const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) return; // déjà connecté → skip
+      const { data : { session } } = await supabase.auth.getSession();
+      if (session) return;
 
       const { data, error } = await supabase
         .from('profiles')
@@ -104,7 +102,6 @@ export default function SignUpPage() {
     if (name === 'email') setEmailExists(false);
   };
 
-  // ✅ Sélection de plan — ne change PAS l’étape
   const handlePlanSelect = (plan: Plan) => {
     if (plan === 'entreprise') {
       setShowEnterpriseModal(true);
@@ -189,7 +186,6 @@ export default function SignUpPage() {
   const steps = ['plan', 'identity', 'email', 'security'] as Step[];
   const currentStepIndex = steps.indexOf(step);
 
-  // ✅ Couleurs par plan
   const getPlanColor = (plan: Plan) => {
     switch (plan) {
       case 'basic': return 'from-green-500 to-emerald-600';
@@ -199,373 +195,420 @@ export default function SignUpPage() {
     }
   };
 
+  const stepIcons = {
+    plan: CreditCard,
+    identity: User,
+    email: Mail,
+    security: Lock,
+  };
+
+  const stepTitles = {
+    plan: t('auth.signup.choose_plan'),
+    identity: t('auth.signup.title'),
+    email: t('auth.signup.email_step'),
+    security: t('auth.signup.security_step'),
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative bg-gradient-to-br">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br">
       <Link
         href="/"
-        className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition"
+        className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300"
       >
         <ArrowLeft className="w-4 h-4" />
         <span className="text-sm">{t('navbar.home')}</span>
       </Link>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md glass-border backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-white/15"
-      >
-        {/* ✅ Barre de progression animée */}
-        <div className="relative mb-12">
-          <div className="flex justify-between mb-4">
-            {steps.map((s, i) => (
-              <motion.div
-                key={s}
-                className="flex flex-col items-center"
-                initial={false}
-                animate={{ scale: step === s ? 1.1 : 1 }}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  i < currentStepIndex ? 'bg-white text-blue-600' :
-                  step === s ? 'bg-cyan-500 text-white' :
-                  'bg-white/10 text-gray-400'
-                } mb-2 relative`}>
-                  {i < currentStepIndex && <Check className="w-5 h-5 text-green-400" />}
-                </div>
-                <span className="text-xs text-gray-400 font-medium">{i + 1}</span>
-              </motion.div>
-            ))}
+      <div className="w-full max-w-6xl">
+        {/* ✅ Étapes en haut — centrées, avec icônes sous les titres */}
+        <div className="mb-8">
+          <div className="flex justify-between mb-6">
+            {steps.map((s, i) => {
+              const Icon = stepIcons[s];
+              const isActive = step === s;
+              const isCompleted = i < currentStepIndex;
+              const color = isCompleted
+                ? 'bg-white text-blue-600'
+                : isActive
+                ? 'bg-cyan-500 text-white'
+                : 'bg-white/10 text-gray-400';
+
+              return (
+                <motion.div
+                  key={s}
+                  className="flex flex-col items-center flex-1"
+                  initial={false}
+                  animate={{ scale: isActive ? 1.05 : 1 }}
+                >
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${color} mb-3 relative`}>
+                    <Icon className="w-5 h-5" />
+                    {isCompleted && <Check className="w-4 h-4 text-green-400 absolute -bottom-1 -right-1 bg-black rounded-full" />}
+                  </div>
+                  <span className="text-sm font-medium text-gray-300">{stepTitles[s]}</span>
+                </motion.div>
+              );
+            })}
           </div>
 
-          {/* Ligne de progression */}
-          <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+          {/* Barre de progression fluide */}
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
             <motion.div 
               className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500"
               initial={{ width: '0%' }}
               animate={{ width: `${((currentStepIndex) / 3) * 100}%` }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
+              transition={{ duration: 0.5 }}
             />
           </div>
         </div>
 
-        {/* ✅ Titre + icône sous le titre */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-white mb-3">
-            {step === 'plan' && t('auth.signup.choose_plan')}
-            {step === 'identity' && t('auth.signup.title')}
-            {step === 'email' && t('auth.signup.email_step')}
-            {step === 'security' && t('auth.signup.security_step')}
-          </h1>
-          
-          {/* Icône centrée sous le titre */}
+        {/* ✅ Formulaire horizontal */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Sidebar gauche — info + stats */}
           <motion.div
-            key={step}
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="flex justify-center mb-4"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="lg:col-span-1 space-y-6"
           >
-            {step === 'plan' && <CreditCard className="w-8 h-8 text-cyan-400" />}
-            {step === 'identity' && <User className="w-8 h-8 text-cyan-400" />}
-            {step === 'email' && <Mail className="w-8 h-8 text-cyan-400" />}
-            {step === 'security' && <Lock className="w-8 h-8 text-cyan-400" />}
+            <div className="text-center p-5 glass-border rounded-xl">
+              <div className="w-16 h-16 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl font-bold text-white">L</span>
+              </div>
+              <h3 className="text-xl font-bold text-white">{t('LUVIKA')}</h3>
+              <p className="text-gray-400 text-sm mt-2">{t('tagline')}</p>
+            </div>
+
+            <div className="p-5 glass-border rounded-xl">
+              <h4 className="font-bold text-cyan-300 mb-3">✨ Pourquoi choisir LUVIKA ?</h4>
+              <ul className="space-y-2 text-gray-300 text-sm">
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  Partagez en 1 tap NFC
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  Statistiques en temps réel
+                </li>
+                <li className="flex items-start gap-2">
+                  <Check className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                  Multi-cartes pour pros
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-5 glass-border rounded-xl text-center">
+              <div className="text-3xl font-bold text-cyan-400">1,248</div>
+              <div className="text-gray-400">{t('admin.stats.total_users')}</div>
+              <div className="text-xs text-green-400 mt-1">+12% ce mois</div>
+            </div>
           </motion.div>
 
-          <p className="text-gray-400 text-sm">
-            {step === 'plan' && t('auth.signup.plan_desc')}
-            {step === 'identity' && t('auth.signup.identity_desc')}
-            {step === 'email' && t('auth.signup.email_desc')}
-            {step === 'security' && t('auth.signup.security_desc')}
-          </p>
-        </div>
-
-        <AnimatePresence>
-          {error && (
-            <motion.div className="bg-red-900/30 text-red-200 p-3 rounded-lg mb-6 flex items-center gap-2">
-              <X className="w-4 h-4 flex-shrink-0" /> {error}
-            </motion.div>
-          )}
-          {success && (
-            <motion.div className="bg-green-900/30 text-green-200 p-3 rounded-lg mb-6 flex items-center gap-2">
-              <Check className="w-4 h-4" /> {success}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <AnimatePresence mode="wait">
+          {/* Formulaire principal — droite */}
           <motion.div
             key={step}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="space-y-5"
+            className="lg:col-span-2"
           >
-            {/* ✅ ÉTAPE 1 : Choix du plan — avec animations et couleurs */}
-            {step === 'plan' && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  {[
-                    { id: 'basic', title: t('pricing.plans.freemium.title'), desc: t('pricing.plans.freemium.desc'), price: '0', color: 'green' },
-                    { id: 'premium', title: t('pricing.plans.premium.title'), desc: t('pricing.plans.premium.desc'), price: '12', color: 'cyan' },
-                    { id: 'entreprise', title: t('pricing.plans.entreprise.title'), desc: t('pricing.plans.entreprise.desc'), price: '39', color: 'red' },
-                  ].map((plan) => (
-                    <motion.div
-                      key={plan.id}
-                      whileHover={{ y: -3 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="relative overflow-hidden rounded-xl"
-                    >
-                      {/* Animation de fond fluide */}
-                      <div className={`absolute inset-0 bg-gradient-to-br ${getPlanColor(plan.id as Plan)} opacity-10`} />
-                      <div className="absolute inset-0 bg-grid-white/[0.03] bg-[length:20px_20px]" />
+            <div className="glass-border backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-white/15">
+              {/* Titre + icône centrés */}
+              <div className="text-center mb-8">
+                <div className="flex justify-center mb-4">
+                  {step === 'plan' && <CreditCard className="w-8 h-8 text-cyan-400" />}
+                  {step === 'identity' && <User className="w-8 h-8 text-cyan-400" />}
+                  {step === 'email' && <Mail className="w-8 h-8 text-cyan-400" />}
+                  {step === 'security' && <Lock className="w-8 h-8 text-cyan-400" />}
+                </div>
+                <h1 className="text-2xl font-bold text-white">{stepTitles[step]}</h1>
+                <p className="text-gray-400 mt-2 text-sm">
+                  {step === 'plan' && t('auth.signup.plan_desc')}
+                  {step === 'identity' && t('auth.signup.identity_desc')}
+                  {step === 'email' && t('auth.signup.email_desc')}
+                  {step === 'security' && t('auth.signup.security_desc')}
+                </p>
+              </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handlePlanSelect(plan.id as Plan)}
-                        className={`w-full text-left p-5 rounded-xl border-2 relative z-10 transition-all ${
-                          formData.plan === plan.id
-                            ? plan.id === 'basic'
-                              ? 'border-green-500 bg-green-500/10'
-                              : plan.id === 'premium'
-                              ? 'border-cyan-400 bg-cyan-400/10'
-                              : 'border-red-500 bg-red-500/10'
-                            : 'border-white/10 hover:border-white/20 bg-white/5'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-white">{plan.title}</h3>
-                              {plan.id === 'premium' && (
-                                <span className="bg-cyan-500 text-xs px-2 py-0.5 rounded-full text-white">
-                                  {t('pricing.plans.premium.popular')}
-                                </span>
-                              )}
+              <AnimatePresence>
+                {error && (
+                  <motion.div className="bg-red-900/30 text-red-200 p-3 rounded-lg mb-6 flex items-center gap-2">
+                    <X className="w-4 h-4 flex-shrink-0" /> {error}
+                  </motion.div>
+                )}
+                {success && (
+                  <motion.div className="bg-green-900/30 text-green-200 p-3 rounded-lg mb-6 flex items-center gap-2">
+                    <Check className="w-4 h-4" /> {success}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-5">
+                {/* ✅ ÉTAPE 1 : Choix du plan */}
+                {step === 'plan' && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        { id: 'basic', title: t('pricing.plans.freemium.title'), desc: t('pricing.plans.freemium.desc'), price: '0' },
+                        { id: 'premium', title: t('pricing.plans.premium.title'), desc: t('pricing.plans.premium.desc'), price: '12' },
+                        { id: 'entreprise', title: t('pricing.plans.entreprise.title'), desc: t('pricing.plans.entreprise.desc'), price: '39' },
+                      ].map((plan) => (
+                        <motion.div
+                          key={plan.id}
+                          whileHover={{ y: -3 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="relative overflow-hidden rounded-xl"
+                        >
+                          <div className={`absolute inset-0 bg-gradient-to-br ${getPlanColor(plan.id as Plan)} opacity-8`} />
+                          <button
+                            type="button"
+                            onClick={() => handlePlanSelect(plan.id as Plan)}
+                            className={`w-full text-left p-5 rounded-xl border-2 relative z-10 h-full flex flex-col justify-between transition-all ${
+                              formData.plan === plan.id
+                                ? plan.id === 'basic'
+                                  ? 'border-green-500 bg-green-500/15'
+                                  : plan.id === 'premium'
+                                  ? 'border-cyan-400 bg-cyan-400/15'
+                                  : 'border-red-500 bg-red-500/15'
+                                : 'border-white/10 hover:border-white/20 bg-white/5'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-bold text-white">{plan.title}</h3>
+                                {plan.id === 'premium' && (
+                                  <span className="bg-cyan-500 text-xs px-2 py-0.5 rounded-full text-white">
+                                    {t('pricing.plans.premium.popular')}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-gray-300 text-sm">{plan.desc}</p>
                             </div>
-                            <p className="text-gray-300 text-sm mt-1">{plan.desc}</p>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-white">${plan.price}</div>
-                            <div className="text-gray-400 text-sm">/mois</div>
-                          </div>
-                        </div>
-                      </button>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ✅ ÉTAPE 2 : Identité */}
-            {step === 'identity' && (
-              <>
-                <div>
-                  <Label htmlFor="full_name" className="text-gray-300 mb-2 block">
-                    {t('auth.signup.full_name')}
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                    <Input
-                      id="full_name"
-                      name="full_name"
-                      value={formData.full_name}
-                      onChange={handleChange}
-                      placeholder={t('auth.signup.full_name_placeholder')}
-                      className="pl-12 pr-4 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
-                    />
-                    {!isValidName && formData.full_name && (
-                      <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_name')}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="username" className="text-gray-300 mb-2 block">
-                    {t('auth.signup.username')}
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                    <Input
-                      id="username"
-                      name="username"
-                      value={formData.username}
-                      onChange={handleChange}
-                      placeholder="nestor"
-                      className="pl-12 pr-4 h-12 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {t('auth.signup.username_hint_plain', { username: formData.username || 'votre_nom' })}
-                    </p>
-                    {!isValidUsername && formData.username && (
-                      <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_username')}</p>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* ✅ ÉTAPE 3 : Email — avec validation temps réel */}
-            {step === 'email' && (
-              <div>
-                <Label htmlFor="email" className="text-gray-300 mb-2 block">
-                  {t('auth.signup.email')}
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                  <Input
-                    ref={emailInputRef}
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="votre@email.com"
-                    className="pl-12 pr-12 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
-                  />
-                  {checkingEmail && (
-                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                      <span className="animate-spin w-4 h-4">· · ·</span>
-                    </span>
-                  )}
-                  {emailExists && !checkingEmail && (
-                    <AlertCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-400" />
-                  )}
-                </div>
-                {emailExists && (
-                  <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    {t('auth.signup.email_exists')}
-                  </p>
-                )}
-                {!isValidEmail && formData.email && !emailExists && (
-                  <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_email_format')}</p>
-                )}
-              </div>
-            )}
-
-            {/* ✅ ÉTAPE 4 : Sécurité */}
-            {step === 'security' && (
-              <>
-                <div>
-                  <Label htmlFor="password" className="text-gray-300 mb-2 block">
-                    {t('auth.signup.password')}
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                    <Input
-                      ref={passwordInputRef}
-                      id="password"
-                      name="password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="••••••••"
-                      className="pl-12 pr-12 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <Label htmlFor="passwordConfirm" className="text-gray-300 mb-2 block">
-                    {t('auth.signup.password_confirm')}
-                  </Label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
-                    <Input
-                      id="passwordConfirm"
-                      name="passwordConfirm"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={formData.passwordConfirm}
-                      onChange={handleChange}
-                      placeholder="••••••••"
-                      className="pl-12 pr-12 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="text-xs space-y-1">
-                  {Object.entries(passwordRules).map(([key, valid]) => (
-                    <div key={key} className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${valid ? 'bg-green-400' : 'bg-gray-500'}`} />
-                      {t(`auth.signup.password_${key}`)}
+                            <div className="text-right mt-3">
+                              <div className="text-3xl font-bold text-white">${plan.price}</div>
+                              <div className="text-gray-400 text-sm">/mois</div>
+                            </div>
+                          </button>
+                        </motion.div>
+                      ))}
                     </div>
-                  ))}
+                  </div>
+                )}
+
+                {/* ✅ ÉTAPE 2 : Identité */}
+                {step === 'identity' && (
+                  <>
+                    <div>
+                      <Label htmlFor="full_name" className="text-gray-300 mb-2 block">
+                        {t('auth.signup.full_name')}
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                        <Input
+                          id="full_name"
+                          name="full_name"
+                          value={formData.full_name}
+                          onChange={handleChange}
+                          placeholder={t('auth.signup.full_name_placeholder')}
+                          className="pl-12 pr-4 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
+                        />
+                        {!isValidName && formData.full_name && (
+                          <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_name')}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="username" className="text-gray-300 mb-2 block">
+                        {t('auth.signup.username')}
+                      </Label>
+                      <div className="relative">
+                        <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                        <Input
+                          id="username"
+                          name="username"
+                          value={formData.username}
+                          onChange={handleChange}
+                          placeholder="nestor"
+                          className="pl-12 pr-4 h-12 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t('auth.signup.username_hint_plain', { username: formData.username || 'votre_nom' })}
+                        </p>
+                        {!isValidUsername && formData.username && (
+                          <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_username')}</p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ✅ ÉTAPE 3 : Email */}
+                {step === 'email' && (
+                  <div>
+                    <Label htmlFor="email" className="text-gray-300 mb-2 block">
+                      {t('auth.signup.email')}
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                      <Input
+                        ref={emailInputRef}
+                        id="email"
+                        name="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="votre@email.com"
+                        className="pl-12 pr-12 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
+                      />
+                      {checkingEmail && (
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+                          <span className="animate-spin w-4 h-4">· · ·</span>
+                        </span>
+                      )}
+                      {emailExists && !checkingEmail && (
+                        <AlertCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-400" />
+                      )}
+                    </div>
+                    {emailExists && (
+                      <p className="text-xs text-red-400 mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {t('auth.signup.email_exists')}
+                      </p>
+                    )}
+                    {!isValidEmail && formData.email && !emailExists && (
+                      <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_email_format')}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* ✅ ÉTAPE 4 : Sécurité */}
+                {step === 'security' && (
+                  <>
+                    <div>
+                      <Label htmlFor="password" className="text-gray-300 mb-2 block">
+                        {t('auth.signup.password')}
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                        <Input
+                          ref={passwordInputRef}
+                          id="password"
+                          name="password"
+                          type={showPassword ? 'text' : 'password'}
+                          value={formData.password}
+                          onChange={handleChange}
+                          placeholder="••••••••"
+                          className="pl-12 pr-12 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="passwordConfirm" className="text-gray-300 mb-2 block">
+                        {t('auth.signup.password_confirm')}
+                      </Label>
+                      <div className="relative">
+                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
+                        <Input
+                          id="passwordConfirm"
+                          name="passwordConfirm"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          value={formData.passwordConfirm}
+                          onChange={handleChange}
+                          placeholder="••••••••"
+                          className="pl-12 pr-12 py-3 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                        >
+                          {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="text-xs space-y-2">
+                      {Object.entries(passwordRules).map(([key, valid]) => (
+                        <div key={key} className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${valid ? 'bg-green-400' : 'bg-gray-500'}`} />
+                          <span className={valid ? 'text-green-400' : 'text-gray-500'}>
+                            {t(`auth.signup.password_${key}`)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 text-xs text-blue-200">
+                      <Lock className="w-4 h-4 inline mr-1" />
+                      {t('auth.signup.2fa_enabled')}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* ✅ Navigation */}
+              <div className="mt-10 pt-6 border-t border-white/10">
+                <div className="flex justify-between">
+                  {step !== 'plan' && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleBack}
+                      className="text-gray-300 hover:text-white hover:bg-white/10"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-1" />
+                      {t('auth.signup.back')}
+                    </Button>
+                  )}
+
+                  <div className="flex-1" />
+
+                  <Button
+                    type="button"
+                    onClick={
+                      step === 'plan' ? () => setStep('identity') :
+                      step === 'identity' ? handleNextIdentity :
+                      step === 'email' ? handleNextEmail :
+                      handleSignUp
+                    }
+                    disabled={isNextDisabled() || loading}
+                    className="bg-gradient-to-r from-emerald-600 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 flex items-center px-6 py-3"
+                  >
+                    {loading ? (
+                      <span className="flex items-center">
+                        <span className="animate-spin w-4 h-4 mr-2">⚙️</span>
+                        {t('auth.signup.creating')}
+                      </span>
+                    ) : (
+                      <>
+                        {step !== 'security' ? t('auth.signup.next') : t('auth.signup.create_account')}
+                        {step !== 'security' && <ArrowRight className="w-4 h-4 ml-1" />}
+                      </>
+                    )}
+                  </Button>
                 </div>
 
-                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-3 text-xs text-blue-200">
-                  <Lock className="w-4 h-4 inline mr-1" />
-                  {t('auth.signup.2fa_enabled')}
+                <div className="mt-6 text-center">
+                  <p className="text-gray-400 text-sm">
+                    {t('auth.signup.already_have_account')}{' '}
+                    <Link href="/auth/sign-in" className="text-cyan-300 hover:underline font-medium">
+                      {t('auth.signup.sign_in')}
+                    </Link>
+                  </p>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
           </motion.div>
-        </AnimatePresence>
-
-        {/* ✅ Navigation */}
-        <div className="mt-10">
-          <div className="flex justify-between">
-            {step !== 'plan' && (
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={handleBack}
-                className="text-gray-300 hover:text-white hover:bg-white/10"
-              >
-                <ArrowLeft className="w-4 h-4 mr-1" />
-                {t('auth.signup.back')}
-              </Button>
-            )}
-
-            <div className="flex-1" />
-
-            <Button
-              type="button"
-              onClick={
-                step === 'plan' ? () => setStep('identity') :
-                step === 'identity' ? handleNextIdentity :
-                step === 'email' ? handleNextEmail :
-                handleSignUp
-              }
-              disabled={isNextDisabled() || loading}
-              className="bg-gradient-to-r from-emerald-600 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 flex items-center px-6 py-3"
-            >
-              {loading ? (
-                <span className="flex items-center">
-                  <span className="animate-spin w-4 h-4 mr-2">⚙️</span>
-                  {t('auth.signup.creating')}
-                </span>
-              ) : (
-                <>
-                  {step !== 'security' ? t('auth.signup.next') : t('auth.signup.create_account')}
-                  {step !== 'security' && <ArrowRight className="w-4 h-4 ml-1" />}
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-white/10 text-center">
-            <p className="text-gray-400 text-sm">
-              {t('auth.signup.already_have_account')}{' '}
-              <Link href="/auth/sign-in" className="text-cyan-300 hover:underline font-medium">
-                {t('auth.signup.sign_in')}
-              </Link>
-            </p>
-          </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* ✅ Modal Entreprise */}
       <AnimatePresence>

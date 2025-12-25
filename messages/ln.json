@@ -29,49 +29,74 @@
   },
   "dashboard": {
     "greeting": "Mbote, {name} 👋",
-    "subtitle": "Kobatela identité numérique wane ya malamu",
-    "view_public": "Koyeba profil public wane",
-    "export_csv": "Kotia (.csv)",
+    "subtitle": "Yangela bomoto na yo ya numérique ya mayele",
+    "view_public": "Tala profil na ngai ya public",
+    "export_csv": "Tinda libanda (.csv)",
+
+    "visibility": {
+      "title": "Komonana ya biteni",
+      "description": "Pona nini bato bakoki komona."
+    },
+
+    "orders": {
+      "title": "Bokɔ́ti ya bakarte",
+      "description": "Yangela bakomande na yo ya carte NFC.",
+      "manage": "Yangela bakomande"
+    },
+"time": {
+  "seconds": "{count} segɔnde",
+  "seconds_plural": "{count} segɔnde",
+  "minutes": "{count} minute",
+  "minutes_plural": "{count} minute",
+  "hours": "{count} ngonga",
+  "hours_plural": "{count} ngonga",
+  "days": "{count} mokɔlɔ",
+  "days_plural": "{count} mikɔlɔ"
+},
     "subscription": {
-      "title": "Abonnement",
+      "title": "Abonema",
       "plans": {
-        "basic": "Freemium",
+       "freemium": "Ya pamba",
+        "basic": "Ya pamba",
         "premium": "Premium",
         "entreprise": "Entreprise"
       },
-      "active": "✅ Actif",
-      "inactive": "⚠️ Inactif",
-      "active_until": "Plan wane eza na mabele kati na {date}.",
-      "upgrade_prompt": "Compte wane eza na Freemium. Kotisa administrateur mpona koyeba plan.",
-      "request_upgrade": "Koloba mpona koyeba plan"
+      "active": "✅ Esalaka",
+      "inactive": "⚠️ Esalaka te",
+      "active_until": "Plan na yo ezali kosala kino {date}.",
+      "upgrade_prompt": "Compte na yo ezali na mode Freemium. Solola na administrateur mpo na kotombola plan.",
+      "request_upgrade": "Senga kotombola plan"
     },
+
     "qr": {
       "title": "QR Code ya profil",
-      "alt": "QR Code mpona {username}",
-      "instructions": "Scan mpona koyeba profil",
-      "open_link": "Kolonga"
+      "alt": "QR Code ya {username}",
+      "instructions": "Scan mpo na kokota na profil",
+      "open_link": "Fungola lien"
     },
+
     "nfc": {
-      "title": "Cartes NFC ({count})",
-      "empty": "Aza te carte NFC oyo ebandeli.",
-      "ago": "ndenge wana",
+      "title": "Bacarte NFC ({count})",
+      "empty": "Carte NFC moko te ekangami.",
+      "ago": "eleki",
       "status": {
-        "active": "Active",
-        "lost": "Ekomaka",
-        "blocked": "Ebloki",
-        "inactive": "Inactif"
+        "active": "Esalaka",
+        "lost": "Ebunga",
+        "blocked": "Efungwama te",
+        "inactive": "Esalaka te"
       },
-      "upgrade_required": "⚠️ Plan Premium ezalaka mabe",
-      "add_card": "Kobatela carte NFC"
+      "upgrade_required": "⚠️ Plan Premium esengeli",
+      "add_card": "Bakisa carte NFC"
     },
+
     "stats": {
-      "title": "Statistiques ya engagement",
-      "total_scans": "Scans mingi",
+      "title": "Statistik ya bosangani",
+      "total_scans": "Scans nyonso",
       "nfc_scans": "Scans NFC",
       "qr_scans": "Scans QR",
-      "recent_visitors": "Bato oyo basalaki likolo",
-      "no_scans": "Aza te scans oyo ekotaka.",
-      "anonymous": "Mbongi anonyme",
+      "recent_visitors": "Bavɛsite ya sika",
+      "no_scans": "Scan moko te ya sika.",
+      "anonymous": "Motɛ́li ya koyeba te",
       "scan_type": {
         "nfc": "NFC",
         "qr": "QR"
@@ -96,7 +121,25 @@
       "redirecting": "Kotia na tableau wane...",
       "error_full_name_required": "Sala kombo ya libota mobimba",
       "error_username_too_short": "Nom ekoki kozwa minimum 3 caractères",
-      "error_generic": "Bomoyi esilaka. Soki ozotalela."
+      "error_generic": "Bomoyi esilaka. Soki ozotalela.",
+      "step_identity": "Bomɔ́to",
+      "step_contact": "Kontaktɛ",
+      "step_bio": "Lisolo",
+      "title_identity": "1. Ozali nani?",
+      "desc_identity": "Kombo mobimba mpe kombo ya mosaleli (URL ya profil na yo)",
+      "title_contact": "2. Tokoki kosolola na yo ndenge nini?",
+      "desc_contact": "Telefone, WhatsApp — nyonso ezalaka ya kobombama na ebandeli",
+      "title_bio": "3. Lobela biso na tina na yo",
+      "desc_bio": "Mosala, kompani, bio mokuse — bongisa carte na yo",
+      "phone": "Telefone",
+      "whatsapp": "WhatsApp",
+      "job_title": "Mosala",
+      "company": "Kompani",
+      "bio_short": "Bio mokuse",
+      "skip": "Zika",
+      "back": "Zonga",
+      "next": "Landá",
+      "finish": "Silisa profil na ngai"
     },
     "signup": {
       "title": "Kobatela compte",
@@ -392,65 +435,51 @@
     "copyright": "Bato mingi eza na mabele. Esalisaki na Kinshasa na ❤️."
   },
   "pricing": {
-    "title": "Plans & Tarifs",
-    "billing": {
-      "monthly": "Mensuel",
-      "yearly": "Annuel",
-      "per_month": "/mois",
-      "per_year": "/an"
+  "plans": {
+    "freemium": {
+      "title": "Freemium",
+      "desc": "Kobanda",
+      "popular": "",
+      "features": {
+        "nfc": "1 carte NFC",
+        "users": "1 mbongi",
+        "events": "Événements : Te",
+        "presence": "Présence QR : Te",
+        "stats": "Statistiques : Basique",
+        "roles": "Rôles : Te",
+        "dashboard": "Dashboard : Basique"
+      }
     },
-    "cta": {
-      "choose": "Sika {plan}"
+    "premium": {
+      "title": "Premium",
+      "desc": "Bato ya mikili ya kati",
+      "popular": "Oyo oyo ezalaka malamu",
+      "features": {
+        "nfc": "Cartes NFC mingi",
+        "users": "1 mbongi",
+        "events": "Événements : Basique",
+        "presence": "Présence QR : Basique",
+        "stats": "Statistiques : Avancées",
+        "roles": "Rôles : Te",
+        "dashboard": "Dashboard : Avancé"
+      }
     },
-    "footer": {
-      "custom_plan": "Okoki plan personnalisé?",
-      "contact_us": "Kotisa bango"
-    },
-    "plans": {
-      "freemium": {
-        "title": "Freemium",
-        "desc": "Kobanda",
-        "popular": "",
-        "features": {
-          "nfc": "1 carte NFC",
-          "users": "1 mbongi",
-          "events": "Événements : Te",
-          "presence": "Présence QR : Te",
-          "stats": "Statistiques : Basique",
-          "roles": "Rôles : Te",
-          "dashboard": "Dashboard : Basique"
-        }
-      },
-      "premium": {
-        "title": "Premium",
-        "desc": "Bato ya mikili ya kati",
-        "popular": "Oyo oyo ezalaka malamu",
-        "features": {
-          "nfc": "Cartes NFC mingi",
-          "users": "1 mbongi",
-          "events": "Événements : Basique",
-          "presence": "Présence QR : Basique",
-          "stats": "Statistiques : Avancées",
-          "roles": "Rôles : Te",
-          "dashboard": "Dashboard : Avancé"
-        }
-      },
-      "entreprise": {
-        "title": "Entreprise",
-        "desc": "Bato ya mikili mingi to bato ya mikili ya komi",
-        "popular": "",
-        "features": {
-          "nfc": "Cartes NFC : Illimité",
-          "users": "Bato : Illimité",
-          "events": "Événements : Avancés",
-          "presence": "Présence QR : Avancée",
-          "stats": "Statistiques : Consolidées",
-          "roles": "Rôles : Eee",
-          "dashboard": "Dashboard : Global"
-        }
+    "enterprise": {
+      "title": "Entreprise",
+      "desc": "Bato ya mikili mingi to bato ya mikili ya komi",
+      "popular": "",
+      "features": {
+        "nfc": "Cartes NFC : Illimité",
+        "users": "Bato : Illimité",
+        "events": "Événements : Avancés",
+        "presence": "Présence QR : Avancée",
+        "stats": "Statistiques : Consolidées",
+        "roles": "Rôles : Eee",
+        "dashboard": "Dashboard : Global"
       }
     }
-  },
+  }
+},
   "time": {
     "seconds": "{count} seconde",
     "seconds_plural": "{count} secondes",

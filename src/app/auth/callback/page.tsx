@@ -32,21 +32,30 @@ export default async function CallbackPage({
   );
 
   const code = searchParams.code || searchParams.token_hash;
+  // ✅ Correction 1 : force next en string
+  const next = (Array.isArray(searchParams.next) ? searchParams.next[0] : searchParams.next) || '/complete-profile';
+  // ✅ Correction 2 : force plan en string
+  const plan = (Array.isArray(searchParams.plan) ? searchParams.plan[0] : searchParams.plan) || 'basic';
 
-  // Si pas de code de confirmation → on redirige vers la connexion
-  if (!code) {
-    redirect('/auth/sign-in');
+  if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code as string);
+    if (error) {
+      console.error('Erreur vérification code:', error);
+      redirect(`/auth/error?message=${encodeURIComponent(error.message || '')}`);
+    }
+
+    // ✅ Sauvegarde le plan dans le cookie
+    cookieStore.set('signup_plan', plan, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60, // 1h
+      path: '/',
+    });
+
+    redirect(next);
   }
 
-  const { error } = await supabase.auth.exchangeCodeForSession(code as string);
-
-  // En cas d'erreur (lien expiré, invalide, etc.)
-  if (error) {
-    console.error('Erreur lors de la confirmation:', error);
-    redirect(`/auth/error?message=${encodeURIComponent('Lien de confirmation invalide ou expiré.')}`);
-  }
-
-  // Tout est bon : compte confirmé → on affiche la page de succès
+  // ✅ Si pas de code → on affiche la page de succès (optionnel, mais tu la veux)
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
       <div className="w-full max-w-md glass-border backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/15 text-center">

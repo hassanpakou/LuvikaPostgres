@@ -1,8 +1,7 @@
 // src/app/dashboard/page.tsx
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { notFound, redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { redirect } from 'next/navigation';
 import { generateQRBase64 } from '@/lib/qr';
 import DashboardContent from '../../components/dashboard/DashboardContent';
 
@@ -43,24 +42,22 @@ export default async function DashboardPage() {
     }
   );
 
-  // ✅ 1. user → .data.user
-const { data : { user } } = await supabase.auth.getUser();
+  // ✅ Correction : DEUX accolades seulement
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user || !user.id) {
     redirect('/auth/sign-in');
   }
 
-  // ✅ 2. profile → .data
-  const profileResult = await supabase
+  const { data : profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
-  if (profileResult.error || !profileResult.data) {
+
+  if (!profile) {
     redirect('/complete-profile');
   }
-  const profile = profileResult.data;
 
-  // ✅ 3. subscription → .data
   const subResult = await supabase
     .from('subscriptions')
     .select('*')
@@ -68,29 +65,26 @@ const { data : { user } } = await supabase.auth.getUser();
     .maybeSingle();
   const subscription = subResult.data || { plan: 'freemium', active: false };
 
-  // ✅ 4. cards → .data
   const cardsResult = await supabase
     .from('nfc_cards')
     .select('*')
     .eq('user_id', user.id);
   const cards = cardsResult.data || [];
 
-  // ✅ 5. scans → .data + .count
   const scansResult = await supabase
     .from('scans')
     .select('*, profiles!left(username, full_name)', { count: 'exact' })
     .eq('profile_id', user.id)
     .limit(5);
+  const scans = scansResult.data || [];
+  const totalScans = scansResult.count || 0;
 
-  // ✅ 6. likes → .count
-const likesResult = await supabase
-  .from('profile_interactions')
-  .select('*', { count: 'exact', head: true })
-  .eq('profile_id', user.id)
-  .eq('type', 'like');
-
-const likesCount = likesResult?.count || 0;
-
+  const likesResult = await supabase
+    .from('profile_interactions')
+    .select('*', { count: 'exact', head: true })
+    .eq('profile_id', user.id)
+    .eq('type', 'like');
+  const likesCount = likesResult.count || 0;
 
   const profileUrl = `${(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').trim()}/${profile.username}`;
   let qrBase64 = '';
@@ -100,27 +94,22 @@ const likesCount = likesResult?.count || 0;
     console.warn('⚠️ QR fallback');
   }
 
-  const t = await getTranslations();
-
   return (
     <DashboardContent
-      t={t}
       user={user}
       profile={profile}
       subscription={subscription}
       cards={cards}
-      recentScans={
-        (scansResult.data || []).map(scan => ({
-          ...scan,
-          relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
-          profile: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
-        }))
-      }
-      totalScans={scansResult.count || 0}
+      recentScans={scans.map(scan => ({
+        ...scan,
+        relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
+        profile: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
+      }))}
+      totalScans={totalScans}
       qrBase64={qrBase64}
       profileUrl={profileUrl}
       planColors={PLAN_COLORS}
-      likesCount={likesCount || 0}
+      likesCount={likesCount}
     />
   );
 }
