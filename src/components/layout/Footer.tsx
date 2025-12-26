@@ -2,8 +2,28 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, MapPin } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/src/lib/supabase/client';
+
+type FooterProps = {
+  product: string;
+  features: string;
+  pricing: string;
+  download: string;
+  company: string;
+  about: string;
+  contact: string;
+  blog: string;
+  legal: string;
+  privacy: string;
+  terms: string;
+  cookies: string;
+  tagline: string;
+  copyright: string;
+};
 
 export default function Footer({
   product,
@@ -20,28 +40,28 @@ export default function Footer({
   cookies,
   tagline,
   copyright,
-}: {
-  product: string;
-  features: string;
-  pricing: string;
-  download: string;
-  company: string;
-  about: string;
-  contact: string;
-  blog: string;
-  legal: string;
-  privacy: string;
-  terms: string;
-  cookies: string;
-  tagline: string;
-  copyright: string;
-}) {
+}: FooterProps) {
+  const [isDisabled, setIsDisabled] = useState(false);
+  const pathname = usePathname();
+  const isAuthPage = pathname?.startsWith('/auth');
+
+  // ✅ Utilisation sécurisée de getUser()
+  useEffect(() => {
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      setIsDisabled(!!user && !isAuthPage);
+    };
+    checkAuth();
+  }, [isAuthPage]);
+
   const links = [
     {
       title: product,
       items: [
         { label: features, href: '/#features' },
-        { label: pricing, href: '/#pricing' },
+        { label: pricing, href: '/pricing' },
         { label: download, href: '/download' },
       ],
     },
@@ -94,13 +114,20 @@ export default function Footer({
                 <ul className="space-y-2">
                   {section.items.map((item) => (
                     <li key={item.label}>
-                      <Link
-                        href={item.href}
-                        className="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-cyan-400/50 mr-2 mt-1.5" />
-                        {item.label}
-                      </Link>
+                      {isDisabled ? (
+                        <span className="text-gray-600 flex items-center gap-1 cursor-not-allowed">
+                          <span className="w-1 h-1 rounded-full bg-gray-700 mr-2 mt-1.5" />
+                          {item.label}
+                        </span>
+                      ) : (
+                        <Link
+                          href={item.href}
+                          className="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+                        >
+                          <span className="w-1 h-1 rounded-full bg-cyan-400/50 mr-2 mt-1.5" />
+                          {item.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -116,7 +143,7 @@ export default function Footer({
 
               <div className="flex space-x-4 mt-4 md:mt-0">
                 {[
-                  { Icon: Github, href: 'https://github.com/ton_username', label: 'GitHub' },
+                  { Icon: Github, href: 'https://github.com/nsphku', label: 'GitHub' },
                   { Icon: Twitter, href: 'https://twitter.com/luvika_dev', label: 'Twitter' },
                   { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', label: 'LinkedIn' },
                 ].map(({ Icon, href, label }) => (

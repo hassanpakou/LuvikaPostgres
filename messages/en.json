@@ -446,7 +446,10 @@
         "stats": "Stats: Basic",
         "roles": "Roles: No",
         "dashboard": "Dashboard: Basic"
-      }
+      },"entreprise": {
+      "title": "Mosala",
+      "desc": "Pona batu ebele & mosala"
+    }
     },
     "premium": {
       "title": "Premium",

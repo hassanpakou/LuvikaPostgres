@@ -119,37 +119,64 @@ export default function DashboardContent({
   return (
     <div className="space-y-8">
       {/* En-tête */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">
-            {t('greeting', { name: profile.full_name })}
-          </h1>
-          <div className="mt-2 flex items-center gap-4">
-            <p className="text-gray-400">{t('subtitle')}</p>
-            <button
-              onClick={handleLike}
-              className="flex items-center gap-1 text-gray-300 hover:text-red-400"
-            >
-              <Heart size={16} fill={hasLiked ? 'red' : 'none'} />
-              <span>{likesCount}</span>
-            </button>
-          </div>
-        </div>
-        <div className="mt-4 md:mt-0 flex gap-3">
-          <Link href={`/${profile.username}`} target="_blank">
-            <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-              {t('view_public')}
-            </Button>
-          </Link>
-          <Button onClick={handleExport} className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500">
-            <Download className="h-4 w-4" />
-            {t('export_csv')}
-          </Button>
-          <Button onClick={() => router.push('/admin/orders')}>
-            Gérer les commandes
-          </Button>
-        </div>
-      </div>
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+  {/* 🔹 Bloc gauche : titre + sous-titre + likes */}
+  <div className="flex flex-col gap-2">
+    <h1 className="text-2xl sm:text-3xl font-bold text-white">
+      {t('greeting', { name: profile.full_name })}
+    </h1>
+
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+      <p className="text-gray-400 text-sm sm:text-base">
+        {t('subtitle')}
+      </p>
+
+      <button
+        onClick={handleLike}
+        className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
+      >
+        <Heart
+          size={16}
+          fill={hasLiked ? 'red' : 'none'}
+          className="transition-colors"
+        />
+        <span className="text-sm">{likesCount}</span>
+      </button>
+    </div>
+  </div>
+
+  {/* 🔹 Bloc droit : actions */}
+  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto">
+    <Link
+      href={`/${profile.username}`}
+      target="_blank"
+      className="w-full sm:w-auto"
+    >
+      <Button
+        variant="outline"
+        className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10"
+      >
+        {t('view_public')}
+      </Button>
+    </Link>
+
+    <Button
+      onClick={handleExport}
+      className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500"
+    >
+      <Download className="h-4 w-4" />
+      {t('export_csv')}
+    </Button>
+
+    <Button
+      onClick={() => router.push('/admin/orders')}
+      className="w-full sm:w-auto bg-gradient-to-r from-blue-900 to-blue-900"
+    >
+      Gérer les commandes
+    </Button>
+  </div>
+</div>
+
 
       {/* Visibilité */}
       <Card className="glass-border">

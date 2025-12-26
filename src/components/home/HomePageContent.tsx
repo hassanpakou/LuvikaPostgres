@@ -181,26 +181,35 @@ export function HomePageContent() {
   animate={{ opacity: 1, y: 0 }}
   transition={{ delay: 0.8 }}
   className="
-    flex flex-wrap items-center justify-center
-    gap-x-6 gap-y-2
-    text-sm text-gray-400
+    text-center
+    text-gray-400
+    max-w-xl mx-auto
   "
 >
-  <span className="flex items-center gap-2">
-    <Users className="w-4 h-4 text-cyan-400" />
-    10k+ utilisateurs
-  </span>
+  <p className="text-sm sm:text-base leading-relaxed">
+    <span className="text-white font-medium">Luvika</span>,  
+    c’est la nouvelle façon de se présenter au monde.
+    <br />
+    Une identité numérique, simple, intelligente et universelle.
+  </p>
 
-  <span className="flex items-center gap-2">
-    <ScanLine className="w-4 h-4 text-blue-400" />
-    50k+ scans
-  </span>
-
-  <span className="flex items-center gap-2">
-    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-    99.9% uptime
-  </span>
+  <div className="mt-4 flex justify-center gap-4 text-xs">
+    <span className="flex items-center gap-1">
+      <Users className="w-4 h-4 text-cyan-400" />
+      Créateurs
+    </span>
+    <span className="flex items-center gap-1">
+      <ScanLine className="w-4 h-4 text-blue-400" />
+      Entrepreneurs
+    </span>
+    <span className="flex items-center gap-1">
+      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+      Professionnels
+    </span>
+  </div>
 </motion.div>
+
+
 
 
 

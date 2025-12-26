@@ -15,62 +15,65 @@ const ScanSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    // ✅ await obligatoire ici
     const cookieStore = await cookies();
+
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name) { return cookieStore.get(name)?.value; },
-          set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-          remove(name, options) { cookieStore.delete({ name, ...options }); },
+          get(name: string) { return cookieStore.get(name)?.value; },
+          set(name: string, value: string, options: any) { cookieStore.set({ name, value, ...options }); },
+          remove(name: string, options: any) { cookieStore.delete({ name, ...options }); },
         },
       }
     );
 
-    const sessionResult = await supabase.auth.getSession();
-    const session = sessionResult.data.session;
+    // ✅ Typage explicite + gestion d’erreur
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const user = userData?.user; // ✅ user peut être undefined
 
     const body = await req.json();
     const parsed = ScanSchema.parse(body);
 
-    // 🌐 IP fiable (Vercel + localhost)
-    let ip = '0.0.0.0';
-    const xff = req.headers.get('x-forwarded-for');
-    if (xff) {
-      ip = xff.split(',')[0].trim();
+    // 🌐 Récupération IP robuste
+let ip = '127.0.0.1'; // req.ip n’existe pas → initialise à localhost
+    if (req.headers.has('x-forwarded-for')) {
+      ip = (req.headers.get('x-forwarded-for') as string).split(',')[0].trim();
     } else if (req.headers.has('x-real-ip')) {
       ip = req.headers.get('x-real-ip')!;
-    } else {
-      ip = '127.0.0.1';
     }
 
     // ✅ Insertion sécurisée
-    const insertRes = await supabase
-      .from('scans')
-      .insert({
-        profile_id: parsed.profile_id,
-        scanner_id: session?.user.id || null,
-        scanner_ip: ip,
-        scanner_device: parsed.scanner_device,
-        scanner_os: parsed.scanner_os,
-        scanner_browser: parsed.scanner_browser,
-        scan_type: parsed.scan_type,
-        event_id: parsed.event_id || null,
-      });
+    const { error: insertError } = await supabase.from('scans').insert({
+      profile_id: parsed.profile_id,
+      scanner_id: user?.id || null, // anonyme autorisé
+      scanner_ip: ip,
+      scanner_device: parsed.scanner_device || null,
+      scanner_os: parsed.scanner_os || null,
+      scanner_browser: parsed.scanner_browser || null,
+      scan_type: parsed.scan_type,
+      event_id: parsed.event_id || null,
+    });
 
-    if (insertRes.error) throw insertRes.error;
+    if (insertError) {
+      console.error('Erreur insertion scan:', insertError);
+      return NextResponse.json(
+        { success: false, error: 'Échec de l’enregistrement' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json(
       { success: true, message: 'Scan enregistré' },
       { status: 201 }
     );
-
   } catch (err: any) {
     console.error('Erreur API /scans:', err);
     return NextResponse.json(
-      { success: false, error: err.message || 'Erreur inconnue' },
-      { status: 400 }
+      { success: false, error: err.message || 'Erreur interne' },
+      { status: 500 }
     );
   }
 }

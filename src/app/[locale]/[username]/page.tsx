@@ -1,39 +1,31 @@
 // src/app/[locale]/[username]/page.tsx
-// Profil public — Server Component (rapide + sécurisé)
-
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr'; // ✅ Utilise @supabase/ssr
-//import { formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { createServerClient } from '@supabase/ssr';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, Phone, Mail, MapPin, ExternalLink, MessageCircle, UserCheck } from 'lucide-react';
 import LikeButton from '../../../components/profile/LikeButton';
-// ✅ Fonction WhatsApp — sans espaces
+
 const getWhatsAppLink = (phone: string, name: string) => {
   const cleanPhone = phone.replace(/\D/g, '');
-  return `https://wa.me/${cleanPhone}?text=Bonjour ${encodeURIComponent(name)}, je vous contacte via LUVIKA.`;
+  return `https://wa.me/${cleanPhone}?text=Bonjour%20${encodeURIComponent(name)},%20je%20vous%20contacte%20via%20LUVIKA.`;
 };
 
-// ✅ Fonction SMS
-const getSMSLink = (phone: string) => {
-  return `sms:${phone}`;
-};
+const getSMSLink = (phone: string) => `sms:${phone}`;
 
 export default async function PublicProfilePage({
   params,
 }: {
-  params: Promise<{ locale: string; username: string }>; // ✅
+  params: Promise<{ locale: string; username: string }>;
 }) {
-  const { locale, username } = await params; // ✅ Destructure les deux
-    if (!['fr', 'ln', 'en'].includes(locale)) notFound();
-  const decodedUsername = decodeURIComponent(username);
+  const { locale, username } = await params;
+  if (!['fr', 'ln', 'en'].includes(locale)) notFound();
 
-  
-  // 🔐 Crée le client Supabase avec @supabase/ssr
+  const decodedUsername = decodeURIComponent(username).toLowerCase();
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,28 +39,35 @@ export default async function PublicProfilePage({
     }
   );
 
-const {  data: profile, error } = await supabase
-  .from('profiles')
-  .select(`
-    *,
-    nfc_cards!inner(status, lost_reason),
-    subscriptions!inner(plan, active)
-  `)
-  .eq('username', decodedUsername)
-  .single();
-console.log('🔍 Résultat profil:', { profile, error });
-  if (error || !profile) notFound();
+  // ✅ Requête corrigée : syntaxe Supabase pour jointures
+  const { data: profile, error } = await supabase
+    .from('profiles')
+    .select(`
+      *,
+      nfc_cards(status, lost_reason),
+      subscriptions(plan, active)
+    `)
+    .eq('username', decodedUsername)
+    .single();
 
-  // 🔐 Vérifie visibilité
-  const { data: {  session }} = await supabase.auth.getSession();
+  if (error || !profile) {
+    console.log('🔍 Profil non trouvé:', { error, username: decodedUsername });
+    notFound();
+  }
+
+  // ✅ Session correctement typée
+  const { data: { session } } = await supabase.auth.getSession();
   const isOwner = session?.user?.id === profile.id;
-  const isAdmin = session?.user?.user_metadata?.role === 'admin';
-  if (!profile.is_public && !isOwner && !isAdmin) notFound();
+  const isAdmin = session?.user?.role === 'admin'; // ou user_metadata.role selon ta config
 
-  // Statut carte
-  const activeOrLostCards = profile.nfc_cards?.filter(
+  if (!profile.is_public && !isOwner && !isAdmin) {
+    notFound();
+  }
+
+  // Cartes actives/perdues
+  const activeOrLostCards = (profile.nfc_cards || []).filter(
     (card: any) => card.status === 'active' || card.status === 'lost'
-  ) || [];
+  );
   const hasLostCard = activeOrLostCards.some((card: any) => card.status === 'lost');
 
   // 🔥 Enregistre le scan (fire-and-forget)
@@ -83,14 +82,12 @@ console.log('🔍 Résultat profil:', { profile, error });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-night-blue-900 to-black text-white">
-      {/* En-tête */}
       <header className="py-6 px-4 text-center relative">
         {hasLostCard && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-900/50 border border-yellow-500/30 text-yellow-200 px-4 py-2 rounded-full max-w-md">
             ⚠️ Cette carte a été déclarée perdue. Veuillez contacter directement la personne.
           </div>
         )}
-
         <div className="mt-8">
           <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 flex items-center justify-center text-3xl font-bold mb-4">
             {profile.full_name?.charAt(0).toUpperCase() || '?'}
@@ -112,20 +109,21 @@ console.log('🔍 Résultat profil:', { profile, error });
             <span>{hasLostCard ? 'Carte déclarée perdue' : 'Carte active'}</span>
           </div>
         </div>
+
+        {/* Like Button */}
+        <div className="mt-6">
+          <LikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
+        </div>
       </header>
-{/* 👇 Ajoute ceci juste après le titre ou dans une section dédiée */}
-<div className="mt-4">
-  <LikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
-</div>
+
       <main className="container mx-auto px-4 pb-12 max-w-4xl">
         {/* Contact */}
         <Card className="glass-border mb-8">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <UserCheck className="text-blue-300" size={20} />
-              Me contacter
-            </h2>
-
+      <UserCheck className="text-blue-300" size={20} />
+      Me contacter
+    </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {profile.email && (
                 <Button
@@ -137,7 +135,6 @@ console.log('🔍 Résultat profil:', { profile, error });
                   {profile.email}
                 </Button>
               )}
-
               {profile.phone && (
                 <Button
                   variant="outline"
@@ -148,7 +145,6 @@ console.log('🔍 Résultat profil:', { profile, error });
                   {profile.phone}
                 </Button>
               )}
-
               {profile.whatsapp && (
                 <Button
                   variant="outline"
@@ -159,12 +155,11 @@ console.log('🔍 Résultat profil:', { profile, error });
                   WhatsApp
                 </Button>
               )}
-
               {profile.address && (
                 <Button
                   variant="outline"
                   className="justify-start border-white/10 hover:bg-white/5"
-                  onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`, '_blank')} // ✅ sans espaces
+                  onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`, '_blank')}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   {profile.address}
@@ -172,13 +167,10 @@ console.log('🔍 Résultat profil:', { profile, error });
               )}
             </div>
 
-            {/* Sauvegarder contact */}
-            
             <Button
               className="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400"
               onClick={async () => {
-                const vCard = `
-BEGIN:VCARD
+                const vCard = `BEGIN:VCARD
 VERSION:3.0
 FN:${profile.full_name}
 ORG:${profile.company || ''}
@@ -189,8 +181,7 @@ EMAIL:${profile.email || ''}
 ADR;TYPE=WORK:;;${profile.address || ''};;;;
 URL:${profile.website || ''}
 NOTE:Contact via LUVIKA — luvika.me/${decodedUsername}
-END:VCARD
-`.trim().replace(/\n/g, '\r\n');
+END:VCARD`.trim().replace(/\n/g, '\r\n');
 
                 const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
@@ -226,12 +217,7 @@ END:VCARD
                   </Link>
                 )}
                 {profile.instagram && (
-                  <Link 
-                    href={`https://instagram.com/${profile.instagram}`
-} // ✅ sans espaces
-                    target="_blank" 
-                    className="block"
-                  >
+                  <Link href={`https://instagram.com/${profile.instagram}`} target="_blank" className="block">
                     <Button variant="outline" className="w-full justify-between border-white/10 hover:bg-white/5">
                       Instagram: @{profile.instagram}
                       <ExternalLink size={16} />

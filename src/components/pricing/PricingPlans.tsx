@@ -2,17 +2,41 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { CreditCard, Crown, Building, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { 
+  Globe, Crown, Building, Zap, CheckCircle, Users, 
+  GraduationCap, Palette, Plane, Briefcase, HeartHandshake, 
+  ShieldCheck, BarChart3, Star 
+} from 'lucide-react';
 import Link from 'next/link';
 
 type Plan = {
-  key: 'freemium' | 'premium' | 'enterprise';
+  key: string; // plus restrictif car on a 'freemium', 'premium', etc.
   title: string;
   desc: string;
-  features: string[];
-  badge: string;
-  price: { mensuel: number; annuel: number };
+  features: string[]; // ← AJOUTÉ
+  badge?: string;
+  highlight?: boolean;
+  price: { mensuel: number; annuel: number }; // ← AJOUTÉ
+};
+
+type Profile = {
+  id: string;
+  name: string;
+  icon: React.ReactNode;
+  price: { usd: number; cdf: number; cfa: number; kwz: number };
+};
+
+type PricingPlansProps = {
+  title: string;
+  billingMonthly: string;
+  billingYearly: string;
+  perMonth: string;
+  perYear: string;
+  ctaChoose: Record<string, string>;
+  customPlan: string;
+  contactUs: string;
+  plans: Plan[]; // ← AJOUTÉ : les plans viennent de la page
 };
 
 export default function PricingPlans({
@@ -24,180 +48,118 @@ export default function PricingPlans({
   ctaChoose,
   customPlan,
   contactUs,
-  plans,
-}: {
-  title: string;
-  billingMonthly: string;
-  billingYearly: string;
-  perMonth: string;
-  perYear: string;
-  ctaChoose: Record<'freemium' | 'premium' | 'enterprise', string>;
-  customPlan: string;
-  contactUs: string;
-  plans: Plan[];
-}) {
+  plans, // ← Maintenant accepté
+}: PricingPlansProps) {
   const { scrollYProgress } = useScroll();
-  const [isYearly, setIsYearly] = useState(false);
-  const billing = isYearly ? 'annuel' : 'mensuel';
+  const [currency, setCurrency] = useState<'usd' | 'cdf' | 'cfa' | 'kwz'>('usd');
+  const [activeTab, setActiveTab] = useState<'profiles' | 'logic'>('profiles');
+
+  // Profils professionnels (inchangés)
+  const profiles: Profile[] = [
+    { id: 'student', name: 'Étudiant', icon: <GraduationCap className="w-4 h-4" />, price: { usd: 1.5, cdf: 3300, cfa: 900, kwz: 1275 } },
+    { id: 'employee', name: 'Employé', icon: <Briefcase className="w-4 h-4" />, price: { usd: 2, cdf: 4400, cfa: 1200, kwz: 1700 } },
+    { id: 'artist', name: 'Artiste', icon: <Palette className="w-4 h-4" />, price: { usd: 2, cdf: 4400, cfa: 1200, kwz: 1700 } },
+    { id: 'diaspora', name: 'Diaspora', icon: <Plane className="w-4 h-4" />, price: { usd: 2, cdf: 4400, cfa: 1200, kwz: 1700 } },
+    { id: 'entrepreneur', name: 'Entrepreneur', icon: <HeartHandshake className="w-4 h-4" />, price: { usd: 3, cdf: 6600, cfa: 1800, kwz: 2550 } },
+    { id: 'ngo', name: 'ONG / Assoc.', icon: <Users className="w-4 h-4" />, price: { usd: 4, cdf: 8800, cfa: 2400, kwz: 3400 } },
+  ];
 
   return (
-    <section className="py-8 px-4 max-w-4xl mx-auto -mt-4">
-      {/* Titre compact */}
-      <motion.h2
+    <section className="py-10 px-4 max-w-6xl mx-auto">
+      {/* Header */}
+      <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-3xl md:text-4xl font-bold text-center mb-4 bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent"
+        className="text-center mb-10"
       >
-        {title}
-      </motion.h2>
-
-      <p className="text-gray-400 text-center text-sm md:text-base mb-8">
-        Commencez gratuitement — aucune carte bancaire requise.
-      </p>
-
-      {/* Toggle compact */}
-      <div className="flex justify-center items-center mb-8">
-        <span className="text-gray-400 text-sm mr-3">{billingMonthly}</span>
-        <div 
-          className="relative w-14 h-7 rounded-full bg-white/5 cursor-pointer border border-white/10"
-          onClick={() => setIsYearly(!isYearly)}
-        >
-          <motion.div
-            className="absolute top-0.5 w-5 h-5 rounded-full bg-cyan-400 shadow-md"
-            animate={{ 
-              x: isYearly ? 28 : 3,
-              backgroundColor: isYearly ? '#06b6d4' : '#38bdf8',
-            }}
-            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          />
-          <span className="absolute inset-0 flex items-center justify-center text-xs text-white font-medium">
-            {isYearly ? '✓' : ''}
-          </span>
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-4 py-2 rounded-full border border-cyan-500/20 mb-4">
+          <Globe className="w-5 h-5 text-cyan-400" />
+          <span className="text-cyan-300 font-medium">🌍 LUVIKA</span>
         </div>
-        <div className="ml-3 flex items-center gap-1">
-          <span className="text-gray-400 text-sm">{billingYearly}</span>
-          <span className="text-cyan-400 text-xs font-bold">-25%</span>
+        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
+          {title}
+        </h1>
+        <p className="text-gray-400 mt-2 max-w-2xl mx-auto">
+          Une identité culturelle, professionnelle et communautaire. Choisissez votre plan, révélez votre profil.
+        </p>
+        <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
+      </motion.div>
+
+      {/* Toggle devises */}
+      <div className="flex justify-center mb-10">
+        <div className="inline-flex bg-white/5 backdrop-blur border border-white/10 rounded-lg p-1">
+          {(['usd', 'cdf', 'cfa', 'kwz'] as const).map((cur) => (
+            <button
+              key={cur}
+              onClick={() => setCurrency(cur)}
+              className={`px-3.5 py-1.5 text-xs font-medium rounded-md transition-all ${
+                currency === cur
+                  ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {cur.toUpperCase()}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      {/* Plans — utilise les plans passés en props */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
         {plans.map((plan, idx) => {
-          const Icon = idx === 0 ? CreditCard : idx === 1 ? Crown : Building;
-          const color = idx === 0 ? 'cyan' : idx === 1 ? 'amber' : 'emerald';
-          const isPopular = plan.key === 'premium';
+          const Icon = idx === 0 ? ShieldCheck : idx === 1 ? Crown : Building;
+          const colors = {
+            basic: { bg: 'bg-gray-800/30', border: 'border-gray-500/30', text: 'text-gray-300', primary: 'text-gray-400' },
+            professional: { bg: 'bg-cyan-900/20', border: 'border-cyan-400/40 ring-1 ring-cyan-400/20', text: 'text-white', primary: 'text-cyan-300' },
+            enterprise: { bg: 'bg-purple-900/20', border: 'border-purple-400/40', text: 'text-white', primary: 'text-purple-300' },
+          };
+          const color = colors[plan.key as keyof typeof colors] || colors.basic;
+          const isHighlighted = plan.highlight;
 
           return (
             <motion.div
               key={plan.key}
-              style={{
-                rotateY: useTransform(scrollYProgress, [0.3, 0.6], [idx * -2, idx * 2]),
-                y: useTransform(scrollYProgress, [0.3, 0.6], [0, -8]),
-              }}
-              whileHover={{ 
-                scale: 1.02, 
-                y: -4,
-                boxShadow: `0 20px 40px -10px rgba(6, 182, 212, ${idx === 0 ? '0.25' : idx === 1 ? '0.3' : '0.2'})`,
-              }}
-              transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+              style={{ y: useTransform(scrollYProgress, [0.2, 0.4], [0, -4]) }}
+              whileHover={{ y: -4, scale: 1.01 }}
               className={`
-                relative rounded-xl p-6
-                glass-border backdrop-blur
-                border-white/15
-                overflow-hidden
-                ${isPopular ? 'ring-1 ring-cyan-400/30' : ''}
+                rounded-xl p-5 backdrop-blur-xl border ${color.border}
+                ${color.bg} ${isHighlighted ? 'scale-[1.02] z-10' : ''}
               `}
             >
-              {/* Glow interne au hover */}
-              <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                <div className="absolute top-0 left-0 w-full h-full rounded-xl bg-gradient-to-br from-cyan-400/5 to-transparent" />
-                <div className="absolute -top-1 -right-1 w-32 h-32 rounded-full bg-cyan-400/10 blur-2xl animate-pulse" />
-              </div>
-
-              {/* Badge */}
-              {plan.badge && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="px-3 py-1 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-lg ${color.bg} flex items-center justify-center`}>
+                    <Icon className={`w-4 h-4 ${color.primary}`} />
+                  </div>
+                  <h3 className={`font-bold ${color.text}`}>{plan.title}</h3>
+                </div>
+                {plan.badge && (
+                  <span className="px-2 py-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-xs font-bold rounded">
                     {plan.badge}
                   </span>
-                </div>
-              )}
-
-              {/* Icon & Titre */}
-              <div className="text-center mb-4">
-                <div className={`w-12 h-12 rounded-xl bg-${color}-500/10 flex items-center justify-center mx-auto mb-3`}>
-                  <Icon className={`w-6 h-6 text-${color}-400`} />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-1">{plan.title}</h3>
-                <p className="text-gray-400 text-sm">{plan.desc}</p>
+                )}
               </div>
 
-              {/* Prix */}
-              <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-white">
-                  {billing === 'annuel' && plan.key !== 'freemium'
-                    ? `$${(plan.price.annuel / 12).toFixed(0)}`
-                    : `$${plan.price[billing]}`
-                  }
-                </div>
-                <div className="text-gray-500 text-xs mt-0.5">
-                  {billing === 'annuel' && plan.key !== 'freemium'
-                    ? perMonth
-                    : billing === 'mensuel' ? perMonth : perYear}
-                </div>
-              </div>
+              <p className="text-xs text-gray-400 mb-4">{plan.desc}</p>
 
-              {/* Features */}
-              <ul className="space-y-2 mb-5">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-2 text-gray-300 text-sm">
-                    <Zap className={`w-3 h-3 mt-0.5 flex-shrink-0 text-${color}-400`} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* CTA — Bouton glacial */}
-              <Link href="/auth/sign-up" className="block group">
+              {/* CTA */}
+              <Link 
+                href={plan.key === 'enterprise' ? "/contact" : "/auth/sign-up"} 
+                className="block"
+              >
                 <motion.button
                   whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={{ scale: 0.98 }}
                   className={`
-                    relative w-full py-3 rounded-lg font-semibold text-white text-sm
-                    bg-white/5 border border-white/15
-                    hover:border-${color}-300/40
-                    transition-all duration-300
-                    overflow-hidden
+                    w-full py-2.5 rounded-lg font-medium text-sm transition-all
+                    ${plan.key === 'basic' 
+                      ? 'bg-white/5 hover:bg-white/10 border border-gray-600/50 text-gray-300' 
+                      : plan.key === 'professional'
+                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-cyan-500/20'
+                      : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-purple-500/20'}
                   `}
                 >
-                  {/* Onde concentrique */}
-                  <motion.div
-                    className="absolute inset-0 rounded-lg bg-cyan-400/10 pointer-events-none"
-                    animate={{
-                      scale: [0, 1.5, 0],
-                      opacity: [0.5, 0, 0],
-                    }}
-                    transition={{
-                      duration: 3,
-                      repeat: Infinity,
-                      delay: 1,
-                      ease: 'easeOut',
-                    }}
-                  />
-                  {/* Lueur centrale */}
-                  <motion.div
-                    className="absolute w-2 h-2 rounded-full bg-cyan-300/30 pointer-events-none"
-                    animate={{
-                      scale: [1, 2, 1],
-                      opacity: [0.6, 0, 0.6],
-                    }}
-                    transition={{
-                      duration: 2.5,
-                      repeat: Infinity,
-                      ease: 'easeInOut',
-                    }}
-                  />
-                  {ctaChoose[plan.key]}
+                  {plan.key === 'basic' ? 'Commencer gratuitement' : ctaChoose[plan.key] || 'Choisir ce plan'}
                 </motion.button>
               </Link>
             </motion.div>
@@ -205,19 +167,119 @@ export default function PricingPlans({
         })}
       </div>
 
-      {/* Footer compact */}
-      <motion.div
+      {/* Tabbed section — compact */}
+      <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 mb-10">
+        <div className="flex gap-4 mb-4">
+          <button
+            onClick={() => setActiveTab('profiles')}
+            className={`px-3 py-1.5 text-xs font-medium rounded ${
+              activeTab === 'profiles'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                : 'text-gray-400'
+            }`}
+          >
+            Profils professionnels
+          </button>
+          <button
+            onClick={() => setActiveTab('logic')}
+            className={`px-3 py-1.5 text-xs font-medium rounded ${
+              activeTab === 'logic'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                : 'text-gray-400'
+            }`}
+          >
+            Logique LUVIKA
+          </button>
+        </div>
+
+        {activeTab === 'profiles' ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="py-2 px-3 text-left text-gray-400">Profil</th>
+                  <th className="py-2 px-3 text-right text-gray-400">USD</th>
+                  <th className="py-2 px-3 text-right text-gray-400">CDF</th>
+                  <th className="py-2 px-3 text-right text-gray-400">CFA</th>
+                  <th className="py-2 px-3 text-right text-gray-400">KWZ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {profiles.map((p) => (
+                  <tr key={p.id} className="border-b border-white/5 hover:bg-white/5">
+                    <td className="py-2 px-3">
+                      <div className="flex items-center gap-2">
+                        {p.icon}
+                        <span className="text-gray-300">{p.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-2 px-3 text-right text-cyan-300 font-medium">${p.price.usd}</td>
+                    <td className="py-2 px-3 text-right text-gray-300">{p.price.cdf.toLocaleString()}</td>
+                    <td className="py-2 px-3 text-right text-gray-300">{p.price.cfa.toLocaleString()}</td>
+                    <td className="py-2 px-3 text-right text-gray-300">{p.price.kwz.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="text-gray-500 text-xs mt-3 italic">
+              ✨ Tous les profils incluent : biographie avancée, médias illimités, visibilité prioritaire, support prioritaire.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3 text-sm">
+            <div className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></div>
+              <p><span className="font-medium text-gray-300">Basique →</span> Tout le monde peut entrer, gratuitement.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></div>
+              <p><span className="font-medium text-cyan-300">Professionnel →</span> On paie selon son profil.</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></div>
+              <p><span className="font-medium text-purple-300">Entreprise →</span> On paie selon la taille de l’organisation.</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* CTA final */}
+      <motion.div 
+        className="text-center max-w-2xl mx-auto"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="text-center mt-8"
+        transition={{ delay: 0.3 }}
       >
-        <p className="text-gray-500 text-sm">
-          ✨ {customPlan}{' '}
-          <Link href="/contact" className="text-cyan-400 hover:text-cyan-300 font-medium hover:underline">
-            {contactUs}
-          </Link>
+        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-400 px-4 py-2 rounded-full border border-green-500/30 mb-4">
+          <Star className="w-4 h-4" />
+          <span className="font-medium">Relève qui tu es.</span>
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">
+          Choisis ton plan, révèle ton profil.
+        </h2>
+        <p className="text-gray-400 text-sm mb-6">
+          Il n’est pas seulement un profil.<br />
+          👉 C’est une identité, une histoire et une opportunité.
         </p>
+        
+        <div className="flex flex-col sm:flex-row justify-center gap-3">
+          <Link href="/auth/sign-up">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-medium rounded-lg shadow-sm"
+            >
+              Créer mon profil
+            </motion.button>
+          </Link>
+          <Link href="/contact">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              className="px-6 py-3 bg-white/10 text-white font-medium rounded-lg border border-white/20 hover:bg-white/20"
+            >
+              Parler à un expert
+            </motion.button>
+          </Link>
+        </div>
       </motion.div>
     </section>
   );

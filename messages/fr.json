@@ -444,7 +444,10 @@
     "yearly": "Annuel",
     "per_month": "/mois",
     "per_year": "/an"
-  },
+  },"entreprise": {
+      "title": "Entreprise",
+      "desc": "Pour équipes & entreprises"
+    },
   "cta": {
     "choose": "Choisir {plan}"
   },
