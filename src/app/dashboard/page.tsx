@@ -57,6 +57,8 @@ export default async function DashboardPage() {
   if (!profile) {
     redirect('/complete-profile');
   }
+ // ✅ isAdmin (clé manquante corrigée)
+  const isAdmin = profile.role === 'admin';
 
   const subResult = await supabase
     .from('subscriptions')
@@ -110,6 +112,8 @@ export default async function DashboardPage() {
       profileUrl={profileUrl}
       planColors={PLAN_COLORS}
       likesCount={likesCount}
+      isAdmin={isAdmin} // ✅ Prop ajoutée — résout l’erreur
+
     />
   );
 }

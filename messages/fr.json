@@ -107,6 +107,10 @@
     }
   },
   "auth": {
+     "welcome": {
+    "title": "Bienvenue !",
+    "message": "Content de vous revoir sur LUVIKA. Prêt à créer ? 🌟"
+  },
     "complete": {
       "title": "Complétez votre profil",
       "description": "Quelques informations pour personnaliser votre compte",

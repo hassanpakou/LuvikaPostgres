@@ -107,6 +107,10 @@
     }
   },
   "auth": {
+  "welcome": {
+    "title": "Mbote !",
+    "message": "Tosengaki yo mbala mingi na LUVIKA. Okoki kozala nini lelo ? 🌟"
+  },
     "complete": {
       "title": "Kobetela profil na ngai",
       "description": "Bango mingi lokola oyo okokanisa",

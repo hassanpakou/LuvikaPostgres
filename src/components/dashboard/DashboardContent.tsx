@@ -1,18 +1,18 @@
 // src/components/dashboard/DashboardContent.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Heart, Download } from 'lucide-react';
+import { Heart, Download, X } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import SimulateNFCTap from '@/components/nfc/SimulateNFCTap';
 
-// ✅ Fonction locale — formatte la distance avec traduction
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -69,15 +69,19 @@ type Props = {
   profileUrl: string;
   planColors: Record<string, string>;
   likesCount: number;
+  isAdmin: boolean;
 };
 
 export default function DashboardContent({
-  user, profile, subscription, cards, recentScans, totalScans,
-  qrBase64, profileUrl, planColors, likesCount,
+  user, profile, subscription, cards, recentScans,
+  totalScans, qrBase64, profileUrl, planColors, likesCount,
+  isAdmin,
 }: Props) {
-  const t = useTranslations('dashboard'); // ✅ OK côté client
+  const t = useTranslations('dashboard');
   const router = useRouter();
   const [hasLiked, setHasLiked] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -89,7 +93,6 @@ export default function DashboardContent({
   );
 
   const handleLike = () => setHasLiked(!hasLiked);
-
   const updateVisibility = (section: string, checked: boolean) => {
     setSectionsVisibility(prev => ({ ...prev, [section]: checked }));
   };
@@ -101,82 +104,92 @@ export default function DashboardContent({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id }),
       });
-
       if (!res.ok) throw new Error();
-
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `luvika-scans-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `luvika-scans-${new Date().toISOString().slice(0,10)}.csv`;
       a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      URL.revokeObjectURL(url);
     } catch {
       alert('❌ Échec de l’export');
     }
   };
 
+  const handleUpgradeRequest = async () => {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/upgrade-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, profile_id: profile.id }),
+      });
+      if (res.ok) {
+        setIsUpgradeModalOpen(false);
+        alert('✅ Demande envoyée ! Un admin vous contactera sous 24h.');
+      } else {
+        throw new Error();
+      }
+    } catch {
+      alert('❌ Échec. Veuillez réessayer.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ✅ Fermeture au clavier (Échap)
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsUpgradeModalOpen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
+
   return (
     <div className="space-y-8">
       {/* En-tête */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-  {/* 🔹 Bloc gauche : titre + sous-titre + likes */}
-  <div className="flex flex-col gap-2">
-    <h1 className="text-2xl sm:text-3xl font-bold text-white">
-      {t('greeting', { name: profile.full_name })}
-    </h1>
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            {t('greeting', { name: profile.full_name })}
+          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-gray-400 text-sm sm:text-base">{t('subtitle')}</p>
+            <button
+              onClick={handleLike}
+              className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
+            >
+              <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
+              <span className="text-sm">{likesCount}</span>
+            </button>
+          </div>
+        </div>
 
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-      <p className="text-gray-400 text-sm sm:text-base">
-        {t('subtitle')}
-      </p>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto">
+          <Link href={`/${profile.username}`} target="_blank" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10">
+              {t('view_public')}
+            </Button>
+          </Link>
 
-      <button
-        onClick={handleLike}
-        className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
-      >
-        <Heart
-          size={16}
-          fill={hasLiked ? 'red' : 'none'}
-          className="transition-colors"
-        />
-        <span className="text-sm">{likesCount}</span>
-      </button>
-    </div>
-  </div>
+          <Button
+            onClick={handleExport}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500"
+          >
+            <Download className="h-4 w-4" />
+            {t('export_csv')}
+          </Button>
 
-  {/* 🔹 Bloc droit : actions */}
-  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto">
-    <Link
-      href={`/${profile.username}`}
-      target="_blank"
-      className="w-full sm:w-auto"
-    >
-      <Button
-        variant="outline"
-        className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10"
-      >
-        {t('view_public')}
-      </Button>
-    </Link>
-
-    <Button
-      onClick={handleExport}
-      className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500"
-    >
-      <Download className="h-4 w-4" />
-      {t('export_csv')}
-    </Button>
-
-    <Button
-      onClick={() => router.push('/admin/orders')}
-      className="w-full sm:w-auto bg-gradient-to-r from-blue-900 to-blue-900"
-    >
-      Gérer les commandes
-    </Button>
-  </div>
-</div>
-
+          <Button
+            onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-900 to-blue-900"
+          >
+            {t('orders.manage')}
+          </Button>
+        </div>
+      </div>
 
       {/* Visibilité */}
       <Card className="glass-border">
@@ -199,13 +212,16 @@ export default function DashboardContent({
         </CardContent>
       </Card>
 
-      {/* Commandes (Premium/Entreprise) */}
+      {/* Commandes */}
       {(subscription.plan === 'premium' || subscription.plan === 'entreprise') && (
         <Card className="glass-border">
           <CardHeader><CardTitle>{t('orders.title')}</CardTitle></CardHeader>
           <CardContent>
             <p className="text-gray-300 mb-4">{t('orders.description')}</p>
-            <Button onClick={() => router.push('/admin/orders')} className="bg-gradient-to-r from-blue-600 to-cyan-500">
+            <Button
+              onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
+              className="bg-gradient-to-r from-blue-600 to-cyan-500"
+            >
               {t('orders.manage')}
             </Button>
           </CardContent>
@@ -223,7 +239,6 @@ export default function DashboardContent({
             <Badge className={subscription.active ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}>
               {subscription.active ? t('subscription.active') : t('subscription.inactive')}
             </Badge>
-            
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -233,7 +248,11 @@ export default function DashboardContent({
               : t('subscription.upgrade_prompt')}
           </p>
           {!subscription.active && (
-            <Button size="sm" className="mt-3 bg-gradient-to-r from-blue-600 to-cyan-500">
+            <Button
+              size="sm"
+              className="mt-3 bg-gradient-to-r from-blue-600 to-cyan-500"
+              onClick={() => setIsUpgradeModalOpen(true)}
+            >
               {t('subscription.request_upgrade')}
             </Button>
           )}
@@ -253,7 +272,12 @@ export default function DashboardContent({
                   className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
                 />
                 <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
-                <Button size="sm" variant="outline" className="mt-3 border-white/20 text-white hover:bg-white/10" onClick={() => window.open(profileUrl, '_blank')}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 border-white/20 text-white hover:bg-white/10"
+                  onClick={() => window.open(profileUrl, '_blank')}
+                >
                   {t('qr.open_link')}
                 </Button>
               </div>
@@ -292,8 +316,15 @@ export default function DashboardContent({
               </ul>
             )}
             <SimulateNFCTap profileId={profile.id} />
-            <Button size="sm" className="mt-4 w-full bg-gradient-to-r from-blue-600 to-cyan-500" disabled={subscription.plan === 'basic' && cards.length >= 1}>
-              {subscription.plan === 'basic' && cards.length >= 1 ? t('nfc.upgrade_required') : t('nfc.add_card')}
+            <Button
+              size="sm"
+              className="mt-4 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
+              disabled={subscription.plan === 'freemium' && cards.length >= 1}
+              onClick={() => router.push('/dashboard/nfc/add')}
+            >
+              {subscription.plan === 'freemium' && cards.length >= 1
+                ? t('nfc.upgrade_required')
+                : t('nfc.add_card')}
             </Button>
           </CardContent>
         </Card>
@@ -346,6 +377,93 @@ export default function DashboardContent({
           )}
         </CardContent>
       </Card>
+
+      {/* ✅ Modal Upgrade — élégant, animé, bulles */}
+      {isUpgradeModalOpen && (
+        <>
+          {/* Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsUpgradeModalOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+          />
+
+          {/* Modal */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md p-6"
+          >
+            <Card className="glass-border bg-gradient-to-b from-gray-900/80 to-black/90 relative overflow-hidden">
+              {/* ✅ Bulles animées en fond */}
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {[...Array(8)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    className="absolute w-4 h-4 rounded-full bg-blue-500/20"
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                    }}
+                    animate={{
+                      y: ['-100px', '100vh'],
+                      x: [0, Math.sin(i) * 100],
+                      scale: [0, 1, 0],
+                    }}
+                    transition={{
+                      duration: 8 + i,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={() => setIsUpgradeModalOpen(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+                aria-label="Fermer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <CardContent className="relative z-10 pt-8">
+                <div className="text-center mb-6">
+                  <div className="w-14 h-14 mx-auto bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-2xl">✨</span>
+                  </div>
+                  <h2 className="text-xl font-bold text-white mb-2">
+                    {t('subscription.request_upgrade')}
+                  </h2>
+                  <p className="text-gray-300">
+                    Un administrateur vous contactera sous 24h pour finaliser votre passage à Premium ou Entreprise.
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10"
+                    onClick={() => setIsUpgradeModalOpen(false)}
+                  >
+                    Annuler
+                  </Button>
+                  <Button
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-500"
+                    onClick={handleUpgradeRequest}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Envoi...' : '✅ Envoyer la demande'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </>
+      )}
     </div>
   );
 }

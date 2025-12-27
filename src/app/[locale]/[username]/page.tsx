@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, Phone, Mail, MapPin, ExternalLink, MessageCircle, UserCheck } from 'lucide-react';
 import LikeButton from '../../../components/profile/LikeButton';
+import ScanTracker from '../../../components/profile/ScanTracker'; // ✅ Nouveau
 
 const getWhatsAppLink = (phone: string, name: string) => {
   const cleanPhone = phone.replace(/\D/g, '');
+  // ✅ Supprimé les espaces
   return `https://wa.me/${cleanPhone}?text=Bonjour%20${encodeURIComponent(name)},%20je%20vous%20contacte%20via%20LUVIKA.`;
 };
 
@@ -39,7 +41,6 @@ export default async function PublicProfilePage({
     }
   );
 
-  // ✅ Requête corrigée : syntaxe Supabase pour jointures
   const { data: profile, error } = await supabase
     .from('profiles')
     .select(`
@@ -55,30 +56,19 @@ export default async function PublicProfilePage({
     notFound();
   }
 
-  // ✅ Session correctement typée
-  const { data: { session } } = await supabase.auth.getSession();
-  const isOwner = session?.user?.id === profile.id;
-  const isAdmin = session?.user?.role === 'admin'; // ou user_metadata.role selon ta config
+  // ✅ CORRECTION SÉCURITÉ : getUser() au lieu de getSession()
+  const { data : { user } } = await supabase.auth.getUser();
+  const isOwner = user?.id === profile.id;
+  const isAdmin = user?.user_metadata?.role === 'admin';
 
   if (!profile.is_public && !isOwner && !isAdmin) {
     notFound();
   }
 
-  // Cartes actives/perdues
   const activeOrLostCards = (profile.nfc_cards || []).filter(
     (card: any) => card.status === 'active' || card.status === 'lost'
   );
   const hasLostCard = activeOrLostCards.some((card: any) => card.status === 'lost');
-
-  // 🔥 Enregistre le scan (fire-and-forget)
-  fetch('/api/scans', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      profile_id: profile.id,
-      scan_type: 'qr_profile',
-    }),
-  }).catch(console.warn);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-night-blue-900 to-black text-white">
@@ -110,65 +100,48 @@ export default async function PublicProfilePage({
           </div>
         </div>
 
-        {/* Like Button */}
         <div className="mt-6">
           <LikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
+          {/* ✅ Scan déplacé vers client */}
+          <ScanTracker profileId={profile.id} />
         </div>
       </header>
 
       <main className="container mx-auto px-4 pb-12 max-w-4xl">
-        {/* Contact */}
         <Card className="glass-border mb-8">
           <CardContent className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-      <UserCheck className="text-blue-300" size={20} />
-      Me contacter
-    </h2>
+              <UserCheck className="text-blue-300" size={20} />
+              Me contacter
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {profile.email && (
-                <Button
-                  variant="outline"
-                  className="justify-start border-white/10 hover:bg-white/5"
-                  onClick={() => window.location.href = `mailto:${profile.email}`}
-                >
-                  <Mail className="mr-2 h-4 w-4" />
-                  {profile.email}
+                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" onClick={() => window.location.href = `mailto:${profile.email}`}>
+                  <Mail className="mr-2 h-4 w-4" /> {profile.email}
                 </Button>
               )}
               {profile.phone && (
-                <Button
-                  variant="outline"
-                  className="justify-start border-white/10 hover:bg-white/5"
-                  onClick={() => window.location.href = getSMSLink(profile.phone)}
-                >
-                  <Phone className="mr-2 h-4 w-4" />
-                  {profile.phone}
+                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" onClick={() => window.location.href = getSMSLink(profile.phone)}>
+                  <Phone className="mr-2 h-4 w-4" /> {profile.phone}
                 </Button>
               )}
               {profile.whatsapp && (
-                <Button
-                  variant="outline"
-                  className="justify-start border-white/10 hover:bg-white/5"
-                  onClick={() => window.open(getWhatsAppLink(profile.whatsapp, profile.full_name), '_blank')}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4 text-green-400" />
-                  WhatsApp
+                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" onClick={() => window.open(getWhatsAppLink(profile.whatsapp, profile.full_name), '_blank')}>
+                  <MessageCircle className="mr-2 h-4 w-4 text-green-400" /> WhatsApp
                 </Button>
               )}
               {profile.address && (
-                <Button
-                  variant="outline"
-                  className="justify-start border-white/10 hover:bg-white/5"
+                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" 
+                  // ✅ Supprimé les espaces
                   onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`, '_blank')}
                 >
-                  <MapPin className="mr-2 h-4 w-4" />
-                  {profile.address}
+                  <MapPin className="mr-2 h-4 w-4" /> {profile.address}
                 </Button>
               )}
             </div>
 
             <Button
-              className="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400"
+              className="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
               onClick={async () => {
                 const vCard = `BEGIN:VCARD
 VERSION:3.0
@@ -188,21 +161,15 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `${profile.username}.vcf`;
-                document.body.appendChild(a);
                 a.click();
-                setTimeout(() => {
-                  document.body.removeChild(a);
-                  URL.revokeObjectURL(url);
-                }, 100);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
               }}
             >
-              <Download className="mr-2 h-4 w-4" />
-              Sauvegarder le contact (.vcf)
+              <Download className="mr-2 h-4 w-4" /> Sauvegarder le contact (.vcf)
             </Button>
           </CardContent>
         </Card>
 
-        {/* Liens */}
         {(profile.website || profile.instagram || profile.portfolio_url) && (
           <Card className="glass-border mb-8">
             <CardContent className="p-6">
@@ -211,24 +178,26 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
                 {profile.website && (
                   <Link href={profile.website} target="_blank" className="block">
                     <Button variant="outline" className="w-full justify-between border-white/10 hover:bg-white/5">
-                      Site web
-                      <ExternalLink size={16} />
+                      Site web <ExternalLink size={16} />
                     </Button>
                   </Link>
                 )}
                 {profile.instagram && (
-                  <Link href={`https://instagram.com/${profile.instagram}`} target="_blank" className="block">
+                  <Link 
+                    // ✅ Supprimé les espaces
+                    href={`https://instagram.com/${profile.instagram}`} 
+                    target="_blank" 
+                    className="block"
+                  >
                     <Button variant="outline" className="w-full justify-between border-white/10 hover:bg-white/5">
-                      Instagram: @{profile.instagram}
-                      <ExternalLink size={16} />
+                      Instagram: @{profile.instagram} <ExternalLink size={16} />
                     </Button>
                   </Link>
                 )}
                 {profile.portfolio_url && (
                   <Link href={profile.portfolio_url} target="_blank" className="block">
                     <Button variant="outline" className="w-full justify-between border-white/10 hover:bg-white/5">
-                      Portfolio
-                      <ExternalLink size={16} />
+                      Portfolio <ExternalLink size={16} />
                     </Button>
                   </Link>
                 )}
@@ -237,7 +206,6 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
           </Card>
         )}
 
-        {/* Bio longue */}
         {profile.bio_long && (
           <Card className="glass-border">
             <CardContent className="p-6">
@@ -247,13 +215,11 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
           </Card>
         )}
 
-        {/* Footer */}
         <div className="mt-12 text-center text-gray-500 text-sm">
           <p>Partagé via LUVIKA — Révèle qui tu es.</p>
           <p className="mt-1">
             <Link href="/" className="hover:text-blue-300 flex items-center justify-center gap-1">
-              luvika.dev
-              <ExternalLink size={12} />
+              luvika.dev <ExternalLink size={12} />
             </Link>
           </p>
         </div>
