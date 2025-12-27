@@ -29,43 +29,43 @@
   },
   "dashboard": {
     "greeting": "Bonjour, {name} 👋",
-  "subtitle": "Gérez votre identité numérique intelligente",
-  "view_public": "Voir mon profil public",
-  "export_csv": "Exporter (.csv)",
-  "visibility": {
-    "title": "Visibilité des sections",
-    "description": "Choisissez ce que les visiteurs peuvent voir."
-  },
-  "time": {
-  "seconds": "{count} seconde",
-  "seconds_plural": "{count} secondes",
-  "minutes": "{count} minute",
-  "minutes_plural": "{count} minutes",
-  "hours": "{count} heure",
-  "hours_plural": "{count} heures",
-  "days": "{count} jour",
-  "days_plural": "{count} jours"
-},
-"subscription": {
-  "plans": {
-    "freemium": "Freemium",
-    "basic": "Freemium",
-    "premium": "Premium",
-    "entreprise": "Entreprise"
-  }
-},
-  "orders": {
-    "title": "Commandes de cartes",
-    "description": "Gérez vos commandes NFC en cours.",
-    "manage": "Gérer les commandes"
-  },
-  "subscription": {
+    "subtitle": "Gérez votre identité numérique intelligente",
+    "view_public": "Voir mon profil public",
+    "export_csv": "Exporter (.csv)",
+    "visibility": {
+      "title": "Visibilité des sections",
+      "description": "Choisissez ce que les visiteurs peuvent voir."
+    },
+    "time": {
+      "seconds": "{count} seconde",
+      "seconds_plural": "{count} secondes",
+      "minutes": "{count} minute",
+      "minutes_plural": "{count} minutes",
+      "hours": "{count} heure",
+      "hours_plural": "{count} heures",
+      "days": "{count} jour",
+      "days_plural": "{count} jours"
+    },
+    "subscription": {
+      "plans": {
+        "freemium": "Freemium",
+        "basic": "Freemium",
+        "premium": "Premium",
+        "enterprise": "Entreprise"
+      }
+    },
+    "orders": {
+      "title": "Commandes de cartes",
+      "description": "Gérez vos commandes NFC en cours.",
+      "manage": "Gérer les commandes"
+    },
+    "subscription": {
       "title": "Abonnement",
       "plans": {
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "entreprise": "Entreprise"
+        "enterprise": "Entreprise"
       },
       "active": "✅ Actif",
       "inactive": "⚠️ Inactif",
@@ -308,7 +308,7 @@
     "plans": {
       "basic": "Basic",
       "premium": "Premium",
-      "entreprise": "Entreprise"
+      "enterprise": "Entreprise"
     },
     "actions": {
       "title": "Actions rapides",
@@ -366,7 +366,13 @@
     "sign_in": "Connexion",
     "sign_up": "S’inscrire",
     "language": "Langue",
-    "sign_out": "Déconnexion"
+    "sign_out": "Déconnexion",
+    "sign_out_confirm_title": "Déconnexion",
+    "sign_out_confirm_message": "Voulez-vous vraiment vous déconnecter ?",
+    "sign_out_confirm_yes": "Oui, se déconnecter",
+    "sign_out_confirm_no": "Annuler",
+    "farewell_title": "Au revoir !",
+  "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢"
   },
   "about": {
     "title": "À propos",
@@ -444,10 +450,7 @@
     "yearly": "Annuel",
     "per_month": "/mois",
     "per_year": "/an"
-  },"entreprise": {
-      "title": "Entreprise",
-      "desc": "Pour équipes & entreprises"
-    },
+  },
   "cta": {
     "choose": "Choisir {plan}"
   },
@@ -463,11 +466,11 @@
       "features": {
         "nfc": "1 carte NFC",
         "users": "1 utilisateur",
-        "events": "Événements : Non",
-        "presence": "Présence QR : Non",
-        "stats": "Statistiques : Basique",
-        "roles": "Rôles : Non",
-        "dashboard": "Dashboard : Basique"
+        "events": "Pas d’événements",
+        "presence": "Visibilité de base",
+        "stats": "Statistiques limitées",
+        "roles": "Pas de rôles d’équipe",
+        "dashboard": "Dashboard simple"
       }
     },
     "premium": {
@@ -475,13 +478,13 @@
       "desc": "Pour les pros ambitieux",
       "popular": "Le plus populaire",
       "features": {
-        "nfc": "Plusieurs cartes NFC",
-        "users": "1 utilisateur",
-        "events": "Événements : Basique",
-        "presence": "Présence QR : Basique",
-        "stats": "Statistiques : Avancées",
-        "roles": "Rôles : Non",
-        "dashboard": "Dashboard : Avancé"
+        "nfc": "Cartes NFC illimitées",
+        "users": "Jusqu’à 5 utilisateurs",
+        "events": "Événements basiques",
+        "presence": "Mise en avant",
+        "stats": "Statistiques avancées",
+        "roles": "Rôles d’équipe",
+        "dashboard": "Dashboard avancé"
       }
     },
     "enterprise": {
@@ -489,13 +492,13 @@
       "desc": "Pour équipes & entreprises",
       "popular": "",
       "features": {
-        "nfc": "Cartes NFC : Illimité",
-        "users": "Utilisateurs : Illimité",
-        "events": "Événements : Avancés",
-        "presence": "Présence QR : Avancée",
-        "stats": "Statistiques : Consolidées",
-        "roles": "Rôles : Oui",
-        "dashboard": "Dashboard : Global"
+        "nfc": "Cartes NFC illimitées + custom",
+        "users": "Utilisateurs illimités",
+        "events": "Événements avancés",
+        "presence": "Visibilité prioritaire",
+        "stats": "Analytics consolidés",
+        "roles": "Rôles avancés + audit",
+        "dashboard": "Dashboard global + API"
       }
     }
   }
@@ -510,5 +513,4 @@
     "days": "{count} jour",
     "days_plural": "{count} jours"
   }
-  
 }

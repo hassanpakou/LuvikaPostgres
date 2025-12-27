@@ -1,4 +1,3 @@
-// src/app/[locale]/pricing/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import PricingPlans from '../../../components/pricing/PricingPlans';
@@ -33,7 +32,7 @@ export default async function PricingPage({
           }}
           customPlan={t('footer.custom_plan')}
           contactUs={t('footer.contact_us')}
-          plans={[
+          plans={[  // ✅ CHANGÉ : 'plan' → 'plans' (avec 's')
             {
               key: 'freemium',
               title: freemiumTitle,

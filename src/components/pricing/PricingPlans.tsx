@@ -10,14 +10,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+// ✅ Singulier + features + price ajoutés
 type Plan = {
-  key: string; // plus restrictif car on a 'freemium', 'premium', etc.
+  key: 'freemium' | 'premium' | 'enterprise'; // ← adapté à ton page.tsx
   title: string;
   desc: string;
-  features: string[]; // ← AJOUTÉ
+  features: string[];        // ← obligatoire
   badge?: string;
   highlight?: boolean;
-  price: { mensuel: number; annuel: number }; // ← AJOUTÉ
+  price: { mensuel: number; annuel: number }; // ← obligatoire
 };
 
 type Profile = {
@@ -27,18 +28,7 @@ type Profile = {
   price: { usd: number; cdf: number; cfa: number; kwz: number };
 };
 
-type PricingPlansProps = {
-  title: string;
-  billingMonthly: string;
-  billingYearly: string;
-  perMonth: string;
-  perYear: string;
-  ctaChoose: Record<string, string>;
-  customPlan: string;
-  contactUs: string;
-  plans: Plan[]; // ← AJOUTÉ : les plans viennent de la page
-};
-
+// ✅ Ajout de `plans: Plan[]` dans les props
 export default function PricingPlans({
   title,
   billingMonthly,
@@ -48,13 +38,23 @@ export default function PricingPlans({
   ctaChoose,
   customPlan,
   contactUs,
-  plans, // ← Maintenant accepté
-}: PricingPlansProps) {
+  plans, // ← reçu en props
+}: {
+  title: string;
+  billingMonthly: string;
+  billingYearly: string;
+  perMonth: string;
+  perYear: string;
+  ctaChoose: Record<string, string>;
+  customPlan: string;
+  contactUs: string;
+  plans: Plan[]; // ← typé
+}) {
   const { scrollYProgress } = useScroll();
   const [currency, setCurrency] = useState<'usd' | 'cdf' | 'cfa' | 'kwz'>('usd');
   const [activeTab, setActiveTab] = useState<'profiles' | 'logic'>('profiles');
 
-  // Profils professionnels (inchangés)
+  // ✅ Profils professionnels (inchangés)
   const profiles: Profile[] = [
     { id: 'student', name: 'Étudiant', icon: <GraduationCap className="w-4 h-4" />, price: { usd: 1.5, cdf: 3300, cfa: 900, kwz: 1275 } },
     { id: 'employee', name: 'Employé', icon: <Briefcase className="w-4 h-4" />, price: { usd: 2, cdf: 4400, cfa: 1200, kwz: 1700 } },
@@ -66,7 +66,7 @@ export default function PricingPlans({
 
   return (
     <section className="py-10 px-4 max-w-6xl mx-auto">
-      {/* Header */}
+      {/* Header LUVIKA */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -104,17 +104,18 @@ export default function PricingPlans({
         </div>
       </div>
 
-      {/* Plans — utilise les plans passés en props */}
+      {/* ✅ Utilise `plans` reçu en props */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
         {plans.map((plan, idx) => {
           const Icon = idx === 0 ? ShieldCheck : idx === 1 ? Crown : Building;
           const colors = {
-            basic: { bg: 'bg-gray-800/30', border: 'border-gray-500/30', text: 'text-gray-300', primary: 'text-gray-400' },
-            professional: { bg: 'bg-cyan-900/20', border: 'border-cyan-400/40 ring-1 ring-cyan-400/20', text: 'text-white', primary: 'text-cyan-300' },
+            freemium: { bg: 'bg-gray-800/30', border: 'border-gray-500/30', text: 'text-gray-300', primary: 'text-gray-400' },
+            premium: { bg: 'bg-cyan-900/20', border: 'border-cyan-400/40 ring-1 ring-cyan-400/20', text: 'text-white', primary: 'text-cyan-300' },
             enterprise: { bg: 'bg-purple-900/20', border: 'border-purple-400/40', text: 'text-white', primary: 'text-purple-300' },
           };
-          const color = colors[plan.key as keyof typeof colors] || colors.basic;
-          const isHighlighted = plan.highlight;
+          // ✅ Mapping avec 'freemium', 'premium', 'enterprise'
+          const color = colors[plan.key as keyof typeof colors] || colors.freemium;
+          const isHighlighted = plan.key === 'premium';
 
           return (
             <motion.div
@@ -139,8 +140,28 @@ export default function PricingPlans({
                   </span>
                 )}
               </div>
+              
+              <p className="text-xs text-gray-400 mb-2">{plan.desc}</p>
 
-              <p className="text-xs text-gray-400 mb-4">{plan.desc}</p>
+              {/* ✅ Afficher les features */}
+              <ul className="space-y-1.5 mb-4">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-1.5 text-xs">
+                    <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />
+                    <span className="text-gray-300">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* ✅ Prix */}
+              <div className="text-center mb-4">
+                <div className="text-2xl font-bold text-white">
+                  {plan.price.mensuel === 0 ? 'Gratuit' : `$${plan.price.mensuel}`}
+                </div>
+                <div className="text-gray-500 text-xs mt-0.5">
+                  {plan.price.mensuel === 0 ? 'À vie' : 'par mois'}
+                </div>
+              </div>
 
               {/* CTA */}
               <Link 
@@ -152,14 +173,14 @@ export default function PricingPlans({
                   whileTap={{ scale: 0.98 }}
                   className={`
                     w-full py-2.5 rounded-lg font-medium text-sm transition-all
-                    ${plan.key === 'basic' 
+                    ${plan.key === 'freemium' 
                       ? 'bg-white/5 hover:bg-white/10 border border-gray-600/50 text-gray-300' 
-                      : plan.key === 'professional'
+                      : plan.key === 'premium'
                       ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-cyan-500/20'
                       : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-purple-500/20'}
                   `}
                 >
-                  {plan.key === 'basic' ? 'Commencer gratuitement' : ctaChoose[plan.key] || 'Choisir ce plan'}
+                  {ctaChoose[plan.key] || (plan.key === 'freemium' ? 'Commencer gratuitement' : 'Choisir ce plan')}
                 </motion.button>
               </Link>
             </motion.div>
@@ -167,7 +188,7 @@ export default function PricingPlans({
         })}
       </div>
 
-      {/* Tabbed section — compact */}
+      {/* Reste identique — Tabbed section + CTA final */}
       <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 mb-10">
         <div className="flex gap-4 mb-4">
           <button
