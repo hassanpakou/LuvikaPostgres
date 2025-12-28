@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 
 export default function ScanTracker({ profileId }: { profileId: string }) {
   useEffect(() => {
-    // ✅ Côté client seulement
+    if (!profileId) return;
     fetch('/api/scans', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

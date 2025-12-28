@@ -2,7 +2,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { generateQRBase64 } from '@/lib/qr';
+import { generateQRBase64 } from '@/lib/qr'; // ✅ Ajouté
 import DashboardContent from '../../components/dashboard/DashboardContent';
 
 const formatDistance = (dateString: string): string => {
@@ -42,78 +42,83 @@ export default async function DashboardPage() {
     }
   );
 
-  // ✅ Correction : DEUX accolades seulement
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !user.id) {
-    redirect('/auth/sign-in');
-  }
+  if (!user || !user.id) redirect('/auth/sign-in');
 
-  const { data : profile } = await supabase
+  const { data: profile } = await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
     .single();
 
-  if (!profile) {
-    redirect('/complete-profile');
-  }
- // ✅ isAdmin (clé manquante corrigée)
+  if (!profile) redirect('/complete-profile');
+
   const isAdmin = profile.role === 'admin';
 
-  const subResult = await supabase
+
+  const { data : subscription } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('user_id', user.id)
     .maybeSingle();
-  const subscription = subResult.data || { plan: 'freemium', active: false };
 
-  const cardsResult = await supabase
+  const finalSubscription = subscription || { plan: 'freemium', active: false, expires_at: null };
+
+  const { data : cards } = await supabase
     .from('nfc_cards')
     .select('*')
     .eq('user_id', user.id);
-  const cards = cardsResult.data || [];
 
-  const scansResult = await supabase
+  const { data : scans, count: totalScans } = await supabase
     .from('scans')
     .select('*, profiles!left(username, full_name)', { count: 'exact' })
     .eq('profile_id', user.id)
     .limit(5);
-  const scans = scansResult.data || [];
-  const totalScans = scansResult.count || 0;
 
-  const likesResult = await supabase
+  const { count: likesCount } = await supabase
     .from('profile_interactions')
     .select('*', { count: 'exact', head: true })
     .eq('profile_id', user.id)
     .eq('type', 'like');
-  const likesCount = likesResult.count || 0;
 
-  const profileUrl = `${(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').trim()}/${profile.username}`;
+  const baseUrl = (
+    process.env.NEXT_PUBLIC_SITE_URL 
+      ? process.env.NEXT_PUBLIC_SITE_URL.trim() 
+      : 'https://luvika.vercel.app'
+  ).replace(/\/$/, ''); // ✅ Supprime le / final
+
+  if (!baseUrl || !baseUrl.startsWith('http')) {
+    console.error('🔧 NEXT_PUBLIC_SITE_URL manquant ou invalide');
+    redirect('/error?code=CONFIG');
+  }
+
+  const profileUrl = `${baseUrl}/${profile.username}`;
+
+  // ✅ Génération côté serveur — une seule fois
   let qrBase64 = '';
   try {
     qrBase64 = await generateQRBase64(profileUrl, { size: 300, color: '#2563eb' });
   } catch (err) {
-    console.warn('⚠️ QR fallback');
+    console.warn('⚠️ QR generation failed — fallback to empty');
   }
 
   return (
     <DashboardContent
       user={user}
       profile={profile}
-      subscription={subscription}
-      cards={cards}
-      recentScans={scans.map(scan => ({
+      subscription={finalSubscription}
+      cards={cards || []}
+      recentScans={(scans || []).map(scan => ({
         ...scan,
         relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
-        profile: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
+        profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
       }))}
-      totalScans={totalScans}
-      qrBase64={qrBase64}
+      totalScans={totalScans || 0}
+      qrBase64={qrBase64} // ✅ UNIQUEMENT ICI — pas de doublon
       profileUrl={profileUrl}
       planColors={PLAN_COLORS}
-      likesCount={likesCount}
-      isAdmin={isAdmin} // ✅ Prop ajoutée — résout l’erreur
-
+      likesCount={likesCount || 0}
+      isAdmin={isAdmin}
     />
   );
 }

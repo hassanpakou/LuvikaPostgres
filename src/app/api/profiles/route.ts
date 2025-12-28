@@ -1,7 +1,6 @@
-// src/app/api/profiles/route.ts
-import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -11,31 +10,83 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'username requis' }, { status: 400 });
   }
 
-  // ✅ Utilise createServerClient, pas createRouteHandlerClient
   const cookieStore = await cookies();
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options });
+        },
+        remove(name: string, options: any) {
+          cookieStore.delete({ name, ...options });
+        },
       },
     }
   );
 
-const {  data, error } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('username', username)
-  .single();
+  const cleanUsername = username.trim().toLowerCase();
 
-const profile = data as any; 
+  console.log('🔍 Searching for username:', { 
+    original: username, 
+    cleaned: cleanUsername 
+  });
 
-  if (error || !profile) {
-    return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 });
+  // Strategy 1: Exact match (case-insensitive)
+  let { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .ilike('username', cleanUsername)
+    .maybeSingle();
+
+  console.log('📊 Strategy 1 (ilike exact):', { data: !!data, error: error?.message });
+
+  // Strategy 2: Pattern match if exact match fails
+  if (!data && !error) {
+    console.log('🔄 Trying pattern match...');
+    const result = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('username', `%${cleanUsername}%`)
+      .limit(1)
+      .maybeSingle();
+    
+    data = result.data;
+    error = result.error;
+    
+    console.log('📊 Strategy 2 (pattern match):', { data: !!data, error: error?.message });
   }
 
-  return NextResponse.json(profile);
+  // Strategy 3: Get all usernames for debugging (limit to 10)
+  if (!data && !error) {
+    console.log('📋 Fetching sample usernames for debugging...');
+    const { data: allProfiles } = await supabase
+      .from('profiles')
+      .select('username')
+      .limit(10);
+    
+    console.log('Available usernames:', allProfiles?.map(p => p.username));
+  }
+
+  if (error) {
+    console.error('❌ Supabase error:', error);
+    return NextResponse.json({ error: 'Erreur serveur', details: error.message }, { status: 500 });
+  }
+
+  if (!data) {
+    console.warn('⚠️ Profile not found for:', cleanUsername);
+    return NextResponse.json({ 
+      error: 'Profil introuvable', 
+      searched: cleanUsername,
+      hint: 'Vérifiez l\'orthographe du nom d\'utilisateur'
+    }, { status: 404 });
+  }
+
+  console.log('✅ Profile found:', data.username);
+  return NextResponse.json(data);
 }

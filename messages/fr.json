@@ -46,14 +46,6 @@
       "days": "{count} jour",
       "days_plural": "{count} jours"
     },
-    "subscription": {
-      "plans": {
-        "freemium": "Freemium",
-        "basic": "Freemium",
-        "premium": "Premium",
-        "enterprise": "Entreprise"
-      }
-    },
     "orders": {
       "title": "Commandes de cartes",
       "description": "Gérez vos commandes NFC en cours.",
@@ -71,7 +63,9 @@
       "inactive": "⚠️ Inactif",
       "active_until": "Votre plan est actif jusqu’au {date}.",
       "upgrade_prompt": "Votre compte est en mode Freemium. Contactez l’administrateur pour activer un plan.",
-      "request_upgrade": "Demander une mise à niveau"
+      "request_upgrade": "Demander une mise à niveau",
+      "success_title": "✅ Succès !",
+      "success_message": "Un administrateur vous contactera sous 24h."
     },
     "qr": {
       "title": "QR Code de profil",
@@ -107,10 +101,10 @@
     }
   },
   "auth": {
-     "welcome": {
-    "title": "Bienvenue !",
-    "message": "Content de vous revoir sur LUVIKA. Prêt à créer ? 🌟"
-  },
+    "welcome": {
+      "title": "Bienvenue !",
+      "message": "Content de vous revoir sur LUVIKA. Prêt à créer ? 🌟"
+    },
     "complete": {
       "title": "Complétez votre profil",
       "description": "Quelques informations pour personnaliser votre compte",
@@ -376,7 +370,7 @@
     "sign_out_confirm_yes": "Oui, se déconnecter",
     "sign_out_confirm_no": "Annuler",
     "farewell_title": "Au revoir !",
-  "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢"
+    "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢"
   },
   "about": {
     "title": "À propos",
@@ -448,65 +442,65 @@
     "copyright": "Tous droits réservés. Conçu à Kinshasa avec ❤️."
   },
   "pricing": {
-  "title": "Plans & Tarifs",
-  "billing": {
-    "monthly": "Mensuel",
-    "yearly": "Annuel",
-    "per_month": "/mois",
-    "per_year": "/an"
-  },
-  "cta": {
-    "choose": "Choisir {plan}"
-  },
-  "footer": {
-    "custom_plan": "Besoin d’un plan personnalisé ?",
-    "contact_us": "Contactez-nous"
-  },
-  "plans": {
-    "freemium": {
-      "title": "Freemium",
-      "desc": "Pour commencer",
-      "popular": "",
-      "features": {
-        "nfc": "1 carte NFC",
-        "users": "1 utilisateur",
-        "events": "Pas d’événements",
-        "presence": "Visibilité de base",
-        "stats": "Statistiques limitées",
-        "roles": "Pas de rôles d’équipe",
-        "dashboard": "Dashboard simple"
-      }
+    "title": "Plans & Tarifs",
+    "billing": {
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "per_month": "/mois",
+      "per_year": "/an"
     },
-    "premium": {
-      "title": "Premium",
-      "desc": "Pour les pros ambitieux",
-      "popular": "Le plus populaire",
-      "features": {
-        "nfc": "Cartes NFC illimitées",
-        "users": "Jusqu’à 5 utilisateurs",
-        "events": "Événements basiques",
-        "presence": "Mise en avant",
-        "stats": "Statistiques avancées",
-        "roles": "Rôles d’équipe",
-        "dashboard": "Dashboard avancé"
-      }
+    "cta": {
+      "choose": "Choisir {plan}"
     },
-    "enterprise": {
-      "title": "Entreprise",
-      "desc": "Pour équipes & entreprises",
-      "popular": "",
-      "features": {
-        "nfc": "Cartes NFC illimitées + custom",
-        "users": "Utilisateurs illimités",
-        "events": "Événements avancés",
-        "presence": "Visibilité prioritaire",
-        "stats": "Analytics consolidés",
-        "roles": "Rôles avancés + audit",
-        "dashboard": "Dashboard global + API"
+    "footer": {
+      "custom_plan": "Besoin d’un plan personnalisé ?",
+      "contact_us": "Contactez-nous"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Freemium",
+        "desc": "Pour commencer",
+        "popular": "",
+        "features": {
+          "nfc": "1 carte NFC",
+          "users": "1 utilisateur",
+          "events": "Pas d’événements",
+          "presence": "Visibilité de base",
+          "stats": "Statistiques limitées",
+          "roles": "Pas de rôles d’équipe",
+          "dashboard": "Dashboard simple"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "desc": "Pour les pros ambitieux",
+        "popular": "Le plus populaire",
+        "features": {
+          "nfc": "Cartes NFC illimitées",
+          "users": "Jusqu’à 5 utilisateurs",
+          "events": "Événements basiques",
+          "presence": "Mise en avant",
+          "stats": "Statistiques avancées",
+          "roles": "Rôles d’équipe",
+          "dashboard": "Dashboard avancé"
+        }
+      },
+      "enterprise": {
+        "title": "Entreprise",
+        "desc": "Pour équipes & entreprises",
+        "popular": "",
+        "features": {
+          "nfc": "Cartes NFC illimitées + custom",
+          "users": "Utilisateurs illimités",
+          "events": "Événements avancés",
+          "presence": "Visibilité prioritaire",
+          "stats": "Analytics consolidés",
+          "roles": "Rôles avancés + audit",
+          "dashboard": "Dashboard global + API"
+        }
       }
     }
-  }
-},
+  },
   "time": {
     "seconds": "{count} seconde",
     "seconds_plural": "{count} secondes",

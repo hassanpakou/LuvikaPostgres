@@ -2,21 +2,20 @@
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import type { User } from '@supabase/supabase-js';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, Phone, Mail, MapPin, ExternalLink, MessageCircle, UserCheck } from 'lucide-react';
+import { Download, Mail, Phone, MapPin, ExternalLink, MessageCircle, UserCheck } from 'lucide-react';
 import LikeButton from '../../../components/profile/LikeButton';
-import ScanTracker from '../../../components/profile/ScanTracker'; // ✅ Nouveau
+import ScanTracker from '../../../components/profile/ScanTracker';
+import ProfileActions from '../../../components/profile/ProfileActions';
 
 const getWhatsAppLink = (phone: string, name: string) => {
   const cleanPhone = phone.replace(/\D/g, '');
-  // ✅ Supprimé les espaces
   return `https://wa.me/${cleanPhone}?text=Bonjour%20${encodeURIComponent(name)},%20je%20vous%20contacte%20via%20LUVIKA.`;
 };
-
-const getSMSLink = (phone: string) => `sms:${phone}`;
 
 export default async function PublicProfilePage({
   params,
@@ -41,25 +40,33 @@ export default async function PublicProfilePage({
     }
   );
 
-  const { data: profile, error } = await supabase
+  // ✅ Recherche robuste
+  let {  data: profile, error } = await supabase
     .from('profiles')
-    .select(`
-      *,
-      nfc_cards(status, lost_reason),
-      subscriptions(plan, active)
-    `)
-    .eq('username', decodedUsername)
-    .single();
+    .select('*')
+    .ilike('username', decodedUsername.trim())
+    .maybeSingle();
+
+  if (!profile && !error) {
+    const fallback = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('username', `%${decodedUsername.trim()}%`)
+      .limit(1)
+      .maybeSingle();
+    profile = fallback.data;
+    error = fallback.error;
+  }
 
   if (error || !profile) {
-    console.log('🔍 Profil non trouvé:', { error, username: decodedUsername });
+    console.error('❌ Profil introuvable:', { username: decodedUsername });
     notFound();
   }
 
-  // ✅ CORRECTION SÉCURITÉ : getUser() au lieu de getSession()
-  const { data : { user } } = await supabase.auth.getUser();
-  const isOwner = user?.id === profile.id;
-  const isAdmin = user?.user_metadata?.role === 'admin';
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const currentUser = user as User | null;
+  const isOwner = currentUser?.id === profile.id;
+  const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
   if (!profile.is_public && !isOwner && !isAdmin) {
     notFound();
@@ -71,7 +78,7 @@ export default async function PublicProfilePage({
   const hasLostCard = activeOrLostCards.some((card: any) => card.status === 'lost');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-night-blue-900 to-black text-white">
+    <div suppressHydrationWarning={true} className="min-h-screen bg-gradient-to-br text-white">
       <header className="py-6 px-4 text-center relative">
         {hasLostCard && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-900/50 border border-yellow-500/30 text-yellow-200 px-4 py-2 rounded-full max-w-md">
@@ -102,8 +109,7 @@ export default async function PublicProfilePage({
 
         <div className="mt-6">
           <LikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
-          {/* ✅ Scan déplacé vers client */}
-          <ScanTracker profileId={profile.id} />
+          {profile.id && <ScanTracker profileId={profile.id} />}
         </div>
       </header>
 
@@ -114,59 +120,8 @@ export default async function PublicProfilePage({
               <UserCheck className="text-blue-300" size={20} />
               Me contacter
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {profile.email && (
-                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" onClick={() => window.location.href = `mailto:${profile.email}`}>
-                  <Mail className="mr-2 h-4 w-4" /> {profile.email}
-                </Button>
-              )}
-              {profile.phone && (
-                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" onClick={() => window.location.href = getSMSLink(profile.phone)}>
-                  <Phone className="mr-2 h-4 w-4" /> {profile.phone}
-                </Button>
-              )}
-              {profile.whatsapp && (
-                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" onClick={() => window.open(getWhatsAppLink(profile.whatsapp, profile.full_name), '_blank')}>
-                  <MessageCircle className="mr-2 h-4 w-4 text-green-400" /> WhatsApp
-                </Button>
-              )}
-              {profile.address && (
-                <Button variant="outline" className="justify-start border-white/10 hover:bg-white/5" 
-                  // ✅ Supprimé les espaces
-                  onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`, '_blank')}
-                >
-                  <MapPin className="mr-2 h-4 w-4" /> {profile.address}
-                </Button>
-              )}
-            </div>
-
-            <Button
-              className="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
-              onClick={async () => {
-                const vCard = `BEGIN:VCARD
-VERSION:3.0
-FN:${profile.full_name}
-ORG:${profile.company || ''}
-TITLE:${profile.job_title || ''}
-TEL;TYPE=WORK,VOICE:${profile.phone || ''}
-TEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}
-EMAIL:${profile.email || ''}
-ADR;TYPE=WORK:;;${profile.address || ''};;;;
-URL:${profile.website || ''}
-NOTE:Contact via LUVIKA — luvika.me/${decodedUsername}
-END:VCARD`.trim().replace(/\n/g, '\r\n');
-
-                const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${profile.username}.vcf`;
-                a.click();
-                setTimeout(() => URL.revokeObjectURL(url), 100);
-              }}
-            >
-              <Download className="mr-2 h-4 w-4" /> Sauvegarder le contact (.vcf)
-            </Button>
+            {/* ✅ Actions déplacées vers Client Component */}
+            <ProfileActions profile={profile} />
           </CardContent>
         </Card>
 
@@ -184,8 +139,7 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
                 )}
                 {profile.instagram && (
                   <Link 
-                    // ✅ Supprimé les espaces
-                    href={`https://instagram.com/${profile.instagram}`} 
+                    href={`https://instagram.com/${profile.instagram}`} // ✅ sans espaces
                     target="_blank" 
                     className="block"
                   >

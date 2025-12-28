@@ -1,17 +1,18 @@
-// src/components/dashboard/DashboardContent.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Heart, Download, X } from 'lucide-react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import SimulateNFCTap from '@/components/nfc/SimulateNFCTap';
+
+import { generateQRBase64 } from '@/lib/qr';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -26,6 +27,101 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffHrs > 0) return `${diffHrs} ${t('time.hours', { count: diffHrs })}`;
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
+};
+
+// 🔹 Modal de succès — glacial, transparent, bulles
+const SuccessModal = ({
+  isOpen,
+  onClose,
+  title,
+  message,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  message: string;
+}) => {
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[100]"
+        onClick={onClose}
+      >
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(6)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-3 h-3 rounded-full bg-cyan-300/30"
+              style={{
+                left: `${10 + i * 15}%`,
+                top: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: ['-80px', '100vh'],
+                scale: [0, 1.2, 0],
+              }}
+              transition={{
+                duration: 6 + i,
+                repeat: Infinity,
+                ease: 'easeOut',
+              }}
+            />
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0, y: 40 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.8, opacity: 0, y: 40 }}
+        className="fixed inset-0 z-[101] flex items-center justify-center p-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative backdrop-blur-2xl bg-white/10 dark:bg-black/20 rounded-2xl border border-white/15 shadow-xl w-full max-w-sm overflow-hidden">
+          <motion.div
+            initial={{ width: '100%' }}
+            animate={{ width: 0 }}
+            transition={{ duration: 4, ease: 'easeOut' }}
+            className="absolute top-0 left-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500"
+          />
+
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-300 hover:text-white z-10"
+            aria-label="Fermer"
+          >
+            <X className="h-5 w-5" />
+          </button>
+
+          <div className="px-6 py-8 text-center relative z-10">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
+              <span className="text-2xl">✅</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2 drop-shadow">
+              {title}
+            </h3>
+            <p className="text-gray-200 text-sm drop-shadow-sm">
+              {message}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </>
+  );
 };
 
 type Profile = {
@@ -78,10 +174,12 @@ export default function DashboardContent({
   isAdmin,
 }: Props) {
   const t = useTranslations('dashboard');
+  const locale = useLocale();
   const router = useRouter();
   const [hasLiked, setHasLiked] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -91,6 +189,8 @@ export default function DashboardContent({
       certificates: true,
     }
   );
+  const [qrImage, setQrImage] = useState<string | null>(null);
+  const [qrError, setQrError] = useState<string | null>(null);
 
   const handleLike = () => setHasLiked(!hasLiked);
   const updateVisibility = (section: string, checked: boolean) => {
@@ -125,9 +225,10 @@ export default function DashboardContent({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: user.id, profile_id: profile.id }),
       });
+
       if (res.ok) {
         setIsUpgradeModalOpen(false);
-        alert('✅ Demande envoyée ! Un admin vous contactera sous 24h.');
+        setShowSuccessModal(true); // ✅ Affiche le modal glacial
       } else {
         throw new Error();
       }
@@ -138,10 +239,31 @@ export default function DashboardContent({
     }
   };
 
-  // ✅ Fermeture au clavier (Échap)
+  useEffect(() => {
+    const generateQR = async () => {
+      try {
+        const qr = await generateQRBase64(profileUrl, {
+          size: 300,
+          color: '#2563eb',
+        });
+        setQrImage(qr);
+      } catch (err) {
+        console.error('❌ QR generation failed:', err);
+        setQrError('Impossible de générer le QR Code.');
+      }
+    };
+
+    if (profileUrl) {
+      generateQR();
+    }
+  }, [profileUrl]);
+
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsUpgradeModalOpen(false);
+      if (e.key === 'Escape') {
+        setIsUpgradeModalOpen(false);
+        setShowSuccessModal(false);
+      }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
@@ -168,7 +290,7 @@ export default function DashboardContent({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto">
-          <Link href={`/${profile.username}`} target="_blank" className="w-full sm:w-auto">
+          <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
             <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10">
               {t('view_public')}
             </Button>
@@ -260,32 +382,32 @@ export default function DashboardContent({
       </Card>
 
       {/* QR & NFC */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="glass-border">
-          <CardHeader><CardTitle>{t('qr.title')}</CardTitle></CardHeader>
-          <CardContent className="text-center">
-            {qrBase64 ? (
-              <div>
-                <img 
-                  src={qrBase64} 
-                  alt={t('qr.alt', { username: profile.username })}
-                  className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
-                />
-                <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3 border-white/20 text-white hover:bg-white/10"
-                  onClick={() => window.open(profileUrl, '_blank')}
-                >
-                  {t('qr.open_link')}
-                </Button>
-              </div>
-            ) : (
-              <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
-            )}
-          </CardContent>
-        </Card>
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <Card className="glass-border">
+    <CardHeader><CardTitle>{t('qr.title')}</CardTitle></CardHeader>
+    <CardContent className="text-center">
+      {qrBase64 ? (
+        <div>
+          <img 
+            src={qrBase64} 
+            alt={t('qr.alt', { username: profile.username })}
+            className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
+          />
+          <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-3 border-white/20 text-white hover:bg-white/10"
+            onClick={() => window.open(profileUrl, '_blank')}
+          >
+            {t('qr.open_link')}
+          </Button>
+        </div>
+      ) : (
+        <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
+      )}
+    </CardContent>
+  </Card>
 
         <Card className="glass-border">
           <CardHeader>
@@ -381,7 +503,6 @@ export default function DashboardContent({
       {/* ✅ Modal Upgrade — élégant, animé, bulles */}
       {isUpgradeModalOpen && (
         <>
-          {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -390,15 +511,13 @@ export default function DashboardContent({
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
           />
 
-          {/* Modal */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md p-6"
           >
-            <Card className="glass-border bg-gradient-to-b from-gray-900/80 to-black/90 relative overflow-hidden">
-              {/* ✅ Bulles animées en fond */}
+            <Card className="glass-border bg-gradient-to-b relative overflow-hidden">
               <div className="absolute inset-0 overflow-hidden pointer-events-none">
                 {[...Array(8)].map((_, i) => (
                   <motion.div
@@ -464,6 +583,16 @@ export default function DashboardContent({
           </motion.div>
         </>
       )}
+
+      {/* ✅ Modal succès — glacial & transparent */}
+      <AnimatePresence>
+        <SuccessModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          title={t('subscription.success_title') || '✅ Succès !'}
+          message={t('subscription.success_message') || 'Un admin vous contactera sous 24h.'}
+        />
+      </AnimatePresence>
     </div>
   );
 }
