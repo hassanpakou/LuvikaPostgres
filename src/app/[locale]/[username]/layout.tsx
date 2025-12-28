@@ -9,16 +9,15 @@ export const metadata = {
   description: 'Carte de visite digitale NFC & QR',
 };
 
-export default function ProfileLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
+export default function ProfileLayout({ children }: { children: React.ReactNode }) {
+ return (
     <html lang="fr" suppressHydrationWarning>
-      <body className={`${inter.className} bg-black overflow-x-hidden`}>
+      {/* ✅ Hérite de toutes les classes racines + ajoute les tiennes */}
+      <body 
+  suppressHydrationWarning={true} // ✅ Ignore les différences de className
+  className={`${inter.className} bg-black overflow-x-hidden`}
+>
         {children}
-        {/* 🔹 Pas de Navbar, pas de Footer */}
       </body>
     </html>
   );

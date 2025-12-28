@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react'; // ✅ useMemo ajouté
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { Heart, Download, X } from 'lucide-react';
+import { Heart, Download, X, Mail, Check } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,7 +29,7 @@ const formatDistance = (dateString: string, t: any): string => {
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
 
-// 🔹 Modal de succès — glacial, transparent, bulles
+// 🔹 Modal de succès — inchangé
 const SuccessModal = ({
   isOpen,
   onClose,
@@ -124,6 +124,7 @@ const SuccessModal = ({
   );
 };
 
+// ✅ Type mis à jour — ajout de `plan?`
 type Profile = {
   id: string;
   full_name: string;
@@ -132,13 +133,13 @@ type Profile = {
   is_public?: boolean;
   bio_short?: string;
   sections_visibility?: Record<string, boolean>;
+  accepts_contact_requests?: boolean;
+  plan?: string | null; // ✅ ajouté — ESSENTIEL
+  likes_count?: number; // ✅ ajouté
+
 };
 
-type Subscription = {
-  plan: string;
-  active: boolean;
-  expires_at?: string;
-};
+// ❌ Supprimé : type Subscription (plus utilisé)
 
 type Card = {
   id: string;
@@ -154,24 +155,23 @@ type Scan = {
   profiles?: { full_name?: string; username?: string };
 };
 
+// ✅ Props mis à jour — suppression de `subscription`
 type Props = {
   user: { id: string };
-  profile: Profile;
-  subscription: Subscription;
+  profile: Profile; // ✅ contient maintenant `plan`
   cards: Card[];
   recentScans: Scan[];
   totalScans: number;
   qrBase64: string;
   profileUrl: string;
   planColors: Record<string, string>;
-  likesCount: number;
+  //likesCount: number;
   isAdmin: boolean;
 };
 
 export default function DashboardContent({
-  user, profile, subscription, cards, recentScans,
-  totalScans, qrBase64, profileUrl, planColors, likesCount,
-  isAdmin,
+  user, profile, cards, recentScans,
+  totalScans, qrBase64, profileUrl, planColors, isAdmin,
 }: Props) {
   const t = useTranslations('dashboard');
   const locale = useLocale();
@@ -191,11 +191,36 @@ export default function DashboardContent({
   );
   const [qrImage, setQrImage] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
+  const [acceptsContactRequests, setAcceptsContactRequests] = useState(
+    profile.accepts_contact_requests ?? true
+  );
+
+// 🔹 ✅ CALCUL AUTO DU subscription — avec expires_at (optionnel)
+const subscription = useMemo(() => {
+  const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
+  // 🔸 Si vous n’avez PAS encore de champ `plan_expires_at`, laissez undefined
+  // 🔸 Sinon, ajoutez-le dans le type Profile et décommentez la ligne ci-dessous
+  const expires_at = undefined; // ou profile.plan_expires_at ?? undefined;
+
+  return {
+    plan,
+    active: plan === 'premium' || plan === 'entreprise',
+    expires_at, // ✅ maintenant présent
+  };
+}, [profile.plan /*, profile.plan_expires_at si ajouté */]);
+
+  // 🔍 Debug temporaire — à commenter après vérification
+  useEffect(() => {
+    console.log('🔍 profile.plan =', profile.plan);
+    console.log('🔍 computed subscription =', subscription);
+  }, [profile.plan, subscription]);
 
   const handleLike = () => setHasLiked(!hasLiked);
-  const updateVisibility = (section: string, checked: boolean) => {
-    setSectionsVisibility(prev => ({ ...prev, [section]: checked }));
-  };
+const updateVisibility = (section: string, checked: boolean) => {
+  const newVisibility = { ...sectionsVisibility, [section]: checked };
+  setSectionsVisibility(newVisibility);
+  saveSectionsVisibility(newVisibility); // ✅ Sauvegarde immédiate
+};
 
   const handleExport = async () => {
     try {
@@ -228,7 +253,7 @@ export default function DashboardContent({
 
       if (res.ok) {
         setIsUpgradeModalOpen(false);
-        setShowSuccessModal(true); // ✅ Affiche le modal glacial
+        setShowSuccessModal(true);
       } else {
         throw new Error();
       }
@@ -236,6 +261,45 @@ export default function DashboardContent({
       alert('❌ Échec. Veuillez réessayer.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // 🔹 Sauvegarde immédiate dans la DB
+const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
+  try {
+    const res = await fetch('/api/profile/sections-visibility', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        user_id: user.id, 
+        sections_visibility: newVisibility 
+      }),
+    });
+    if (!res.ok) throw new Error('Échec sauvegarde');
+  } catch (err) {
+    console.error('❌ Sauvegarde sections échouée:', err);
+    // Optionnel : rollback UI
+    // setSectionsVisibility(prev => ({...prev}));
+  }
+};
+
+  const toggleContactRequests = async () => {
+    try {
+      const res = await fetch('/api/profile/contact-toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          user_id: user.id, 
+          enabled: !acceptsContactRequests 
+        }),
+      });
+      if (res.ok) {
+        setAcceptsContactRequests(!acceptsContactRequests);
+      } else {
+        throw new Error();
+      }
+    } catch {
+      alert('❌ Échec. Veuillez réessayer.');
     }
   };
 
@@ -284,7 +348,7 @@ export default function DashboardContent({
               className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
             >
               <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
-              <span className="text-sm">{likesCount}</span>
+              <span className="text-sm">{profile.likes_count ?? 0}</span>
             </button>
           </div>
         </div>
@@ -334,7 +398,56 @@ export default function DashboardContent({
         </CardContent>
       </Card>
 
-      {/* Commandes */}
+      {/* Réception des messages */}
+      <Card className="glass-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="text-cyan-400" size={20} />
+            {t('contact_requests.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-300 mb-4">
+            {t('contact_requests.description')}
+          </p>
+          <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+            <div>
+              <h3 className="font-medium text-white">
+                {t('contact_requests.label')}
+              </h3>
+              <p className="text-sm text-gray-400 mt-1">
+                {acceptsContactRequests 
+                  ? t('contact_requests.enabled') 
+                  : t('contact_requests.disabled')}
+              </p>
+            </div>
+            <Button
+              variant={acceptsContactRequests ? "destructive" : "default"}
+              size="sm"
+              onClick={toggleContactRequests}
+              className={`flex items-center gap-2 ${
+                acceptsContactRequests 
+                  ? 'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30' 
+                  : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30'
+              }`}
+            >
+              {acceptsContactRequests ? (
+                <>
+                  <X size={16} />
+                  {t('contact_requests.disable')}
+                </>
+              ) : (
+                <>
+                  <Check size={16} />
+                  {t('contact_requests.enable')}
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Commandes — condition sur subscription calculé */}
       {(subscription.plan === 'premium' || subscription.plan === 'entreprise') && (
         <Card className="glass-border">
           <CardHeader><CardTitle>{t('orders.title')}</CardTitle></CardHeader>
@@ -350,13 +463,13 @@ export default function DashboardContent({
         </Card>
       )}
 
-      {/* Abonnement */}
+      {/* 🔹 ✅ Abonnement — maintenant toujours synchro */}
       <Card className="glass-border">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <span>{t('subscription.title')}</span>
-            <Badge className={`${planColors[subscription.plan]} text-white`}>
-              {t(`subscription.plans.${subscription.plan}`)}
+            <Badge className={`${planColors[subscription.plan] || 'bg-gray-600'} text-white`}>
+              {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
             </Badge>
             <Badge className={subscription.active ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}>
               {subscription.active ? t('subscription.active') : t('subscription.inactive')}
@@ -366,7 +479,11 @@ export default function DashboardContent({
         <CardContent>
           <p className="text-gray-300">
             {subscription.active
-              ? t('subscription.active_until', { date: new Date(subscription.expires_at || '').toLocaleDateString('fr-FR') })
+              ? t('subscription.active_until', { 
+                  date: subscription.expires_at 
+                    ? new Date(subscription.expires_at).toLocaleDateString('fr-FR') 
+                    : '∞' 
+                })
               : t('subscription.upgrade_prompt')}
           </p>
           {!subscription.active && (
@@ -382,32 +499,32 @@ export default function DashboardContent({
       </Card>
 
       {/* QR & NFC */}
-<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <Card className="glass-border">
-    <CardHeader><CardTitle>{t('qr.title')}</CardTitle></CardHeader>
-    <CardContent className="text-center">
-      {qrBase64 ? (
-        <div>
-          <img 
-            src={qrBase64} 
-            alt={t('qr.alt', { username: profile.username })}
-            className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
-          />
-          <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-3 border-white/20 text-white hover:bg-white/10"
-            onClick={() => window.open(profileUrl, '_blank')}
-          >
-            {t('qr.open_link')}
-          </Button>
-        </div>
-      ) : (
-        <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
-      )}
-    </CardContent>
-  </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="glass-border">
+          <CardHeader><CardTitle>{t('qr.title')}</CardTitle></CardHeader>
+          <CardContent className="text-center">
+            {qrBase64 ? (
+              <div>
+                <img 
+                  src={qrBase64} 
+                  alt={t('qr.alt', { username: profile.username })}
+                  className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
+                />
+                <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 border-white/20 text-white hover:bg-white/10"
+                  onClick={() => window.open(profileUrl, '_blank')}
+                >
+                  {t('qr.open_link')}
+                </Button>
+              </div>
+            ) : (
+              <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
+            )}
+          </CardContent>
+        </Card>
 
         <Card className="glass-border">
           <CardHeader>
@@ -441,10 +558,10 @@ export default function DashboardContent({
             <Button
               size="sm"
               className="mt-4 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
-              disabled={subscription.plan === 'freemium' && cards.length >= 1}
+              disabled={subscription.plan === 'basic' && cards.length >= 1}
               onClick={() => router.push('/dashboard/nfc/add')}
             >
-              {subscription.plan === 'freemium' && cards.length >= 1
+              {subscription.plan === 'basic' && cards.length >= 1
                 ? t('nfc.upgrade_required')
                 : t('nfc.add_card')}
             </Button>
@@ -500,7 +617,7 @@ export default function DashboardContent({
         </CardContent>
       </Card>
 
-      {/* ✅ Modal Upgrade — élégant, animé, bulles */}
+      {/* Modal Upgrade */}
       {isUpgradeModalOpen && (
         <>
           <motion.div
@@ -584,7 +701,7 @@ export default function DashboardContent({
         </>
       )}
 
-      {/* ✅ Modal succès — glacial & transparent */}
+      {/* Modal succès */}
       <AnimatePresence>
         <SuccessModal
           isOpen={showSuccessModal}

@@ -35,6 +35,14 @@
     "visibility": {
       "title": "Visibilité des sections",
       "description": "Choisissez ce que les visiteurs peuvent voir."
+    },"contact_requests": {
+      "title": "Messages des visiteurs",
+      "description": "Autorisez les personnes qui consultent votre profil public à vous laisser un message.",
+      "label": "Recevoir des messages",
+      "enabled": "Activé – les visiteurs peuvent vous contacter",
+      "disabled": "Désactivé – formulaire masqué",
+      "enable": "Activer",
+      "disable": "Désactiver"
     },
     "time": {
       "seconds": "{count} seconde",

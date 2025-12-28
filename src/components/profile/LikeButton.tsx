@@ -1,4 +1,4 @@
-// src/components/profile/LikeButton.tsx
+// src/components/profile/LikeButton.tsx (version corrigée)
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -8,23 +8,48 @@ import { Button } from '@/components/ui/button';
 export default function LikeButton({
   profileId,
   initialLikes,
+  isOwner = false, // ✅ optionnel
 }: {
   profileId: string;
   initialLikes: number;
+  isOwner?: boolean;
 }) {
   const [likes, setLikes] = useState(initialLikes);
   const [hasLiked, setHasLiked] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Simule un chargement initial (ex: vérifie si user a déjà liké)
   useEffect(() => {
-    // TODO: fetch('/api/interactions/check', { profile_id: profileId })
-    // Pour l’instant, on simule
-    const liked = Math.random() > 0.7; // 30% de chances d’avoir déjà liké
-    setHasLiked(liked);
-    if (liked) setLikes(prev => prev + 1);
-  }, [profileId]);
+    if (isOwner) {
+      // Le propriétaire ne peut pas liker son propre profil
+      setHasLiked(false);
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Vérifie si l'utilisateur a déjà liké
+    const checkLike = async () => {
+      try {
+        const res = await fetch('/api/interactions/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ profile_id: profileId }),
+        });
+        const data = await res.json();
+        setHasLiked(data.hasLiked || false);
+      } catch (err) {
+        console.warn('CallCheck failed, defaulting to false');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkLike();
+  }, [profileId, isOwner]);
 
   const handleLike = async () => {
+    if (loading || isOwner) return;
+    setLoading(true);
+
     try {
       const res = await fetch('/api/interactions/like', {
         method: 'POST',
@@ -33,11 +58,14 @@ export default function LikeButton({
       });
 
       if (res.ok) {
-        setLikes(prev => hasLiked ? prev - 1 : prev + 1);
-        setHasLiked(!hasLiked);
+        const data = await res.json();
+        setLikes(prev => data.liked ? prev + 1 : prev - 1);
+        setHasLiked(data.liked);
       }
     } catch (err) {
       console.error('Erreur like:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,6 +74,7 @@ export default function LikeButton({
       variant="ghost"
       size="sm"
       onClick={handleLike}
+      disabled={loading || isOwner}
       className="flex items-center gap-1 text-gray-300 hover:text-red-400 hover:bg-red-500/10"
     >
       <Heart

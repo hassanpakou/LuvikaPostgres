@@ -1,4 +1,3 @@
-// src/components/profile/PublicProfileClient.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,8 +9,10 @@ import GlacialLikeButton from './GlacialLikeButton';
 import ScanTracker from './ScanTracker';
 import ProfileActions from './ProfileActions';
 import QRModal from './QRModal';
+import ContactForm from './ContactForm';
 import { Card } from '@/components/ui/card';
 
+// ✅ Type mis à jour — avec `plan` et `accepts_contact_requests`
 type Profile = {
   id: string;
   full_name: string;
@@ -27,8 +28,9 @@ type Profile = {
   instagram?: string | null;
   company?: string | null;
   likes_count?: number;
-  subscriptions?: { plan: string; active: boolean }[];
+  plan?: string | null; // ✅ ajouté — remplace `subscriptions`
   nfc_cards?: { status: string }[];
+  accepts_contact_requests?: boolean;
 };
 
 export default function PublicProfileClient({ profile }: { profile: Profile }) {
@@ -40,7 +42,7 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
       (card: any) => card.status === 'active' || card.status === 'lost'
     );
     setHasLostCard(activeOrLostCards.some((card: any) => card.status === 'lost'));
-    
+
     // 🔹 Enregistre le scan
     fetch('/api/scans', {
       method: 'POST',
@@ -52,25 +54,70 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.dev').replace(/\/$/, '');
   const profileUrl = `${baseUrl}/${profile.username}`;
 
+  // 🔹 Helper : badge style selon le plan
+  const getPlanBadgeProps = (plan: string | null) => {
+    switch (plan?.toLowerCase()) {
+      case 'premium':
+        return {
+          label: '🌟 Premium',
+          className: 'bg-gradient-to-r from-purple-600 to-pink-500 text-white',
+        };
+      case 'entreprise':
+        return {
+          label: '🏢 Entreprise',
+          className: 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white',
+        };
+      case 'basic':
+      default:
+        return {
+          label: '🆓 Basique',
+          className: 'bg-gradient-to-r from-gray-600 to-gray-500 text-white',
+        };
+    }
+  };
+
+  const planBadge = profile.plan ? getPlanBadgeProps(profile.plan) : null;
+
   return (
     <>
       {/* 🔹 En-tête — photo en premier */}
-      <motion.header 
+      <motion.header
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
         className="text-center pb-6"
       >
-        {/* Photo de profil */}
-        <motion.div 
+        {/* Photo de profil — badge intégré ici */}
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', damping: 12 }}
           className="relative inline-block mb-6"
         >
+          {/* Cercle principal */}
           <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-3xl md:text-4xl font-bold text-white border-4 border-white/30 shadow-2xl mx-auto">
             {profile.full_name?.charAt(0).toUpperCase() || '?'}
           </div>
+
+          {/* 🔹 ✅ BADGE DU PLAN — positionné en haut à droite */}
+          {planBadge && (
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.25, type: 'spring', stiffness: 300 }}
+              className="absolute -top-2 -right-2"
+            >
+              <Badge
+                className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                  planBadge.className
+                } border border-white/20 shadow-lg`}
+              >
+                {planBadge.label.split(' ')[1]} {/* Juste 'Premium', 'Entreprise', 'Basique' */}
+              </Badge>
+            </motion.div>
+          )}
+
+          {/* Bouton QR — décalé légèrement plus bas pour ne pas chevaucher le badge */}
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -85,7 +132,7 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
         {/* 🔹 Nom d'utilisateur + Nom complet + Like/Statut */}
         <div className="max-w-2xl mx-auto px-4">
           {/* Username (petit) */}
-          <motion.p 
+          <motion.p
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -95,7 +142,7 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
           </motion.p>
 
           {/* Nom complet (grand) + Job */}
-          <motion.h1 
+          <motion.h1
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -103,9 +150,9 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
           >
             {profile.full_name}
           </motion.h1>
-          
+
           {profile.job_title && (
-            <motion.p 
+            <motion.p
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.25 }}
@@ -116,67 +163,54 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
           )}
 
           {/* Like à gauche / Statut carte à droite */}
-          <motion.div 
+          <motion.div
             initial={{ y: 14, opacity: 0 }}
-  animate={{ y: 0, opacity: 1 }}
-  transition={{ delay: 0.35, duration: 0.6, ease: 'easeOut' }}
-  className="
-    mt-6
-    flex items-center justify-between
-    px-4 py-3
-    rounded-2xl
-    bg-white/5
-    backdrop-blur-xl
-    border border-white/10
-    shadow-[0_0_40px_rgba(56,189,248,0.08)]
-  "
->
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.35, duration: 0.6, ease: 'easeOut' }}
+            className="
+              mt-6
+              flex items-center justify-between
+              px-4 py-3
+              rounded-2xl
+              bg-white/5
+              backdrop-blur-xl
+              border border-white/10
+              shadow-[0_0_40px_rgba(56,189,248,0.08)]
+            "
+          >
             {/* 🔹 Like Button — gauche */}
             <div>
-              <GlacialLikeButton 
-                profileId={profile.id} 
-                initialLikes={profile.likes_count || 0} 
+              <GlacialLikeButton
+                profileId={profile.id}
+                initialLikes={profile.likes_count || 0}
               />
             </div>
 
             {/* 🔹 Statut carte — droite */}
-  <div className="flex items-center gap-2 text-xs">
-    <span className="relative flex h-2.5 w-2.5">
-      {!hasLostCard && (
-        <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-      )}
-      <span
-        className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-          hasLostCard ? 'bg-yellow-500' : 'bg-emerald-500'
-        }`}
-      />
-    </span>
-    <span
-      className={`font-medium ${
-        hasLostCard ? 'text-yellow-300' : 'text-emerald-300'
-      }`}
-    >
-      {hasLostCard ? 'Carte déclarée perdue' : 'Carte active'}
-    </span>
-  </div>
-</motion.div>
-          {/* 🔹 Badge abonnement */}
-          {profile.subscriptions?.[0]?.active && (
-            <motion.div 
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.35 }}
-              className="mt-3"
-            >
-              <Badge className="bg-gradient-to-r from-cyan-600 to-blue-500 text-white px-3 py-1 text-sm">
-                {profile.subscriptions[0].plan === 'premium' ? 'Premium' : 'Entreprise'}
-              </Badge>
-            </motion.div>
-          )}
+            <div className="flex items-center gap-2 text-xs">
+              <span className="relative flex h-2.5 w-2.5">
+                {!hasLostCard && (
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                )}
+                <span
+                  className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
+                    hasLostCard ? 'bg-yellow-500' : 'bg-emerald-500'
+                  }`}
+                />
+              </span>
+              <span
+                className={`font-medium ${
+                  hasLostCard ? 'text-yellow-300' : 'text-emerald-300'
+                }`}
+              >
+                {hasLostCard ? 'Carte déclarée perdue' : 'Carte active'}
+              </span>
+            </div>
+          </motion.div>
 
           {/* 🔹 Bio courte */}
           {profile.bio_short && (
-            <motion.p 
+            <motion.p
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -211,9 +245,9 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
                 <LinkItem href={profile.website} label="Site web" />
               )}
               {profile.instagram && (
-                <LinkItem 
-                  href={`https://instagram.com/${profile.instagram}`} 
-                  label={`Instagram: @${profile.instagram}`} 
+                <LinkItem
+                  href={`https://instagram.com/${profile.instagram.trim()}`}
+                  label={`Instagram: @${profile.instagram.trim()}`}
                 />
               )}
             </div>
@@ -250,23 +284,32 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
             Sauvegarder le contact (.vcf)
           </Button>
         </GlacialSection>
+
+        {/* 🔹 Formulaire de contact — conditionnel */}
+        {profile.accepts_contact_requests === true && (
+          <GlacialSection title="📩 Laissez-moi un message">
+            <ContactForm profileId={profile.id} />
+          </GlacialSection>
+        )}
       </div>
 
       {/* 🔹 Footer */}
-      <motion.footer 
+      <motion.footer
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         className="mt-16 text-center text-gray-500 text-sm"
       >
-        <p className="mb-1">Partagé via <span className="text-cyan-300 font-semibold">LUVIKA</span></p>
+        <p className="mb-1">
+          Partagé via <span className="text-cyan-300 font-semibold">LUVIKA</span>
+        </p>
         <p className="flex items-center justify-center gap-1 mx-auto w-fit">
           <span>✨ Révèle qui tu es.</span>
           <ExternalLink className="w-4 h-4 ml-1" />
         </p>
         <p className="mt-3">
-          <a 
-            href="/" 
+          <a
+            href="/"
             className="hover:text-cyan-300 flex items-center justify-center gap-1 mx-auto w-fit"
           >
             luvika.dev <ExternalLink size={14} className="ml-1" />
@@ -274,34 +317,34 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
         </p>
       </motion.footer>
 
-    {/* 🔹 Un seul QRModal — à la racine */}
-<AnimatePresence>
-  {showQRModal && (
-    <QRModal
-      key="qr-modal" // ✅ Clé explicite (optionnel mais sûr)
-      isOpen={showQRModal}
-      onClose={() => setShowQRModal(false)}
-      profileUrl={profileUrl}
-      username={profile.username}
-    />
-  )}
-</AnimatePresence>
+      {/* 🔹 QR Modal */}
+      <AnimatePresence>
+        {showQRModal && (
+          <QRModal
+            key="qr-modal"
+            isOpen={showQRModal}
+            onClose={() => setShowQRModal(false)}
+            profileUrl={profileUrl}
+            username={profile.username}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }
 
-// 🔹 Section glacial animée — inchangée
-const GlacialSection = ({ 
-  title, 
-  children 
-}: { 
-  title?: string; 
-  children: React.ReactNode; 
+// 🔹 Section glacial animée
+const GlacialSection = ({
+  title,
+  children,
+}: {
+  title?: string;
+  children: React.ReactNode;
 }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-100px" }}
+    viewport={{ once: true, margin: '-100px' }}
     className="relative overflow-hidden rounded-2xl"
   >
     <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 to-blue-900/15"></div>
@@ -318,11 +361,11 @@ const GlacialSection = ({
   </motion.div>
 );
 
-// 🔹 Lien élégant — inchangé
+// 🔹 Lien élégant
 const LinkItem = ({ href, label }: { href: string; label: string }) => (
   <a href={href} target="_blank" rel="noopener noreferrer" className="block group">
-    <Button 
-      variant="outline" 
+    <Button
+      variant="outline"
       className="w-full justify-start border-white/15 text-cyan-200 hover:bg-white/10 transition-all group-hover:scale-[1.02]"
     >
       <ExternalLink size={16} className="mr-2 group-hover:rotate-12 transition-transform" />

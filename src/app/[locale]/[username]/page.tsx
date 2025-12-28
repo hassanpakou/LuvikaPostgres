@@ -28,32 +28,33 @@ export default async function PublicProfilePage({
     }
   );
 
-  // ✅ Correction : `let`, pas `const`
+  // ✅ Une seule déclaration — avec `accepts_contact_requests`
   let profileData = null;
   let profileError = null;
 
-  // 🔹 Première tentative
-  const {   data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .ilike('username', decodedUsername.trim())
-    .maybeSingle();
+  // 🔹 Requête unique — avec le champ manquant
+ const { data, error } = await supabase
+  .from('profiles')
+  .select('*, plan, accepts_contact_requests') // ✅ `plan` ajouté explicitement
+  .ilike('username', decodedUsername.trim())
+  .maybeSingle();
 
   if (error) {
     profileError = error;
   } else if (data) {
     profileData = data;
   } else {
-    // 🔁 Deuxième tentative (fallback)
-    const {   data: fallbackData, error: fallbackError } = await supabase
-  .from('profiles')
-  .select('*')
-  .ilike('username', `%${decodedUsername.trim()}%`)
-  .limit(1)
-  .maybeSingle();
+    // 🔁 Fallback — même structure
+    const { data : fallbackData, error: fallbackError } = await supabase
+      .from('profiles')
+      .select('*, accepts_contact_requests')
+      .ilike('username', `%${decodedUsername.trim()}%`)
+      .limit(1)
+      .maybeSingle();
 
-profileData = fallbackData;
-profileError = fallbackError;}
+    profileData = fallbackData;
+    profileError = fallbackError;
+  }
 
   if (profileError || !profileData) {
     console.error('❌ Profil introuvable:', { username: decodedUsername });
@@ -77,7 +78,7 @@ profileError = fallbackError;}
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(20)].map((_, i) => (
             <div
-              key={i}
+              key={`bg-bubble-${i}`}
               className="absolute rounded-full bg-white/5 animate-pulse"
               style={{
                 width: `${8 + Math.random() * 25}px`,

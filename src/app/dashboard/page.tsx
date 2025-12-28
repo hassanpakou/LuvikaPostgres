@@ -45,11 +45,11 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || !user.id) redirect('/auth/sign-in');
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
+ const { data: profile } = await supabase
+  .from('profiles')
+  .select('*, plan, likes_count') // ✅ likes_count inclus
+  .eq('id', user.id)
+  .single();
 
   if (!profile) redirect('/complete-profile');
 
@@ -103,22 +103,22 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardContent
-      user={user}
-      profile={profile}
-      subscription={finalSubscription}
-      cards={cards || []}
-      recentScans={(scans || []).map(scan => ({
-        ...scan,
-        relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
-        profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
-      }))}
-      totalScans={totalScans || 0}
-      qrBase64={qrBase64} // ✅ UNIQUEMENT ICI — pas de doublon
-      profileUrl={profileUrl}
-      planColors={PLAN_COLORS}
-      likesCount={likesCount || 0}
-      isAdmin={isAdmin}
-    />
-  );
+  <DashboardContent
+    user={user}
+    profile={profile}
+    // ❌ subscription={finalSubscription} — SUPPRIMÉ
+    cards={cards || []}
+    recentScans={(scans || []).map(scan => ({
+      ...scan,
+      relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
+      profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
+    }))}
+    totalScans={totalScans || 0}
+    qrBase64={qrBase64}
+    profileUrl={profileUrl}
+    planColors={PLAN_COLORS}
+    // ❌ likesCount={likesCount || 0} — aussi supprimé si vous utilisez `profile.likes_count`
+    isAdmin={isAdmin}
+  />
+);
 }
