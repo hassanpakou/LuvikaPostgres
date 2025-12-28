@@ -3,7 +3,8 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, Mail, Phone, MapPin, MessageCircle } from 'lucide-react';
+import { Download, Mail, Phone, MapPin, MessageCircle, ExternalLink } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 type Profile = {
   email?: string | null;
@@ -95,6 +96,22 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
       >
         <Download className="mr-2 h-4 w-4" /> Sauvegarder le contact (.vcf)
       </Button>
+      {/* 🔹 Backlink minimal — légal & discret */}
+<motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ delay: 1 }}
+  className="fixed bottom-4 right-4 z-20"
+>
+  <a
+    href="/"
+    className="text-xs text-gray-500 hover:text-cyan-300 transition-colors flex items-center gap-1"
+    aria-label="Retour à l'accueil LUVIKA"
+  >
+    <span>luvika.dev</span>
+    <ExternalLink className="w-3 h-3" />
+  </a>
+</motion.div>
     </>
   );
 }

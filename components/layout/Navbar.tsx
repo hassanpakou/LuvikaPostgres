@@ -61,12 +61,6 @@ const GlowingIconsStyle = `
   .bubble-4 { animation: floatBubble 11s infinite; left: 62%; top: 100%; animation-delay: 0.3s; width: 18px; height: 18px; }
   .bubble-5 { animation: floatBubble 10s infinite; left: 82%; top: 107%; animation-delay: 2.1s; width: 26px; height: 26px; }
 
-  .glow-admin { animation: glowPulseAmber 2s ease-in-out infinite; }
-  .glow-user { animation: glowPulse 2s ease-in-out infinite; }
-
-  .animated-bg-admin { background: linear-gradient(45deg, #fbbf24, #f59e0b, #d97706); background-size: 300% 300%; animation: gradientBG 6s ease infinite; }
-  .animated-bg-user { background: linear-gradient(45deg, #3b82f6, #0ea5e9, #0284c7); background-size: 300% 300%; animation: gradientBG 6s ease infinite; }
-
   @keyframes gradientBG { 
     0% { background-position: 0% 50%; } 
     50% { background-position: 100% 50%; } 
@@ -418,8 +412,8 @@ export default function Navbar() {
                 <span className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent group-hover:from-white group-hover:to-blue-200 transition-all">
                   LUVIKA
                 </span>
-                {isAdmin && <Shield className="ml-1 h-5 w-5 text-amber-400 glow-admin" />}
-                {isUser && <UserIcon className="ml-1 h-5 w-5 text-cyan-400 glow-user" />}
+                {isAdmin && <Shield className="ml-1 h-5 w-5" />}
+                {isUser && <UserIcon className="ml-1 h-5 w-5" />}
               </Link>
             </motion.div>
 
