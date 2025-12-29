@@ -2,17 +2,23 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Heart, Phone, Mail, MessageCircle, MapPin,
+  Instagram, Globe, Download, QrCode, ExternalLink,
+  CheckCircle, AlertTriangle, UserCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, UserCheck, QrCode, ExternalLink } from 'lucide-react';
 import GlacialLikeButton from './GlacialLikeButton';
 import ScanTracker from './ScanTracker';
-import ProfileActions from './ProfileActions';
 import QRModal from './QRModal';
 import ContactForm from './ContactForm';
 import { Card } from '@/components/ui/card';
 
-// ✅ Type mis à jour — avec `plan` et `accepts_contact_requests`
+const isSectionVisible = (section: string, profile: Profile): boolean => {
+  return profile.sections_visibility?.[section] !== false;
+};
+
 type Profile = {
   id: string;
   full_name: string;
@@ -28,9 +34,11 @@ type Profile = {
   instagram?: string | null;
   company?: string | null;
   likes_count?: number;
-  plan?: string | null; // ✅ ajouté — remplace `subscriptions`
+  plan?: string | null;
   nfc_cards?: { status: string }[];
   accepts_contact_requests?: boolean;
+  sections_visibility?: Record<string, boolean>;
+  cover_url?: string | null;
 };
 
 export default function PublicProfileClient({ profile }: { profile: Profile }) {
@@ -43,7 +51,6 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
     );
     setHasLostCard(activeOrLostCards.some((card: any) => card.status === 'lost'));
 
-    // 🔹 Enregistre le scan
     fetch('/api/scans', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -51,226 +58,182 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
     }).catch(console.warn);
   }, [profile.id]);
 
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.dev').replace(/\/$/, '');
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app').replace(/\/+$/, '');
   const profileUrl = `${baseUrl}/${profile.username}`;
 
-  // 🔹 Helper : badge style selon le plan
-  const getPlanBadgeProps = (plan: string | null) => {
-    switch (plan?.toLowerCase()) {
-      case 'premium':
-        return {
-          label: '🌟 Premium',
-          className: 'bg-gradient-to-r from-purple-600 to-pink-500 text-white',
-        };
-      case 'entreprise':
-        return {
-          label: '🏢 Entreprise',
-          className: 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white',
-        };
-      case 'basic':
-      default:
-        return {
-          label: '🆓 Basique',
-          className: 'bg-gradient-to-r from-gray-600 to-gray-500 text-white',
-        };
-    }
-  };
+  // 🔹 ✅ Nettoyage robuste + LOGS
+  const rawCoverUrl = profile.cover_url;
+const cleanCoverUrl = (rawCoverUrl || '')
+  .replace(/\u00A0/g, ' ') // Remplace espaces insécables par espaces normaux
+  .replace(/\s+/g, ' ')    // Réduit plusieurs espaces à un seul
+  .trim();                 // Supprime espaces début/fin  
+  const coverUrl = cleanCoverUrl && cleanCoverUrl !== 'null' && cleanCoverUrl !== ''
+    ? cleanCoverUrl.startsWith('http')
+      ? cleanCoverUrl
+: cleanCoverUrl.startsWith('http')
+  ? cleanCoverUrl
+  : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
+      : '/cover-default.png';
 
-  const planBadge = profile.plan ? getPlanBadgeProps(profile.plan) : null;
+  // 🔹 ✅ LOGS DÉTAILLÉS AU MONTAGE
+  useEffect(() => {
+    console.group('🔍 Cover URL Debug');
+    console.log('• profile.cover_url (brut) =', JSON.stringify(rawCoverUrl));
+    console.log('• Après trim + clean =', JSON.stringify(cleanCoverUrl));
+    console.log('• URL finale utilisée =', coverUrl);
+
+    // 🔹 Test réseau asynchrone
+    const img = new Image();
+    img.onload = () => console.log('✅ Image chargée avec succès');
+    img.onerror = (e) => console.warn('❌ Échec du chargement de l’image', e);
+    img.src = coverUrl;
+    
+    console.groupEnd();
+  }, [profile.cover_url]);
 
   return (
-    <>
-      {/* 🔹 En-tête — photo en premier */}
-      <motion.header
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="text-center pb-6"
-      >
-        {/* Photo de profil — badge intégré ici */}
+    <div className="relative min-h-screen">
+      {/* 🔹 Photo de couverture */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+        style={{
+          backgroundImage: `url(${encodeURI(coverUrl)})`,
+          backgroundColor: '',
+        }}
+      />
+
+      <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
+        {/* 🔹 En-tête — photo + badge intégré */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', damping: 12 }}
-          className="relative inline-block mb-6"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-7"
         >
-          {/* Cercle principal */}
-          <div className="w-36 h-36 md:w-44 md:h-44 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-3xl md:text-4xl font-bold text-white border-4 border-white/30 shadow-2xl mx-auto">
-            {profile.full_name?.charAt(0).toUpperCase() || '?'}
-          </div>
-
-          {/* 🔹 ✅ BADGE DU PLAN — positionné en haut à droite */}
-          {planBadge && (
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.25, type: 'spring', stiffness: 300 }}
-              className="absolute -top-2 -right-2"
-            >
-              <Badge
-                className={`px-2 py-0.5 text-xs font-medium rounded-full ${
-                  planBadge.className
-                } border border-white/20 shadow-lg`}
-              >
-                {planBadge.label.split(' ')[1]} {/* Juste 'Premium', 'Entreprise', 'Basique' */}
-              </Badge>
-            </motion.div>
-          )}
-
-          {/* Bouton QR — décalé légèrement plus bas pour ne pas chevaucher le badge */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowQRModal(true)}
-            className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg border border-white/20"
-            aria-label="Afficher QR Code"
-          >
-            <QrCode className="w-4 h-4 md:w-5 md:h-5 text-white" />
-          </motion.button>
-        </motion.div>
-
-        {/* 🔹 Nom d'utilisateur + Nom complet + Like/Statut */}
-        <div className="max-w-2xl mx-auto px-4">
-          {/* Username (petit) */}
-          <motion.p
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.1 }}
-            className="text-cyan-300 text-sm font-mono tracking-wider"
-          >
-            @{profile.username}
-          </motion.p>
-
-          {/* Nom complet (grand) + Job */}
-          <motion.h1
-            initial={{ y: 10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-2xl md:text-3xl font-bold text-white mt-1"
-          >
-            {profile.full_name}
-          </motion.h1>
-
-          {profile.job_title && (
-            <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.25 }}
-              className="text-gray-300 mt-1"
-            >
-              {profile.job_title}
-            </motion.p>
-          )}
-
-          {/* Like à gauche / Statut carte à droite */}
-          <motion.div
-            initial={{ y: 14, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.35, duration: 0.6, ease: 'easeOut' }}
-            className="
-              mt-6
-              flex items-center justify-between
-              px-4 py-3
-              rounded-2xl
-              bg-white/5
-              backdrop-blur-xl
-              border border-white/10
-              shadow-[0_0_40px_rgba(56,189,248,0.08)]
-            "
-          >
-            {/* 🔹 Like Button — gauche */}
-            <div>
-              <GlacialLikeButton
-                profileId={profile.id}
-                initialLikes={profile.likes_count || 0}
-              />
+          <div className="relative inline-block">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto">
+              {profile.full_name?.charAt(0).toUpperCase() || '?'}
             </div>
 
-            {/* 🔹 Statut carte — droite */}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="relative flex h-2.5 w-2.5">
-                {!hasLostCard && (
-                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
-                )}
-                <span
-                  className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
-                    hasLostCard ? 'bg-yellow-500' : 'bg-emerald-500'
-                  }`}
-                />
-              </span>
-              <span
-                className={`font-medium ${
-                  hasLostCard ? 'text-yellow-300' : 'text-emerald-300'
-                }`}
+            {/* 🔹 BADGE PLAN — croché, texte complet */}
+            {profile.plan && profile.plan !== 'basic' && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="absolute -top-2 -right-2"
               >
-                {hasLostCard ? 'Carte déclarée perdue' : 'Carte active'}
-              </span>
+                <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
+                  profile.plan === 'premium'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+                }`}>
+                  {profile.plan === 'premium' ? 'Premium' : 'Entreprise'}
+                </Badge>
+              </motion.div>
+            )}
+
+            {/* 🔹 Bouton QR */}
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowQRModal(true)}
+              className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center shadow border border-white/20"
+              aria-label="QR Code"
+            >
+              <QrCode className="w-5 h-5 text-white" />
+            </motion.button>
+          </div>
+
+          <motion.div className="mt-4">
+            <p className="text-cyan-300 font-mono text-sm">@{profile.username}</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-white mt-1.5">{profile.full_name}</h1>
+            {profile.job_title && (
+              <p className="text-gray-300 mt-0.5">{profile.job_title}{profile.company && ` · ${profile.company}`}</p>
+            )}
+          </motion.div>
+
+          {/* 🔹 Like & statut NFC */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-5 flex justify-center gap-5"
+          >
+            <div className="text-center">
+              <GlacialLikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
+              <p className="text-gray-400 text-xs mt-1">J’aime</p>
+            </div>
+            <div className="text-center">
+              <div className="flex items-center gap-1.5">
+                {hasLostCard ? (
+                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
+                ) : (
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                )}
+                <span className={`text-xs font-medium ${
+                  hasLostCard ? 'text-yellow-300' : 'text-emerald-300'
+                }`}>
+                  {hasLostCard ? 'Perdue' : 'Active'}
+                </span>
+              </div>
             </div>
           </motion.div>
 
-          {/* 🔹 Bio courte */}
           {profile.bio_short && (
             <motion.p
-              initial={{ y: 10, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
-              className="text-gray-300 mt-4 text-base leading-relaxed"
+              className="text-gray-300 mt-4 text-sm max-w-xl mx-auto leading-relaxed"
             >
               {profile.bio_short}
             </motion.p>
           )}
+        </motion.div>
 
-          <ScanTracker profileId={profile.id} />
-        </div>
-      </motion.header>
-
-      {/* 🔹 Sections glacées */}
-      <div className="space-y-7">
-        <GlacialSection title="📬 Me contacter">
-          <ProfileActions profile={profile} />
-        </GlacialSection>
-
-        {profile.bio_long && (
-          <GlacialSection title="📖 À propos">
-            <p className="text-gray-300 whitespace-pre-line leading-relaxed text-lg">
-              {profile.bio_long}
-            </p>
-          </GlacialSection>
-        )}
-
-        {(profile.website || profile.instagram) && (
-          <GlacialSection title="🔗 Liens">
-            <div className="space-y-3">
-              {profile.website && (
-                <LinkItem href={profile.website} label="Site web" />
-              )}
-              {profile.instagram && (
-                <LinkItem
-                  href={`https://instagram.com/${profile.instagram.trim()}`}
-                  label={`Instagram: @${profile.instagram.trim()}`}
-                />
-              )}
-            </div>
-          </GlacialSection>
-        )}
-
-        <GlacialSection>
-          <Button
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 py-4 text-lg font-medium"
+        {/* 🔹 Grille compacte — icônes 20px, gap-1.5, SANS fond */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="grid grid-cols-3 md:grid-cols-4 gap-1.5 mb-6"
+        >
+          {isSectionVisible('contact', profile) && profile.email && (
+            <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
+          )}
+          {isSectionVisible('contact', profile) && profile.phone && (
+            <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
+          )}
+          {isSectionVisible('contact', profile) && profile.whatsapp && (
+            <ActionItem 
+              icon={<MessageCircle className="w-5 h-5 text-emerald-400" />} 
+              label="WhatsApp" 
+              href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} 
+            />
+          )}
+          {profile.address && (
+            <ActionItem 
+              icon={<MapPin className="w-5 h-5 text-amber-400" />} 
+              label="Carte" 
+              href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} 
+            />
+          )}
+          {profile.website && (
+            <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
+          )}
+          {profile.instagram && (
+            <ActionItem 
+              icon={<Instagram className="w-5 h-5 text-pink-400" />} 
+              label="IG" 
+              href={`https://instagram.com/${profile.instagram.trim()}`} 
+            />
+          )}
+          <ActionItem
+            icon={<Download className="w-5 h-5 text-purple-400" />}
+            label="vCard"
             onClick={() => {
-              const vCard = `BEGIN:VCARD
-VERSION:3.0
-FN:${profile.full_name}
-ORG:${profile.company || ''}
-TITLE:${profile.job_title || ''}
-TEL;TYPE=WORK,VOICE:${profile.phone || ''}
-TEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}
-EMAIL:${profile.email || ''}
-ADR;TYPE=WORK:;;${profile.address || ''};;;;
-URL:${profile.website || ''}
-NOTE:Contact via LUVIKA — luvika.me/${profile.username}
-END:VCARD`.trim().replace(/\n/g, '\r\n');
-
+              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — luvika.me/${profile.username}\r\nEND:VCARD`;
               const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
@@ -279,45 +242,40 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
               a.click();
               URL.revokeObjectURL(url);
             }}
-          >
-            <Download className="mr-2 h-5 w-5" />
-            Sauvegarder le contact (.vcf)
-          </Button>
-        </GlacialSection>
+          />
+        </motion.div>
 
-        {/* 🔹 Formulaire de contact — conditionnel */}
-        {profile.accepts_contact_requests === true && (
-          <GlacialSection title="📩 Laissez-moi un message">
-            <ContactForm profileId={profile.id} />
-          </GlacialSection>
-        )}
+        {/* 🔹 Sections */}
+        <div className="space-y-5">
+          {profile.bio_long && isSectionVisible('bio', profile) && (
+            <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                {profile.bio_long}
+              </p>
+            </Section>
+          )}
+
+          {profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
+            <Section title="Message" icon={<Mail className="text-cyan-400 w-5 h-5" />}>
+              <ContactForm profileId={profile.id} />
+            </Section>
+          )}
+        </div>
+
+        <ScanTracker profileId={profile.id} />
+
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7 }}
+          className="mt-10 text-center text-gray-500 text-xs"
+        >
+          <a href="/" className="text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-1">
+            luvika.dev <ExternalLink className="w-3 h-3" />
+          </a>
+        </motion.footer>
       </div>
 
-      {/* 🔹 Footer */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="mt-16 text-center text-gray-500 text-sm"
-      >
-        <p className="mb-1">
-          Partagé via <span className="text-cyan-300 font-semibold">LUVIKA</span>
-        </p>
-        <p className="flex items-center justify-center gap-1 mx-auto w-fit">
-          <span>✨ Révèle qui tu es.</span>
-          <ExternalLink className="w-4 h-4 ml-1" />
-        </p>
-        <p className="mt-3">
-          <a
-            href="/"
-            className="hover:text-cyan-300 flex items-center justify-center gap-1 mx-auto w-fit"
-          >
-            luvika.dev <ExternalLink size={14} className="ml-1" />
-          </a>
-        </p>
-      </motion.footer>
-
-      {/* 🔹 QR Modal */}
       <AnimatePresence>
         {showQRModal && (
           <QRModal
@@ -329,47 +287,34 @@ END:VCARD`.trim().replace(/\n/g, '\r\n');
           />
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
 
-// 🔹 Section glacial animée
-const GlacialSection = ({
-  title,
-  children,
-}: {
-  title?: string;
-  children: React.ReactNode;
+const ActionItem = ({ icon, label, href, onClick }: { 
+  icon: React.ReactNode; 
+  label: string; 
+  href?: string; 
+  onClick?: () => void; 
 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: '-100px' }}
-    className="relative overflow-hidden rounded-2xl"
+  <motion.button
+    whileHover={{ y: -2 }}
+    whileTap={{ scale: 0.98 }}
+    onClick={(e) => { if (onClick) { e.preventDefault(); onClick(); } }}
+    className="flex flex-col items-center p-2.5 rounded-lg hover:bg-white/5 transition-colors"
   >
-    <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/10 to-blue-900/15"></div>
-    <Card className="glass-border relative z-10 bg-white/5 backdrop-blur-xl border border-white/15">
-      {title && (
-        <div className="px-6 pt-6 pb-3">
-          <h2 className="text-xl md:text-2xl font-semibold text-white flex items-center gap-2">
-            <UserCheck className="text-cyan-300" /> {title}
-          </h2>
-        </div>
-      )}
-      <div className="px-6 pb-6">{children}</div>
-    </Card>
-  </motion.div>
+    {icon}
+    <span className="text-[11px] text-gray-300 mt-1">{label}</span>
+  </motion.button>
 );
 
-// 🔹 Lien élégant
-const LinkItem = ({ href, label }: { href: string; label: string }) => (
-  <a href={href} target="_blank" rel="noopener noreferrer" className="block group">
-    <Button
-      variant="outline"
-      className="w-full justify-start border-white/15 text-cyan-200 hover:bg-white/10 transition-all group-hover:scale-[1.02]"
-    >
-      <ExternalLink size={16} className="mr-2 group-hover:rotate-12 transition-transform" />
-      {label}
-    </Button>
-  </a>
+const Section = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
+  <Card className="border border-white/10 bg-transparent">
+    <div className="px-4 pt-3 pb-2 border-b border-white/5">
+      <h2 className="text-base font-semibold text-white flex items-center gap-2">
+        {icon} {title}
+      </h2>
+    </div>
+    <div className="px-4 pb-4">{children}</div>
+  </Card>
 );

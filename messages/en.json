@@ -35,6 +35,24 @@
     "visibility": {
       "title": "Section visibility",
       "description": "Choose what visitors can see."
+    },"quick_menu": {
+      "visibility": "Visibility",
+      "contact": "Messages",
+      "qr": "QR Code",
+      "nfc": "NFC Cards",
+      "report": "Report",
+      "message": "Custom Message",
+      "orders": "Orders",
+      "upgrade": "Upgrade"
+    },
+    "contact_requests": {
+      "title": "Visitor messages",
+      "description": "Allow people viewing your public profile to leave you a message.",
+      "label": "Receive messages",
+      "enabled": "Enabled – visitors can contact you",
+      "disabled": "Disabled – form hidden",
+      "enable": "Enable",
+      "disable": "Disable"
     },
     "time": {
       "seconds": "{count} second",
@@ -45,14 +63,6 @@
       "hours_plural": "{count} hours",
       "days": "{count} day",
       "days_plural": "{count} days"
-    },
-    "subscription": {
-      "plans": {
-        "freemium": "Freemium",
-        "basic": "Freemium",
-        "premium": "Premium",
-        "entreprise": "Enterprise"
-      }
     },
     "orders": {
       "title": "Card orders",
@@ -65,13 +75,15 @@
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "entreprise": "Enterprise"
+        "enterprise": "Enterprise"
       },
       "active": "✅ Active",
       "inactive": "⚠️ Inactive",
       "active_until": "Your plan is active until {date}.",
       "upgrade_prompt": "Your account is on Freemium. Contact admin to upgrade.",
-      "request_upgrade": "Request upgrade"
+      "request_upgrade": "Request upgrade",
+      "success_title": "✅ Success!",
+      "success_message": "An admin will contact you within 24h."
     },
     "qr": {
       "title": "Profile QR Code",
@@ -107,10 +119,10 @@
     }
   },
   "auth": {
-  "welcome": {
-    "title": "Welcome back!",
-    "message": "Great to see you again on LUVIKA. Ready to create? 🌟"
-  },
+    "welcome": {
+      "title": "Welcome back!",
+      "message": "Great to see you again on LUVIKA. Ready to create? 🌟"
+    },
     "complete": {
       "title": "Complete your profile",
       "description": "A few details to personalize your account",
@@ -312,7 +324,7 @@
     "plans": {
       "basic": "Basic",
       "premium": "Premium",
-      "entreprise": "Enterprise"
+      "enterprise": "Enterprise"
     },
     "actions": {
       "title": "Quick actions",
@@ -372,12 +384,12 @@
     "language": "Language",
     "sign_out": "Sign out",
     "sign_out_confirm_title": "Sign out",
-  "sign_out_confirm_message": "Are you sure you want to sign out?",
-  "sign_out_confirm_yes": "Yes, sign out",
-  "sign_out_confirm_no": "Cancel",
-  "farewell_title": "Goodbye!",
-  "farewell_message": "Thank you for using LUVIKA. We’ll miss you… 😢"
-},
+    "sign_out_confirm_message": "Are you sure you want to sign out?",
+    "sign_out_confirm_yes": "Yes, sign out",
+    "sign_out_confirm_no": "Cancel",
+    "farewell_title": "Goodbye!",
+    "farewell_message": "Thank you for using LUVIKA. We’ll miss you… 😢"
+  },
   "about": {
     "title": "About",
     "subtitle": "LUVIKA was born from a simple vision: bring meaning back to professional networking, with elegance, security, and African pride.",
@@ -448,65 +460,65 @@
     "copyright": "All rights reserved. Designed in Kinshasa with ❤️."
   },
   "pricing": {
-  "title": "Plans & Pricing",
-  "billing": {
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "per_month": "/month",
-    "per_year": "/year"
-  },
-  "cta": {
-    "choose": "Choose {plan}"
-  },
-  "footer": {
-    "custom_plan": "Need a custom plan?",
-    "contact_us": "Contact us"
-  },
-  "plans": {
-    "freemium": {
-      "title": "Freemium",
-      "desc": "To get started",
-      "popular": "",
-      "features": {
-        "nfc": "1 NFC card",
-        "users": "1 user",
-        "events": "No events",
-        "presence": "Basic visibility",
-        "stats": "Limited statistics",
-        "roles": "No team roles",
-        "dashboard": "Basic dashboard"
-      }
+    "title": "Plans & Pricing",
+    "billing": {
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "per_month": "/month",
+      "per_year": "/year"
     },
-    "premium": {
-      "title": "Premium",
-      "desc": "For ambitious professionals",
-      "popular": "Most popular",
-      "features": {
-        "nfc": "Unlimited NFC cards",
-        "users": "Up to 5 users",
-        "events": "Basic events",
-        "presence": "Enhanced visibility",
-        "stats": "Advanced statistics",
-        "roles": "Team roles",
-        "dashboard": "Advanced dashboard"
-      }
+    "cta": {
+      "choose": "Choose {plan}"
     },
-    "enterprise": {
-      "title": "Enterprise",
-      "desc": "For teams & businesses",
-      "popular": "",
-      "features": {
-        "nfc": "Unlimited + custom NFC cards",
-        "users": "Unlimited users",
-        "events": "Advanced events",
-        "presence": "Priority visibility",
-        "stats": "Consolidated analytics",
-        "roles": "Advanced roles + audit",
-        "dashboard": "Global dashboard + API"
+    "footer": {
+      "custom_plan": "Need a custom plan?",
+      "contact_us": "Contact us"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Freemium",
+        "desc": "To get started",
+        "popular": "",
+        "features": {
+          "nfc": "1 NFC card",
+          "users": "1 user",
+          "events": "No events",
+          "presence": "Basic visibility",
+          "stats": "Limited statistics",
+          "roles": "No team roles",
+          "dashboard": "Basic dashboard"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "desc": "For ambitious professionals",
+        "popular": "Most popular",
+        "features": {
+          "nfc": "Unlimited NFC cards",
+          "users": "Up to 5 users",
+          "events": "Basic events",
+          "presence": "Enhanced visibility",
+          "stats": "Advanced statistics",
+          "roles": "Team roles",
+          "dashboard": "Advanced dashboard"
+        }
+      },
+      "enterprise": {
+        "title": "Enterprise",
+        "desc": "For teams & businesses",
+        "popular": "",
+        "features": {
+          "nfc": "Unlimited + custom NFC cards",
+          "users": "Unlimited users",
+          "events": "Advanced events",
+          "presence": "Priority visibility",
+          "stats": "Consolidated analytics",
+          "roles": "Advanced roles + audit",
+          "dashboard": "Global dashboard + API"
+        }
       }
     }
-  }
-},
+  },
   "time": {
     "seconds": "{count} second",
     "seconds_plural": "{count} seconds",
@@ -516,5 +528,23 @@
     "hours_plural": "{count} hours",
     "days": "{count} day",
     "days_plural": "{count} days"
+  },
+  "other_features": {
+    "title": "Other features",
+    "description": "Manage your NFC card or share a custom message.",
+    "report_card": "Report your card",
+    "reasons": {
+      "lost": "Card lost",
+      "stolen": "Card stolen",
+      "damaged": "Card damaged",
+      "no_longer_needed": "No longer need the card",
+      "other": "Other (specify)"
+    },
+    "custom_reason": "Specify the reason",
+    "custom_reason_placeholder": "e.g. card broken, printing error...",
+    "submit_report": "Report the card",
+    "custom_message": "Custom message",
+    "custom_message_placeholder": "e.g. I changed jobs, please update my profile...",
+    "send_message": "Send message"
   }
 }

@@ -1,8 +1,8 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Bisala kitu oyo nde ye — kati ya bakanisa NFC smart · Kati ya QR Code · Mikandeli · Basala",
+  "tagline": "Bisala kitu oyo nde ye — kati ya bakanisa NFC smart · QR Code · Mikandeli · Basala",
   "cta": {
-    "create": "Kobela profil na ngai",
+    "create": "Kobetela profil na ngai",
     "discover": "Koyeba"
   },
   "features": {
@@ -35,24 +35,34 @@
     "visibility": {
       "title": "Koyeba lokola bato bakendaka",
       "description": "Lobela lokola bato bakendaka bakoyeba."
+    },"quick_menu": {
+      "visibility": "Koyeba",
+      "contact": "Basms",
+      "qr": "Kɔd QR",
+      "nfc": "Bakarte NFC",
+      "report": "Kobetela",
+      "message": "SMS ya mpenza",
+      "orders": "Bakolí",
+      "upgrade": "Kobongola"
+    },
+    "contact_requests": {
+      "title": "Bamesaje ya bato oyo bakanisa",
+      "description": "Kokanisa bato oyo bakanisa profil public na yo kosala bamesaje na yo.",
+      "label": "Kosala bamesaje",
+      "enabled": "Eza na mabele – bato oyo bakanisa bakoki kotinda yo",
+      "disabled": "Ezalaka te – fome eza te",
+      "enable": "Kobetela",
+      "disable": "Kosala te"
     },
     "time": {
       "seconds": "{count} sekonde",
       "seconds_plural": "{count} sekonde",
       "minutes": "{count} minute",
       "minutes_plural": "{count} minute",
-      "hours": "{count} heure",
-      "hours_plural": "{count} heure",
+      "hours": "{count} ntango",
+      "hours_plural": "{count} ntango",
       "days": "{count} mokolo",
-      "days_plural": "{count} mokolo"
-    },
-    "subscription": {
-      "plans": {
-        "freemium": "Freemium",
-        "basic": "Freemium",
-        "premium": "Premium",
-        "entreprise": "Entreprise"
-      }
+      "days_plural": "{count} mikolo"
     },
     "orders": {
       "title": "Bakanisa",
@@ -67,11 +77,13 @@
         "premium": "Premium",
         "entreprise": "Entreprise"
       },
-      "active": "✅ Active",
-      "inactive": "⚠️ Inactive",
-      "active_until": "Mikandeli na yo eza active kala {date}.",
-      "upgrade_prompt": "Konti na yo eza na Freemium. Kotinda admin pe okosala upgrade.",
-      "request_upgrade": "Kotinda upgrade"
+      "active": "✅ Eza na mabele",
+      "inactive": "⚠️ Ezalaka te",
+      "active_until": "Mikandeli na yo eza na mabele kala {date}.",
+      "upgrade_prompt": "Konti na yo eza na Freemium. Kotinda administrateur pe okosala upgrade.",
+      "request_upgrade": "Kotinda upgrade",
+      "success_title": "✅ Mabele !",
+      "success_message": "Moto moko ya admin atasala yo na mbula 24."
     },
     "qr": {
       "title": "QR Code ya profil",
@@ -81,13 +93,13 @@
     },
     "nfc": {
       "title": "Bakanisa NFC ({count})",
-      "empty": "Tei bakanisa NFC oyo eza na mokano ya ngai.",
+      "empty": "Tei bakanisa NFC oyo eza na mokano na ngai.",
       "ago": "kala",
       "status": {
-        "active": "Active",
+        "active": "Eza na mabele",
         "lost": "Epesaki",
         "blocked": "Ebloki",
-        "inactive": "Inactive"
+        "inactive": "Ezalaka te"
       },
       "upgrade_required": "⚠️ Mikandeli ya Premium ezalaka nzela",
       "add_card": "Kobetela bakanisa NFC"
@@ -107,10 +119,10 @@
     }
   },
   "auth": {
-  "welcome": {
-    "title": "Mbote !",
-    "message": "Tosengaki yo mbala mingi na LUVIKA. Okoki kozala nini lelo ? 🌟"
-  },
+    "welcome": {
+      "title": "Mbote !",
+      "message": "Tosengaki yo mbala mingi na LUVIKA. Okoki kozala nini lelo ? 🌟"
+    },
     "complete": {
       "title": "Kobetela profil na ngai",
       "description": "Bango mingi lokola oyo okokanisa",
@@ -376,7 +388,7 @@
     "sign_out_confirm_yes": "Eee, kolongola",
     "sign_out_confirm_no": "Kotia",
     "farewell_title": "Matondo !",
-  "farewell_message": "Merci moko na yo. Oyokaki yo mbala mingi… 😢"
+    "farewell_message": "Matondo mingi na yo. Oyokaki yo mbala mingi… 😢"
   },
   "about": {
     "title": "Lokola bato bakendaka",
@@ -448,73 +460,91 @@
     "copyright": "Tous droits réservés. Conçu na Kinshasa na ❤️."
   },
   "pricing": {
-  "title": "Bamikandeli & Makambo",
-  "billing": {
-    "monthly": "Na ntango",
-    "yearly": "Na mbula",
-    "per_month": "/ntango",
-    "per_year": "/mbula"
-  },
-  "cta": {
-    "choose": "Lobela {plan}"
-  },
-  "footer": {
-    "custom_plan": "Ndenge nini oyo okokanisa ?",
-    "contact_us": "Kotinda bato oyo bakendaka"
-  },
-  "plans": {
-    "freemium": {
-      "title": "Freemium",
-      "desc": "Na kobetela",
-      "popular": "",
-      "features": {
-        "nfc": "1 bakanisa NFC",
-        "users": "1 moto",
-        "events": "Tei basala",
-        "presence": "Visibilité basique",
-        "stats": "Statistiques basique",
-        "roles": "Tei rôles",
-        "dashboard": "Dashboard basique"
-      }
+    "title": "Bamikandeli & Makambo",
+    "billing": {
+      "monthly": "Na ntango",
+      "yearly": "Na mbula",
+      "per_month": "/ntango",
+      "per_year": "/mbula"
     },
-    "premium": {
-      "title": "Premium",
-      "desc": "Na bato oyo bakokanisa mingi",
-      "popular": "Plus populaire",
-      "features": {
-        "nfc": "Bakanisa NFC mingi",
-        "users": "Lobi kala 5 bato",
-        "events": "Basala basique",
-        "presence": "Visibilité na mabele",
-        "stats": "Statistiques na mabele",
-        "roles": "Rôles ya bato",
-        "dashboard": "Dashboard na mabele"
-      }
+    "cta": {
+      "choose": "Lobela {plan}"
     },
-    "enterprise": {
-      "title": "Entreprise",
-      "desc": "Na bato oyo bakendaka pe entreprise",
-      "popular": "",
-      "features": {
-        "nfc": "Bakanisa NFC mingi + custom",
-        "users": "Bato mingi",
-        "events": "Basala na mabele",
-        "presence": "Visibilité prioritaire",
-        "stats": "Analytics mingi",
-        "roles": "Rôles na mabele + audit",
-        "dashboard": "Dashboard mingi + API"
+    "footer": {
+      "custom_plan": "Ndenge nini oyo okokanisa ?",
+      "contact_us": "Kotinda bato oyo bakendaka"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Freemium",
+        "desc": "Na kobetela",
+        "popular": "",
+        "features": {
+          "nfc": "1 bakanisa NFC",
+          "users": "1 moto",
+          "events": "Tei basala",
+          "presence": "Visibilité basique",
+          "stats": "Statistiques basique",
+          "roles": "Tei rôles",
+          "dashboard": "Dashboard basique"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "desc": "Na bato oyo bakokanisa mingi",
+        "popular": "Plus populaire",
+        "features": {
+          "nfc": "Bakanisa NFC mingi",
+          "users": "Lobi kala 5 bato",
+          "events": "Basala basique",
+          "presence": "Visibilité na mabele",
+          "stats": "Statistiques na mabele",
+          "roles": "Rôles ya bato",
+          "dashboard": "Dashboard na mabele"
+        }
+      },
+      "enterprise": {
+        "title": "Entreprise",
+        "desc": "Na bato oyo bakendaka pe entreprise",
+        "popular": "",
+        "features": {
+          "nfc": "Bakanisa NFC mingi + custom",
+          "users": "Bato mingi",
+          "events": "Basala na mabele",
+          "presence": "Visibilité prioritaire",
+          "stats": "Analytics mingi",
+          "roles": "Rôles na mabele + audit",
+          "dashboard": "Dashboard mingi + API"
+        }
       }
     }
-  }
-},
+  },
   "time": {
     "seconds": "{count} sekonde",
     "seconds_plural": "{count} sekonde",
     "minutes": "{count} minute",
-    "minutes_plural": "{count} minute",
-    "hours": "{count} heure",
-    "hours_plural": "{count} heure",
+    "minutes_plural": "{count} minutes",
+    "hours": "{count} ntango",
+    "hours_plural": "{count} ntango",
     "days": "{count} mokolo",
-    "days_plural": "{count} mokolo"
+    "days_plural": "{count} mikolo"
+  },
+  "other_features": {
+    "title": "Bato oyo bakendaka mosusu",
+    "description": "Kobetela bakanisa NFC na yo to kolonga bamesaje mosusu.",
+    "report_card": "Koloba bakanisa na yo",
+    "reasons": {
+      "lost": "Bakanisa epesaki",
+      "stolen": "Bakanisa ekoki",
+      "damaged": "Bakanisa ebandeli",
+      "no_longer_needed": "Ngai te nakoki bakanisa wana",
+      "other": "Mosusu (lobela)"
+    },
+    "custom_reason": "Lobela mokano",
+    "custom_reason_placeholder": "Ex: bakanisa ebandeli, erreur ya koyeba...",
+    "submit_report": "Koloba bakanisa",
+    "custom_message": "Bamesaje mosusu",
+    "custom_message_placeholder": "Ex: Ngai nakoki kosala mwa, kotia profil na ngai...",
+    "send_message": "Kotindisa bamesaje"
   }
 }

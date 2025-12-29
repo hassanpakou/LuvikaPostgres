@@ -1,9 +1,19 @@
 // src/app/dashboard/page.tsx
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { generateQRBase64 } from '@/lib/qr'; // ✅ Ajouté
+import { cookies } from 'next/headers';
+import { createClientForPage } from '../../lib/supabase/server';
 import DashboardContent from '../../components/dashboard/DashboardContent';
+import { generateQRBase64 } from '@/lib/qr';
+
+type Scan = {
+  id: string;
+  scan_type: string;
+  created_at: string;
+  profiles?: {
+    username?: string;
+    full_name?: string;
+  };
+};
 
 const formatDistance = (dateString: string): string => {
   const date = new Date(dateString);
@@ -30,71 +40,81 @@ const PLAN_COLORS = {
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = await createClientForPage();
 
+  // 🔹 ✅ Étape 1 : récupérer la session avec refresh (clé anti-boucle)
+  const { data: { session }, error: authError } = await supabase.auth.getSession();
+  if (authError || !session?.user) {
+    console.warn('🚨 Aucune session valide — redirection vers /auth/sign-in');
+    return redirect('/auth/sign-in');
+  }
+
+  // 🔹 ✅ Étape 2 : refresh pour forcer l’ID à jour
+  await supabase.auth.refreshSession();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || !user.id) redirect('/auth/sign-in');
+  if (!user?.id) {
+    console.warn('🚨 user.id manquant après refresh — déconnexion forcée');
+    return redirect('/auth/sign-out?reason=session_invalid');
+  }
 
- const { data: profile } = await supabase
-  .from('profiles')
-  .select('*, plan, likes_count') // ✅ likes_count inclus
-  .eq('id', user.id)
-  .single();
+  // 🔹 ✅ Étape 3 : récupérer le profil SANS relations d’abord (plus fiable)
+  const { data: profileBase } = await supabase
+    .from('profiles')
+    .select('id, username, full_name, onboarding_done, plan, likes_count, role')
+    .eq('id', user.id)
+    .single();
 
-  if (!profile) redirect('/complete-profile');
+  // 🔹 ✅ Vérification robuste
+  const isProfileComplete = 
+    profileBase?.onboarding_done === true &&
+    typeof profileBase.username === 'string' &&
+    profileBase.username.trim().length >= 3 &&
+    typeof profileBase.full_name === 'string' &&
+    profileBase.full_name.trim().length >= 2;
+
+  console.log('🔍 Dashboard check:', {
+    user_id: user.id,
+    profile_id: profileBase?.id,
+    username: profileBase?.username,
+    onboarding_done: profileBase?.onboarding_done,
+    isProfileComplete,
+  });
+
+  if (!isProfileComplete) {
+    console.warn('🚨 Profil incomplet ou absent — redirection vers /complete-profile');
+    return redirect('/complete-profile');
+  }
+
+  // 🔹 ✅ Étape 4 : charger les relations seulement si profil OK
+  const { data: profileWithRelations } = await supabase
+    .from('profiles')
+    .select(`
+      *,
+      plan,
+      likes_count,
+      nfc_cards!inner(*),
+      scans:scans!inner(*, profiles!left(username, full_name))
+    `)
+    .eq('id', user.id)
+    .single();
+
+  const profile = profileWithRelations || profileBase;
 
   const isAdmin = profile.role === 'admin';
-
-
-  const { data : subscription } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  const finalSubscription = subscription || { plan: 'freemium', active: false, expires_at: null };
-
-  const { data : cards } = await supabase
-    .from('nfc_cards')
-    .select('*')
-    .eq('user_id', user.id);
-
-  const { data : scans, count: totalScans } = await supabase
-    .from('scans')
-    .select('*, profiles!left(username, full_name)', { count: 'exact' })
-    .eq('profile_id', user.id)
-    .limit(5);
-
-  const { count: likesCount } = await supabase
-    .from('profile_interactions')
-    .select('*', { count: 'exact', head: true })
-    .eq('profile_id', user.id)
-    .eq('type', 'like');
+  const cards = profile.nfc_cards || [];
+  const scans: Scan[] = (profile.scans || []).slice(0, 5);
+  const totalScans = profile.scans?.length || 0;
 
   const baseUrl = (
-    process.env.NEXT_PUBLIC_SITE_URL 
-      ? process.env.NEXT_PUBLIC_SITE_URL.trim() 
-      : 'https://luvika.vercel.app'
-  ).replace(/\/$/, ''); // ✅ Supprime le / final
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://luvika.vercel.app'
+  ).replace(/\/+$/, '');
 
   if (!baseUrl || !baseUrl.startsWith('http')) {
     console.error('🔧 NEXT_PUBLIC_SITE_URL manquant ou invalide');
-    redirect('/error?code=CONFIG');
+    return redirect('/error?code=CONFIG');
   }
 
   const profileUrl = `${baseUrl}/${profile.username}`;
-
-  // ✅ Génération côté serveur — une seule fois
   let qrBase64 = '';
   try {
     qrBase64 = await generateQRBase64(profileUrl, { size: 300, color: '#2563eb' });
@@ -103,22 +123,20 @@ export default async function DashboardPage() {
   }
 
   return (
-  <DashboardContent
-    user={user}
-    profile={profile}
-    // ❌ subscription={finalSubscription} — SUPPRIMÉ
-    cards={cards || []}
-    recentScans={(scans || []).map(scan => ({
-      ...scan,
-      relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
-      profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
-    }))}
-    totalScans={totalScans || 0}
-    qrBase64={qrBase64}
-    profileUrl={profileUrl}
-    planColors={PLAN_COLORS}
-    // ❌ likesCount={likesCount || 0} — aussi supprimé si vous utilisez `profile.likes_count`
-    isAdmin={isAdmin}
-  />
-);
+    <DashboardContent
+      user={user}
+      profile={profile}
+      cards={cards}
+      recentScans={scans.map(scan => ({
+        ...scan,
+        relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
+        profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
+      }))}
+      totalScans={totalScans}
+      qrBase64={qrBase64}
+      profileUrl={profileUrl}
+      planColors={PLAN_COLORS}
+      isAdmin={isAdmin}
+    />
+  );
 }

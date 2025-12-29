@@ -35,7 +35,7 @@ export default async function PublicProfilePage({
   // 🔹 Requête unique — avec le champ manquant
  const { data, error } = await supabase
   .from('profiles')
-  .select('*, plan, accepts_contact_requests') // ✅ `plan` ajouté explicitement
+ .select('*, plan, accepts_contact_requests, cover_url') // ✅ `plan` ajouté explicitement
   .ilike('username', decodedUsername.trim())
   .maybeSingle();
 

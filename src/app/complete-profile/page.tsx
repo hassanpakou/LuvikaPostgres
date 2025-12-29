@@ -2,15 +2,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '../../../components/ui/textarea';
+import { Textarea } from '@/components/ui/textarea';
 import { useTranslations } from 'next-intl';
 import { 
-  User, Phone, MessageCircle, Briefcase, MapPin, 
+  User, Phone, Briefcase, 
   Check, AlertCircle, X, SkipForward 
 } from 'lucide-react';
 
@@ -29,12 +29,14 @@ type FormData = {
 export default function CompleteProfilePage() {
   const t = useTranslations('auth.complete');
   const router = useRouter();
+  const pathname = usePathname();
   const supabase = createClient();
 
   const [step, setStep] = useState<Step>('identity');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [hasCheckedProfile, setHasCheckedProfile] = useState(false); // ✅ verrou
 
   const [formData, setFormData] = useState<FormData>({
     full_name: '',
@@ -49,35 +51,58 @@ export default function CompleteProfilePage() {
 
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
-
   const usernameInputRef = useRef<HTMLInputElement>(null);
 
-  // ✅ Vérifie si onboarding déjà fait
+  // 🔹 ✅ Anti-boucle renforcé : exécuté UNE SEULE FOIS
   useEffect(() => {
+    if (hasCheckedProfile) return;
+    setHasCheckedProfile(true);
+
     const checkProfile = async () => {
-      const { data : { user } } = await supabase.auth.getUser();
-      if (!user) return router.push('/auth/sign-in');
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        if (error || !user) {
+          console.warn('🚨 Pas d’utilisateur — redirection vers /auth/sign-in');
+          return router.push('/auth/sign-in');
+        }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_done')
-        .eq('id', user.id)
-        .single();
+        // ✅ Refresh obligatoire
+const { data: authData, error: freshError } = await supabase.auth.getUser();
+if (freshError || !authData?.user?.id) return router.push('/auth/sign-in');
+const freshUser = authData.user;
 
-      if (profile?.onboarding_done) {
-        router.push('/dashboard');
-      } else {
-        // Pré-remplir avec les données de sign-up si disponibles
-        const urlParams = new URLSearchParams(window.location.search);
-        const fullName = urlParams.get('full_name') || '';
-        const username = urlParams.get('username') || '';
-        setFormData(prev => ({ ...prev, full_name: fullName, username }));
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_done, username, full_name')
+          .eq('id', freshUser.id)
+          .single();
+
+        const isComplete = profile?.onboarding_done === true;
+        console.log('🔍 CompleteProfile check:', { user_id: freshUser.id, profile, isComplete });
+
+        if (isComplete) {
+          localStorage.setItem('luvika_skip_onboarding', 'true');
+          setTimeout(() => {
+            localStorage.removeItem('luvika_skip_onboarding');
+            router.push('/dashboard');
+          }, 300);
+        } else {
+          const urlParams = new URLSearchParams(window.location.search);
+          setFormData(prev => ({
+            ...prev,
+            full_name: urlParams.get('full_name') || '',
+            username: urlParams.get('username') || '',
+          }));
+        }
+      } catch (err) {
+        console.error('❌ Erreur checkProfile:', err);
       }
     };
-    checkProfile();
-  }, [router, supabase]);
 
-  // ✅ Vérification username
+    checkProfile();
+  }, [router, supabase, hasCheckedProfile]);
+
+  // 🔹 Vérification username
   useEffect(() => {
     if (!formData.username || formData.username.length < 3) {
       setUsernameAvailable(null);
@@ -86,13 +111,13 @@ export default function CompleteProfilePage() {
 
     const check = async () => {
       setCheckingUsername(true);
-      const { data, error } = await supabase
+      const { data: existing } = await supabase
         .from('profiles')
         .select('id')
         .eq('username', formData.username.toLowerCase())
         .maybeSingle();
 
-      setUsernameAvailable(!data);
+      setUsernameAvailable(!existing);
       setCheckingUsername(false);
     };
 
@@ -106,22 +131,21 @@ export default function CompleteProfilePage() {
     setError(null);
   };
 
-  const handleNext = async () => {
+  const handleNext = () => {
     if (step === 'identity') {
       if (!formData.full_name.trim()) return setError(t('error_full_name_required'));
       if (!formData.username.trim() || formData.username.length < 3) return setError(t('error_username_too_short'));
       if (usernameAvailable === false) return setError(t('username_taken'));
     }
 
-    if (step === 'identity') {
-      setStep('contact');
-    } else if (step === 'contact') {
-      setStep('bio');
-    }
+    setStep(prev => 
+      prev === 'identity' ? 'contact' :
+      prev === 'contact' ? 'bio' : 'bio'
+    );
   };
 
   const handleSkip = () => {
-    if (step === 'identity') return; // ❌ pas de skip sur l'identité
+    if (step === 'identity') return;
     if (step === 'contact') setStep('bio');
     else handleSubmit();
   };
@@ -130,52 +154,58 @@ export default function CompleteProfilePage() {
     setLoading(true);
     setError(null);
 
-    const { data : { user } } = await supabase.auth.getUser();
-    if (!user) return router.push('/auth/sign-in');
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) return router.push('/auth/sign-in');
 
-    // ✅ Récupère le plan depuis cookie
-    const getPlan = () => {
-      const match = document.cookie.match(/signup_plan=([^;]+)/);
-      return match ? decodeURIComponent(match[1]) : 'basic';
-    };
+const { data: authData, error: freshError } = await supabase.auth.getUser();
+if (freshError || !authData?.user?.id) return router.push('/auth/sign-in');
+const freshUser = authData.user;
 
-    const { error: insertError } = await supabase.from('profiles').upsert({
-      id: user.id,
-      full_name: formData.full_name.trim(),
-      username: formData.username.trim().toLowerCase(),
-      phone: formData.phone,
-      whatsapp: formData.whatsapp,
-      job_title: formData.job_title,
-      company: formData.company,
-      bio_short: formData.bio_short,
-      address: formData.address,
-      plan: getPlan(),
-      onboarding_done: true,
-      role: 'user',
-    }, {
-      onConflict: 'id',
-    });
+      const getPlan = () => {
+        const match = document.cookie.match(/signup_plan=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : 'basic';
+      };
 
-    if (insertError) {
-      console.error('Erreur:', insertError);
-      setError(insertError.message || t('error_generic'));
-    } else {
-      // Nettoie cookie
+      const { error: upsertError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: freshUser.id,
+          full_name: formData.full_name.trim(),
+          username: formData.username.trim().toLowerCase(),
+          phone: formData.phone,
+          whatsapp: formData.whatsapp,
+          job_title: formData.job_title,
+          company: formData.company,
+          bio_short: formData.bio_short,
+          address: formData.address,
+          plan: getPlan(),
+          onboarding_done: true,
+          role: 'user',
+        }, {
+          onConflict: 'id',
+        });
+
+      if (upsertError) throw upsertError;
+
+      // ✅ Nettoyage
       document.cookie = "signup_plan=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       setSuccess(true);
       setTimeout(() => router.push('/dashboard'), 2000);
+    } catch (err: any) {
+      console.error('❌ Submit error:', err);
+      setError(err.message || t('error_generic'));
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const steps: Step[] = ['identity', 'contact', 'bio'];
   const currentStepIndex = steps.indexOf(step);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-cyan-900/20 to-blue-900/10">
       <div className="w-full max-w-md glass-border backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-white/15">
-        {/* ✅ Progression */}
         <div className="flex justify-between mb-8">
           {steps.map((s, i) => {
             const isActive = step === s;
@@ -348,8 +378,7 @@ export default function CompleteProfilePage() {
                   type="button"
                   variant="ghost"
                   onClick={() => setStep(prev => 
-                    prev === 'contact' ? 'identity' : 
-                    prev === 'bio' ? 'contact' : 'identity'
+                    prev === 'contact' ? 'identity' : 'contact'
                   )}
                   className="text-gray-300 hover:text-white"
                 >

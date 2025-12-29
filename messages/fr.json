@@ -35,7 +35,17 @@
     "visibility": {
       "title": "Visibilité des sections",
       "description": "Choisissez ce que les visiteurs peuvent voir."
-    },"contact_requests": {
+    },"quick_menu": {
+      "visibility": "Visibilité",
+      "contact": "Messages",
+      "qr": "QR Code",
+      "nfc": "Cartes NFC",
+      "report": "Signaler",
+      "message": "Message perso",
+      "orders": "Commandes",
+      "upgrade": "Upgrade"
+    },
+    "contact_requests": {
       "title": "Messages des visiteurs",
       "description": "Autorisez les personnes qui consultent votre profil public à vous laisser un message.",
       "label": "Recevoir des messages",
@@ -106,6 +116,24 @@
         "nfc": "NFC",
         "qr": "QR"
       }
+    },
+    "other_features": {
+      "title": "Autres fonctionnalités",
+      "description": "Gérez votre carte NFC ou partagez un message personnalisé.",
+      "report_card": "Signaler votre carte",
+      "reasons": {
+        "lost": "Carte perdue",
+        "stolen": "Carte volée",
+        "damaged": "Carte endommagée",
+        "no_longer_needed": "Plus besoin de la carte",
+        "other": "Autre (précisez)"
+      },
+      "custom_reason": "Précisez la raison",
+      "custom_reason_placeholder": "Ex: carte cassée, erreur d'impression...",
+      "submit_report": "Signaler la carte",
+      "custom_message": "Message personnalisé",
+      "custom_message_placeholder": "Ex: Je change de poste, merci de mettre à jour mon profil...",
+      "send_message": "Envoyer le message"
     }
   },
   "auth": {
@@ -287,7 +315,7 @@
       "created": "Créée le",
       "no_cards": "Aucune carte NFC pour le moment.",
       "block_card": "Bloquer la carte",
-      "status": {
+      "status_values": {
         "active": "Active",
         "lost": "Perdue",
         "blocked": "Bloquée"
@@ -508,15 +536,5 @@
         }
       }
     }
-  },
-  "time": {
-    "seconds": "{count} seconde",
-    "seconds_plural": "{count} secondes",
-    "minutes": "{count} minute",
-    "minutes_plural": "{count} minutes",
-    "hours": "{count} heure",
-    "hours_plural": "{count} heures",
-    "days": "{count} jour",
-    "days_plural": "{count} jours"
   }
 }
