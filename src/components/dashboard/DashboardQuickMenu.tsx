@@ -131,7 +131,8 @@ export default function DashboardQuickMenu({
                 <div className="w-12 h-1 bg-gray-600 rounded-full" />
               </div>
               <h3 className="text-xl font-bold text-white text-center mb-6">Actions rapides</h3>
-              <div className="grid grid-cols-4 gap-3 mb-6">
+              <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide">
+
                 {actions.map(action => (
                   <motion.button
                     key={action.id}

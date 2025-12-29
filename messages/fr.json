@@ -35,7 +35,8 @@
     "visibility": {
       "title": "Visibilité des sections",
       "description": "Choisissez ce que les visiteurs peuvent voir."
-    },"quick_menu": {
+    },
+    "quick_menu": {
       "visibility": "Visibilité",
       "contact": "Messages",
       "qr": "QR Code",
@@ -134,6 +135,64 @@
       "custom_message": "Message personnalisé",
       "custom_message_placeholder": "Ex: Je change de poste, merci de mettre à jour mon profil...",
       "send_message": "Envoyer le message"
+    },
+    "settings": {
+      "title": "Paramètres du profil",
+      "saving": "Sauvegarde...",
+      "save": "Enregistrer",
+      "save_success": "✅ Profil mis à jour",
+      "save_error": "❌ Échec de la sauvegarde",
+      "load_error": "❌ Impossible de charger le profil",
+      "avatar_uploaded": "✅ Photo de profil mise à jour",
+      "avatar_error": "❌ Échec de l’upload",
+      "avatar_invalid": "⚠️ Format invalide (JPG/PNG seulement)",
+      "cover_uploaded": "✅ Couverture mise à jour",
+      "cover_error": "❌ Échec de l’upload",
+      "cover_invalid": "⚠️ Format invalide (JPG/PNG seulement)",
+      "url_copied": "✅ Lien copié",
+      "photo": {
+        "title": "Photo & Couverture",
+        "avatar": "Photo de profil",
+        "cover": "Photo de couverture",
+        "upload_avatar": "Changer la photo",
+        "upload_cover": "Cliquer pour uploader une couverture"
+      },"personal": {
+        "title": "Informations personnelles",
+        "full_name": "Nom complet",
+        "full_name_placeholder": "ex: Hassan M.",
+        "username": "Nom d’utilisateur",
+        "username_placeholder": "votre_nom",
+        "job_title": "Poste",
+        "job_title_placeholder": "Développeur Full-Stack",
+        "company": "Entreprise",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Bio courte",
+        "bio_short_placeholder": "1 ligne percutante",
+        "bio_long": "Bio complète",
+        "bio_long_placeholder": "Votre parcours, passions, valeurs..."
+      },
+      "contact": {
+        "title": "Coordonnées",
+        "email": "Email",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Téléphone",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Adresse",
+        "address_placeholder": "Kinshasa, RDC",
+        "website": "Site web"
+      },
+      "visibility": {
+        "title": "Visibilité",
+        "description": "Choisissez ce qui apparaît sur votre profil public"
+      },
+      "advanced": {
+        "title": "Options avancées",
+        "public_profile": "Profil public",
+        "public_profile_desc": "Visible sans connexion",
+        "contact_requests": "Messages publics",
+        "contact_requests_desc": "Autoriser les visiteurs à vous écrire",
+        "profile_url": "URL de profil"
+      }
     }
   },
   "auth": {
@@ -406,7 +465,10 @@
     "sign_out_confirm_yes": "Oui, se déconnecter",
     "sign_out_confirm_no": "Annuler",
     "farewell_title": "Au revoir !",
-    "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢"
+    "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢",
+    "profile_completion": "Complétion du profil",
+    "edit_profile": "Modifier le profil",
+    "completed": "complété"
   },
   "about": {
     "title": "À propos",

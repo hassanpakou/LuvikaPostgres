@@ -35,7 +35,8 @@
     "visibility": {
       "title": "Section visibility",
       "description": "Choose what visitors can see."
-    },"quick_menu": {
+    },
+    "quick_menu": {
       "visibility": "Visibility",
       "contact": "Messages",
       "qr": "QR Code",
@@ -65,7 +66,7 @@
       "days_plural": "{count} days"
     },
     "orders": {
-      "title": "Card orders",
+      "title": "Orders",
       "description": "Manage your NFC card orders.",
       "manage": "Manage orders"
     },
@@ -115,6 +116,83 @@
       "scan_type": {
         "nfc": "NFC",
         "qr": "QR"
+      }
+    },
+    "other_features": {
+      "title": "Other features",
+      "description": "Manage your NFC card or share a custom message.",
+      "report_card": "Report your card",
+      "reasons": {
+        "lost": "Card lost",
+        "stolen": "Card stolen",
+        "damaged": "Card damaged",
+        "no_longer_needed": "No longer need the card",
+        "other": "Other (specify)"
+      },
+      "custom_reason": "Specify the reason",
+      "custom_reason_placeholder": "e.g. card broken, printing error...",
+      "submit_report": "Report the card",
+      "custom_message": "Custom message",
+      "custom_message_placeholder": "e.g. I changed jobs, please update my profile...",
+      "send_message": "Send message"
+    },
+    "settings": {
+      "title": "Profile Settings",
+      "saving": "Saving...",
+      "save": "Save",
+      "save_success": "✅ Profile updated",
+      "save_error": "❌ Save failed",
+      "load_error": "❌ Failed to load profile",
+      "avatar_uploaded": "✅ Avatar updated",
+      "avatar_error": "❌ Avatar upload failed",
+      "avatar_invalid": "⚠️ Invalid image (JPG/PNG only)",
+      "cover_uploaded": "✅ Cover updated",
+      "cover_error": "❌ Cover upload failed",
+      "cover_invalid": "⚠️ Invalid image (JPG/PNG only)",
+      "url_copied": "✅ Link copied",
+      "photo": {
+        "title": "Photo & Cover",
+        "avatar": "Profile photo",
+        "cover": "Cover photo",
+        "upload_avatar": "Change photo",
+        "upload_cover": "Click to upload cover"
+      },
+      "personal": {
+        "title": "Personal info",
+        "full_name": "Full name",
+        "full_name_placeholder": "e.g. Hassan M.",
+        "username": "Username",
+        "username_placeholder": "your_name",
+        "job_title": "Job title",
+        "job_title_placeholder": "Full-Stack Developer",
+        "company": "Company",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Short bio",
+        "bio_short_placeholder": "One punchy line",
+        "bio_long": "Full bio",
+        "bio_long_placeholder": "Your journey, passions, values..."
+      },
+      "contact": {
+        "title": "Contact",
+        "email": "Email",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Phone",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Address",
+        "address_placeholder": "Kinshasa, DRC",
+        "website": "Website"
+      },
+      "visibility": {
+        "title": "Visibility",
+        "description": "Choose what appears on your public profile"
+      },
+      "advanced": {
+        "title": "Advanced",
+        "public_profile": "Public profile",
+        "public_profile_desc": "Visible without login",
+        "contact_requests": "Public messages",
+        "contact_requests_desc": "Let visitors message you",
+        "profile_url": "Profile URL"
       }
     }
   },
@@ -297,7 +375,7 @@
       "created": "Created on",
       "no_cards": "No NFC cards yet.",
       "block_card": "Block card",
-      "status": {
+      "status_values": {
         "active": "Active",
         "lost": "Lost",
         "blocked": "Blocked"
@@ -367,7 +445,7 @@
       }
     },
     "orders": {
-      "title": "Card orders",
+      "title": "Orders",
       "subtitle": "Track and validate physical card requests.",
       "no_orders": "No orders yet."
     }
@@ -388,7 +466,10 @@
     "sign_out_confirm_yes": "Yes, sign out",
     "sign_out_confirm_no": "Cancel",
     "farewell_title": "Goodbye!",
-    "farewell_message": "Thank you for using LUVIKA. We’ll miss you… 😢"
+    "farewell_message": "Thank you for using LUVIKA. We’ll miss you… 😢",
+    "profile_completion": "Profile completion",
+    "edit_profile": "Edit profile",
+    "completed": "completed"
   },
   "about": {
     "title": "About",
@@ -518,33 +599,5 @@
         }
       }
     }
-  },
-  "time": {
-    "seconds": "{count} second",
-    "seconds_plural": "{count} seconds",
-    "minutes": "{count} minute",
-    "minutes_plural": "{count} minutes",
-    "hours": "{count} hour",
-    "hours_plural": "{count} hours",
-    "days": "{count} day",
-    "days_plural": "{count} days"
-  },
-  "other_features": {
-    "title": "Other features",
-    "description": "Manage your NFC card or share a custom message.",
-    "report_card": "Report your card",
-    "reasons": {
-      "lost": "Card lost",
-      "stolen": "Card stolen",
-      "damaged": "Card damaged",
-      "no_longer_needed": "No longer need the card",
-      "other": "Other (specify)"
-    },
-    "custom_reason": "Specify the reason",
-    "custom_reason_placeholder": "e.g. card broken, printing error...",
-    "submit_report": "Report the card",
-    "custom_message": "Custom message",
-    "custom_message_placeholder": "e.g. I changed jobs, please update my profile...",
-    "send_message": "Send message"
   }
 }

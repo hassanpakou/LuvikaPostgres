@@ -35,12 +35,13 @@
     "visibility": {
       "title": "Koyeba lokola bato bakendaka",
       "description": "Lobela lokola bato bakendaka bakoyeba."
-    },"quick_menu": {
+    },
+    "quick_menu": {
       "visibility": "Koyeba",
-      "contact": "Basms",
+      "contact": "Bamesaje",
       "qr": "Kɔd QR",
       "nfc": "Bakarte NFC",
-      "report": "Kobetela",
+      "report": "Koloba",
       "message": "SMS ya mpenza",
       "orders": "Bakolí",
       "upgrade": "Kobongola"
@@ -65,9 +66,9 @@
       "days_plural": "{count} mikolo"
     },
     "orders": {
-      "title": "Bakanisa",
+      "title": "Bakolí",
       "description": "Kobetela bakanisa NFC oyo balekisa.",
-      "manage": "Kobetela bakanisa"
+      "manage": "Kobetela bakolí"
     },
     "subscription": {
       "title": "Mikandeli",
@@ -115,6 +116,83 @@
       "scan_type": {
         "nfc": "NFC",
         "qr": "QR"
+      }
+    },
+    "other_features": {
+      "title": "Bato oyo bakendaka mosusu",
+      "description": "Kobetela bakanisa NFC na yo to kolonga bamesaje mosusu.",
+      "report_card": "Koloba bakanisa na yo",
+      "reasons": {
+        "lost": "Bakanisa epesaki",
+        "stolen": "Bakanisa ekoki",
+        "damaged": "Bakanisa ebandeli",
+        "no_longer_needed": "Ngai te nakoki bakanisa wana",
+        "other": "Mosusu (lobela)"
+      },
+      "custom_reason": "Lobela mokano",
+      "custom_reason_placeholder": "Ex: bakanisa ebandeli, erreur ya koyeba...",
+      "submit_report": "Koloba bakanisa",
+      "custom_message": "Bamesaje mosusu",
+      "custom_message_placeholder": "Ex: Ngai nakoki kosala mwa, kotia profil na ngai...",
+      "send_message": "Kotindisa bamesaje"
+    },
+    "settings": {
+      "title": "Mikakatano ya profil",
+      "saving": "Kobetela...",
+      "save": "Kobetela",
+      "save_success": "✅ Profil eza na mabele",
+      "save_error": "❌ Ebongi te",
+      "load_error": "❌ Ekoki koyeba profil",
+      "avatar_uploaded": "✅ Foto ya profil eza na mabele",
+      "avatar_error": "❌ Ebongi te kati ya avatar",
+      "avatar_invalid": "⚠️ Foto eza mabe (JPG/PNG pe)",
+      "cover_uploaded": "✅ Foto ya kati eza na mabele",
+      "cover_error": "❌ Ebongi te kati ya foto ya kati",
+      "cover_invalid": "⚠️ Foto eza mabe (JPG/PNG pe)",
+      "url_copied": "✅ Lien ekopaki",
+      "photo": {
+        "title": "Foto & Foto ya kati",
+        "avatar": "Foto ya profil",
+        "cover": "Foto ya kati",
+        "upload_avatar": "Kobongola foto",
+        "upload_cover": "Kokisaka kobetela foto ya kati"
+      },
+      "personal": {
+        "title": "Makambo ya moke",
+        "full_name": "Nkómbó mobimba",
+        "full_name_placeholder": "ndenge: Hassan M.",
+        "username": "Nkómbó ya likama",
+        "username_placeholder": "nkómbó na yo",
+        "job_title": "Mabele ya ngánga",
+        "job_title_placeholder": "Mokonzi ya Full-Stack",
+        "company": "Nkombo",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Mokolo ya kala",
+        "bio_short_placeholder": "Nkómbó moko ya kosenga",
+        "bio_long": "Mokolo mobimba",
+        "bio_long_placeholder": "Mbotó na yo, mabota, maloba..."
+      },
+      "contact": {
+        "title": "Kotalela",
+        "email": "Email",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Ntimá",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Adresse",
+        "address_placeholder": "Kinshasa, RDC",
+        "website": "Site web"
+      },
+      "visibility": {
+        "title": "Kozwa",
+        "description": "Lobela maloba oyo ekoki koyoka kati ya profil wana"
+      },
+      "advanced": {
+        "title": "Makambo ya kokende",
+        "public_profile": "Profil ya bato nyonso",
+        "public_profile_desc": "Ezalaka koyoka kaka ozosala",
+        "contact_requests": "Mensaki ya bato nyonso",
+        "contact_requests_desc": "Sala bato nyonso koyeba yo",
+        "profile_url": "URL ya profil"
       }
     }
   },
@@ -272,11 +350,11 @@
       "total_users": "Bato oyo bakendaka",
       "active_subscriptions": "Mikandeli oyo eza na mabele",
       "total_scans": "Bakanisa mingi",
-      "orders": "Bakanisa",
+      "orders": "Bakolí",
       "nfc_cards": "Bakanisa NFC"
     },
     "nav": {
-      "orders": "Bakanisa",
+      "orders": "Bakolí",
       "back_to_dashboard": "Kotinda na dashboard"
     },
     "subscription": {
@@ -297,7 +375,7 @@
       "created": "Eza na mabele kala",
       "no_cards": "Tei bakanisa NFC kala.",
       "block_card": "Kobloka bakanisa",
-      "status": {
+      "status_values": {
         "active": "Eza na mabele",
         "lost": "Epesaki",
         "blocked": "Ebloki"
@@ -346,9 +424,9 @@
         "action": "Kobetela mikandeli"
       },
       "orders": {
-        "title": "Bakanisa NFC",
-        "description": "Kobetela bakanisa NFC : validation, livraison, suivi.",
-        "action": "Koyeba bakanisa"
+        "title": "Bakolí NFC",
+        "description": "Kobetela bakolí ya bakanisa NFC : validation, livraison, suivi.",
+        "action": "Koyeba bakolí"
       },
       "nfc": {
         "title": "Bakanisa NFC",
@@ -367,9 +445,9 @@
       }
     },
     "orders": {
-      "title": "Bakanisa",
-      "subtitle": "Suivre pe valider bakanisa ya bakanisa ya physique.",
-      "no_orders": "Tei bakanisa kala."
+      "title": "Bakolí",
+      "subtitle": "Suivre pe valider bakolí ya bakanisa ya physique.",
+      "no_orders": "Tei bakolí kala."
     }
   },
   "navbar": {
@@ -388,7 +466,10 @@
     "sign_out_confirm_yes": "Eee, kolongola",
     "sign_out_confirm_no": "Kotia",
     "farewell_title": "Matondo !",
-    "farewell_message": "Matondo mingi na yo. Oyokaki yo mbala mingi… 😢"
+    "farewell_message": "Matondo mingi na yo. Oyokaki yo mbala mingi… 😢",
+    "profile_completion": "Kokompli profil",
+    "edit_profile": "Kobongola profil",
+    "completed": "kokompli"
   },
   "about": {
     "title": "Lokola bato bakendaka",
@@ -518,33 +599,5 @@
         }
       }
     }
-  },
-  "time": {
-    "seconds": "{count} sekonde",
-    "seconds_plural": "{count} sekonde",
-    "minutes": "{count} minute",
-    "minutes_plural": "{count} minutes",
-    "hours": "{count} ntango",
-    "hours_plural": "{count} ntango",
-    "days": "{count} mokolo",
-    "days_plural": "{count} mikolo"
-  },
-  "other_features": {
-    "title": "Bato oyo bakendaka mosusu",
-    "description": "Kobetela bakanisa NFC na yo to kolonga bamesaje mosusu.",
-    "report_card": "Koloba bakanisa na yo",
-    "reasons": {
-      "lost": "Bakanisa epesaki",
-      "stolen": "Bakanisa ekoki",
-      "damaged": "Bakanisa ebandeli",
-      "no_longer_needed": "Ngai te nakoki bakanisa wana",
-      "other": "Mosusu (lobela)"
-    },
-    "custom_reason": "Lobela mokano",
-    "custom_reason_placeholder": "Ex: bakanisa ebandeli, erreur ya koyeba...",
-    "submit_report": "Koloba bakanisa",
-    "custom_message": "Bamesaje mosusu",
-    "custom_message_placeholder": "Ex: Ngai nakoki kosala mwa, kotia profil na ngai...",
-    "send_message": "Kotindisa bamesaje"
   }
 }
