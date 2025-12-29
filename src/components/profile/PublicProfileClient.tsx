@@ -73,7 +73,7 @@ const cleanCoverUrl = (rawCoverUrl || '')
 : cleanCoverUrl.startsWith('http')
   ? cleanCoverUrl
   : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
-      : '/cover-default.png';
+      : '/default.png';
 
   // 🔹 ✅ LOGS DÉTAILLÉS AU MONTAGE
   useEffect(() => {
@@ -197,7 +197,15 @@ const cleanCoverUrl = (rawCoverUrl || '')
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="grid grid-cols-3 md:grid-cols-4 gap-1.5 mb-6"
+          className="
+  grid
+  grid-flow-col
+  auto-cols-max
+  gap-x-2 gap-y-2
+  justify-center
+  mb-6
+"
+
         >
           {isSectionVisible('contact', profile) && profile.email && (
             <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
@@ -298,13 +306,30 @@ const ActionItem = ({ icon, label, href, onClick }: {
   onClick?: () => void; 
 }) => (
   <motion.button
-    whileHover={{ y: -2 }}
-    whileTap={{ scale: 0.98 }}
-    onClick={(e) => { if (onClick) { e.preventDefault(); onClick(); } }}
-    className="flex flex-col items-center p-2.5 rounded-lg hover:bg-white/5 transition-colors"
+    whileHover={{ y: -1, scale: 1.04 }}
+    whileTap={{ scale: 0.96 }}
+    onClick={(e) => {
+      if (onClick) {
+        e.preventDefault();
+        onClick();
+      }
+    }}
+    className="
+      flex flex-col items-center
+      p-1.5
+      gap-0.5
+      rounded-lg
+      transition-all
+    "
+    style={{ background: 'transparent', border: 'none' }}
   >
-    {icon}
-    <span className="text-[11px] text-gray-300 mt-1">{label}</span>
+    <span className="text-gray-300 hover:text-white transition-colors leading-none">
+      {icon}
+    </span>
+
+    <span className="text-[10px] text-gray-400 hover:text-gray-200 transition-colors leading-none">
+      {label}
+    </span>
   </motion.button>
 );
 
