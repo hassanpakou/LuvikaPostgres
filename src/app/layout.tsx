@@ -7,23 +7,15 @@ import { getMessages, getLocale, getTranslations } from 'next-intl/server';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/src/components/layout/Footer';
 
-// 🔹 ✅ Import uniquement si disponible (évite l'erreur)
-let headers: () => { get: (key: string) => string | null } = () => ({ get: () => null });
-try {
-  // @ts-ignore
-  headers = (await import('next/headers')).headers;
-} catch {}
-
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata =  {
+export const metadata: Metadata = {
   title: 'LUVIKA — Révèle qui tu es',
   description: 'Carte de visite intelligente NFC · QR Code · Abonnements · Événements',
   icons: {
     icon: '/favicon.ico',
   },
 };
-
 export default async function RootLayout({
   children,
 }: {
@@ -31,22 +23,15 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  
+  // ✅ Traduis TOUT le footer côté serveur
   const t = await getTranslations('footer');
-
-  // 🔹 ✅ Détection sécurisée — ne lève jamais d'erreur
-  let isPublicProfilePage = false;
-  try {
-    const h = headers();
-    const path = h.get('x-invoke-path') || h.get('x-current-path') || '';
-    isPublicProfilePage = /^\/[a-z]{2}\/[^/]+$/.test(path);
-  } catch (e) {
-    // Silently fail → footer s’affiche (safe fallback)
-  }
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={inter.className}>
-        <NextIntlClientProvider locale={locale} messages={messages}>
+<body className={inter.className}>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+          {/* ✅ Fond animé */}
           <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
             <div className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%]">
               <div className="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-500/5 animate-float" />
@@ -59,26 +44,24 @@ export default async function RootLayout({
           <main className="container mx-auto px-4 py-1 max-w-6xl relative">
             {children}
           </main>
-
-          {/* ✅ Footer conditionnel — sans erreur */}
-          {!isPublicProfilePage && (
-            <Footer
-              product={t('product')}
-              features={t('features')}
-              pricing={t('pricing')}
-              download={t('download')}
-              company={t('company')}
-              about={t('about')}
-              contact={t('contact')}
-              blog={t('blog')}
-              legal={t('legal')}
-              privacy={t('privacy')}
-              terms={t('terms')}
-              cookies={t('cookies')}
-              tagline={t('tagline')}
-              copyright={t('copyright')}
-            />
-          )}
+          
+          {/* ✅ Footer : on passe les chaînes, pas la fonction */}
+          <Footer
+            product={t('product')}
+            features={t('features')}
+            pricing={t('pricing')}
+            download={t('download')}
+            company={t('company')}
+            about={t('about')}
+            contact={t('contact')}
+            blog={t('blog')}
+            legal={t('legal')}
+            privacy={t('privacy')}
+            terms={t('terms')}
+            cookies={t('cookies')}
+            tagline={t('tagline')}
+            copyright={t('copyright')}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

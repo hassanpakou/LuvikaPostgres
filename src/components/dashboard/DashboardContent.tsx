@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +25,7 @@ const formatDistance = (dateString: string, t: any): string => {
   const diffMin = Math.floor(diffSec / 60);
   const diffHrs = Math.floor(diffMin / 60);
   const diffDays = Math.floor(diffHrs / 24);
+  const router = useRouter();
 
   if (diffDays > 0) return `${diffDays} ${t('time.days', { count: diffDays })}`;
   if (diffHrs > 0) return `${diffHrs} ${t('time.hours', { count: diffHrs })}`;
@@ -743,10 +743,12 @@ const OrdersModal = ({
   isOpen,
   onClose,
   isAdmin,
+  router, // ✅ ajouté
 }: {
   isOpen: boolean;
   onClose: () => void;
   isAdmin: boolean;
+  router: ReturnType<typeof useRouter>; // ✅ typé
 }) => {
   if (!isOpen) return null;
 
@@ -781,7 +783,7 @@ const OrdersModal = ({
               <div className="flex justify-between items-center">
                 <div>
                   <p className="font-medium text-white">Carte NFC Premium</p>
-                  <p className="text-sm text-gray-400">Livraison estimée : 5–7 jours</p>
+                  <p className="text-sm text-gray-400">Livraison estimée $ 5 : 48 heures</p>
                 </div>
                 <span className="px-2 py-1 text-xs bg-violet-500/20 text-violet-300 rounded">
                   En attente
@@ -789,16 +791,28 @@ const OrdersModal = ({
               </div>
             </div>
           </div>
+<Button
+  className="w-full mb-3 border-white/20 text-white hover:bg-white/10"
+  onClick={async () => {
+    const res = await fetch('/api/orders', { method: 'POST' });
+    if (res.ok) {
+      router.push('/dashboard/orders?success=1'); // ✅ maintenant défini
+      onClose();
+    }
+  }}
+>
+  <Plus className="w-4 h-4 mr-1" /> Commander une carte NFC
+</Button>
 
-          <Button
-            className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500"
-            onClick={() => {
-              window.location.href = isAdmin ? '/admin/orders' : '/dashboard/orders';
-              onClose();
-            }}
-          >
-            Voir toutes les commandes <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
+<Button
+  className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500"
+  onClick={() => {
+    window.location.href = isAdmin ? '/admin/orders' : '/dashboard/orders';
+    onClose();
+  }}
+>
+  Voir toutes les commandes <ArrowRight className="ml-2 w-4 h-4" />
+</Button>
         </motion.div>
       </motion.div>
     </AnimatePresence>
@@ -1354,11 +1368,12 @@ export default function DashboardContent({
           />
         )}
         {activeModal === 'orders' && (
-          <OrdersModal
-            isOpen={true}
-            onClose={closeModal}
-            isAdmin={isAdmin}
-          />
+  <OrdersModal
+    isOpen={true}
+    onClose={closeModal}
+    isAdmin={isAdmin}
+    router={router} // ✅ passé ici
+  />
         )}
       </AnimatePresence>
 

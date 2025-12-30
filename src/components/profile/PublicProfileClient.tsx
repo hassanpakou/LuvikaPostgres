@@ -14,7 +14,6 @@ import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
 import ContactForm from './ContactForm';
 import { Card } from '@/components/ui/card';
-
 const isSectionVisible = (section: string, profile: Profile): boolean => {
   return profile.sections_visibility?.[section] !== false;
 };
