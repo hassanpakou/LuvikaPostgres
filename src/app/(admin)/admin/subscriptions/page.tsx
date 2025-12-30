@@ -1,4 +1,3 @@
-// src/app/(admin)/admin/subscriptions/page.tsx
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
@@ -8,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, CreditCard } from 'lucide-react';
 import { SubscriptionActions } from '@/components/admin/SubscriptionActions';
 
-// ✅ Typage
 type Subscription = {
   id: string;
   plan: 'basic' | 'premium' | 'entreprise';
@@ -28,23 +26,16 @@ export default async function SubscriptionsPage() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        // ✅ Seulement `get` dans un Server Component
-      },
+      cookies: { get(name) { return cookieStore.get(name)?.value; } },
     }
   );
 
-  // ✅ getUser() pour auth sécurisée
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
-// 🔍 Débogage RLS
-console.log('🔍 Tentative de requête avec user:', user?.id, 'role:', user?.user_metadata?.role);
-  // ✅ Requête directe — pas d’API route intermédiaire
-  const { data : subscriptions, error }
-   = await supabase
+
+  const { data : subscriptions, error } = await supabase
     .from('subscriptions')
     .select(`
       *,

@@ -41,7 +41,7 @@ export default async function RootLayout({
           </div>
 
           <Navbar />
-          <main className="container mx-auto px-4 py-1 max-w-6xl relative">
+          <main className="container mx-auto px-4 py-2 max-w-6xl relative">
             {children}
           </main>
           

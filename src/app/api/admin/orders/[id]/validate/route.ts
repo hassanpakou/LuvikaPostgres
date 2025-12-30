@@ -32,7 +32,6 @@ export async function POST(
       .from('orders')
       .update({ 
         status: 'processing',
-        updated_at: new Date().toISOString()
       })
       .eq('id', id);
 

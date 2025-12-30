@@ -1,4 +1,4 @@
-// src/components/(admin)/UserSelector.tsx
+// src/app/(admin)/UserSelector.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,7 +7,8 @@ import { Search, ChevronDown, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-type User = {
+// ✅ Déplacé dans un fichier séparé pour cohérence
+export type User = {
   id: string;
   full_name: string;
   username: string;
@@ -18,13 +19,13 @@ type User = {
 type Props = {
   onSelect: (user: User | null) => void;
   selectedUser: User | null;
-  displayField?: 'email' | 'username' | 'full_name'; // ← Nouvelle prop
+  displayField?: 'email' | 'username' | 'full_name';
 };
 
 export default function UserSelector({
   onSelect,
   selectedUser,
-  displayField = 'email', // ← Par défaut : email
+  displayField = 'email',
 }: Props) {
   const t = useTranslations();
   const [search, setSearch] = useState('');
@@ -32,24 +33,22 @@ export default function UserSelector({
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  // 🔹 Chargement utilisateurs
   useEffect(() => {
-    const fetchUsers = async () => {
-      if (!isOpen) return;
+    if (!isOpen) return;
 
+    const fetchUsers = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/users?search=' + encodeURIComponent(search));
-
+        const url = search 
+          ? `/api/admin/users?search=${encodeURIComponent(search)}`
+          : '/api/admin/users';
+        
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
+        
         const data = await res.json();
-
-        if (Array.isArray(data)) {
-          setUsers(data);
-        } else {
-          console.warn('⚠️ API returned non-array:', data);
-          setUsers([]);
-        }
+        setUsers(Array.isArray(data) ? data : []);
       } catch (err: any) {
         console.error('❌ Erreur chargement utilisateurs:', err.message || err);
         setUsers([]);
@@ -73,16 +72,11 @@ export default function UserSelector({
     onSelect(null);
   };
 
-  // Fonction pour afficher le champ principal selon la prop
   const getPrimaryText = (user: User) => {
     switch (displayField) {
-      case 'email':
-        return user.email;
-      case 'username':
-        return `@${user.username}`;
-      case 'full_name':
-      default:
-        return user.full_name;
+      case 'email': return user.email;
+      case 'username': return `@${user.username}`;
+      default: return user.full_name;
     }
   };
 
@@ -185,8 +179,8 @@ export default function UserSelector({
   );
 }
 
-// Badge simple (si tu n’as pas déjà un composant Badge)
-const Badge = ({ 
+// 🔹 Composant Badge — déplacé pour réutilisation
+export function Badge({ 
   children, 
   className = '', 
   variant = 'default' 
@@ -194,10 +188,10 @@ const Badge = ({
   children: React.ReactNode; 
   className?: string;
   variant?: 'default' | 'secondary';
-}) => {
+}) {
   return (
     <span className={`px-2 py-1 rounded text-xs font-medium ${className}`}>
       {children}
     </span>
   );
-};
+}

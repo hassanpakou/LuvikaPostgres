@@ -597,6 +597,16 @@
           "dashboard": "Dashboard global + API"
         }
       }
-    }
+    },"validate_button": "Valider",
+  "cancel_button": "Annuler",
+  "confirm_cancel": "Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.",
+  "action_success": {
+    "validate": "✅ Commande validée !",
+    "cancel": "✅ Commande annulée."
+  },
+  "action_error": {
+    "validate": "❌ Échec validation",
+    "cancel": "❌ Échec annulation"
+  }
   }
 }

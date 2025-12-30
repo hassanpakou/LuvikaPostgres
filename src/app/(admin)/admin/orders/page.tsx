@@ -3,10 +3,10 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, CheckCircle, XCircle, ArrowLeft } from 'lucide-react';
+import { OrderActions } from './_components/OrderActions'; // ✅ Import client-safe
+import { Package, ArrowLeft } from 'lucide-react';
 
 export default async function OrdersPage() {
   const cookieStore = await cookies();
@@ -14,22 +14,16 @@ export default async function OrdersPage() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        // ✅ Supprimé set/remove — interdits dans une page
-      },
+      cookies: { get(name) { return cookieStore.get(name)?.value; } },
     }
   );
 
-  // ✅ getUser() au lieu de getSession()
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data : { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
-  const { data, error } = await supabase
+  const { data : orders, error } = await supabase
     .from('orders')
     .select(`
       *,
@@ -42,41 +36,20 @@ export default async function OrdersPage() {
     throw error;
   }
 
-  const orders = data || [];
   const t = await getTranslations();
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return (
-          <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs">
-            En attente
-          </span>
-        );
+        return <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs">En attente</span>;
       case 'processing':
-        return (
-          <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">
-            En cours
-          </span>
-        );
+        return <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">En cours</span>;
       case 'shipped':
-        return (
-          <span className="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs">
-            Expédié
-          </span>
-        );
+        return <span className="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs">Expédié</span>;
       case 'delivered':
-        return (
-          <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">
-            Livré
-          </span>
-        );
+        return <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">Livré</span>;
       default:
-        return (
-          <span className="px-2 py-1 bg-gray-500/20 text-gray-300 rounded-full text-xs">
-            Inconnu
-          </span>
-        );
+        return <span className="px-2 py-1 bg-gray-500/20 text-gray-300 rounded-full text-xs">Inconnu</span>;
     }
   };
 
@@ -120,15 +93,11 @@ export default async function OrdersPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div>
                     <p className="text-xs text-gray-400">Quantité</p>
-                    <p className="font-medium text-white">
-                      {order.quantity} carte(s)
-                    </p>
+                    <p className="font-medium text-white">{order.quantity} carte(s)</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Adresse</p>
-                    <p className="text-gray-300">
-                      {order.shipping_address || '—'}
-                    </p>
+                    <p className="text-gray-300">{order.shipping_address || '—'}</p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Date</p>
@@ -138,33 +107,8 @@ export default async function OrdersPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    className="bg-gradient-to-r from-green-600 to-emerald-500"
-                    onClick={async () => {
-                      await fetch(`/api/admin/orders/${order.id}/validate`, {
-                        method: 'POST',
-                      });
-                      window.location.reload();
-                    }}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-1" /> Valider
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-red-500/30 text-red-400"
-                    onClick={async () => {
-                      await fetch(`/api/admin/orders/${order.id}/cancel`, {
-                        method: 'POST',
-                      });
-                      window.location.reload();
-                    }}
-                  >
-                    <XCircle className="h-4 w-4 mr-1" /> Annuler
-                  </Button>
-                </div>
+                {/* ✅ Remplacé par le composant client */}
+                <OrderActions orderId={order.id} />
               </CardContent>
             </Card>
           ))}

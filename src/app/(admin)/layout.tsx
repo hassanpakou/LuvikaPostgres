@@ -2,6 +2,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { Toaster } from 'sonner';
 
 export default async function AdminLayout({
   children,
@@ -28,5 +29,14 @@ export default async function AdminLayout({
     redirect('/auth/sign-in');
   }
 
-  return <div>{children}</div>;
+  return (
+    <div>
+      <Toaster 
+      position="top-right"
+      richColors
+      closeButton
+    />
+      {children}
+    </div>
+  );
 }
