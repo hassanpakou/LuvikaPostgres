@@ -1397,7 +1397,7 @@ export default function DashboardContent({
     isOpen={true}
     onClose={closeModal}
     profileId={profile.id}
-    totalFollowers={totalFollowers}
+    totalFollowers={totalFollowers || 0}
           />
         )}
 </AnimatePresence>

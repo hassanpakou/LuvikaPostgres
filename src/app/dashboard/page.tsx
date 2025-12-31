@@ -86,6 +86,8 @@ export default async function DashboardPage() {
     return redirect('/complete-profile');
   }
 // 🔹 Récupérer le nombre total de followers pour l'utilisateur connecté
+// 🔹 ✅ Compte des abonnés (followers)
+// 🔹 ✅ Compte les followers (ceux qui suivent l'utilisateur)
 const { count: totalFollowers } = await supabase
   .from('follows')
   .select('*', { count: 'exact', head: true })
@@ -139,7 +141,7 @@ const { count: totalFollowers } = await supabase
       profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
     }))}
     totalScans={totalScans}
-    totalFollowers={totalFollowers ?? 0}  // <-- ajouté
+    totalFollowers={0}  // <-- ajouté
     qrBase64={qrBase64}
     profileUrl={profileUrl}
     planColors={PLAN_COLORS}

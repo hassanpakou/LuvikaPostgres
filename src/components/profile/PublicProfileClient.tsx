@@ -1,4 +1,3 @@
-// src/components/profile/PublicProfileClient.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -16,13 +15,7 @@ import QRModal from './QRModal';
 import ContactForm from './ContactForm';
 import { Card } from '@/components/ui/card';
 
-// 🔹 ✅ 1. Déclarez Props AVANT Profile (obligatoire)
-type Props = {
-  profile: Profile;
-  followers?: number; // ✅ optionnel pour RSC
-  following?: number;
-};
-
+// 🔹 Types
 type Profile = {
   id: string;
   full_name: string;
@@ -45,10 +38,18 @@ type Profile = {
   cover_url?: string | null;
 };
 
+type Props = {
+  profile: Profile;
+  followers?: number;
+  following?: number;
+};
+
+// 🔹 Helpers
 const isSectionVisible = (section: string, profile: Profile): boolean => {
   return profile.sections_visibility?.[section] !== false;
 };
 
+// 🔹 Composant principal
 export default function PublicProfileClient({
   profile,
   followers = 0,
@@ -59,9 +60,9 @@ export default function PublicProfileClient({
 
   useEffect(() => {
     const activeOrLostCards = (profile.nfc_cards || []).filter(
-      (card: any) => card.status === 'active' || card.status === 'lost'
+      (card) => card.status === 'active' || card.status === 'lost'
     );
-    setHasLostCard(activeOrLostCards.some((card: any) => card.status === 'lost'));
+    setHasLostCard(activeOrLostCards.some((card) => card.status === 'lost'));
 
     fetch('/api/scans', {
       method: 'POST',
@@ -70,47 +71,43 @@ export default function PublicProfileClient({
     }).catch(console.warn);
   }, [profile.id]);
 
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app').replace(/\/+$/, '');
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app')
+    .replace(/\s+$/, '')
+    .replace(/\/+$/, '');
   const profileUrl = `${baseUrl}/${profile.username}`;
 
-  // 🔹 ✅ Nettoyage robuste + LOGS
-  const rawCoverUrl = profile.cover_url;
-  const cleanCoverUrl = (rawCoverUrl || '')
+  // 🔹 Cover URL sécurisée
+  const cleanCoverUrl = (profile.cover_url || '')
     .replace(/\u00A0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
-  
+
   const coverUrl = cleanCoverUrl && cleanCoverUrl !== 'null' && cleanCoverUrl !== ''
     ? cleanCoverUrl.startsWith('http')
       ? cleanCoverUrl
       : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
     : '/default.png';
 
-  // 🔹 ✅ LOGS DÉTAILLÉS AU MONTAGE
   useEffect(() => {
-    console.group('🔍 Cover URL Debug');
-    console.log('• profile.cover_url (brut) =', JSON.stringify(rawCoverUrl));
-    console.log('• Après trim + clean =', JSON.stringify(cleanCoverUrl));
-    console.log('• URL finale utilisée =', coverUrl);
-
-    const img = new Image();
-    img.onload = () => console.log('✅ Image chargée avec succès');
-    img.onerror = (e) => console.warn('❌ Échec du chargement de l’image', e);
-    img.src = coverUrl;
-    console.groupEnd();
-  }, [profile.cover_url]);
+    if (typeof window !== 'undefined') {
+      const img = new Image();
+      img.src = encodeURI(coverUrl);
+      img.onload = () => console.log('✅ Cover image loaded');
+      img.onerror = () => console.warn('⚠️ Cover image failed');
+    }
+  }, [coverUrl]);
 
   return (
     <div className="relative min-h-screen">
-      {/* 🔹 Photo de couverture */}
+      {/* 🔹 Arrière-plan */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{ backgroundImage: `url(${encodeURI(coverUrl)})` }}
       />
 
       <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
-        {/* 🔹 En-tête — photo + badge intégré */}
-        <motion.div
+        {/* 🔹 En-tête */}
+        <motion.header
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -121,7 +118,7 @@ export default function PublicProfileClient({
               {profile.full_name?.charAt(0).toUpperCase() || '?'}
             </div>
 
-            {/* 🔹 BADGE PLAN */}
+            {/* 🔹 Badge plan */}
             {profile.plan && profile.plan !== 'basic' && (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
@@ -134,7 +131,7 @@ export default function PublicProfileClient({
                     ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
                     : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
                 }`}>
-                  {profile.plan === 'premium' ? 'Premium' : 'Entreprise'}
+                  {profile.plan === 'premium' ? '⭐ Premium' : '🚀 Entreprise'}
                 </Badge>
               </motion.div>
             )}
@@ -145,50 +142,41 @@ export default function PublicProfileClient({
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowQRModal(true)}
               className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center shadow border border-white/20"
-              aria-label="QR Code"
+              aria-label="Afficher QR Code"
             >
               <QrCode className="w-5 h-5 text-white" />
             </motion.button>
           </div>
 
+          {/* 🔹 Identité */}
           <motion.div className="mt-4">
             <p className="text-cyan-300 font-mono text-sm">@{profile.username}</p>
             <h1 className="text-2xl md:text-3xl font-bold text-white mt-1.5">{profile.full_name}</h1>
             {profile.job_title && (
-              <p className="text-gray-300 mt-0.5">{profile.job_title}{profile.company && ` · ${profile.company}`}</p>
+              <p className="text-gray-300 mt-0.5">
+                {profile.job_title}{profile.company && ` · ${profile.company}`}
+              </p>
             )}
           </motion.div>
 
-          {/* 🔹 Stats globales : Followers · Following · Likes · NFC */}
+          {/* 🔹 Statistiques */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 }}
-            className="mt-6 flex justify-center gap-8 text-center flex-wrap sm:flex-nowrap"
+            className="mt-6 flex justify-center gap-5 text-center flex-wrap sm:flex-nowrap"
           >
-            {/* Likes */}
-            <div className="min-w-[70px] flex flex-col items-center">
+            <StatBox label="J’aime">
               <GlacialLikeButton
                 profileId={profile.id}
                 initialLikes={profile.likes_count || 0}
               />
-              <p className="text-gray-400 text-xs mt-1">J’aime</p>
-            </div>
+            </StatBox>
 
-            {/* Followers */}
-            <div className="min-w-[60px]">
-              <p className="text-xl font-semibold text-white leading-tight">{followers}</p>
-              <p className="text-gray-400 text-[11px] mt-0.5">Followers</p>
-            </div>
+            <StatBox label="Followers">{followers}</StatBox>
+            <StatBox label="Suivi(e)s">{following}</StatBox>
 
-            {/* Following */}
-            <div className="min-w-[60px]">
-              <p className="text-xl font-semibold text-white leading-tight">{following}</p>
-              <p className="text-gray-400 text-[11px] mt-0.5">Following</p>
-            </div>
-
-            {/* NFC Status */}
-            <div className="min-w-[80px] flex flex-col items-center">
+            <StatBox label="Carte NFC">
               <motion.div
                 animate={{
                   boxShadow: hasLostCard
@@ -199,25 +187,20 @@ export default function PublicProfileClient({
                   duration: 2,
                   repeat: Infinity,
                   repeatType: 'mirror',
-                  ease: 'easeInOut',
                 }}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
                   hasLostCard
-                    ? 'border-yellow-400/40 text-yellow-300 bg-yellow-400/10'
-                    : 'border-emerald-400/40 text-emerald-300 bg-emerald-400/10'
+                    ? 'border-yellow-400/40 text-yellow-400 bg-yellow-400/10'
+                    : 'border-emerald-400/40 text-emerald-400 bg-emerald-400/10'
                 }`}
               >
-                <CheckCircle
-                  className={`w-3.5 h-3.5 ${
-                    hasLostCard ? 'text-yellow-400' : 'text-emerald-400'
-                  }`}
-                />
+                <CheckCircle className="w-3.5 h-3.5" />
                 {hasLostCard ? 'Perdue' : 'Active'}
               </motion.div>
-              <p className="text-gray-400 text-[11px] mt-1">Carte NFC</p>
-            </div>
+            </StatBox>
           </motion.div>
 
+          {/* 🔹 Bio courte */}
           {profile.bio_short && (
             <motion.p
               initial={{ opacity: 0 }}
@@ -228,43 +211,55 @@ export default function PublicProfileClient({
               {profile.bio_short}
             </motion.p>
           )}
-        </motion.div>
+        </motion.header>
 
-        {/* 🔹 Grille compacte — inchangée */}
+        {/* 🔹 Actions */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="grid grid-flow-col auto-cols-max gap-x-2 gap-y-2 justify-center mb-6"
+          className="grid grid-flow-col auto-cols-max gap-2 justify-center mb-6"
         >
           {isSectionVisible('contact', profile) && profile.email && (
-            <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
+            <ActionItem
+              icon={<Mail className="w-5 h-5 text-cyan-400" />}
+              label="Email"
+              href={`mailto:${profile.email}`}
+            />
           )}
           {isSectionVisible('contact', profile) && profile.phone && (
-            <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
+            <ActionItem
+              icon={<Phone className="w-5 h-5 text-green-400" />}
+              label="Appeler"
+              href={`tel:${profile.phone}`}
+            />
           )}
           {isSectionVisible('contact', profile) && profile.whatsapp && (
-            <ActionItem 
-              icon={<MessageCircle className="w-5 h-5 text-emerald-400" />} 
-              label="WhatsApp" 
-              href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} 
+            <ActionItem
+              icon={<MessageCircle className="w-5 h-5 text-emerald-400" />}
+              label="WhatsApp"
+              href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
             />
           )}
           {profile.address && (
-            <ActionItem 
-              icon={<MapPin className="w-5 h-5 text-amber-400" />} 
-              label="Carte" 
-              href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} 
+            <ActionItem
+              icon={<MapPin className="w-5 h-5 text-amber-400" />}
+              label="Carte"
+              href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`}
             />
           )}
           {profile.website && (
-            <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
+            <ActionItem
+              icon={<Globe className="w-5 h-5 text-blue-400" />}
+              label="Site"
+              href={profile.website}
+            />
           )}
           {profile.instagram && (
-            <ActionItem 
-              icon={<Instagram className="w-5 h-5 text-pink-400" />} 
-              label="IG" 
-              href={`https://instagram.com/${profile.instagram.trim()}`} 
+            <ActionItem
+              icon={<Instagram className="w-5 h-5 text-pink-400" />}
+              label="IG"
+              href={`https://instagram.com/${profile.instagram.trim()}`}
             />
           )}
           <ActionItem
@@ -283,13 +278,11 @@ export default function PublicProfileClient({
           />
         </motion.div>
 
-        {/* 🔹 Sections — inchangées */}
+        {/* 🔹 Sections */}
         <div className="space-y-5">
           {profile.bio_long && isSectionVisible('bio', profile) && (
             <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
-              <p className="text-gray-300 text-sm leading-relaxed">
-                {profile.bio_long}
-              </p>
+              <p className="text-gray-300 text-sm leading-relaxed">{profile.bio_long}</p>
             </Section>
           )}
 
@@ -300,20 +293,26 @@ export default function PublicProfileClient({
           )}
         </div>
 
+        {/* 🔹 Scan tracker */}
         <ScanTracker profileId={profile.id} />
 
+        {/* 🔹 Footer */}
         <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7 }}
           className="mt-10 text-center text-gray-500 text-xs"
         >
-          <a href="/" className="text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-1">
+          <a
+            href="/"
+            className="text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-1"
+          >
             luvika.dev <ExternalLink className="w-3 h-3" />
           </a>
         </motion.footer>
       </div>
 
+      {/* 🔹 QR Modal */}
       <AnimatePresence>
         {showQRModal && (
           <QRModal
@@ -329,32 +328,53 @@ export default function PublicProfileClient({
   );
 }
 
-const ActionItem = ({ icon, label, href, onClick }: { 
-  icon: React.ReactNode; 
-  label: string; 
-  href?: string; 
-  onClick?: () => void; 
-}) => (
-  <motion.button
-    whileHover={{ y: -1, scale: 1.04 }}
-    whileTap={{ scale: 0.96 }}
-    onClick={(e) => {
-      if (onClick) {
-        e.preventDefault();
-        onClick();
-      }
-    }}
-    className="flex flex-col items-center p-1.5 gap-0.5 rounded-lg transition-all"
-    style={{ background: 'transparent', border: 'none' }}
-  >
-    <span className="text-gray-300 hover:text-white transition-colors leading-none">
-      {icon}
-    </span>
-    <span className="text-[10px] text-gray-400 hover:text-gray-200 transition-colors leading-none">
-      {label}
-    </span>
-  </motion.button>
+// 🔹 Composants enfants
+const StatBox = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div className="min-w-[64px] flex flex-col items-center">
+    <div className="text-xl font-semibold text-white leading-tight">{children}</div>
+    <div className="text-gray-400 text-[11px] mt-0.5">{label}</div>
+  </div>
 );
+
+const ActionItem = ({
+  icon,
+  label,
+  href,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  href?: string;
+  onClick?: () => void;
+}) => {
+  if (href) {
+    return (
+      <motion.a
+        href={href}
+        target={href.startsWith('http') ? '_blank' : undefined}
+        rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        whileHover={{ y: -2, scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="flex flex-col items-center p-2 gap-1 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer border border-transparent hover:border-white/10"
+      >
+        <span className="text-gray-300 hover:text-white transition-colors">{icon}</span>
+        <span className="text-[11px] text-gray-400 whitespace-nowrap">{label}</span>
+      </motion.a>
+    );
+  }
+
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ y: -2, scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="flex flex-col items-center p-2 gap-1 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer border border-transparent hover:border-white/10"
+    >
+      <span className="text-gray-300 hover:text-white transition-colors">{icon}</span>
+      <span className="text-[11px] text-gray-400 whitespace-nowrap">{label}</span>
+    </motion.button>
+  );
+};
 
 const Section = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
   <Card className="border border-white/10 bg-transparent">
