@@ -1,5 +1,5 @@
 // src/app/[locale]/[username]/page.tsx
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation'; // ✅ redirect ajouté
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
@@ -58,32 +58,33 @@ export default async function PublicProfilePage({
     notFound();
   }
 
-  // 🔹 ✅ Récupère les données de suivi côté serveur
+  // 🔹 ✅ Récupère l'utilisateur AVANT la vérification d'accès
   const { data : { user } } = await supabase.auth.getUser();
   const currentUser = user as User | null;
   const isOwner = currentUser?.id === profileData.id;
   const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
+  // 🔹 ✅ Vérifie la visibilité APRÈS isOwner/isAdmin
   if (!profileData.is_public && !isOwner && !isAdmin) {
-    notFound();
+    return redirect(`/${locale}/${username}/private`);
   }
 
-// 🔹 ✅ Récupère followers & following côté serveur (SSR)
-let initialFollowers = 0;
-let initialFollowing = 0;
+  // 🔹 ✅ Compte followers/following
+  let initialFollowers = 0;
+  let initialFollowing = 0;
 
-if (currentUser) {
-  const [
-    { count: followersCount },
-    { count: followingCount }
-  ] = await Promise.all([
-    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', profileData.id),
-    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id),
-  ]);
+  if (currentUser) {
+    const [
+      { count: followersCount },
+      { count: followingCount }
+    ] = await Promise.all([
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', profileData.id),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id),
+    ]);
 
-  initialFollowers = followersCount || 0;
-  initialFollowing = followingCount || 0;
-}
+    initialFollowers = followersCount || 0;
+    initialFollowing = followingCount || 0;
+  }
 
   return (
     <div suppressHydrationWarning className="min-h-screen relative">
@@ -109,10 +110,10 @@ if (currentUser) {
 
       <div className="container mx-auto px-4 pb-20 max-w-4xl relative z-10">
         <PublicProfileClient
-  profile={profileData}
-  followers={initialFollowers}
-  following={initialFollowing}
-/>
+          profile={profileData}
+          followers={initialFollowers}
+          following={initialFollowing}
+        />
       </div>
     </div>
   );
