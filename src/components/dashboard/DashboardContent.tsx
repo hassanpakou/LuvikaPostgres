@@ -6,18 +6,19 @@ import { useTranslations, useLocale } from 'next-intl';
 import { 
   Heart, Download, X, Mail, Check, 
   Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Bell, Plus, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users
+  Eye, Bell, Plus, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import SimulateNFCTap from '@/components/nfc/SimulateNFCTap';
 import { generateQRBase64 } from '@/lib/qr';
 import SearchModal from '@/src/components/dashboard/SearchModal';
 import FollowersModal from '@/src/components/dashboard/FollowersModal';
+import ContactRequestsSection from '@/src/components/dashboard/ContactRequestsSection';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -143,7 +144,6 @@ const VisibilityModal = ({
 }) => {
   const [localSections, setLocalSections] = useState(sectionsVisibility);
   const t = useTranslations('dashboard.visibility');
-
   
   return (
     <motion.div
@@ -547,6 +547,8 @@ const UpgradeModal = ({
             </div>
           </CardContent>
         </Card>
+
+       
       </motion.div>
     </>
   );
@@ -928,6 +930,7 @@ export default function DashboardContent({
   const router = useRouter();
   const [hasLiked, setHasLiked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
@@ -1144,7 +1147,19 @@ export default function DashboardContent({
           </Button>
         </div>
       </div>
-
+{/* 🔹 ✅ Bouton Messages reçus */}
+{profile.accepts_contact_requests && (
+  <div className="col-span-1 md:col-span-2">
+    <Button
+      onClick={() => setIsContactModalOpen(true)}
+      className="w-full h-14 bg-gradient-to-r from-cyan-600/20 to-blue-500/20 hover:from-cyan-600/30 hover:to-blue-500/30 border border-cyan-400/30 text-cyan-300 font-medium group transition-all"
+    >
+      <Mail className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+      Voir mes messages reçus
+      <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+    </Button>
+  </div>
+)}
       {/* Commandes */}
       {(subscription.plan === 'premium' || subscription.plan === 'entreprise') && (
         <Card className="glass-border">
@@ -1400,6 +1415,11 @@ export default function DashboardContent({
     totalFollowers={totalFollowers || 0}
           />
         )}
+        {/* 🔹 Modal Messages */}
+<ContactRequestsSection
+  isOpen={isContactModalOpen}
+  onClose={() => setIsContactModalOpen(false)}
+/>
 </AnimatePresence>
 
       {/* Modal succès */}

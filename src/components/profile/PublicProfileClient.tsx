@@ -408,6 +408,10 @@ export default function PublicProfileClient({
               onClose={() => setIsContactModalOpen(false)}
               profileId={profile.id}
             />
+
+
+
+            
         </div>
 
         {/* 🔹 Scan tracker */}

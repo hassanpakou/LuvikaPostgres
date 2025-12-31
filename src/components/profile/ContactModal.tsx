@@ -56,8 +56,9 @@ export default function ContactModal({
 
           {/* 🔹 Footer */}
           <div className="p-4 border-t border-white/10 text-center text-xs text-gray-500">
-            ✅ Vos données sont stockées temporairement<br />
-            🔒 Conformément au RGPD, elles ne sont ni vendues ni partagées.
+                 
+  ✅ Vos données sont stockées **temporairement** dans le profil du destinataire.<br />
+  🔒 Conformément au RGPD, elles ne sont ni vendues ni partagées.
           </div>
         </motion.div>
       </motion.div>

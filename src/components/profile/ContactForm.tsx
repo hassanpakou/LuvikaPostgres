@@ -123,10 +123,7 @@ export default function ContactForm({ profileId }: { profileId: string }) {
         />
       </div>
 
-      <p className="text-xs text-gray-500 mt-2">
-  ✅ Vos données sont stockées **temporairement** dans le profil du destinataire.<br />
-  🔒 Conformément au RGPD, elles ne sont ni vendues ni partagées.
-</p>
+ 
 
       <Button
         type="submit"

@@ -209,10 +209,6 @@ export function HomePageContent() {
   </div>
 </motion.div>
 
-
-
-
-
 <section
   id="features"
   className="relative mt-32 w-full max-w-5xl mx-auto px-4"
