@@ -398,7 +398,7 @@ export default function Navbar() {
   const isAdmin = role === 'admin';
   const isUser = user && !isAdmin;
 
-  const navLinks = !isAdmin ? [
+  const navLinks = (!isAdmin && !isUser) ? [
     { href: '/', label: t('navbar.home') },
     { href: '/#features', label: t('navbar.features') },
     { href: `/${locale}/pricing`, label: t('navbar.pricing') },
@@ -461,8 +461,8 @@ export default function Navbar() {
                       className="px-4 py-2 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10"
                     >
                       <span className="relative z-10 flex items-center gap-1">
-                        <Shield className="h-4 w-4" />
-                        ADMINISTRATEUR
+                        
+                        DASHBOARD ADMIN
                       </span>
                       <div className="absolute inset-0 animated-bg-admin rounded-xl blur-sm opacity-70 -z-10" />
                     </Button>
@@ -478,8 +478,8 @@ export default function Navbar() {
                       className="px-4 py-2 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10"
                     >
                       <span className="relative z-10 flex items-center gap-1">
-                        <UserIcon className="h-4 w-4" />
-                        Utilisateur
+                      
+                        DASHBOARD USER
                       </span>
                       <div className="absolute inset-0 animated-bg-user rounded-xl blur-sm opacity-70 -z-10" />
                     </Button>
@@ -642,7 +642,7 @@ export default function Navbar() {
                   >
                     <span className="flex items-center gap-1">
                       <Shield className="h-4 w-4" />
-                      ADMINISTRATEUR
+                        DASHBOARD ADMIN
                     </span>
                     <div className="absolute inset-0 animated-bg-admin rounded-xl blur-sm opacity-60 -z-10" />
                   </Button>
@@ -659,7 +659,7 @@ export default function Navbar() {
                   >
                     <span className="flex items-center gap-1">
                       <UserIcon className="h-4 w-4" />
-                      Utilisateur
+                        DASHBOARD USER
                     </span>
                     <div className="absolute inset-0 animated-bg-user rounded-xl blur-sm opacity-60 -z-10" />
                   </Button>
