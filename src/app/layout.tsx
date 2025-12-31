@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale, getTranslations } from 'next-intl/server';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/src/components/layout/Footer';
+import { auth } from '@/src/lib/supabase/server';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,6 +24,9 @@ export default async function RootLayout({
 }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const {
+    data: { user },
+  } = await auth.getUser();
   
   // ✅ Traduis TOUT le footer côté serveur
   const t = await getTranslations('footer');
@@ -46,22 +50,24 @@ export default async function RootLayout({
           </main>
           
           {/* ✅ Footer : on passe les chaînes, pas la fonction */}
-          <Footer
-            product={t('product')}
-            features={t('features')}
-            pricing={t('pricing')}
-            download={t('download')}
-            company={t('company')}
-            about={t('about')}
-            contact={t('contact')}
-            blog={t('blog')}
-            legal={t('legal')}
-            privacy={t('privacy')}
-            terms={t('terms')}
-            cookies={t('cookies')}
-            tagline={t('tagline')}
-            copyright={t('copyright')}
-          />
+          {!user && (
+            <Footer
+              product={t('product')}
+              features={t('features')}
+              pricing={t('pricing')}
+              download={t('download')}
+              company={t('company')}
+              about={t('about')}
+              contact={t('contact')}
+              blog={t('blog')}
+              legal={t('legal')}
+              privacy={t('privacy')}
+              terms={t('terms')}
+              cookies={t('cookies')}
+              tagline={t('tagline')}
+              copyright={t('copyright')}
+            />
+          )}
         </NextIntlClientProvider>
       </body>
     </html>
