@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
   Instagram, Globe, Download, QrCode, ExternalLink,
-  CheckCircle, AlertTriangle, UserCheck, ArrowUp, ArrowRight, ChevronDown,
+  CheckCircle, AlertTriangle, UserCheck, ArrowUp, ArrowRight, ChevronDown, Send,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import GlacialLikeButton from './GlacialLikeButton';
 import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
-import ContactForm from './ContactForm';
 import { Card } from '@/components/ui/card';
+import ContactModal from './ContactModal'; // ✅ Bon nom
 
 // 🔹 Types
 type Profile = {
@@ -78,7 +78,7 @@ const BioToggle = ({ bio }: { bio: string }) => {
       });
     }
   }, [expanded, bio]);
-
+const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   return (
     <div className="relative overflow-hidden">
       {/* 🔹 Contenu complet (invisible, pour mesure) */}
@@ -153,6 +153,7 @@ export default function PublicProfileClient({
 }: Props) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false); // ✅ ICI
 
   useEffect(() => {
     const activeOrLostCards = (profile.nfc_cards || []).filter(
@@ -383,11 +384,30 @@ export default function PublicProfileClient({
               </Section>
             )}
 
-          {profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
-            <Section title="Message" icon={<Mail className="text-cyan-400 w-5 h-5" />}>
-              <ContactForm profileId={profile.id} />
-            </Section>
-          )}
+          {/* 🔹 ✅ Bouton contact → modal */}
+{profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.6 }}
+    className="text-center"
+  >
+    <button
+      onClick={() => setIsContactModalOpen(true)}
+      className="flex items-center justify-center gap-2 w-full max-w-xs mx-auto py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-600/20 to-blue-500/20 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-600/30 hover:shadow-lg transition-all group"
+    >
+      <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
+      <span className="font-medium">Laissez-moi vos contacts</span>
+      <Send className="w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+    </button>
+  </motion.div>
+)}
+            {/* 🔹 Modal contact */}
+            <ContactModal
+              isOpen={isContactModalOpen}
+              onClose={() => setIsContactModalOpen(false)}
+              profileId={profile.id}
+            />
         </div>
 
         {/* 🔹 Scan tracker */}
