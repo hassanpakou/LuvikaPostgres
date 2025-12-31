@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
   Instagram, Globe, Download, QrCode, ExternalLink,
-  CheckCircle, AlertTriangle, UserCheck,
+  CheckCircle, AlertTriangle, UserCheck, ArrowUp, ArrowRight, ChevronDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +44,102 @@ type Props = {
   following?: number;
 };
 
+// 🔹 Composant BioToggle — LUVIKA style
+// 🔹 BioToggle avec animation fluide (height + opacity)
+const BioToggle = ({ bio }: { bio: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [height, setHeight] = useState<number | 'auto'>('auto');
+  const contentRef = useRef<HTMLParagraphElement>(null);
+  const truncatedRef = useRef<HTMLParagraphElement>(null);
+
+  const words = bio.split(' ');
+  const truncated = words.length > 30 
+    ? words.slice(0, 30).join(' ') + '…' 
+    : bio;
+
+  // 🔹 Calcule la hauteur cible pour l'animation
+  useEffect(() => {
+    if (!contentRef.current || !truncatedRef.current) return;
+
+    const fullHeight = contentRef.current.scrollHeight;
+    const truncHeight = truncatedRef.current.scrollHeight;
+
+    if (expanded) {
+      setHeight(truncHeight);
+      // ⏳ Ralenti doux : d'abord fixe la hauteur petite, puis passe à `auto`
+      requestAnimationFrame(() => {
+        setHeight('auto');
+      });
+    } else {
+      // ⏳ Ralenti doux : d'abord fixe la hauteur grande, puis rétrécit
+      setHeight(fullHeight);
+      requestAnimationFrame(() => {
+        setHeight(truncHeight);
+      });
+    }
+  }, [expanded, bio]);
+
+  return (
+    <div className="relative overflow-hidden">
+      {/* 🔹 Contenu complet (invisible, pour mesure) */}
+      <p 
+        ref={contentRef}
+        className="absolute opacity-0 pointer-events-none whitespace-pre-line"
+      >
+        {bio}
+      </p>
+
+      {/* 🔹 Contenu affiché */}
+      <motion.p
+        initial={false}
+        animate={{ height }}
+        transition={{ 
+          duration: 0.4, 
+          ease: [0.34, 1.56, 0.64, 1], // ⏳ ralenti doux (easeOutCirc-like)
+        }}
+        className="text-gray-300 text-sm leading-relaxed overflow-hidden"
+      >
+        <span
+          ref={truncatedRef}
+          className={`inline-block transition-opacity duration-300 ${
+            expanded ? 'opacity-100' : 'opacity-100'
+          }`}
+        >
+          {expanded ? bio : truncated}
+        </span>
+      </motion.p>
+
+      {words.length > 30 && (
+        <motion.button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-3 text-cyan-400 hover:text-cyan-300 text-sm font-medium flex items-center gap-1.5 group"
+          whileHover={{ x: 3 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          {expanded ? (
+            <>
+              <ArrowUp className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
+              Voir moins
+            </>
+          ) : (
+            <>
+              <ChevronDown className="w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+              Voir plus
+            </>
+          )}
+          <motion.span
+            initial={{ rotate: 0 }}
+            animate={{ rotate: expanded ? 180 : 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="inline-block"
+          >
+            <ChevronDown className="w-3.5 h-3.5" />
+          </motion.span>
+        </motion.button>
+      )}
+    </div>
+  );
+};
 // 🔹 Helpers
 const isSectionVisible = (section: string, profile: Profile): boolean => {
   return profile.sections_visibility?.[section] !== false;
@@ -280,11 +376,12 @@ export default function PublicProfileClient({
 
         {/* 🔹 Sections */}
         <div className="space-y-5">
-          {profile.bio_long && isSectionVisible('bio', profile) && (
-            <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
-              <p className="text-gray-300 text-sm leading-relaxed">{profile.bio_long}</p>
-            </Section>
-          )}
+          {/* 🔹 Section À propos — version compacte animée */}
+            {profile.bio_long && isSectionVisible('bio', profile) && (
+              <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
+                <BioToggle bio={profile.bio_long} />
+              </Section>
+            )}
 
           {profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
             <Section title="Message" icon={<Mail className="text-cyan-400 w-5 h-5" />}>

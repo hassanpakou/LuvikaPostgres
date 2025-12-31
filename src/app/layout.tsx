@@ -78,7 +78,7 @@ export default async function RootLayout({
 
           {showHeaderFooter && <Navbar />}
           {showHeaderFooter ? (
-            <main className="container mx-auto px-4 py-2 max-w-6xl relative">
+            <main className="container mx-auto px-4 py-3 max-w-6xl relative">
               {children}
             </main>
           ) : (
