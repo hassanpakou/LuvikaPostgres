@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye, Bell, QrCode, Contact, AlertTriangle,
-  MessageSquare, Package, ArrowUp, Plus,
+  MessageSquare, User, Search, Package, ArrowUp, Plus, Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -18,14 +18,18 @@ type Action = {
 
 const actions: Action[] = [
   { id: 'visibility', label: 'Visibilité', icon: <Eye size={18} />, color: 'from-purple-500 to-indigo-500' },
-  { id: 'contact', label: 'Messages', icon: <Bell size={18} />, color: 'from-cyan-500 to-blue-500' },
-  { id: 'qr', label: 'QR Code', icon: <QrCode size={18} />, color: 'from-emerald-500 to-teal-500' },
-  { id: 'nfc', label: 'Cartes NFC', icon: <Contact size={18} />, color: 'from-amber-500 to-orange-500' },
+  { id: 'contact', label: 'Messages', icon: <Bell size={18} />, color: 'from-cyan-400 to-blue-500' },
+  { id: 'qr', label: 'QR Code', icon: <QrCode size={18} />, color: 'from-emerald-400 to-teal-500' },
+  { id: 'nfc', label: 'Cartes NFC', icon: <Contact size={18} />, color: 'from-amber-400 to-orange-500' },
   { id: 'report', label: 'Signaler', icon: <AlertTriangle size={18} />, color: 'from-red-500 to-rose-500' },
-  { id: 'message', label: 'Message perso', icon: <MessageSquare size={18} />, color: 'from-indigo-500 to-violet-500' },
-  { id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-500 to-pink-500' },
-  { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-400 to-blue-400' },
+  { id: 'message', label: 'Message perso', icon: <MessageSquare size={18} />, color: 'from-indigo-400 to-violet-500' },
+  { id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-400 to-pink-500' },
+  { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
+  { id: 'followers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
+  { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
 ];
+
+
 
 export default function DashboardQuickMenu({
   onAction,

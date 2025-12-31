@@ -143,9 +143,9 @@ export default function Footer({
 
               <div className="flex space-x-4 mt-4 md:mt-0">
                 {[
-                  { Icon: Github, href: 'https://github.com/nsphku', label: 'GitHub' },
-                  { Icon: Twitter, href: 'https://twitter.com/luvika_dev', label: 'Twitter' },
-                  { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', label: 'LinkedIn' },
+                  { Icon: Github, href: 'https://github.com/hassanpakou', label: 'GitHub' },
+                  { Icon: Twitter, href: 'https://twitter.com/luvika', label: 'Twitter' },
+                  { Icon: Linkedin, href: 'https://linkedin.com/in/nestor-phaku-137b53217,', label: 'LinkedIn' },
                 ].map(({ Icon, href, label }) => (
                   <motion.a
                     key={label}

@@ -5,6 +5,7 @@ import { createClientForPage } from '../../lib/supabase/server';
 import DashboardContent from '../../components/dashboard/DashboardContent';
 import { generateQRBase64 } from '@/lib/qr';
 
+
 type Scan = {
   id: string;
   scan_type: string;
@@ -84,6 +85,11 @@ export default async function DashboardPage() {
     console.warn('🚨 Profil incomplet ou absent — redirection vers /complete-profile');
     return redirect('/complete-profile');
   }
+// 🔹 Récupérer le nombre total de followers pour l'utilisateur connecté
+const { count: totalFollowers } = await supabase
+  .from('follows')
+  .select('*', { count: 'exact', head: true })
+  .eq('followed_id', user.id);
 
   // 🔹 ✅ Étape 4 : charger les relations seulement si profil OK
   const { data: profileWithRelations } = await supabase
@@ -123,20 +129,21 @@ export default async function DashboardPage() {
   }
 
   return (
-    <DashboardContent
-      user={user}
-      profile={profile}
-      cards={cards}
-      recentScans={scans.map(scan => ({
-        ...scan,
-        relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
-        profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
-      }))}
-      totalScans={totalScans}
-      qrBase64={qrBase64}
-      profileUrl={profileUrl}
-      planColors={PLAN_COLORS}
-      isAdmin={isAdmin}
-    />
-  );
+  <DashboardContent
+    user={user}
+    profile={profile}
+    cards={cards}
+    recentScans={scans.map(scan => ({
+      ...scan,
+      relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
+      profiles: scan.profiles || { username: 'inconnu', full_name: 'Utilisateur supprimé' },
+    }))}
+    totalScans={totalScans}
+    totalFollowers={totalFollowers ?? 0}  // <-- ajouté
+    qrBase64={qrBase64}
+    profileUrl={profileUrl}
+    planColors={PLAN_COLORS}
+    isAdmin={isAdmin}
+  />
+);
 }

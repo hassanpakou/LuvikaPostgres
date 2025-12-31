@@ -7,6 +7,7 @@ import { getMessages, getLocale, getTranslations } from 'next-intl/server';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/src/components/layout/Footer';
 import { auth } from '@/src/lib/supabase/server';
+import { headers } from 'next/headers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,6 +28,37 @@ export default async function RootLayout({
   const {
     data: { user },
   } = await auth.getUser();
+  const headersList = await headers();
+  const pathname = headersList.get('x-next-pathname') || '';
+  const referer = headersList.get('referer') || '';
+
+  // Debug logs
+  console.log('🔍 Layout Debug:', { pathname, referer });
+
+  // Masquer header/footer pour auth et profils publics
+  const noHeaderFooterPaths = ['/auth/sign-in', '/auth/sign-up'];
+  
+  // Méthode 1: Détecter via pathname
+  const isPublicProfile1 = /^\/(fr|en|ln)\/[^/]+\/?$/.test(pathname);
+  
+  // Méthode 2: Détecter via referer ou autre header
+  const isPublicProfile2 = referer.includes('/fr/') || referer.includes('/en/') || referer.includes('/ln/');
+  
+  // Méthode 3: Vérifier si c'est une page de profil simple (pas /dashboard, /auth, etc.)
+  const isPublicProfile3 = pathname.split('/').length === 3 && ['fr', 'en', 'ln'].includes(pathname.split('/')[1]);
+  
+  const isPublicProfile = isPublicProfile1 || isPublicProfile3;
+  
+  console.log('🔍 Profile Detection:', { 
+    isPublicProfile1, 
+    isPublicProfile2, 
+    isPublicProfile3, 
+    final: isPublicProfile 
+  });
+  
+  const showHeaderFooter = !noHeaderFooterPaths.some(path => pathname.includes(path)) && !isPublicProfile;
+  
+  console.log('🔍 Show Header/Footer:', showHeaderFooter);
   
   // ✅ Traduis TOUT le footer côté serveur
   const t = await getTranslations('footer');
@@ -44,13 +76,18 @@ export default async function RootLayout({
             </div>
           </div>
 
-          <Navbar />
-          <main className="container mx-auto px-4 py-2 max-w-6xl relative">
-            {children}
-          </main>
+          {showHeaderFooter && <Navbar />}
+          {showHeaderFooter ? (
+            <main className="container mx-auto px-4 py-2 max-w-6xl relative">
+              {children}
+            </main>
+          ) : (
+            // Pages sans header (profil public et auth) : pas de container/padding
+            children
+          )}
           
           {/* ✅ Footer : on passe les chaînes, pas la fonction */}
-          {!user && (
+          {showHeaderFooter && !user && (
             <Footer
               product={t('product')}
               features={t('features')}

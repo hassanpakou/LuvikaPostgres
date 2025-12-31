@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
-import PublicProfileClient from '../../../components/profile/PublicProfileClient';
+import PublicProfileClient from '../../../../src/components/profile/PublicProfileClient';
 
 export default async function PublicProfilePage({
   params,
@@ -28,23 +28,20 @@ export default async function PublicProfilePage({
     }
   );
 
-  // ✅ Une seule déclaration — avec `accepts_contact_requests`
   let profileData = null;
   let profileError = null;
 
-  // 🔹 Requête unique — avec le champ manquant
- const { data, error } = await supabase
-  .from('profiles')
- .select('*, plan, accepts_contact_requests, cover_url') // ✅ `plan` ajouté explicitement
-  .ilike('username', decodedUsername.trim())
-  .maybeSingle();
+  const {  data, error } = await supabase
+    .from('profiles')
+    .select('*, plan, accepts_contact_requests, cover_url')
+    .ilike('username', decodedUsername.trim())
+    .maybeSingle();
 
   if (error) {
     profileError = error;
   } else if (data) {
     profileData = data;
   } else {
-    // 🔁 Fallback — même structure
     const { data : fallbackData, error: fallbackError } = await supabase
       .from('profiles')
       .select('*, accepts_contact_requests')
@@ -61,9 +58,9 @@ export default async function PublicProfilePage({
     notFound();
   }
 
-  // ✅ Auth sécurisée
-  const { data : userData, error: authError } = await supabase.auth.getUser();
-  const currentUser = userData?.user as User | null;
+  // 🔹 ✅ Récupère les données de suivi côté serveur
+  const { data : { user } } = await supabase.auth.getUser();
+  const currentUser = user as User | null;
   const isOwner = currentUser?.id === profileData.id;
   const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
@@ -71,8 +68,25 @@ export default async function PublicProfilePage({
     notFound();
   }
 
+// 🔹 ✅ Récupère followers & following côté serveur (SSR)
+let initialFollowers = 0;
+let initialFollowing = 0;
+
+if (currentUser) {
+  const [
+    { count: followersCount },
+    { count: followingCount }
+  ] = await Promise.all([
+    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', profileData.id),
+    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id),
+  ]);
+
+  initialFollowers = followersCount || 0;
+  initialFollowing = followingCount || 0;
+}
+
   return (
-    <div suppressHydrationWarning={true} className="min-h-screen relative">
+    <div suppressHydrationWarning className="min-h-screen relative">
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 via-blue-900/20 to-indigo-900/10"></div>
         <div className="absolute inset-0 overflow-hidden">
@@ -94,7 +108,11 @@ export default async function PublicProfilePage({
       </div>
 
       <div className="container mx-auto px-4 pb-20 max-w-4xl relative z-10">
-        <PublicProfileClient profile={profileData} />
+        <PublicProfileClient
+  profile={profileData}
+  followers={initialFollowers}
+  following={initialFollowing}
+/>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { 
   Heart, Download, X, Mail, Check, 
   Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Bell, Plus, ArrowRight, Contact, QrCode, Package, ArrowUp
+  Eye, Bell, Plus, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,6 +16,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import SimulateNFCTap from '@/components/nfc/SimulateNFCTap';
 import { generateQRBase64 } from '@/lib/qr';
+import SearchModal from '@/src/components/dashboard/SearchModal';
+import FollowersModal from '@/src/components/dashboard/FollowersModal';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -142,6 +144,7 @@ const VisibilityModal = ({
   const [localSections, setLocalSections] = useState(sectionsVisibility);
   const t = useTranslations('dashboard.visibility');
 
+  
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -832,6 +835,8 @@ const DashboardQuickMenu = ({ onAction }: { onAction: (id: string) => void }) =>
       message: '💬 Message',
       orders: '📦 Commandes',
       upgrade: '⬆️ Upgrade',
+      search: '🔎 Recherche',
+      followers: '❤️ Abonnés',
     };
     return fallback[key] || key;
   };
@@ -845,6 +850,8 @@ const DashboardQuickMenu = ({ onAction }: { onAction: (id: string) => void }) =>
     { id: 'message', label: t_quick('message'), icon: <MessageSquare size={14} />, color: 'bg-indigo-500' },
     { id: 'orders', label: t_quick('orders'), icon: <Package size={14} />, color: 'bg-violet-500' },
     { id: 'upgrade', label: t_quick('upgrade'), icon: <ArrowUp size={14} />, color: 'bg-amber-500' },
+    { id: 'search', label: 'Rechercher', icon: <Search size={14} />, color: 'bg-orange-500' },
+    { id: 'followers', label: 'Abonnés', icon: <Users size={14} />, color: 'bg-green-500' },
   ];
 
   return (
@@ -909,11 +916,12 @@ type Props = {
   profileUrl: string;
   planColors: Record<string, string>;
   isAdmin: boolean;
+  totalFollowers: number;
 };
 
 export default function DashboardContent({
   user, profile, cards, recentScans,
-  totalScans, qrBase64, profileUrl, planColors, isAdmin,
+  totalScans, qrBase64, profileUrl, planColors, isAdmin, totalFollowers,
 }: Props) {
   const t = useTranslations('dashboard');
   const locale = useLocale();
@@ -1368,14 +1376,31 @@ export default function DashboardContent({
           />
         )}
         {activeModal === 'orders' && (
-  <OrdersModal
+          <OrdersModal
+            isOpen={true}
+            onClose={closeModal}
+            isAdmin={isAdmin}
+            router={router} // ✅ passé ici
+        />
+        )}
+
+        {/* ✅ Ajoutez-le ici : */}
+        {activeModal === 'search' && (
+            <SearchModal
+              isOpen={true}
+              onClose={closeModal}
+            />
+        )}
+        {/* 🔹 ✅ Modal Abonnés */}
+        {activeModal === 'followers' && (
+  <FollowersModal
     isOpen={true}
     onClose={closeModal}
-    isAdmin={isAdmin}
-    router={router} // ✅ passé ici
-  />
+    profileId={profile.id}
+    totalFollowers={totalFollowers}
+          />
         )}
-      </AnimatePresence>
+</AnimatePresence>
 
       {/* Modal succès */}
       <SuccessModal

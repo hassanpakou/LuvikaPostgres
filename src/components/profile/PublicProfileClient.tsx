@@ -1,3 +1,4 @@
+// src/components/profile/PublicProfileClient.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -14,8 +15,12 @@ import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
 import ContactForm from './ContactForm';
 import { Card } from '@/components/ui/card';
-const isSectionVisible = (section: string, profile: Profile): boolean => {
-  return profile.sections_visibility?.[section] !== false;
+
+// 🔹 ✅ 1. Déclarez Props AVANT Profile (obligatoire)
+type Props = {
+  profile: Profile;
+  followers?: number; // ✅ optionnel pour RSC
+  following?: number;
 };
 
 type Profile = {
@@ -40,7 +45,15 @@ type Profile = {
   cover_url?: string | null;
 };
 
-export default function PublicProfileClient({ profile }: { profile: Profile }) {
+const isSectionVisible = (section: string, profile: Profile): boolean => {
+  return profile.sections_visibility?.[section] !== false;
+};
+
+export default function PublicProfileClient({
+  profile,
+  followers = 0,
+  following = 0,
+}: Props) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
 
@@ -62,17 +75,16 @@ export default function PublicProfileClient({ profile }: { profile: Profile }) {
 
   // 🔹 ✅ Nettoyage robuste + LOGS
   const rawCoverUrl = profile.cover_url;
-const cleanCoverUrl = (rawCoverUrl || '')
-  .replace(/\u00A0/g, ' ') // Remplace espaces insécables par espaces normaux
-  .replace(/\s+/g, ' ')    // Réduit plusieurs espaces à un seul
-  .trim();                 // Supprime espaces début/fin  
+  const cleanCoverUrl = (rawCoverUrl || '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  
   const coverUrl = cleanCoverUrl && cleanCoverUrl !== 'null' && cleanCoverUrl !== ''
     ? cleanCoverUrl.startsWith('http')
       ? cleanCoverUrl
-: cleanCoverUrl.startsWith('http')
-  ? cleanCoverUrl
-  : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
-      : '/default.png';
+      : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
+    : '/default.png';
 
   // 🔹 ✅ LOGS DÉTAILLÉS AU MONTAGE
   useEffect(() => {
@@ -81,12 +93,10 @@ const cleanCoverUrl = (rawCoverUrl || '')
     console.log('• Après trim + clean =', JSON.stringify(cleanCoverUrl));
     console.log('• URL finale utilisée =', coverUrl);
 
-    // 🔹 Test réseau asynchrone
     const img = new Image();
     img.onload = () => console.log('✅ Image chargée avec succès');
     img.onerror = (e) => console.warn('❌ Échec du chargement de l’image', e);
     img.src = coverUrl;
-    
     console.groupEnd();
   }, [profile.cover_url]);
 
@@ -95,10 +105,7 @@ const cleanCoverUrl = (rawCoverUrl || '')
       {/* 🔹 Photo de couverture */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
-        style={{
-          backgroundImage: `url(${encodeURI(coverUrl)})`,
-          backgroundColor: '',
-        }}
+        style={{ backgroundImage: `url(${encodeURI(coverUrl)})` }}
       />
 
       <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
@@ -114,7 +121,7 @@ const cleanCoverUrl = (rawCoverUrl || '')
               {profile.full_name?.charAt(0).toUpperCase() || '?'}
             </div>
 
-            {/* 🔹 BADGE PLAN — croché, texte complet */}
+            {/* 🔹 BADGE PLAN */}
             {profile.plan && profile.plan !== 'basic' && (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
@@ -152,30 +159,62 @@ const cleanCoverUrl = (rawCoverUrl || '')
             )}
           </motion.div>
 
-          {/* 🔹 Like & statut NFC */}
+          {/* 🔹 Stats globales : Followers · Following · Likes · NFC */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mt-5 flex justify-center gap-5"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="mt-6 flex justify-center gap-8 text-center flex-wrap sm:flex-nowrap"
           >
-            <div className="text-center">
-              <GlacialLikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
+            {/* Likes */}
+            <div className="min-w-[70px] flex flex-col items-center">
+              <GlacialLikeButton
+                profileId={profile.id}
+                initialLikes={profile.likes_count || 0}
+              />
               <p className="text-gray-400 text-xs mt-1">J’aime</p>
             </div>
-            <div className="text-center">
-              <div className="flex items-center gap-1.5">
-                {hasLostCard ? (
-                  <AlertTriangle className="w-4 h-4 text-yellow-400" />
-                ) : (
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
-                )}
-                <span className={`text-xs font-medium ${
-                  hasLostCard ? 'text-yellow-300' : 'text-emerald-300'
-                }`}>
-                  {hasLostCard ? 'Perdue' : 'Active'}
-                </span>
-              </div>
+
+            {/* Followers */}
+            <div className="min-w-[60px]">
+              <p className="text-xl font-semibold text-white leading-tight">{followers}</p>
+              <p className="text-gray-400 text-[11px] mt-0.5">Followers</p>
+            </div>
+
+            {/* Following */}
+            <div className="min-w-[60px]">
+              <p className="text-xl font-semibold text-white leading-tight">{following}</p>
+              <p className="text-gray-400 text-[11px] mt-0.5">Following</p>
+            </div>
+
+            {/* NFC Status */}
+            <div className="min-w-[80px] flex flex-col items-center">
+              <motion.div
+                animate={{
+                  boxShadow: hasLostCard
+                    ? '0 0 0px rgba(250,204,21,0)'
+                    : '0 0 12px rgba(16,185,129,0.35)',
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  repeatType: 'mirror',
+                  ease: 'easeInOut',
+                }}
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
+                  hasLostCard
+                    ? 'border-yellow-400/40 text-yellow-300 bg-yellow-400/10'
+                    : 'border-emerald-400/40 text-emerald-300 bg-emerald-400/10'
+                }`}
+              >
+                <CheckCircle
+                  className={`w-3.5 h-3.5 ${
+                    hasLostCard ? 'text-yellow-400' : 'text-emerald-400'
+                  }`}
+                />
+                {hasLostCard ? 'Perdue' : 'Active'}
+              </motion.div>
+              <p className="text-gray-400 text-[11px] mt-1">Carte NFC</p>
             </div>
           </motion.div>
 
@@ -191,20 +230,12 @@ const cleanCoverUrl = (rawCoverUrl || '')
           )}
         </motion.div>
 
-        {/* 🔹 Grille compacte — icônes 20px, gap-1.5, SANS fond */}
+        {/* 🔹 Grille compacte — inchangée */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="
-  grid
-  grid-flow-col
-  auto-cols-max
-  gap-x-2 gap-y-2
-  justify-center
-  mb-6
-"
-
+          className="grid grid-flow-col auto-cols-max gap-x-2 gap-y-2 justify-center mb-6"
         >
           {isSectionVisible('contact', profile) && profile.email && (
             <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
@@ -252,7 +283,7 @@ const cleanCoverUrl = (rawCoverUrl || '')
           />
         </motion.div>
 
-        {/* 🔹 Sections */}
+        {/* 🔹 Sections — inchangées */}
         <div className="space-y-5">
           {profile.bio_long && isSectionVisible('bio', profile) && (
             <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
@@ -313,19 +344,12 @@ const ActionItem = ({ icon, label, href, onClick }: {
         onClick();
       }
     }}
-    className="
-      flex flex-col items-center
-      p-1.5
-      gap-0.5
-      rounded-lg
-      transition-all
-    "
+    className="flex flex-col items-center p-1.5 gap-0.5 rounded-lg transition-all"
     style={{ background: 'transparent', border: 'none' }}
   >
     <span className="text-gray-300 hover:text-white transition-colors leading-none">
       {icon}
     </span>
-
     <span className="text-[10px] text-gray-400 hover:text-gray-200 transition-colors leading-none">
       {label}
     </span>
