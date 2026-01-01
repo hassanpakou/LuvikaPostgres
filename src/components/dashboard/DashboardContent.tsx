@@ -19,6 +19,7 @@ import { generateQRBase64 } from '@/lib/qr';
 import SearchModal from '@/src/components/dashboard/SearchModal';
 import FollowersModal from '@/src/components/dashboard/FollowersModal';
 import ContactRequestsSection from '@/src/components/dashboard/ContactRequestsSection';
+import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -35,6 +36,8 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
+
+
 
 // 🔹 Modal de succès
 const SuccessModal = ({
@@ -1081,6 +1084,15 @@ export default function DashboardContent({
   };
 
   useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('open') === 'upgrade') {
+    setActiveModal('upgrade');
+    // Nettoie l’URL
+    window.history.replaceState(null, '', window.location.pathname);
+  }
+}, []);
+
+  useEffect(() => {
     const generateQR = async () => {
       try {
         const qr = await generateQRBase64(profileUrl, { size: 300, color: '#2563eb' });
@@ -1300,6 +1312,14 @@ export default function DashboardContent({
               <div className="text-gray-400">{t('stats.qr_scans')}</div>
             </div>
           </div>
+
+          {/* 🔹 ✅ Widget Tendances — conditionnel selon le plan */}
+            <div className="col-span-1 md:col-span-2">
+              <AnalyticsTrends 
+                profileId={profile.id} 
+                plan={profile.plan as string | null} 
+              />
+            </div>
 
           <h3 className="text-lg font-semibold text-white mb-3">{t('stats.recent_visitors')}</h3>
           {recentScans.length === 0 ? (
