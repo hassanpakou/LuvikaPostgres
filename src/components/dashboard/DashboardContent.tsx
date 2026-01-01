@@ -20,10 +20,10 @@ import SearchModal from '@/src/components/dashboard/SearchModal';
 import FollowersModal from '@/src/components/dashboard/FollowersModal';
 import ContactRequestsSection from '@/src/components/dashboard/ContactRequestsSection';
 import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
-import CreateEventModal from '@/src/components/dashboard/CreateEventModal';
 import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import CreateEventForm from '@/src/components/events/CreateEventForm';
+
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -838,6 +838,15 @@ type Props = {
   isAdmin: boolean;
   totalFollowers: number;
 };
+type EventData = {
+  title: string;
+  description?: string;
+  location?: string;
+  starts_at: string; // ISO 8601
+  ends_at?: string;
+  is_public: boolean;
+  max_participants?: number;
+};
 
 export default function DashboardContent({
   user, profile, cards, recentScans,
@@ -878,25 +887,21 @@ export default function DashboardContent({
     return { plan, active: plan === 'premium' || plan === 'entreprise', expires_at: undefined };
   }, [profile.plan]);
 
-  // 🔹 Gestion événement
-  const handleCreateEvent = async (data: { title: string; description?: string; location?: string; starts_at: string; ends_at?: string; is_public: boolean; max_participants?: number }) => {
-    try {
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        setShowEventForm(false);
-        alert('✅ Événement créé !');
-        // Optionnel : refresh analytics
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      alert('❌ Échec création. Vérifiez la route /api/events.');
+  const handleCreateEvent = async (data: EventData) => {
+  try {
+    const res = await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data), // ✅ Envoie les données
+    });
+    if (res.ok) {
+      setShowEventForm(false);
+      // Optionnel: refresh la liste
     }
-  };
+  } catch (err) {
+    console.error('❌ Création échouée:', err);
+  }
+};
 
   const handleLike = () => setHasLiked(!hasLiked);
 
@@ -1117,42 +1122,42 @@ export default function DashboardContent({
           >
             {t('orders.manage')}
           </Button>
+          <Button
+  onClick={() => setShowEventForm(true)}
+  className="group flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition-all"
+>
+  <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
+    <Calendar className="w-4 h-4" />
+  </span>
+  <span className="font-medium">Nouvel événement</span>
+</Button>
+
         </div>
       </div>
- {/* 🔹 ✅ Bouton Événement — CORRIGÉ */}
-      <div className="flex gap-3">
-        <Button
-          onClick={() => setShowEventForm(true)}
-          className="bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center gap-2"
-        >
-          <Calendar className="w-4 h-4" />
-          + Nouvel événement
-        </Button>
+
+<AnimatePresence>
+  {showEventForm && (
+    <motion.div
+      key="event-form-modal" // ✅ Obligatoire
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
+      onClick={() => setShowEventForm(false)}
+    >
+      <div
+        className="w-full max-w-4xl"
+        onClick={e => e.stopPropagation()}
+      >
+        <CreateEventForm
+          key="create-event-form" // ✅ Obligatoire
+          onSubmit={handleCreateEvent}
+          onCancel={() => setShowEventForm(false)}
+        />
       </div>
-
-      {/* 🔹 ✅ Modal Événement — CORRIGÉ */}
-      <AnimatePresence>
-        {showEventForm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
-            onClick={() => setShowEventForm(false)}
-          >
-            <div
-              className="w-full max-w-4xl"
-              onClick={e => e.stopPropagation()}
-            >
-              <CreateEventForm
-                onSubmit={handleCreateEvent}
-                onCancel={() => setShowEventForm(false)}
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+    </motion.div>
+  )}
+</AnimatePresence>
       {/* 🔹 ✅ Bouton Messages reçus */}
       {profile.accepts_contact_requests && (
         <div className="col-span-1 md:col-span-2">
@@ -1348,103 +1353,108 @@ export default function DashboardContent({
         </CardContent>
       </Card>
 
-      {/* 🔹 ✅ Modaux */}
-      <AnimatePresence>
-        {activeModal === 'visibility' && (
-          <VisibilityModal
-            sectionsVisibility={sectionsVisibility}
-            onClose={closeModal}
-            onSave={(newVisibility) => {
-              setSectionsVisibility(newVisibility);
-              saveSectionsVisibility(newVisibility);
-            }}
-          />
-        )}
-        {activeModal === 'contact' && (
-          <ContactToggleModal
-            enabled={acceptsContactRequests}
-            onToggle={toggleContactRequests}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'report' && (
-          <ReportCardModal
-            reportReason={reportReason}
-            setReportReason={setReportReason}
-            customReason={customReason}
-            setCustomReason={setCustomReason}
-            onSubmit={handleReportCard}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'message' && (
-          <CustomMessageModal
-            value={customMessage}
-            onChange={setCustomMessage}
-            onSubmit={handleSendCustomMessage}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'upgrade' && !subscription.active && (
-          <UpgradeModal
-            isOpen={true}
-            onClose={closeModal}
-            onConfirm={handleUpgradeRequest}
-            isSubmitting={isSubmitting}
-          />
-        )}
-        {activeModal === 'qr' && (
-          <QRModal
-            isOpen={true}
-            onClose={closeModal}
-            profileUrl={profileUrl}
-            username={profile.username}
-          />
-        )}
-        {activeModal === 'nfc' && (
-          <NFCModal
-            isOpen={true}
-            onClose={closeModal}
-            cards={cards}
-            onAdd={() => router.push('/dashboard/nfc/add')}
-          />
-        )}
-        {activeModal === 'orders' && (
-          <OrdersModal
-            isOpen={true}
-            onClose={closeModal}
-            isAdmin={isAdmin}
-            router={router}
-          />
-        )}
-        {activeModal === 'search' && (
-          <SearchModal
-            isOpen={true}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'followers' && (
-          <FollowersModal
-            isOpen={true}
-            onClose={closeModal}
-            profileId={profile.id}
-            totalFollowers={totalFollowers || 0}
-          />
-        )}
-        {/* 🔹 Modal Messages */}
-        <ContactRequestsSection
-          isOpen={isContactModalOpen}
-          onClose={() => setIsContactModalOpen(false)}
-        />
-        {/* 🔹 Modal Créer un événement */}
-        <CreateEventModal
-          isOpen={isEventModalOpen}
-          onClose={() => setIsEventModalOpen(false)}
-          onEventCreated={(event) => {
-            // Optionnel : refresh
-          }}
-        />
-      </AnimatePresence>
+      {/* 🔹 ✅ Modaux — TOUTES les clés ajoutées */}
+<AnimatePresence>
+  {activeModal === 'visibility' && (
+    <VisibilityModal
+      key="modal-visibility"
+      sectionsVisibility={sectionsVisibility}
+      onClose={closeModal}
+      onSave={(newVisibility) => {
+        setSectionsVisibility(newVisibility);
+        saveSectionsVisibility(newVisibility);
+      }}
+    />
+  )}
+  {activeModal === 'contact' && (
+    <ContactToggleModal
+      key="modal-contact"
+      enabled={acceptsContactRequests}
+      onToggle={toggleContactRequests}
+      onClose={closeModal}
+    />
+  )}
+  {activeModal === 'report' && (
+    <ReportCardModal
+      key="modal-report"
+      reportReason={reportReason}
+      setReportReason={setReportReason}
+      customReason={customReason}
+      setCustomReason={setCustomReason}
+      onSubmit={handleReportCard}
+      onClose={closeModal}
+    />
+  )}
+  {activeModal === 'message' && (
+    <CustomMessageModal
+      key="modal-message"
+      value={customMessage}
+      onChange={setCustomMessage}
+      onSubmit={handleSendCustomMessage}
+      onClose={closeModal}
+    />
+  )}
+  {activeModal === 'upgrade' && !subscription.active && (
+    <UpgradeModal
+      key="modal-upgrade"
+      isOpen={true}
+      onClose={closeModal}
+      onConfirm={handleUpgradeRequest}
+      isSubmitting={isSubmitting}
+    />
+  )}
+  {activeModal === 'qr' && (
+    <QRModal
+      key="modal-qr"
+      isOpen={true}
+      onClose={closeModal}
+      profileUrl={profileUrl}
+      username={profile.username}
+    />
+  )}
+  {activeModal === 'nfc' && (
+    <NFCModal
+      key="modal-nfc"
+      isOpen={true}
+      onClose={closeModal}
+      cards={cards}
+      onAdd={() => router.push('/dashboard/nfc/add')}
+    />
+  )}
+  {activeModal === 'orders' && (
+    <OrdersModal
+      key="modal-orders"
+      isOpen={true}
+      onClose={closeModal}
+      isAdmin={isAdmin}
+      router={router}
+    />
+  )}
+  {activeModal === 'search' && (
+    <SearchModal
+      key="modal-search"
+      isOpen={true}
+      onClose={closeModal}
+    />
+  )}
+  {activeModal === 'followers' && (
+    <FollowersModal
+      key="modal-followers"
+      isOpen={true}
+      onClose={closeModal}
+      profileId={profile.id}
+      totalFollowers={totalFollowers || 0}
+    />
+  )}
+  {/* 🔹 ✅ Ajouté : key pour les modaux hors activeModal */}
+  {isContactModalOpen && (
+    <ContactRequestsSection
+      key="modal-contact-requests"
+      isOpen={true}
+      onClose={() => setIsContactModalOpen(false)}
+    />
+  )}
+</AnimatePresence>
 
       {/* Modal succès */}
       <SuccessModal

@@ -3,6 +3,8 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';          // ✅ nanoid ?
+import QRCode from 'qrcode'; 
 
 // 🔹 POST : créer un événement
 export async function POST(request: Request) {
