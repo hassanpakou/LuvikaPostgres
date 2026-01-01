@@ -23,6 +23,7 @@ import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
 import CreateEventModal from '@/src/components/dashboard/CreateEventModal';
 import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
+import CreateEventForm from '@/src/components/events/CreateEventForm';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -850,6 +851,8 @@ export default function DashboardContent({
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
+
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -874,6 +877,26 @@ export default function DashboardContent({
     const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
     return { plan, active: plan === 'premium' || plan === 'entreprise', expires_at: undefined };
   }, [profile.plan]);
+
+  // 🔹 Gestion événement
+  const handleCreateEvent = async (data: { title: string; description?: string; location?: string; starts_at: string; ends_at?: string; is_public: boolean; max_participants?: number }) => {
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        setShowEventForm(false);
+        alert('✅ Événement créé !');
+        // Optionnel : refresh analytics
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      alert('❌ Échec création. Vérifiez la route /api/events.');
+    }
+  };
 
   const handleLike = () => setHasLiked(!hasLiked);
 
@@ -1096,6 +1119,39 @@ export default function DashboardContent({
           </Button>
         </div>
       </div>
+ {/* 🔹 ✅ Bouton Événement — CORRIGÉ */}
+      <div className="flex gap-3">
+        <Button
+          onClick={() => setShowEventForm(true)}
+          className="bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center gap-2"
+        >
+          <Calendar className="w-4 h-4" />
+          + Nouvel événement
+        </Button>
+      </div>
+
+      {/* 🔹 ✅ Modal Événement — CORRIGÉ */}
+      <AnimatePresence>
+        {showEventForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
+            onClick={() => setShowEventForm(false)}
+          >
+            <div
+              className="w-full max-w-4xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <CreateEventForm
+                onSubmit={handleCreateEvent}
+                onCancel={() => setShowEventForm(false)}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 🔹 ✅ Bouton Messages reçus */}
       {profile.accepts_contact_requests && (

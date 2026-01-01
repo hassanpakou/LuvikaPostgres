@@ -5,7 +5,7 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const nextConfig: NextConfig = {
   turbopack: {},
   experimental: {
-    turbopackUseSystemTlsCerts: false,
+    turbopackUseSystemTlsCerts: true,
   },
   webpack(config) {
     config.resolve.fallback = {
