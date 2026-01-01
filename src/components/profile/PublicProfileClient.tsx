@@ -13,7 +13,7 @@ import GlacialLikeButton from './GlacialLikeButton';
 import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
 import { Card } from '@/components/ui/card';
-import ContactModal from './ContactModal'; // ✅ Bon nom
+import ContactModal from './ContactModal'; // ✅ Pas `ContactForm`
 
 // 🔹 Types
 type Profile = {
@@ -153,7 +153,7 @@ export default function PublicProfileClient({
 }: Props) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false); // ✅ ICI
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false); // ✅ Déplacé ici
 
   useEffect(() => {
     const activeOrLostCards = (profile.nfc_cards || []).filter(

@@ -1,12 +1,12 @@
+// src/components/dashboard/DashboardContent.tsx
 'use client';
-
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { 
-  Heart, Download, X, Mail, Check, 
+import {
+  Heart, Download, X, Mail, Check,
   Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Bell, Plus, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
+  Eye, Bell, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,6 +20,9 @@ import SearchModal from '@/src/components/dashboard/SearchModal';
 import FollowersModal from '@/src/components/dashboard/FollowersModal';
 import ContactRequestsSection from '@/src/components/dashboard/ContactRequestsSection';
 import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
+import CreateEventModal from '@/src/components/dashboard/CreateEventModal';
+import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
+import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -29,15 +32,11 @@ const formatDistance = (dateString: string, t: any): string => {
   const diffMin = Math.floor(diffSec / 60);
   const diffHrs = Math.floor(diffMin / 60);
   const diffDays = Math.floor(diffHrs / 24);
-  const router = useRouter();
-
   if (diffDays > 0) return `${diffDays} ${t('time.days', { count: diffDays })}`;
   if (diffHrs > 0) return `${diffHrs} ${t('time.hours', { count: diffHrs })}`;
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
-
-
 
 // 🔹 Modal de succès
 const SuccessModal = ({
@@ -61,7 +60,6 @@ const SuccessModal = ({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
-
   return (
     <>
       <motion.div
@@ -93,7 +91,6 @@ const SuccessModal = ({
           ))}
         </div>
       </motion.div>
-
       <motion.div
         initial={{ scale: 0.8, opacity: 0, y: 40 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -108,7 +105,6 @@ const SuccessModal = ({
             transition={{ duration: 4, ease: 'easeOut' }}
             className="absolute top-0 left-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500"
           />
-
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-300 hover:text-white z-10"
@@ -116,7 +112,6 @@ const SuccessModal = ({
           >
             <X className="h-5 w-5" />
           </button>
-
           <div className="px-6 py-8 text-center relative z-10">
             <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
               <span className="text-2xl">✅</span>
@@ -135,7 +130,6 @@ const SuccessModal = ({
 };
 
 // 🔹 ✅ Modal : Visibilité
-// ✅ Après — type flexible
 const VisibilityModal = ({
   sectionsVisibility,
   onClose,
@@ -147,7 +141,7 @@ const VisibilityModal = ({
 }) => {
   const [localSections, setLocalSections] = useState(sectionsVisibility);
   const t = useTranslations('dashboard.visibility');
-  
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -172,7 +166,6 @@ const VisibilityModal = ({
             <X size={18} />
           </Button>
         </div>
-
         <div className="space-y-4">
           {(['bio', 'contact', 'social', 'portfolio', 'certificates'] as const).map(section => (
             <label key={section} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
@@ -186,13 +179,12 @@ const VisibilityModal = ({
             </label>
           ))}
         </div>
-
         <div className="flex gap-3 mt-6">
           <Button variant="outline" className="flex-1" onClick={onClose}>
             Annuler
           </Button>
-          <Button 
-            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-500" 
+          <Button
+            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-500"
             onClick={() => {
               onSave(localSections);
               onClose();
@@ -217,7 +209,6 @@ const ContactToggleModal = ({
   onClose: () => void;
 }) => {
   const t = useTranslations('dashboard.contact_requests');
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -242,7 +233,6 @@ const ContactToggleModal = ({
             <X size={18} />
           </Button>
         </div>
-
         <p className="text-gray-300 mb-4">{t('description')}</p>
         <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 mb-6">
           <div>
@@ -256,8 +246,8 @@ const ContactToggleModal = ({
             size="sm"
             onClick={onToggle}
             className={`flex items-center gap-2 ${
-              enabled 
-                ? 'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30' 
+              enabled
+                ? 'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30'
                 : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30'
             }`}
           >
@@ -274,7 +264,6 @@ const ContactToggleModal = ({
             )}
           </Button>
         </div>
-
         <div className="text-center">
           <Button variant="outline" className="text-gray-300" onClick={onClose}>
             Fermer
@@ -302,7 +291,6 @@ const ReportCardModal = ({
   onClose: () => void;
 }) => {
   const t = useTranslations('dashboard.other_features');
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -327,7 +315,6 @@ const ReportCardModal = ({
             <X size={18} />
           </Button>
         </div>
-
         <div className="space-y-3 mb-4">
           {[
             { value: 'lost', label: t('reasons.lost') },
@@ -345,8 +332,8 @@ const ReportCardModal = ({
                 onChange={() => setReportReason(reason.value)}
                 className="mt-1.5 rounded text-cyan-500 focus:ring-cyan-500"
               />
-              <label 
-                htmlFor={`reason-${reason.value}`} 
+              <label
+                htmlFor={`reason-${reason.value}`}
                 className="text-gray-300 cursor-pointer"
               >
                 {reason.label}
@@ -354,7 +341,6 @@ const ReportCardModal = ({
             </div>
           ))}
         </div>
-
         {reportReason === 'other' && (
           <div className="mb-4">
             <label htmlFor="custom-reason" className="text-sm text-gray-400 mb-1 block">
@@ -370,7 +356,6 @@ const ReportCardModal = ({
             />
           </div>
         )}
-
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose}>
             Annuler
@@ -403,7 +388,6 @@ const CustomMessageModal = ({
   onClose: () => void;
 }) => {
   const t = useTranslations('dashboard.other_features');
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -428,7 +412,6 @@ const CustomMessageModal = ({
             <X size={18} />
           </Button>
         </div>
-
         <Textarea
           value={value}
           onChange={e => onChange(e.target.value)}
@@ -436,7 +419,6 @@ const CustomMessageModal = ({
           className="bg-white/10 border-white/20 text-white placeholder:text-gray-500 mb-4"
           rows={4}
         />
-
         <div className="flex gap-3">
           <Button variant="outline" className="flex-1" onClick={onClose}>
             Annuler
@@ -468,9 +450,7 @@ const UpgradeModal = ({
   isSubmitting: boolean;
 }) => {
   const t = useTranslations('dashboard.subscription');
-
   if (!isOpen) return null;
-
   return (
     <>
       <motion.div
@@ -480,7 +460,6 @@ const UpgradeModal = ({
         onClick={onClose}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
       />
-
       <motion.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -510,7 +489,6 @@ const UpgradeModal = ({
               />
             ))}
           </div>
-
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
@@ -518,7 +496,6 @@ const UpgradeModal = ({
           >
             <X className="w-5 h-5" />
           </button>
-
           <CardContent className="relative z-10 pt-8">
             <div className="text-center mb-6">
               <div className="w-14 h-14 mx-auto bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center mb-4">
@@ -531,7 +508,6 @@ const UpgradeModal = ({
                 Un administrateur vous contactera sous 24h pour finaliser votre passage à Premium ou Entreprise.
               </p>
             </div>
-
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 variant="outline"
@@ -550,8 +526,6 @@ const UpgradeModal = ({
             </div>
           </CardContent>
         </Card>
-
-       
       </motion.div>
     </>
   );
@@ -570,13 +544,11 @@ const QRModal = ({
   username: string;
 }) => {
   const [copied, setCopied] = useState(false);
-
   const copyLink = async () => {
     await navigator.clipboard.writeText(profileUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
   const downloadQR = () => {
     const canvas = document.querySelector('#qr-canvas') as HTMLCanvasElement;
     if (!canvas) return;
@@ -599,7 +571,6 @@ const QRModal = ({
   }, [isOpen, profileUrl]);
 
   if (!isOpen) return null;
-
   return (
     <AnimatePresence>
       <motion.div
@@ -622,7 +593,6 @@ const QRModal = ({
               <X size={18} />
             </Button>
           </div>
-
           <div className="text-center mb-6">
             <div className="inline-block p-4 bg-white rounded-xl">
               <canvas id="qr-canvas" width="256" height="256" className="mx-auto" />
@@ -631,11 +601,9 @@ const QRModal = ({
               Scannez pour accéder à votre profil LUVIKA
             </p>
           </div>
-
           <p className="text-sm text-gray-400 bg-black/20 p-3 rounded-lg mb-4 break-all">
             {profileUrl}
           </p>
-
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
@@ -671,7 +639,6 @@ const NFCModal = ({
   onAdd: () => void;
 }) => {
   if (!isOpen) return null;
-
   return (
     <AnimatePresence>
       <motion.div
@@ -699,7 +666,6 @@ const NFCModal = ({
               <X size={18} />
             </Button>
           </div>
-
           {cards.length === 0 ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 mx-auto bg-amber-500/20 rounded-full flex items-center justify-center mb-4">
@@ -730,7 +696,6 @@ const NFCModal = ({
               ))}
             </div>
           )}
-
           <Button
             className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-black"
             onClick={() => {
@@ -751,15 +716,14 @@ const OrdersModal = ({
   isOpen,
   onClose,
   isAdmin,
-  router, // ✅ ajouté
+  router,
 }: {
   isOpen: boolean;
   onClose: () => void;
   isAdmin: boolean;
-  router: ReturnType<typeof useRouter>; // ✅ typé
+  router: ReturnType<typeof useRouter>;
 }) => {
   if (!isOpen) return null;
-
   return (
     <AnimatePresence>
       <motion.div
@@ -785,7 +749,6 @@ const OrdersModal = ({
               <X size={18} />
             </Button>
           </div>
-
           <div className="space-y-4 mb-6">
             <div className="glass-border bg-white/5 p-4 rounded-lg">
               <div className="flex justify-between items-center">
@@ -799,87 +762,30 @@ const OrdersModal = ({
               </div>
             </div>
           </div>
-<Button
-  className="w-full mb-3 border-white/20 text-white hover:bg-white/10"
-  onClick={async () => {
-    const res = await fetch('/api/orders', { method: 'POST' });
-    if (res.ok) {
-      router.push('/dashboard/orders?success=1'); // ✅ maintenant défini
-      onClose();
-    }
-  }}
->
-  <Plus className="w-4 h-4 mr-1" /> Commander une carte NFC
-</Button>
-
-<Button
-  className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500"
-  onClick={() => {
-    window.location.href = isAdmin ? '/admin/orders' : '/dashboard/orders';
-    onClose();
-  }}
->
-  Voir toutes les commandes <ArrowRight className="ml-2 w-4 h-4" />
-</Button>
+          <Button
+            className="w-full mb-3 border-white/20 text-white hover:bg-white/10"
+            onClick={async () => {
+              const res = await fetch('/api/orders', { method: 'POST' });
+              if (res.ok) {
+                router.push('/dashboard/orders?success=1');
+                onClose();
+              }
+            }}
+          >
+            <Plus className="w-4 h-4 mr-1" /> Commander une carte NFC
+          </Button>
+          <Button
+            className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500"
+            onClick={() => {
+              window.location.href = isAdmin ? '/admin/orders' : '/dashboard/orders';
+              onClose();
+            }}
+          >
+            Voir toutes les commandes <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
         </motion.div>
       </motion.div>
     </AnimatePresence>
-  );
-};
-
-// 🔹 ✅ Menu flottant (version linéaire — sans dépendance externe)
-const DashboardQuickMenu = ({ onAction }: { onAction: (id: string) => void }) => {
-  // 🔹 Fallback temporaire pour éviter l'erreur de traduction
-  const t_quick = (key: string) => {
-    const fallback: Record<string, string> = {
-      visibility: '👁️ Visibilité',
-      contact: '✉️ Messages',
-      qr: '🖼️ QR',
-      nfc: '📱 NFC',
-      report: '⚠️ Signaler',
-      message: '💬 Message',
-      orders: '📦 Commandes',
-      upgrade: '⬆️ Upgrade',
-      search: '🔎 Recherche',
-      followers: '❤️ Abonnés',
-    };
-    return fallback[key] || key;
-  };
-
-  const actions = [
-    { id: 'visibility', label: t_quick('visibility'), icon: <Eye size={14} />, color: 'bg-purple-500' },
-    { id: 'contact', label: t_quick('contact'), icon: <Bell size={14} />, color: 'bg-cyan-500' },
-    { id: 'qr', label: t_quick('qr'), icon: <QrCode size={14} />, color: 'bg-blue-500' },
-    { id: 'nfc', label: t_quick('nfc'), icon: <Contact size={14} />, color: 'bg-emerald-500' },
-    { id: 'report', label: t_quick('report'), icon: <AlertTriangle size={14} />, color: 'bg-red-500' },
-    { id: 'message', label: t_quick('message'), icon: <MessageSquare size={14} />, color: 'bg-indigo-500' },
-    { id: 'orders', label: t_quick('orders'), icon: <Package size={14} />, color: 'bg-violet-500' },
-    { id: 'upgrade', label: t_quick('upgrade'), icon: <ArrowUp size={14} />, color: 'bg-amber-500' },
-    { id: 'search', label: 'Rechercher', icon: <Search size={14} />, color: 'bg-orange-500' },
-    { id: 'followers', label: 'Abonnés', icon: <Users size={14} />, color: 'bg-green-500' },
-  ];
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40"
-    >
-      <div className="flex flex-wrap justify-center gap-2 p-3 glass-border backdrop-blur-xl rounded-full border border-white/15 bg-white/5">
-        {actions.map(action => (
-          <motion.button
-            key={action.id}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => onAction(action.id)}
-            className={`w-11 h-11 rounded-full flex items-center justify-center ${action.color} text-white shadow-md hover:shadow-lg transition-all`}
-            title={action.label}
-          >
-            {action.icon}
-          </motion.button>
-        ))}
-      </div>
-    </motion.div>
   );
 };
 
@@ -895,6 +801,14 @@ type Profile = {
   accepts_contact_requests?: boolean;
   plan?: string | null;
   likes_count?: number;
+};
+
+type Action = {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  color: string;
+  disabled?: boolean;
 };
 
 type Card = {
@@ -934,6 +848,7 @@ export default function DashboardContent({
   const [hasLiked, setHasLiked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
@@ -949,11 +864,9 @@ export default function DashboardContent({
   const [acceptsContactRequests, setAcceptsContactRequests] = useState(
     profile.accepts_contact_requests ?? true
   );
-
   const [reportReason, setReportReason] = useState<string>('');
   const [customReason, setCustomReason] = useState<string>('');
   const [customMessage, setCustomMessage] = useState<string>('');
-
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const closeModal = () => setActiveModal(null);
 
@@ -963,7 +876,14 @@ export default function DashboardContent({
   }, [profile.plan]);
 
   const handleLike = () => setHasLiked(!hasLiked);
-  const handleQuickAction = (actionId: string) => setActiveModal(actionId);
+
+  const handleQuickAction = (actionId: string) => {
+    if (actionId === 'event') {
+      setIsEventModalOpen(true);
+    } else {
+      setActiveModal(actionId);
+    }
+  };
 
   const updateVisibility = (section: string, checked: boolean) => {
     const newVisibility = { ...sectionsVisibility, [section]: checked };
@@ -983,7 +903,7 @@ export default function DashboardContent({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `luvika-scans-${new Date().toISOString().slice(0,10)}.csv`;
+      a.download = `luvika-scans-${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -1045,7 +965,6 @@ export default function DashboardContent({
   const handleReportCard = async () => {
     if (!reportReason) return;
     const reason = reportReason === 'other' ? customReason : reportReason;
-
     try {
       const res = await fetch('/api/profile/report-card', {
         method: 'POST',
@@ -1084,13 +1003,34 @@ export default function DashboardContent({
   };
 
   useEffect(() => {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('open') === 'upgrade') {
-    setActiveModal('upgrade');
-    // Nettoie l’URL
-    window.history.replaceState(null, '', window.location.pathname);
-  }
-}, []);
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('open') === 'upgrade') {
+      setActiveModal('upgrade');
+      // Nettoie l’URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  // 🔹 ✅ quickActions — dans le scope, après les hooks
+  const quickActions: Action[] = [
+    { id: 'visibility', label: 'Visibilité', icon: <Eye size={18} />, color: 'from-purple-500 to-indigo-500' },
+    { id: 'contact', label: 'Messages', icon: <Bell size={18} />, color: 'from-cyan-400 to-blue-500' },
+    { id: 'qr', label: 'QR Code', icon: <QrCode size={18} />, color: 'from-emerald-400 to-teal-500' },
+    { id: 'nfc', label: 'Cartes NFC', icon: <Contact size={18} />, color: 'from-amber-400 to-orange-500' },
+    { id: 'report', label: 'Signaler', icon: <AlertTriangle size={18} />, color: 'from-red-500 to-rose-500' },
+    { id: 'message', label: 'Message perso', icon: <MessageSquare size={18} />, color: 'from-indigo-400 to-violet-500' },
+    { id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-400 to-pink-500' },
+    { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
+    { id: 'followers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
+    { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
+    {
+      id: 'event',
+      label: 'Événement',
+      icon: <Calendar size={14} />,
+      color: 'from-amber-500 to-orange-500',
+      disabled: profile.plan === 'freemium' || profile.plan === 'basic',
+    },
+  ];
 
   useEffect(() => {
     const generateQR = async () => {
@@ -1135,14 +1075,12 @@ export default function DashboardContent({
             </button>
           </div>
         </div>
-
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto">
           <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
             <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10">
               {t('view_public')}
             </Button>
           </Link>
-
           <Button
             onClick={handleExport}
             className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500"
@@ -1150,7 +1088,6 @@ export default function DashboardContent({
             <Download className="h-4 w-4" />
             {t('export_csv')}
           </Button>
-
           <Button
             onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
             className="w-full sm:w-auto bg-gradient-to-r from-blue-900 to-blue-900"
@@ -1159,19 +1096,21 @@ export default function DashboardContent({
           </Button>
         </div>
       </div>
-{/* 🔹 ✅ Bouton Messages reçus */}
-{profile.accepts_contact_requests && (
-  <div className="col-span-1 md:col-span-2">
-    <Button
-      onClick={() => setIsContactModalOpen(true)}
-      className="w-full h-14 bg-gradient-to-r from-cyan-600/20 to-blue-500/20 hover:from-cyan-600/30 hover:to-blue-500/30 border border-cyan-400/30 text-cyan-300 font-medium group transition-all"
-    >
-      <Mail className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-      Voir mes messages reçus
-      <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-    </Button>
-  </div>
-)}
+
+      {/* 🔹 ✅ Bouton Messages reçus */}
+      {profile.accepts_contact_requests && (
+        <div className="col-span-1 md:col-span-2">
+          <Button
+            onClick={() => setIsContactModalOpen(true)}
+            className="w-full h-14 bg-gradient-to-r from-cyan-600/20 to-blue-500/20 hover:from-cyan-600/30 hover:to-blue-500/30 border border-cyan-400/30 text-cyan-300 font-medium group transition-all"
+          >
+            <Mail className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+            Voir mes messages reçus
+            <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Button>
+        </div>
+      )}
+
       {/* Commandes */}
       {(subscription.plan === 'premium' || subscription.plan === 'entreprise') && (
         <Card className="glass-border">
@@ -1226,8 +1165,8 @@ export default function DashboardContent({
           <CardContent className="text-center">
             {qrBase64 ? (
               <div>
-                <img 
-                  src={qrBase64} 
+                <img
+                  src={qrBase64}
                   alt={t('qr.alt', { username: profile.username })}
                   className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
                 />
@@ -1246,7 +1185,6 @@ export default function DashboardContent({
             )}
           </CardContent>
         </Card>
-
         <Card className="glass-border">
           <CardHeader>
             <CardTitle>{t('nfc.title', { count: cards.length })}</CardTitle>
@@ -1290,6 +1228,14 @@ export default function DashboardContent({
         </Card>
       </div>
 
+      {/* 🔹 ✅ Menu flottant */}
+      <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
+
+      {/* 🔹 ✅ Section Événements */}
+      <div className="col-span-1 md:col-span-2">
+        <EventAttendeesSection plan={profile.plan ?? null} />
+      </div>
+
       {/* Stats */}
       <Card className="glass-border">
         <CardHeader><CardTitle>{t('stats.title')}</CardTitle></CardHeader>
@@ -1313,13 +1259,13 @@ export default function DashboardContent({
             </div>
           </div>
 
-          {/* 🔹 ✅ Widget Tendances — conditionnel selon le plan */}
-            <div className="col-span-1 md:col-span-2">
-              <AnalyticsTrends 
-                profileId={profile.id} 
-                plan={profile.plan as string | null} 
-              />
-            </div>
+          {/* 🔹 ✅ Widget Tendances */}
+          <div className="col-span-1 md:col-span-2">
+            <AnalyticsTrends
+              profileId={profile.id}
+              plan={profile.plan as string | null}
+            />
+          </div>
 
           <h3 className="text-lg font-semibold text-white mb-3">{t('stats.recent_visitors')}</h3>
           {recentScans.length === 0 ? (
@@ -1346,21 +1292,18 @@ export default function DashboardContent({
         </CardContent>
       </Card>
 
-      {/* 🔹 ✅ Menu flottant */}
-      <DashboardQuickMenu onAction={handleQuickAction} />
-
-      {/* 🔹 ✅ Modaux — TOUT INCLUS */}
+      {/* 🔹 ✅ Modaux */}
       <AnimatePresence>
         {activeModal === 'visibility' && (
-  <VisibilityModal
-    sectionsVisibility={sectionsVisibility}
-    onClose={closeModal}
-    onSave={(newVisibility) => {
-      setSectionsVisibility(newVisibility);
-      saveSectionsVisibility(newVisibility);
-    }}
-  />
-)}
+          <VisibilityModal
+            sectionsVisibility={sectionsVisibility}
+            onClose={closeModal}
+            onSave={(newVisibility) => {
+              setSectionsVisibility(newVisibility);
+              saveSectionsVisibility(newVisibility);
+            }}
+          />
+        )}
         {activeModal === 'contact' && (
           <ContactToggleModal
             enabled={acceptsContactRequests}
@@ -1415,32 +1358,37 @@ export default function DashboardContent({
             isOpen={true}
             onClose={closeModal}
             isAdmin={isAdmin}
-            router={router} // ✅ passé ici
-        />
+            router={router}
+          />
         )}
-
-        {/* ✅ Ajoutez-le ici : */}
         {activeModal === 'search' && (
-            <SearchModal
-              isOpen={true}
-              onClose={closeModal}
-            />
+          <SearchModal
+            isOpen={true}
+            onClose={closeModal}
+          />
         )}
-        {/* 🔹 ✅ Modal Abonnés */}
         {activeModal === 'followers' && (
-  <FollowersModal
-    isOpen={true}
-    onClose={closeModal}
-    profileId={profile.id}
-    totalFollowers={totalFollowers || 0}
+          <FollowersModal
+            isOpen={true}
+            onClose={closeModal}
+            profileId={profile.id}
+            totalFollowers={totalFollowers || 0}
           />
         )}
         {/* 🔹 Modal Messages */}
-<ContactRequestsSection
-  isOpen={isContactModalOpen}
-  onClose={() => setIsContactModalOpen(false)}
-/>
-</AnimatePresence>
+        <ContactRequestsSection
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+        />
+        {/* 🔹 Modal Créer un événement */}
+        <CreateEventModal
+          isOpen={isEventModalOpen}
+          onClose={() => setIsEventModalOpen(false)}
+          onEventCreated={(event) => {
+            // Optionnel : refresh
+          }}
+        />
+      </AnimatePresence>
 
       {/* Modal succès */}
       <SuccessModal

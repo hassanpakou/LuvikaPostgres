@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye, Bell, QrCode, Contact, AlertTriangle,
-  MessageSquare, User, Search, Package, ArrowUp, Plus, Users,
+  MessageSquare, User, Search, Package, Calendar, ArrowUp, Plus, Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -14,27 +14,16 @@ type Action = {
   label: string;
   icon: React.ReactNode;
   color: string;
+  disabled?: boolean;
 };
 
-const actions: Action[] = [
-  { id: 'visibility', label: 'Visibilité', icon: <Eye size={18} />, color: 'from-purple-500 to-indigo-500' },
-  { id: 'contact', label: 'Messages', icon: <Bell size={18} />, color: 'from-cyan-400 to-blue-500' },
-  { id: 'qr', label: 'QR Code', icon: <QrCode size={18} />, color: 'from-emerald-400 to-teal-500' },
-  { id: 'nfc', label: 'Cartes NFC', icon: <Contact size={18} />, color: 'from-amber-400 to-orange-500' },
-  { id: 'report', label: 'Signaler', icon: <AlertTriangle size={18} />, color: 'from-red-500 to-rose-500' },
-  { id: 'message', label: 'Message perso', icon: <MessageSquare size={18} />, color: 'from-indigo-400 to-violet-500' },
-  { id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-400 to-pink-500' },
-  { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
-  { id: 'followers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
-  { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
-];
-
-
-
+// 🔹 Composant — version finale
 export default function DashboardQuickMenu({
   onAction,
+  actions,
 }: {
   onAction: (id: string) => void;
+  actions: Action[];
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -45,6 +34,7 @@ export default function DashboardQuickMenu({
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -74,34 +64,38 @@ export default function DashboardQuickMenu({
 
                 return (
                   <motion.button
-  key={action.id}
-  initial={{ scale: 0, opacity: 0 }}
-  animate={{ 
-    scale: 1, 
-    opacity: 1, 
-    x, 
-    y 
-  }}
-  exit={{ scale: 0, opacity: 0 }}
-  transition={{
-    delay: i * 0.04,
-    type: 'spring',
-    stiffness: 300,
-    damping: 15,
-  }}
-  style={{
-    position: 'absolute',
-    left: '50%',
-    top: '50%',
-    background: `linear-gradient(135deg, ${getGradient(action.color)})`,
-  }}
-  onClick={() => {
-    onAction(action.id);
-    setIsOpen(false);
-  }}
-  className="w-12 h-12 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:scale-110 transition-all"
-  title={action.label}
->
+                    key={action.id}
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ 
+                      scale: 1, 
+                      opacity: 1, 
+                      x, 
+                      y 
+                    }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{
+                      delay: i * 0.04,
+                      type: 'spring',
+                      stiffness: 300,
+                      damping: 15,
+                    }}
+                    style={{
+                      position: 'absolute',
+                      left: '50%',
+                      top: '50%',
+                      background: `linear-gradient(135deg, ${getGradient(action.color)})`,
+                      cursor: action.disabled ? 'not-allowed' : 'pointer',
+                      opacity: action.disabled ? 0.4 : 1,
+                    }}
+                    onClick={() => {
+                      if (!action.disabled) {
+                        onAction(action.id);
+                        setIsOpen(false);
+                      }
+                    }}
+                    className="w-12 h-12 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:scale-110 transition-all"
+                    title={action.label}
+                  >
                     <span className="text-white">{action.icon}</span>
                     <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
                       {action.label}
@@ -114,7 +108,7 @@ export default function DashboardQuickMenu({
         )}
       </AnimatePresence>
 
-      {/* Version mobile : popup linéaire */}
+      {/* Version mobile : popup linéaire — corrigée */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <motion.div
@@ -135,23 +129,33 @@ export default function DashboardQuickMenu({
                 <div className="w-12 h-1 bg-gray-600 rounded-full" />
               </div>
               <h3 className="text-xl font-bold text-white text-center mb-6">Actions rapides</h3>
-              <div className="flex gap-3 overflow-x-auto pb-2 mb-6 scrollbar-hide">
-
+              <div className="grid grid-cols-4 gap-3 mb-6">
                 {actions.map(action => (
                   <motion.button
                     key={action.id}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: action.disabled ? 1 : 1.05 }}
+                    whileTap={{ scale: action.disabled ? 1 : 0.95 }}
                     onClick={() => {
-                      onAction(action.id);
-                      setIsOpen(false);
+                      if (!action.disabled) {
+                        onAction(action.id);
+                        setIsOpen(false);
+                      }
                     }}
-                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all"
+                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
+                      action.disabled
+                        ? 'opacity-40 cursor-not-allowed'
+                        : 'bg-white/5 hover:bg-white/10'
+                    }`}
                     title={action.label}
                   >
-                    <span className={`w-10 h-10 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center mb-2`}>
+                    <span
+                      className={`w-10 h-10 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center mb-1`}
+                    >
                       <span className="text-white">{action.icon}</span>
                     </span>
-                    <span className="text-xs text-gray-300">{action.label}</span>
+                    <span className="text-[10px] text-gray-300 text-center leading-tight">
+                      {action.label}
+                    </span>
                   </motion.button>
                 ))}
               </div>

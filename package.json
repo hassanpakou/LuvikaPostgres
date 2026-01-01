@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build",
+    "dev": "next dev",
+    "build": "set NEXT_DISABLE_TURBOPACK=1 && set NEXT_TELEMETRY_DISABLED=1 && next build",
     "start": "next start",
     "lint": "eslint",
     "validate:locales": "ts-node scripts/validate-locales.ts"
@@ -27,6 +27,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.26",
     "lucide-react": "^0.562.0",
+    "nanoid": "^5.1.6",
     "negotiator": "^1.0.0",
     "next": "^16.1.0",
     "next-intl": "^4.6.1",
