@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import {
-  Heart, Download, X, Mail, Check,
+  Heart, Loader2, Download, X, Mail, Check,
   Settings, AlertTriangle, MessageSquare, Send,
   Eye, Bell, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
 } from 'lucide-react';
@@ -23,7 +23,7 @@ import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
 import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import CreateEventForm from '@/src/components/events/CreateEventForm';
-
+import { getShareData } from '@/src/lib/utils/shareQR';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -38,6 +38,7 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
+
 
 // 🔹 Modal de succès
 const SuccessModal = ({
@@ -538,15 +539,19 @@ const QRModal = ({
   onClose,
   profileUrl,
   username,
+  shortUrl, // ✅ Ajoute cette ligne
 }: {
   isOpen: boolean;
   onClose: () => void;
   profileUrl: string;
   username: string;
+  shortUrl?: string; // ✅ optionnel
 }) => {
   const [copied, setCopied] = useState(false);
-  const copyLink = async () => {
-    await navigator.clipboard.writeText(profileUrl);
+  const displayUrl = shortUrl || profileUrl;
+
+  const copyLink = () => {
+  navigator.clipboard.writeText(displayUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -562,14 +567,15 @@ const QRModal = ({
   useEffect(() => {
     if (isOpen) {
       import('qrcode').then(QRCode => {
-        QRCode.default.toCanvas(
-          document.getElementById('qr-canvas') as HTMLCanvasElement,
-          profileUrl,
-          { width: 256, color: { dark: '#2563eb', light: '#ffffff' } }
-        );
+        QRCode.toDataURL(profileUrl, { // ✅ displayUrl ici
+      width: 240,
+      margin: 2,
+      color: { dark: '#1e40af', light: '#ffffff' },
+      type: 'image/png',
+    })
       });
     }
-  }, [isOpen, profileUrl]);
+  }, [isOpen, displayUrl]);
 
   if (!isOpen) return null;
   return (
@@ -602,9 +608,12 @@ const QRModal = ({
               Scannez pour accéder à votre profil LUVIKA
             </p>
           </div>
-          <p className="text-sm text-gray-400 bg-black/20 p-3 rounded-lg mb-4 break-all">
-            {profileUrl}
-          </p>
+          <p className="text-gray-300 text-sm mb-5">
+  ✅ Le QR redirige vers :<br />
+  <span className="font-mono text-cyan-200 text-xs break-all">
+    {profileUrl}
+  </span>
+</p>
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
@@ -902,6 +911,39 @@ export default function DashboardContent({
     console.error('❌ Création échouée:', err);
   }
 };
+
+// 🔹 ✅ États pour le partage QR
+const [shareUrl, setShareUrl] = useState<string | null>(null);
+const [shareQr, setShareQr] = useState<string | null>(null);
+const [isSharing, setIsSharing] = useState(false);
+
+// 🔹 ✅ Génération + copie
+const handleShareQR = async () => {
+  if (isSharing) return;
+  setIsSharing(true);
+  
+  try {
+    const { shortUrl, qrBase64 } = await getShareData(profile.id, profileUrl);
+    setShareUrl(shortUrl);
+    setShareQr(qrBase64);
+    
+    // 🔹 Copie lien + QR (format vCard-friendly)
+    const vcardText = `LUVIKA Pro — ${shortUrl}\n\nQR:\n${qrBase64}`;
+    await navigator.clipboard.writeText(vcardText);
+    
+    // ✅ Feedback utilisateur
+    alert('✅ Lien court + QR copié !\nCollez-le dans un email, SMS ou vCard.');
+  } catch (err) {
+    alert('❌ Échec génération QR');
+    console.error(err);
+  } finally {
+    setIsSharing(false);
+  }
+};
+
+// En haut du composant
+const shortId = profile.id.substring(0, 6).replace(/[+/]/g, 'x').toLowerCase();
+const shortUrl = `https://luvika.me/u/${shortId}`;
 
   const handleLike = () => setHasLiked(!hasLiked);
 
@@ -1240,12 +1282,31 @@ export default function DashboardContent({
                 >
                   {t('qr.open_link')}
                 </Button>
+                <Button
+  size="sm"
+  className="mt-2 w-full bg-gradient-to-r from-emerald-600 to-teal-500"
+  onClick={handleShareQR}
+  disabled={isSharing}
+>
+  {isSharing ? (
+    <>
+      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+      Génération...
+    </>
+  ) : (
+    <>
+      <QrCode className="w-4 h-4 mr-1" />
+      Partager mon QR
+    </>
+  )}
+</Button>
               </div>
             ) : (
               <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
             )}
           </CardContent>
         </Card>
+
         <Card className="glass-border">
           <CardHeader>
             <CardTitle>{t('nfc.title', { count: cards.length })}</CardTitle>
@@ -1404,14 +1465,15 @@ export default function DashboardContent({
     />
   )}
   {activeModal === 'qr' && (
-    <QRModal
-      key="modal-qr"
-      isOpen={true}
-      onClose={closeModal}
-      profileUrl={profileUrl}
-      username={profile.username}
-    />
-  )}
+  <QRModal
+    key="modal-qr"
+    isOpen={true}
+    onClose={closeModal}
+    profileUrl={profileUrl}
+    username={profile.username}
+    shortUrl={`https://luvika.me/u/${profile.id.substring(0, 6)}`} // ✅
+  />
+)}
   {activeModal === 'nfc' && (
     <NFCModal
       key="modal-nfc"

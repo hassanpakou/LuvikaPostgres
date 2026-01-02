@@ -190,7 +190,7 @@ export function HomePageContent() {
     <span className="text-white font-medium">Luvika</span>,  
     c’est la nouvelle façon de se présenter au monde.
     <br />
-    Une identité numérique, simple, intelligente et universelle.
+    Une identité numérique, simple, intelligente et universelle vCard 4.0.
   </p>
 
   <div className="mt-4 flex justify-center gap-4 text-xs">

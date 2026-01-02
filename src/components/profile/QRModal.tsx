@@ -12,15 +12,18 @@ export default function QRModal({
   onClose,
   profileUrl,
   username,
+  shortUrl, // ✅ Ajoute cette ligne
 }: {
   isOpen: boolean;
   onClose: () => void;
   profileUrl: string;
   username: string;
+  shortUrl?: string; // ✅ optionnel
 }) {
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
+  const displayUrl = shortUrl || profileUrl;
 
   useEffect(() => {
     if (isOpen) {
@@ -90,6 +93,7 @@ export default function QRModal({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
         >
+          
           <motion.div
             initial={{ rotateY: -30 }}
             animate={{ rotateY: 0 }}
