@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
   Heart, Download, X, Mail, Check,
   Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Bell, Folder, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
+  Eye, Award, Bell, Folder, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,6 +24,7 @@ import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSect
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import CreateEventForm from '@/src/components/events/CreateEventForm';
 import PortfolioModal from '@/src/components/dashboard/PortfolioModal';
+import CertificatesModal from '@/src/components/dashboard/CertificatesModal'; // ✅ Ajouté
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -863,7 +864,8 @@ export default function DashboardContent({
   const [showEventForm, setShowEventForm] = useState(false);
   const [scansCount, setScansCount] = useState(0);
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
-  
+  const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false); // ✅ Nouveau
+
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -911,8 +913,9 @@ const handleQuickAction = (actionId: string) => {
   if (actionId === 'event') {
     setIsEventModalOpen(true);
   } else if (actionId === 'portfolio') {
-    // ✅ Ouvre le modal Portfolio
     setIsPortfolioModalOpen(true);
+  } else if (actionId === 'certificates') { // ✅ Ajouté
+    setIsCertificatesModalOpen(true);
   } else {
     setActiveModal(actionId);
   }
@@ -1070,6 +1073,7 @@ const handleQuickAction = (actionId: string) => {
     { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
     { id: 'event', label: 'Événement', icon: <Calendar size={14} />, color: 'from-amber-500 to-orange-500', disabled: profile.plan === 'freemium' || profile.plan === 'basic',},
     { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-cyan-500 to-blue-500' },
+    { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
     { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
   ];
 
@@ -1387,14 +1391,22 @@ const handleQuickAction = (actionId: string) => {
       onClose={closeModal}
     />
   )}
-    {isPortfolioModalOpen && (
-    <PortfolioModal
-      key="portfolio-modal"
-      isOpen={true}
-      onClose={() => setIsPortfolioModalOpen(false)}
-      profileId={profile.id}
-    />
-  )}
+{isPortfolioModalOpen && (
+  <PortfolioModal
+    key="portfolio-modal"
+    isOpen={true}
+    onClose={() => setIsPortfolioModalOpen(false)}
+    profileId={profile.id}
+  />
+)}
+{isCertificatesModalOpen && ( // ✅ Ajouté
+  <CertificatesModal
+    key="certificates-modal"
+    isOpen={true}
+    onClose={() => setIsCertificatesModalOpen(false)}
+    profileId={profile.id}
+  />
+)}
   {activeModal === 'report' && (
     <ReportCardModal
       key="modal-report"

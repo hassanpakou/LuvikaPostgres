@@ -61,21 +61,44 @@ useEffect(() => {
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const savePortfolio = async () => {
-    setSaving(true);
-    try {
-      await fetch('/api/portfolio', {
+const savePortfolio = async () => {
+  setSaving(true);
+  try {
+    // 🔹 Parcourt chaque item et POST un par un
+    for (const item of items) {
+      const payload = {
+        title: item.title,
+        description: item.description,
+        image_url: item.image_url,
+        demo_url: item.demo_url,
+        repo_url: item.repo_url,
+        tags: item.tags,
+        position: items.indexOf(item),
+      };
+
+      const res = await fetch('/api/portfolio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'portfolio', data: items }),
+        body: JSON.stringify({
+          type: 'portfolio',
+          data: payload, // ✅ objet simple, pas tableau
+        }),
       });
-      onClose();
-    } catch (err) {
-      alert('❌ Échec sauvegarde');
-    } finally {
-      setSaving(false);
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Échec');
+      }
     }
-  };
+    onClose();
+  } catch (err) {
+  if (err instanceof Error) {
+    alert(err.message);
+  } else {
+    alert('❌ Une erreur inconnue est survenue');
+  }
+}
+};
 
   if (!isOpen) return null;
 
