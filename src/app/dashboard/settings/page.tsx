@@ -44,6 +44,21 @@ type Profile = {
   accepts_contact_requests: boolean;
 };
 
+// 🔹 ✅ Helpers — déplacés en haut (hors useEffect)
+const isSectionLockedForFree = (section: string, plan: string): boolean => {
+  const lockedSections = ['portfolio', 'certificates'];
+  return lockedSections.includes(section) && plan === 'basic';
+};
+
+const getLockMessage = (section: string, t: any) => {
+  switch (section) {
+    case 'portfolio': return t('visibility.portfolio_locked');
+    case 'certificates': return t('visibility.certificates_locked');
+    default: return '';
+  }
+};
+
+
 export default function SettingsPage() {
   const t = useTranslations('dashboard.settings');
   const router = useRouter();
@@ -286,9 +301,16 @@ export default function SettingsPage() {
               <AlertTriangle className="w-5 h-5" />
             )}
             <span>{message.text}</span>
-            <button onClick={() => setMessage(null)} className="ml-auto">
-              <X className="w-4 h-4" />
-            </button>
+            <button
+  type="button"
+  onClick={() => setMessage(null)}
+  aria-label="Fermer le message"
+  title="Fermer"
+  className="ml-auto text-gray-400 hover:text-white transition"
+>
+  <X className="w-4 h-4" />
+</button>
+
           </motion.div>
         )}
       </AnimatePresence>
@@ -542,7 +564,7 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* 🔹 Visibilité */}
+      {/* 🔹 ✅ Visibilité — corrigé */}
       <Card className="glass-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -552,23 +574,55 @@ export default function SettingsPage() {
         <CardContent className="space-y-4">
           <p className="text-gray-400 text-sm">{t('visibility.description')}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {(['bio', 'contact', 'social', 'portfolio', 'certificates'] as const).map(section => (
-              <div key={section} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
-                <span className="text-gray-300 capitalize">{section}</span>
-                <Switch
-                  checked={profile.sections_visibility?.[section] !== false}
-                  onCheckedChange={checked =>
-                    setProfile({
-                      ...profile,
-                      sections_visibility: {
-                        ...profile.sections_visibility,
-                        [section]: checked,
-                      },
-                    })
-                  }
-                />
-              </div>
-            ))}
+            {(['bio', 'contact', 'social', 'portfolio', 'certificates'] as const).map(section => {
+              const isLocked = isSectionLockedForFree(section, profile.plan);
+              const isVisible = profile.sections_visibility?.[section] !== false;
+
+              return (
+                <div 
+                  key={section} 
+                  className={`flex items-center justify-between p-3 rounded-lg ${
+                    isLocked 
+                      ? 'bg-gray-800/50 cursor-not-allowed' 
+                      : 'bg-white/5 hover:bg-white/10'
+                  } transition-colors`}
+                  title={isLocked ? getLockMessage(section, t) : ''}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-300 capitalize">{section}</span>
+                    {isLocked && (
+                      <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">
+                        🔒 Premium
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="flex items-center">
+                    {isLocked ? (
+                      <div 
+                        className="w-10 h-6 bg-gray-600/40 rounded-full relative cursor-not-allowed"
+                        title={getLockMessage(section, t)}
+                      >
+                        <div className="absolute w-5 h-5 bg-gray-400 rounded-full top-0.5 left-0.5" />
+                      </div>
+                    ) : (
+                      <Switch
+                        checked={isVisible}
+                        onCheckedChange={checked =>
+                          setProfile({
+                            ...profile,
+                            sections_visibility: {
+                              ...profile.sections_visibility,
+                              [section]: checked,
+                            },
+                          })
+                        }
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

@@ -15,6 +15,10 @@ import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
 import { Card } from '@/components/ui/card';
 import ContactModal from './ContactModal';
+import BadgeLevel from '@/src/components/ui/BadgeLevel';
+import { getBadgeInfo } from '@/src/lib/utils/badgeLevel';
+import PortfolioSection from './PortfolioSection';
+import CertificatesSection from './CertificatesSection';
 
 // 🔹 Types
 type Profile = {
@@ -52,6 +56,7 @@ const BioToggle = ({ bio }: { bio: string }) => {
   const contentRef = useRef<HTMLParagraphElement>(null);
   const truncatedRef = useRef<HTMLParagraphElement>(null);
 
+
   const words = bio.split(' ');
   const truncated = words.length > 30 
     ? words.slice(0, 30).join(' ') + '…' 
@@ -69,6 +74,7 @@ const BioToggle = ({ bio }: { bio: string }) => {
       requestAnimationFrame(() => setHeight(truncHeight));
     }
   }, [expanded, bio]);
+
 
   return (
     <div className="relative overflow-hidden">
@@ -129,6 +135,28 @@ export default function PublicProfileClient({
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  const [scansCount, setScansCount] = useState(0);
+
+  const [portfolios, setPortfolios] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<any[]>([]);
+
+useEffect(() => {
+  const fetchPortfolio = async () => {
+    const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
+    const { portfolios, certificates } = await res.json();
+    setPortfolios(portfolios);
+    setCertificates(certificates);
+  };
+  fetchPortfolio();
+}, [profile.id]);
+
+useEffect(() => {
+  fetch(`/api/analytics?profile_id=${profile.id}&range=all`)
+    .then(res => res.json())
+    .then(data => setScansCount(data.total || 0))
+    .catch(console.warn);
+}, [profile.id]);
 
   useEffect(() => {
     const activeOrLostCards = (profile.nfc_cards || []).filter(
@@ -206,14 +234,23 @@ export default function PublicProfileClient({
           </div>
 
           <motion.div className="mt-4">
-            <p className="text-cyan-300 font-mono text-sm">@{profile.username}</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-white mt-1.5">{profile.full_name}</h1>
-            {profile.job_title && (
-              <p className="text-gray-300 mt-0.5">
-                {profile.job_title}{profile.company && ` · ${profile.company}`}
-              </p>
-            )}
-          </motion.div>
+  <p className="text-cyan-300 font-mono text-sm">@{profile.username}</p>
+  <h1 className="text-2xl md:text-3xl font-bold text-white mt-1.5">{profile.full_name}</h1>
+  
+  {/* 🔹 ✅ Badge gamification — une seule fois */}
+  {scansCount > 0 && (
+    <div className="mt-2 flex items-center gap-2">
+      <BadgeLevel info={getBadgeInfo(scansCount)} />
+      <span className="text-gray-400 text-xs">{scansCount} scan{scansCount > 1 ? 's' : ''}</span>
+    </div>
+  )}
+
+  {profile.job_title && (
+    <p className="text-gray-300 mt-0.5">
+      {profile.job_title}{profile.company && ` · ${profile.company}`}
+    </p>
+  )}
+</motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -332,16 +369,6 @@ export default function PublicProfileClient({
               }}
             />
           )}
-
-          {/* 🔹 Lien court */}
-          <ActionItem
-            icon={<LinkIcon className="w-5 h-5 text-cyan-400" />}
-            label="Court"
-            onClick={async () => {
-              await navigator.clipboard.writeText(shortUrl);
-              alert(`✅ Lien court copié !\n${shortUrl}`);
-            }}
-          />
         </motion.div>
 
         {/* 🔹 Sections */}
@@ -350,6 +377,15 @@ export default function PublicProfileClient({
             <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
               <BioToggle bio={profile.bio_long} />
             </Section>
+          )}
+          {/* 🔹 Section Portfolio — conditionnelle */}
+          {isSectionVisible('portfolio', profile) && portfolios.length > 0 && (
+            <PortfolioSection items={portfolios} />
+          )}
+
+          {/* 🔹 Section Ce{rtificates — conditionnelle */}
+          {isSectionVisible('certificates', profile) && certificates.length > 0 && (
+            <CertificatesSection items={certificates} />
           )}
           {profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
             <motion.div

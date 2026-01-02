@@ -4,9 +4,9 @@ import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import {
-  Heart, Loader2, Download, X, Mail, Check,
+  Heart, Download, X, Mail, Check,
   Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Bell, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
+  Eye, Bell, Folder, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,7 @@ import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
 import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import CreateEventForm from '@/src/components/events/CreateEventForm';
-import { getShareData } from '@/src/lib/utils/shareQR';
+import PortfolioModal from '@/src/components/dashboard/PortfolioModal';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -38,7 +38,6 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
-
 
 // 🔹 Modal de succès
 const SuccessModal = ({
@@ -539,19 +538,15 @@ const QRModal = ({
   onClose,
   profileUrl,
   username,
-  shortUrl, // ✅ Ajoute cette ligne
 }: {
   isOpen: boolean;
   onClose: () => void;
   profileUrl: string;
   username: string;
-  shortUrl?: string; // ✅ optionnel
 }) => {
   const [copied, setCopied] = useState(false);
-  const displayUrl = shortUrl || profileUrl;
-
-  const copyLink = () => {
-  navigator.clipboard.writeText(displayUrl);
+  const copyLink = async () => {
+    await navigator.clipboard.writeText(profileUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -567,15 +562,14 @@ const QRModal = ({
   useEffect(() => {
     if (isOpen) {
       import('qrcode').then(QRCode => {
-        QRCode.toDataURL(profileUrl, { // ✅ displayUrl ici
-      width: 240,
-      margin: 2,
-      color: { dark: '#1e40af', light: '#ffffff' },
-      type: 'image/png',
-    })
+        QRCode.default.toCanvas(
+          document.getElementById('qr-canvas') as HTMLCanvasElement,
+          profileUrl,
+          { width: 256, color: { dark: '#2563eb', light: '#ffffff' } }
+        );
       });
     }
-  }, [isOpen, displayUrl]);
+  }, [isOpen, profileUrl]);
 
   if (!isOpen) return null;
   return (
@@ -608,12 +602,9 @@ const QRModal = ({
               Scannez pour accéder à votre profil LUVIKA
             </p>
           </div>
-          <p className="text-gray-300 text-sm mb-5">
-  ✅ Le QR redirige vers :<br />
-  <span className="font-mono text-cyan-200 text-xs break-all">
-    {profileUrl}
-  </span>
-</p>
+          <p className="text-sm text-gray-400 bg-black/20 p-3 rounded-lg mb-4 break-all">
+            {profileUrl}
+          </p>
           <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
@@ -870,7 +861,9 @@ export default function DashboardContent({
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showEventForm, setShowEventForm] = useState(false);
-
+  const [scansCount, setScansCount] = useState(0);
+  const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+  
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -912,48 +905,18 @@ export default function DashboardContent({
   }
 };
 
-// 🔹 ✅ États pour le partage QR
-const [shareUrl, setShareUrl] = useState<string | null>(null);
-const [shareQr, setShareQr] = useState<string | null>(null);
-const [isSharing, setIsSharing] = useState(false);
-
-// 🔹 ✅ Génération + copie
-const handleShareQR = async () => {
-  if (isSharing) return;
-  setIsSharing(true);
-  
-  try {
-    const { shortUrl, qrBase64 } = await getShareData(profile.id, profileUrl);
-    setShareUrl(shortUrl);
-    setShareQr(qrBase64);
-    
-    // 🔹 Copie lien + QR (format vCard-friendly)
-    const vcardText = `LUVIKA Pro — ${shortUrl}\n\nQR:\n${qrBase64}`;
-    await navigator.clipboard.writeText(vcardText);
-    
-    // ✅ Feedback utilisateur
-    alert('✅ Lien court + QR copié !\nCollez-le dans un email, SMS ou vCard.');
-  } catch (err) {
-    alert('❌ Échec génération QR');
-    console.error(err);
-  } finally {
-    setIsSharing(false);
-  }
-};
-
-// En haut du composant
-const shortId = profile.id.substring(0, 6).replace(/[+/]/g, 'x').toLowerCase();
-const shortUrl = `https://luvika.me/u/${shortId}`;
-
   const handleLike = () => setHasLiked(!hasLiked);
 
-  const handleQuickAction = (actionId: string) => {
-    if (actionId === 'event') {
-      setIsEventModalOpen(true);
-    } else {
-      setActiveModal(actionId);
-    }
-  };
+const handleQuickAction = (actionId: string) => {
+  if (actionId === 'event') {
+    setIsEventModalOpen(true);
+  } else if (actionId === 'portfolio') {
+    // ✅ Ouvre le modal Portfolio
+    setIsPortfolioModalOpen(true);
+  } else {
+    setActiveModal(actionId);
+  }
+};
 
   const updateVisibility = (section: string, checked: boolean) => {
     const newVisibility = { ...sectionsVisibility, [section]: checked };
@@ -1073,6 +1036,19 @@ const shortUrl = `https://luvika.me/u/${shortId}`;
   };
 
   useEffect(() => {
+  const fetchScans = async () => {
+    try {
+      const res = await fetch(`/api/analytics?profile_id=${profile.id}&range=all`);
+      const { total } = await res.json();
+      setScansCount(total || 0);
+    } catch (err) {
+      console.warn('⚠️ Failed to load scans count');
+    }
+  };
+  fetchScans();
+}, [profile.id]);
+
+  useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('open') === 'upgrade') {
       setActiveModal('upgrade');
@@ -1090,16 +1066,11 @@ const shortUrl = `https://luvika.me/u/${shortId}`;
     { id: 'report', label: 'Signaler', icon: <AlertTriangle size={18} />, color: 'from-red-500 to-rose-500' },
     { id: 'message', label: 'Message perso', icon: <MessageSquare size={18} />, color: 'from-indigo-400 to-violet-500' },
     { id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-400 to-pink-500' },
-    { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
     { id: 'followers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
     { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
-    {
-      id: 'event',
-      label: 'Événement',
-      icon: <Calendar size={14} />,
-      color: 'from-amber-500 to-orange-500',
-      disabled: profile.plan === 'freemium' || profile.plan === 'basic',
-    },
+    { id: 'event', label: 'Événement', icon: <Calendar size={14} />, color: 'from-amber-500 to-orange-500', disabled: profile.plan === 'freemium' || profile.plan === 'basic',},
+    { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-cyan-500 to-blue-500' },
+    { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
   ];
 
   useEffect(() => {
@@ -1282,31 +1253,12 @@ const shortUrl = `https://luvika.me/u/${shortId}`;
                 >
                   {t('qr.open_link')}
                 </Button>
-                <Button
-  size="sm"
-  className="mt-2 w-full bg-gradient-to-r from-emerald-600 to-teal-500"
-  onClick={handleShareQR}
-  disabled={isSharing}
->
-  {isSharing ? (
-    <>
-      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-      Génération...
-    </>
-  ) : (
-    <>
-      <QrCode className="w-4 h-4 mr-1" />
-      Partager mon QR
-    </>
-  )}
-</Button>
               </div>
             ) : (
               <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
             )}
           </CardContent>
         </Card>
-
         <Card className="glass-border">
           <CardHeader>
             <CardTitle>{t('nfc.title', { count: cards.length })}</CardTitle>
@@ -1435,6 +1387,14 @@ const shortUrl = `https://luvika.me/u/${shortId}`;
       onClose={closeModal}
     />
   )}
+    {isPortfolioModalOpen && (
+    <PortfolioModal
+      key="portfolio-modal"
+      isOpen={true}
+      onClose={() => setIsPortfolioModalOpen(false)}
+      profileId={profile.id}
+    />
+  )}
   {activeModal === 'report' && (
     <ReportCardModal
       key="modal-report"
@@ -1465,15 +1425,14 @@ const shortUrl = `https://luvika.me/u/${shortId}`;
     />
   )}
   {activeModal === 'qr' && (
-  <QRModal
-    key="modal-qr"
-    isOpen={true}
-    onClose={closeModal}
-    profileUrl={profileUrl}
-    username={profile.username}
-    shortUrl={`https://luvika.me/u/${profile.id.substring(0, 6)}`} // ✅
-  />
-)}
+    <QRModal
+      key="modal-qr"
+      isOpen={true}
+      onClose={closeModal}
+      profileUrl={profileUrl}
+      username={profile.username}
+    />
+  )}
   {activeModal === 'nfc' && (
     <NFCModal
       key="modal-nfc"

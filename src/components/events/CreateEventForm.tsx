@@ -76,13 +76,16 @@ export default function CreateEventForm({
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Bouton activé si titre ≥ 3 chars + date début dans le futur
+  // Bouton activé si : titre valide + date de début dans le futur (avec tolérance)
   const isFormValid = useMemo(() => {
     if (!title.trim() || title.length < 3) return false;
     if (!startsAt) return false;
+
     const startDate = new Date(startsAt);
-    const nowDate = new Date();
-    if (startDate <= nowDate) return false;
+    const nowWithTolerance = new Date(Date.now() - 120000); // Tolérance de 2 minutes
+
+    if (startDate <= nowWithTolerance) return false;
+
     return true;
   }, [title, startsAt]);
 
@@ -100,7 +103,7 @@ export default function CreateEventForm({
     setIsMounted(true);
   }, []);
 
-  // Validation complète (erreurs détaillées)
+  // Validation complète à la soumission
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -203,7 +206,7 @@ export default function CreateEventForm({
     );
   };
 
-  // Soumission — CORRIGÉ : 'data' bien défini
+  // Soumission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -218,7 +221,7 @@ export default function CreateEventForm({
       max_participants: maxParticipants ? Number(maxParticipants) : undefined,
     };
 
-    await onSubmit(data); // ✅ 'data' existe bien
+    await onSubmit(data);
   };
 
   return (
@@ -413,7 +416,7 @@ export default function CreateEventForm({
               </div>
             </div>
 
-            {/* QR Code */}
+            {/* Prévisualisation QR Code */}
             <div className="mt-8 pt-6 border-t border-white/5">
               <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                 <QrCode className="text-cyan-400" /> Prévisualisation QR Code
@@ -481,7 +484,7 @@ export default function CreateEventForm({
               </div>
             </div>
 
-            {/* Boutons */}
+            {/* Boutons d'action */}
             <div className="mt-8 pb-6 flex flex-col sm:flex-row gap-3">
               {(onCancel || onClose) && (
                 <Button

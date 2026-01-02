@@ -156,7 +156,8 @@
         "cover": "Photo de couverture",
         "upload_avatar": "Changer la photo",
         "upload_cover": "Cliquer pour uploader une couverture"
-      },"personal": {
+      },
+      "personal": {
         "title": "Informations personnelles",
         "full_name": "Nom complet",
         "full_name_placeholder": "ex: Hassan M.",
@@ -183,7 +184,9 @@
       },
       "visibility": {
         "title": "Visibilité",
-        "description": "Choisissez ce qui apparaît sur votre profil public"
+        "description": "Choisissez ce qui apparaît sur votre profil public",
+        "portfolio_locked": "Débloquez le portfolio avec un abonnement Premium",
+        "certificates_locked": "Les certificats sont réservés aux comptes Premium/Entreprise"
       },
       "advanced": {
         "title": "Options avancées",
@@ -258,9 +261,7 @@
       "privacy": "En continuant, vous acceptez nos",
       "terms": "Conditions d’utilisation",
       "identity_desc": "Commencez par nous dire qui vous êtes.",
-      "email_step": "Vérification de l'email",
       "email_desc": "Nous allons vous envoyer un code de vérification.",
-      "security_step": "Sécurité de votre compte",
       "security_desc": "Choisissez un mot de passe fort. La 2FA est activée par défaut.",
       "code_sent": "✅ Code envoyé ! Vérifiez vos emails (y compris les spams).",
       "invalid_code": "Code invalide ou expiré.",
@@ -597,7 +598,9 @@
           "dashboard": "Dashboard global + API"
         }
       }
-    },"validate_button": "Valider",
+    }
+  },
+  "validate_button": "Valider",
   "cancel_button": "Annuler",
   "confirm_cancel": "Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.",
   "action_success": {
@@ -607,6 +610,5 @@
   "action_error": {
     "validate": "❌ Échec validation",
     "cancel": "❌ Échec annulation"
-  }
   }
 }
