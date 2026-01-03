@@ -19,7 +19,8 @@ import BadgeLevel from '@/src/components/ui/BadgeLevel';
 import { getBadgeInfo } from '@/src/lib/utils/badgeLevel';
 import PortfolioSection from './PortfolioSection';
 import CertificatesSection from './CertificatesSection';
-
+import CollapsibleSection from './CollapsibleSection';
+import { Folder, Award } from 'lucide-react'; // Ajoute ces icônes si absentes
 // 🔹 Types
 type Profile = {
   id: string;
@@ -183,10 +184,10 @@ useEffect(() => {
     .replace(/\s+/g, ' ')
     .trim();
   const coverUrl = cleanCoverUrl && cleanCoverUrl !== 'null' && cleanCoverUrl !== ''
-    ? cleanCoverUrl.startsWith('http')
-      ? cleanCoverUrl
-      : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
-    : '/default.png';
+  ? cleanCoverUrl.startsWith('http')
+    ? cleanCoverUrl
+    : `https://${baseUrl.replace('https://', '').split('/')[0]}/${cleanCoverUrl.replace(/^\/+/, '')}`
+  : '/default.png'; // ✅ reste absolu
 
   return (
     <div className="relative min-h-screen">
@@ -294,122 +295,145 @@ useEffect(() => {
           )}
         </motion.header>
 
-        {/* 🔹 Actions — ✅ CORRIGÉ : tous les boutons dans la même grille */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="grid grid-flow-col auto-cols-max gap-2 justify-center mb-6"
-        >
-          {isSectionVisible('contact', profile) && profile.email && (
-            <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
-          )}
-          {isSectionVisible('contact', profile) && profile.phone && (
-            <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
-          )}
-          {isSectionVisible('contact', profile) && profile.whatsapp && (
-            <ActionItem
-              icon={<MessageCircle className="w-5 h-5 text-emerald-400" />}
-              label="WhatsApp"
-              href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
-            />
-          )}
-          {profile.address && (
-            <ActionItem
-              icon={<MapPin className="w-5 h-5 text-amber-400" />}
-              label="Carte"
-              href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`}
-            />
-          )}
-          {profile.website && (
-            <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
-          )}
-          {profile.instagram && (
-            <ActionItem
-              icon={<Instagram className="w-5 h-5 text-pink-400" />}
-              label="IG"
-              href={`https://instagram.com/${profile.instagram.trim()}`}
-            />
-          )}
-
-          {/* 🔹 vCard classique */}
-          <ActionItem
-            icon={<Download className="w-5 h-5 text-purple-400" />}
-            label="vCard"
-            onClick={() => {
-              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
-              const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-              const url = URL.createObjectURL(blob);
+{/* 🔹 Actions — ✅ 5 colonnes mobile, centré, espacé */}
+<motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ delay: 0.5 }}
+  className="w-full overflow-x-hidden px-2"
+>
+  <div className="max-w-5xl mx-auto">
+    <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-flow-col lg:auto-cols-max gap-2 md:gap-3 py-3">
+      {isSectionVisible('contact', profile) && profile.email && (
+        <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
+      )}
+      {isSectionVisible('contact', profile) && profile.phone && (
+        <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
+      )}
+      {isSectionVisible('contact', profile) && profile.whatsapp && (
+        <ActionItem
+          icon={<MessageCircle className="w-5 h-5 text-emerald-400" />}
+          label="WhatsApp"
+          href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
+        />
+      )}
+      {profile.address && (
+        <ActionItem
+          icon={<MapPin className="w-5 h-5 text-amber-400" />}
+          label="Carte"
+          href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`}
+        />
+      )}
+      {profile.website && (
+        <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
+      )}
+      {profile.instagram && (
+        <ActionItem
+          icon={<Instagram className="w-5 h-5 text-pink-400" />}
+          label="IG"
+          href={`https://instagram.com/${profile.instagram.trim()}`}
+        />
+      )}
+      {/* 🔹 vCard classique */}
+      <ActionItem
+        icon={<Download className="w-5 h-5 text-purple-400" />}
+        label="vCard"
+        onClick={() => {
+          const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
+          const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `${profile.username}.vcf`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }}
+      />
+      {/* 🔹 vCard Pro+ */}
+      {profile.bio_long && isSectionVisible('contact', profile) && (
+        <ActionItem
+          icon={<QrCode className="w-5 h-5 text-indigo-400" />}
+          label="Pro+"
+          onClick={async () => {
+            const url = `/api/vcard?username=${profile.username}`;
+            const res = await fetch(url);
+            if (res.ok) {
+              const blob = await res.blob();
               const a = document.createElement('a');
-              a.href = url;
-              a.download = `${profile.username}.vcf`;
+              a.href = URL.createObjectURL(blob);
+              a.download = `${profile.username}_luvika_pro.vcf`;
               a.click();
-              URL.revokeObjectURL(url);
-            }}
-          />
+              URL.revokeObjectURL(a.href);
+            } else {
+              alert('❌ Échec vCard Pro+');
+            }
+          }}
+        />
+      )}
+    </div>
+  </div>
+</motion.div>
 
-          {/* 🔹 vCard Pro+ */}
-          {profile.bio_long && isSectionVisible('contact', profile) && (
-            <ActionItem
-              icon={<QrCode className="w-5 h-5 text-indigo-400" />}
-              label="Pro+"
-              onClick={async () => {
-                const url = `/api/vcard?username=${profile.username}`;
-                const res = await fetch(url);
-                if (res.ok) {
-                  const blob = await res.blob();
-                  const a = document.createElement('a');
-                  a.href = URL.createObjectURL(blob);
-                  a.download = `${profile.username}_luvika_pro.vcf`;
-                  a.click();
-                  URL.revokeObjectURL(a.href);
-                } else {
-                  alert('❌ Échec vCard Pro+');
-                }
-              }}
-            />
-          )}
-        </motion.div>
-
+{/* 🔹 ✅ Espace vertical après les actions */}
+<div className="h-6"></div>
         {/* 🔹 Sections */}
-        <div className="space-y-5">
-          {profile.bio_long && isSectionVisible('bio', profile) && (
-            <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
-              <BioToggle bio={profile.bio_long} />
-            </Section>
-          )}
-          {/* 🔹 Section Portfolio — conditionnelle */}
-          {isSectionVisible('portfolio', profile) && portfolios.length > 0 && (
-            <PortfolioSection items={portfolios} />
-          )}
+<div className="space-y-3">
+{profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6 }}
+      className="text-center -mt-2" /* 🔹 ✅ -mt-2 annule l’espacement excessif */
+    >
+      <button
+        onClick={() => setIsContactModalOpen(true)}
+        className="flex items-center justify-center gap-2 w-full max-w-xs mx-auto py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-600/20 to-blue-500/20 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-600/30 hover:shadow-lg transition-all group"
+      >
+        <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
+        <span className="font-medium">Laissez-moi vos contacts</span>
+        <Send className="w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+      </button>
+    </motion.div>
+  )}
+  <ContactModal
+    isOpen={isContactModalOpen}
+    onClose={() => setIsContactModalOpen(false)}
+    profileId={profile.id}
+  />
+        {/* 🔹 Sections */}
+<div className="space-y-1">
+  {profile.bio_long && isSectionVisible('bio', profile) && (
+    <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
+      <BioToggle bio={profile.bio_long} />
+    </Section>
+  )}
 
-          {/* 🔹 Section Ce{rtificates — conditionnelle */}
-          {isSectionVisible('certificates', profile) && certificates.length > 0 && (
-            <CertificatesSection items={certificates} />
-          )}
-          {profile.accepts_contact_requests && isSectionVisible('contact', profile) && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6 }}
-              className="text-center"
-            >
-              <button
-                onClick={() => setIsContactModalOpen(true)}
-                className="flex items-center justify-center gap-2 w-full max-w-xs mx-auto py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-600/20 to-blue-500/20 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-600/30 hover:shadow-lg transition-all group"
-              >
-                <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="font-medium">Laissez-moi vos contacts</span>
-                <Send className="w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-              </button>
-            </motion.div>
-          )}
-          <ContactModal
-            isOpen={isContactModalOpen}
-            onClose={() => setIsContactModalOpen(false)}
-            profileId={profile.id}
-          />
-        </div>
+  {/* 🔹 Section Portfolio — collapsible */}
+  {isSectionVisible('portfolio', profile) && portfolios.length > 0 && (
+    <CollapsibleSection
+      title="Projets"
+      icon={<Folder className="text-cyan-400 w-5 h-5" />}
+      itemCount={portfolios.length}
+      defaultOpen={false}
+    >
+      <PortfolioSection items={portfolios} />
+    </CollapsibleSection>
+  )}
+
+  {/* 🔹 Section Certificates — collapsible */}
+  {isSectionVisible('certificates', profile) && certificates.length > 0 && (
+    <CollapsibleSection
+      title="Certifications"
+      icon={<Award className="text-yellow-400 w-5 h-5" />}
+      itemCount={certificates.length}
+      defaultOpen={false}
+    >
+      <CertificatesSection items={certificates} />
+    </CollapsibleSection>
+  )}
+</div>
+  
+</div>
 
         <ScanTracker profileId={profile.id} />
 
