@@ -21,6 +21,8 @@ import PortfolioSection from './PortfolioSection';
 import CertificatesSection from './CertificatesSection';
 import CollapsibleSection from './CollapsibleSection';
 import { Folder, Award } from 'lucide-react'; // Ajoute ces icônes si absentes
+import FollowButton from './FollowButton';
+
 // 🔹 Types
 type Profile = {
   id: string;
@@ -48,6 +50,9 @@ type Props = {
   profile: Profile;
   followers?: number;
   following?: number;
+  isOwner?: boolean;
+  isInitiallyFollowing?: boolean;
+  currentUserId?: string | null;
 };
 
 // 🔹 BioToggle avec animation fluide
@@ -132,6 +137,9 @@ export default function PublicProfileClient({
   profile,
   followers = 0,
   following = 0,
+  isOwner = false,
+  isInitiallyFollowing = false,
+  currentUserId = null,
 }: Props) {
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
@@ -253,20 +261,21 @@ useEffect(() => {
   )}
 </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            className="mt-6 flex justify-center gap-5 text-center flex-wrap sm:flex-nowrap"
-          >
-            <StatBox label="J’aime">
-              <GlacialLikeButton
-                profileId={profile.id}
-                initialLikes={profile.likes_count || 0}
-              />
-            </StatBox>
-            <StatBox label="Followers">{followers}</StatBox>
-            <StatBox label="Suivi(e)s">{following}</StatBox>
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.25 }}
+  className="mt-6 flex justify-center gap-5 text-center flex-wrap sm:flex-nowrap"
+>
+  <StatBox label="J’aime">
+    <GlacialLikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
+  </StatBox>
+ <StatBox label="Followers">{followers}</StatBox>
+  
+  {/* 🔹 ✅ Masque "Suivi(e)s" si suivis = 0 ET pas de session */}
+  {following > 0 && (
+    <StatBox label="Suivi(e)s">{following}</StatBox>
+  )}
             <StatBox label="Carte NFC">
               <motion.div
                 animate={{ boxShadow: hasLostCard ? '0 0 0px rgba(250,204,21,0)' : '0 0 12px rgba(16,185,129,0.35)' }}
@@ -281,7 +290,32 @@ useEffect(() => {
                 {hasLostCard ? 'Perdue' : 'Active'}
               </motion.div>
             </StatBox>
-          </motion.div>
+{/* 🔹 ✅ ICI — après les stats, AVANT les actions */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.35 }}
+  className="mt-4 flex justify-center"
+>
+  {!isOwner && currentUserId && (
+    <FollowButton
+      targetId={profile.id}
+      isInitiallyFollowing={isInitiallyFollowing}
+    />
+  )}
+  {!isOwner && !currentUserId && (
+    <Button
+      size="sm"
+      variant="outline"
+      className="flex items-center gap-2 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+      onClick={() => window.location.href = '/auth/sign-in'}
+    >
+      <UserCheck className="w-4 h-4" />
+      Suivre
+    </Button>
+  )}
+</motion.div>
+</motion.div>
 
           {profile.bio_short && (
             <motion.p
@@ -295,7 +329,7 @@ useEffect(() => {
           )}
         </motion.header>
 
-{/* 🔹 Actions — ✅ 5 colonnes mobile, centré, espacé */}
+{/* 🔹 Actions — ✅ Centrées, responsive, sans débordement */}
 <motion.div
   initial={{ opacity: 0 }}
   animate={{ opacity: 1 }}
@@ -303,7 +337,8 @@ useEffect(() => {
   className="w-full overflow-x-hidden px-2"
 >
   <div className="max-w-5xl mx-auto">
-    <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 lg:grid-flow-col lg:auto-cols-max gap-2 md:gap-3 py-3">
+    {/* 🔹 ✅ Flex + wrap + center → centrage parfait */}
+    <div className="flex flex-wrap justify-center gap-2 md:gap-3 py-3">
       {isSectionVisible('contact', profile) && profile.email && (
         <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
       )}
@@ -373,7 +408,6 @@ useEffect(() => {
     </div>
   </div>
 </motion.div>
-
 {/* 🔹 ✅ Espace vertical après les actions */}
 <div className="h-6"></div>
         {/* 🔹 Sections */}

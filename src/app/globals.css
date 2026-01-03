@@ -27,6 +27,14 @@
     overflow-x: hidden;
   }
 }
+/* 🔹 Tooltip LUVIKA */
+[data-tooltip] {
+  @apply bg-black/80 backdrop-blur border border-white/10 text-cyan-300 text-xs;
+  font-family: 'Inter', sans-serif;
+}
+[data-tooltip]::before {
+  @apply border-transparent border-t-white/10;
+}
 .scrollbar-hide {
   -ms-overflow-style: none;  /* IE/Edge */
   scrollbar-width: none;     /* Firefox */

@@ -31,7 +31,7 @@ export default async function PublicProfilePage({
   let profileData = null;
   let profileError = null;
 
-  const {  data, error } = await supabase
+  const { data, error } = await supabase
     .from('profiles')
     .select('*, plan, accepts_contact_requests, cover_url')
     .ilike('username', decodedUsername.trim())
@@ -42,7 +42,7 @@ export default async function PublicProfilePage({
   } else if (data) {
     profileData = data;
   } else {
-    const { data : fallbackData, error: fallbackError } = await supabase
+    const { data: fallbackData, error: fallbackError } = await supabase
       .from('profiles')
       .select('*, accepts_contact_requests')
       .ilike('username', `%${decodedUsername.trim()}%`)
@@ -58,34 +58,41 @@ export default async function PublicProfilePage({
     notFound();
   }
 
-// 🔹 ✅ Récupère les données de suivi côté serveur
-const { data : { user } } = await supabase.auth.getUser();
-const currentUser = user as User | null;
-const isOwner = currentUser?.id === profileData.id;
-const isAdmin = currentUser?.user_metadata?.role === 'admin';
+  // 🔹 Auth & permissions
+  const { data: { user } } = await supabase.auth.getUser();
+  const currentUser = user as User | null;
+  const isOwner = currentUser?.id === profileData.id;
+  const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
-// 🔹 ✅ ✅ ✅ Remplacez cette ligne :
-if (!profileData.is_public && !isOwner && !isAdmin) {
-  return redirect(`/${locale}/${username}/private`);
-}
+  if (!profileData.is_public && !isOwner && !isAdmin) {
+    return redirect(`/${locale}/${username}/private`);
+  }
 
-// 🔹 ✅ Récupère followers & following côté serveur (SSR)
-let initialFollowers = 0;
-let initialFollowing = 0;
-// ...
+  // 🔹 ✅ Followers public (SSR)
+  const { count: followersCount } = await supabase
+    .from('follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('followed_id', profileData.id);
+  const initialFollowers = followersCount || 0;
 
-if (currentUser) {
-  const [
-    { count: followersCount },
-    { count: followingCount }
-  ] = await Promise.all([
-    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', profileData.id),
-    supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', currentUser.id),
-  ]);
+  // 🔹 ✅ Following privé → seulement si auth
+  let initialFollowing = 0;
+  let isInitiallyFollowing = false;
+  if (currentUser) {
+    const { count: followingCount } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', currentUser.id);
+    initialFollowing = followingCount || 0;
 
-  initialFollowers = followersCount || 0;
-  initialFollowing = followingCount || 0;
-}
+    // 🔹 ✅ Statut « suit déjà »
+    const { count: followingThisUser } = await supabase
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', currentUser.id)
+      .eq('followed_id', profileData.id);
+    isInitiallyFollowing = (followingThisUser || 0) > 0;
+  }
 
   return (
     <div suppressHydrationWarning className="min-h-screen relative">
@@ -111,10 +118,13 @@ if (currentUser) {
 
       <div className="container mx-auto px-4 pb-20 max-w-4xl relative z-10">
         <PublicProfileClient
-  profile={profileData}
-  followers={initialFollowers}
-  following={initialFollowing}
-/>
+          profile={profileData}
+          followers={initialFollowers}
+          following={initialFollowing}
+          isOwner={isOwner}
+          isInitiallyFollowing={isInitiallyFollowing}
+          currentUserId={currentUser?.id || null}
+        />
       </div>
     </div>
   );
