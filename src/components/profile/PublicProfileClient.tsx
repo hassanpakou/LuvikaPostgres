@@ -472,19 +472,25 @@ useEffect(() => {
 
         <ScanTracker profileId={profile.id} />
 
-        <motion.footer
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-          className="mt-10 text-center text-gray-500 text-xs"
-        >
-          <a
-            href="/"
-            className="text-cyan-400 hover:text-cyan-300 flex items-center justify-center gap-1"
-          >
-            luvika.dev <ExternalLink className="w-3 h-3" />
-          </a>
-        </motion.footer>
+        <motion.div
+  initial={{ opacity: 0 }}
+  animate={{ opacity: 1 }}
+  transition={{ delay: 1.2 }}
+  className="mt-8 text-center text-gray-600 text-xs"
+>
+  <span className="inline-flex items-center gap-1 opacity-60">
+    Powered by 
+    <a 
+      href="/" 
+      className="font-medium text-cyan-400 hover:text-cyan-300"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      LUVIKA
+    </a>
+    <ExternalLink className="w-3 h-3" />
+  </span>
+</motion.div>
       </div>
 
       <AnimatePresence>
