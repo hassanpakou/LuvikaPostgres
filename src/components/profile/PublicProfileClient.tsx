@@ -22,7 +22,7 @@ import CertificatesSection from './CertificatesSection';
 import CollapsibleSection from './CollapsibleSection';
 import { Folder, Award } from 'lucide-react'; // Ajoute ces icônes si absentes
 import FollowButton from './FollowButton';
-
+import ActionItem from './ActionItem'; // ✅ Remplace l'ancien composant local
 // 🔹 Types
 type Profile = {
   id: string;
@@ -330,11 +330,12 @@ useEffect(() => {
         </motion.header>
 
 {/* 🔹 Actions — ✅ Centrées, responsive, sans débordement */}
+{/* 🔹 Actions — ✅ Centrées, tooltip-friendly */}
 <motion.div
   initial={{ opacity: 0 }}
   animate={{ opacity: 1 }}
   transition={{ delay: 0.5 }}
-  className="w-full overflow-x-hidden px-2"
+  className="w-full px-2"
 >
   <div className="max-w-5xl mx-auto">
     {/* 🔹 ✅ Flex + wrap + center → centrage parfait */}
@@ -510,27 +511,7 @@ const StatBox = ({ label, children }: { label: string; children: React.ReactNode
   </div>
 );
 
-const ActionItem = ({
-  icon,
-  label,
-  href,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  href?: string;
-  onClick?: () => void;
-}) => (
-  <motion.button
-    onClick={onClick || (() => href && (window.open(href, '_blank') || true))}
-    whileHover={{ y: -2, scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    className="flex flex-col items-center p-2 gap-1 rounded-lg bg-white/5 hover:bg-white/10 transition-all cursor-pointer border border-transparent hover:border-white/10"
-  >
-    <span className="text-gray-300 hover:text-white">{icon}</span>
-    <span className="text-[11px] text-gray-400 whitespace-nowrap">{label}</span>
-  </motion.button>
-);
+
 
 const Section = ({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) => (
   <Card className="border border-white/10 bg-transparent">
