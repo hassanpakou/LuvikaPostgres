@@ -247,7 +247,7 @@ useEffect(() => {
 }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen">
       {/* 🔹 Background animé */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-blue-900/10 to-indigo-900/5"></div>
@@ -367,7 +367,8 @@ useEffect(() => {
                 </span>
               )}
               {profile.professional_status && (
-                <span className="px-2 py-0.5 bg-cyan-500/10 text-cyan-300 rounded">
+                <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
+
                   {profile.professional_status === 'student' && 'Étudiant'}
                   {profile.professional_status === 'employed' && 'En poste'}
                   {profile.professional_status === 'freelance' && 'Freelance'}
@@ -410,14 +411,14 @@ useEffect(() => {
             <motion.div
               animate={{ 
                 boxShadow: hasLostCard 
-                  ? '0 0 0px rgb(0, 173, 46)' 
-                  : '0 0 16px rgb(3, 225, 85)'
+                  ? '0 0 0px rgb(250,204,21,0)' 
+                  : '0 0 12px rgb(16,185,129,0.35)'
               }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: 'reverse' }}
+              transition={{ duration: 2, repeat: Infinity, repeatType: 'mirror' }}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${
                 hasLostCard
                   ? 'border-yellow-400/40 text-yellow-400 bg-yellow-400/10'
-                  : 'border-cyan-400/30 text-cyan-300 bg-cyan-500/10'
+                  : 'border-emerald-400/40 text-emerald-400 bg-emerald-400/10'
               }`}
             >
               <CheckCircle className="w-4 h-4" />
@@ -662,19 +663,7 @@ useEffect(() => {
 
         <ScanTracker profileId={profile.id} />
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.3 }}
-          className="mt-8 text-center text-gray-600 text-xs"
-        >
-          <span className="inline-flex items-center gap-1 opacity-60">
-            Powered by 
-            <a href="/" className="font-medium text-cyan-400 hover:text-cyan-300" target="_blank" rel="noopener noreferrer">
-              LUVIKA
-            </a>
-          </span>
-        </motion.div>
+        
       </div>
 
       {/* 🔹 Modaux */}
