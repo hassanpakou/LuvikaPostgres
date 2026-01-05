@@ -3,7 +3,7 @@ import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import type { User } from '@supabase/supabase-js';
-import PublicProfileClient from '../../../../src/components/profile/PublicProfileClient';
+import PublicProfileClient from '@/src/components/profile/PublicProfileClient';
 
 export default async function PublicProfilePage({
   params,

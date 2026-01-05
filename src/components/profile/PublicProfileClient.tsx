@@ -25,7 +25,7 @@ import CollapsibleSection from './CollapsibleSection';
 import { Folder, Award } from 'lucide-react';
 import FollowButton from './FollowButton';
 import ActionItem from './ActionItem';
-
+import ProfileActions from './ProfileActions';
 // 🔹 Types (inchangé — ton version finale)
 type Profile = {
   id: string;
@@ -188,14 +188,16 @@ export default function PublicProfileClient({
   const [certificates, setCertificates] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchPortfolio = async () => {
-      const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
-      const { portfolios, certificates } = await res.json();
-      setPortfolios(portfolios);
-      setCertificates(certificates);
-    };
-    fetchPortfolio();
-  }, [profile.id]);
+  const fetchPortfolio = async () => {
+    const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
+    const { portfolios, certificates } = await res.json();
+    console.log('✅ portfolios:', portfolios); // 🔹
+    console.log('✅ certificates:', certificates); // 🔹
+    setPortfolios(portfolios);
+    setCertificates(certificates);
+  };
+  fetchPortfolio();
+}, [profile.id]);
 
   useEffect(() => {
     fetch(`/api/analytics?profile_id=${profile.id}&range=all`)
@@ -505,33 +507,45 @@ useEffect(() => {
           </motion.div>
         )}
 
-        {/* 🔹 Compétences */}
-        {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-            className="mt-6"
-          >
-            <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map((skill, i) => (
-                  <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </Section>
-          </motion.div>
-        )}
+{/* 🔹 Compétences */}
+{profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 1.0 }}
+    className="mt-6"
+  >
+    <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
+      <div className="flex flex-wrap gap-2">
+        {profile.skills.map((skill, i) => (
+          <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
+            {skill}
+          </Badge>
+        ))}
+      </div>
+    </Section>
+  </motion.div>
+)}
 
-        {/* 🔹 Actions — centrées */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1 }}
-          className="w-full px-2 mt-8"
-        >
+{/* 🔹 ✅ ProfileActions — NOUVEAU BLOC */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 1.1 }}
+  className="mt-6"
+>
+  <Section title="Contact rapide" icon={<Send className="text-cyan-400 w-5 h-5" />}>
+    <ProfileActions profile={profile} />
+  </Section>
+</motion.div>
+
+{/* 🔹 Actions — centrées (existant) */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 1.2 }}
+  className="w-full px-2 mt-8"
+>
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-wrap justify-center gap-3 py-3">
               {isSectionVisible('contact', profile) && profile.email && (

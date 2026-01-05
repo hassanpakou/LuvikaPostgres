@@ -1,22 +1,22 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Révèle qui tu es — carte de visite intelligente NFC · QR Code · Abonnements · Événements",
+  "tagline": "Kotonga nini ozala — Karte bizinesi ya NFC ya mpo ya intelligence · Kôde QR · Abonnement · Mikolo",
   "cta": {
-    "create": "Créer mon profil",
-    "discover": "Découvrir"
+    "create": "Kokanga profil wana",
+    "discover": "Koyeba"
   },
   "features": {
-    "title": "Pourquoi LUVIKA ?",
+    "title": "Kosala nini LUVIKA ?",
     "nfc": {
-      "title": "NFC & QR Code",
-      "desc": "Partagez votre profil en un tap ou scan"
+      "title": "NFC mpe Kôde QR",
+      "desc": "Kokotisa profil wana na mpona to na scan"
     },
     "stats": {
-      "title": "Statistiques",
-      "desc": "Scans, visites, présences — tout est tracé"
+      "title": "Statistiki",
+      "desc": "Scan, visité, présences — tout est tracé"
     },
     "multi": {
-      "title": "Multi-cartes",
+      "title": "Cartes multiples",
       "desc": "Professionnel ? Gérez plusieurs cartes NFC"
     }
   },
@@ -28,7 +28,7 @@
     }
   },
   "dashboard": {
-    "greeting": "Bonjour, {name} 👋",
+    "greeting": "Mbote, {name} 👋",
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
     "export_csv": "Exporter (.csv)",
@@ -39,7 +39,7 @@
     "quick_menu": {
       "visibility": "Visibilité",
       "contact": "Messages",
-      "qr": "QR Code",
+      "qr": "Kôde QR",
       "nfc": "Cartes NFC",
       "report": "Signaler",
       "message": "Message perso",
@@ -87,10 +87,10 @@
       "success_message": "Un administrateur vous contactera sous 24h."
     },
     "qr": {
-      "title": "QR Code de profil",
-      "alt": "QR Code pour {username}",
-      "instructions": "Scannez pour accéder à votre profil",
-      "open_link": "Ouvrir le lien"
+      "title": "Kôde QR ya profil",
+      "alt": "Kôde QR po {username}",
+      "instructions": "Scan po kobatela profil wana",
+      "open_link": "Lisaka lien"
     },
     "nfc": {
       "title": "Cartes NFC ({count})",
@@ -448,6 +448,22 @@
       "title": "Commandes de cartes",
       "subtitle": "Suivez et validez les demandes de cartes physiques.",
       "no_orders": "Aucune commande pour le moment."
+    },
+    "subscription": {
+      "edit": "Modifier",
+      "change_plan": "Modifier le plan",
+      "plan": "Plan",
+      "select_plan": "Sélectionner un plan",
+      "expires": "Expire le",
+      "expires_help": "Laisser vide pour un abonnement à vie",
+      "never": "Jamais",
+      "updated_success": "Plan mis à jour avec succès",
+      "update_error": "Échec de la mise à jour"
+    },
+    "plans": {
+      "basic": "Basic",
+      "premium": "Premium",
+      "entreprise": "Entreprise"
     }
   },
   "navbar": {
@@ -610,5 +626,9 @@
   "action_error": {
     "validate": "❌ Échec validation",
     "cancel": "❌ Échec annulation"
+  },
+  "common": {
+    "save": "Kobatela",
+    "saving": "Kobatela..."
   }
 }

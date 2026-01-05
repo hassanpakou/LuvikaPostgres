@@ -854,7 +854,12 @@ const removeSkill = (index: number) => {
           <div className="flex items-center justify-between">
             <div>
               <Label className="text-gray-300">Badge de vérification</Label>
-              <p className="text-xs text-gray-400">Affiche ✅ à côté de votre nom</p>
+              <p className="text-xs text-gray-400">Affiche à côté de votre nom<img 
+      src="/badge.png" 
+      alt="✅ Vérifié" 
+      className="w-4 h-4 rounded-full"
+      title="Profil vérifié"
+    /></p>
             </div>
             <Switch
               checked={profile.verified || false}

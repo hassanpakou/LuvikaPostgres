@@ -3,81 +3,69 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-// 🔹 ✅ CORRECTION : signature élargie
 export async function POST(
   request: Request,
-  context: { params: Promise<{ id: string; action: string }> } // ← changé ici
+  context: { params: Promise<{ id: string; action: string }> }
 ) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    {
+      cookies: {
+        get(name) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
   );
 
   const { data : { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
-    console.warn('⚠️ Accès refusé à upgrade-requests (non-admin)');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
 
-  // 🔹 ✅ Extraction + validation runtime
   const { id, action } = await context.params;
-  if (action !== 'approved' && action !== 'rejected') {
+
+  if (!['approved', 'rejected'].includes(action)) {
     return NextResponse.json({ error: 'Action invalide' }, { status: 400 });
   }
 
   try {
-    const { data : upgradeReq, error: fetchError } = await supabase
+    const { data : upgradeReq } = await supabase
       .from('upgrade_requests')
-      .select('id, user_id, status')
+      .select('id, profile_id, status')
       .eq('id', id)
       .single();
 
-    if (fetchError || !upgradeReq) {
-      console.error('❌ Demande introuvable:', id, fetchError?.message);
-      return NextResponse.json({ error: 'Demande non trouvée' }, { status: 404 });
+    if (!upgradeReq || upgradeReq.status !== 'pending') {
+      return NextResponse.json({ error: 'Demande introuvable ou déjà traitée' }, { status: 400 });
     }
 
-    if (upgradeReq.status !== 'pending') {
-      return NextResponse.json({ error: 'Statut incompatible' }, { status: 400 });
-    }
-
-    const updatePayload: Record<string, any> = { status: action };
-
-    try {
-      const { data : cols, error } = await supabase
-        .rpc('get_columns', { table_name: 'upgrade_requests' });
-
-      if (!error && Array.isArray(cols)) {
-        const columnNames = cols.map((c: any) => c.column_name);
-        if (columnNames.includes('processed_at')) {
-          updatePayload.processed_at = new Date().toISOString();
-        }
-        if (columnNames.includes('admin_notes')) {
-          updatePayload.admin_notes = `Traité par ${user.email} (${action})`;
-        }
-      }
-    } catch (colCheckErr) {
-      console.warn('🔍 Échec détection colonnes — fallback basique');
-    }
-
-    const { error: updateError } = await supabase
+    const { error: updateErr } = await supabase
       .from('upgrade_requests')
-      .update(updatePayload)
+      .update({
+        status: action,
+        processed_at: new Date().toISOString(),
+        admin_notes: `Traité par ${user.email} — ${action === 'approved' ? 'Approuvé' : 'Rejeté'}`,
+      })
       .eq('id', id);
 
-    if (updateError) throw updateError;
+    if (updateErr) throw updateErr;
 
     if (action === 'approved') {
-      const { error: planError } = await supabase
-        .from('profiles')
-        .update({ plan: 'premium' })
-        .eq('id', upgradeReq.user_id);
+      // 🔹 ✅ Paramètre CORRECT : profile_uuid
+      const { error: rpcError } = await supabase
+        .rpc('admin_set_premium_plan', { 
+          profile_uuid: upgradeReq.profile_id  // ✅ nom exact du paramètre
+        });
 
-      if (planError) {
-        console.error('⚠️ Échec mise à jour profil (plan):', planError.message);
+      if (rpcError) {
+        console.error('❌ Échec admin_set_premium_plan:', rpcError);
+        throw rpcError;
       }
+
+      console.log(`✅ Profil ${upgradeReq.profile_id} mis à jour en Premium`);
     }
 
     console.log(`✅ Demande ${id} ${action} par ${user.email}`);
@@ -85,7 +73,7 @@ export async function POST(
   } catch (error: any) {
     console.error('💥 Erreur upgrade-requests:', error);
     return NextResponse.json(
-      { error: error.message || 'Internal Server Error' },
+      { error: error.message || 'Erreur serveur interne' },
       { status: 500 }
     );
   }

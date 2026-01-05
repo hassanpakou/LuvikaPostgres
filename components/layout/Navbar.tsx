@@ -462,7 +462,7 @@ export default function Navbar() {
                     >
                       <span className="relative z-10 flex items-center gap-1">
                         
-                        DASHBOARD ADMIN
+                        TABLEAU DE BORD
                       </span>
                       <div className="absolute inset-0 animated-bg-admin rounded-xl blur-sm opacity-70 -z-10" />
                     </Button>
@@ -479,7 +479,7 @@ export default function Navbar() {
                     >
                       <span className="relative z-10 flex items-center gap-1">
                       
-                        DASHBOARD USER
+                        TABLEAU DE BORD
                       </span>
                       <div className="absolute inset-0 animated-bg-user rounded-xl blur-sm opacity-70 -z-10" />
                     </Button>
