@@ -12,12 +12,31 @@
       "desc": "Share your profile with a tap or scan"
     },
     "stats": {
-      "title": "Analytics",
-      "desc": "Scans, visits, check-ins — all tracked"
+      "title": "Statistics",
+      "desc": "Scans, visits, attendance — everything is tracked"
     },
     "multi": {
-      "title": "Multi-cards",
+      "title": "Multi-Cards",
       "desc": "Professional? Manage multiple NFC cards"
+    },
+    "events": {
+      "title": "Events & QR Codes",
+      "create": {
+        "title": "Create Events",
+        "desc": "Organize conferences, webinars, or trade shows and centralize all information."
+      },
+      "qr": {
+        "title": "Generate QR Codes",
+        "desc": "Quickly share cards, profiles, or events via custom QR codes."
+      },
+      "analytics": {
+        "title": "Advanced Analytics",
+        "desc": "Track views, interactions, and performance of your cards and events."
+      }
+    },
+    "superpro": {
+      "title": "Super Pro Accounts & Online Sales",
+      "desc": "Super Pro accounts allow businesses to sell products and services directly from their digital card. Manage multiple cards, track sales and interactions, and share offers via QR codes to reach your customers everywhere."
     }
   },
   "event": {

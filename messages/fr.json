@@ -18,6 +18,25 @@
     "multi": {
       "title": "Multi-cartes",
       "desc": "Professionnel ? Gérez plusieurs cartes NFC"
+    },
+    "events": {
+      "title": "Événements et QR Codes",
+      "create": {
+        "title": "Créer des événements",
+        "desc": "Organisez vos salons, conférences ou webinaires et centralisez toutes les informations."
+      },
+      "qr": {
+        "title": "Génération de QR Codes",
+        "desc": "Partage rapide de cartes, profils ou événements via QR codes personnalisés."
+      },
+      "analytics": {
+        "title": "Analytics avancées",
+        "desc": "Suivez les vues, interactions et performances de vos cartes et événements."
+      }
+    },
+    "superpro": {
+      "title": "Comptes Super Pro et Vente en Ligne",
+      "desc": "Les comptes Super Pro permettent aux entreprises de vendre leurs produits et services directement depuis leur carte digitale. Gérez plusieurs cartes, suivez vos ventes et interactions, et partagez vos offres via QR codes pour toucher vos clients partout."
     }
   },
   "event": {

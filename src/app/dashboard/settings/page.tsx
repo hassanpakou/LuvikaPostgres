@@ -22,6 +22,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { createClient } from '@/src/lib/supabase/client';
+import { supabase } from '@/lib/supabase';
 
 // 🔹 Types (mis à jour — ton version finale)
 type Profile = {
@@ -262,7 +263,18 @@ const removeSkill = (index: number) => {
     if (!profile) return;
     setSaving(true);
     setMessage(null);
+// 🔹 Dans handleSave(), après `if (error) throw error;` :
+const { data: updatedProfile } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', profile.id)
+  .single();
 
+if (updatedProfile) {
+  setProfile(updatedProfile); // ✅ Rafraîchit le profil local immédiatement
+}
+
+setMessage({ type: 'success', text: t('save_success') });
     try {
       const supabase = createClient();
       const updates = {

@@ -209,105 +209,89 @@ export function HomePageContent() {
   </div>
 </motion.div>
 
-<section
-  id="features"
-  className="relative mt-32 w-full max-w-5xl mx-auto px-4"
->
-  {/* Titre */}
+{/* -------------------- Pourquoi LUVIKA ? -------------------- */}
+<section id="features" className="relative mt-32 w-full max-w-5xl mx-auto px-4">
   <motion.h2
     initial={{ opacity: 0, y: 20 }}
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true }}
     transition={{ duration: 0.6 }}
-    className="
-      text-center
-      text-3xl md:text-4xl
-      font-bold
-      text-white
-      mb-12
-    "
+    className="text-center text-3xl md:text-4xl font-bold text-white mb-12"
   >
     {t('features.title')}
   </motion.h2>
 
-  {/* Grille */}
   <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
     {[
-      {
-        icon: Nfc,
-        title: t('features.nfc.title'),
-        desc: t('features.nfc.desc'),
-        color: 'text-cyan-400',
-      },
-      {
-        icon: BarChart3,
-        title: t('features.stats.title'),
-        desc: t('features.stats.desc'),
-        color: 'text-blue-400',
-      },
-      {
-        icon: Layers,
-        title: t('features.multi.title'),
-        desc: t('features.multi.desc'),
-        color: 'text-emerald-400',
-      },
+      { icon: Nfc, title: t('features.nfc.title'), desc: t('features.nfc.desc'), color: 'text-cyan-400' },
+      { icon: BarChart3, title: t('features.stats.title'), desc: t('features.stats.desc'), color: 'text-blue-400' },
+      { icon: Layers, title: t('features.multi.title'), desc: t('features.multi.desc'), color: 'text-emerald-400' },
     ].map((item, i) => {
       const Icon = item.icon;
-
       return (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.15, duration: 0.6, ease: 'easeOut' }}
-          whileHover={{ y: -6 }}
-          className="
-            group
-            relative
-            glass-border
-            rounded-2xl
-            p-8
-            bg-white/5
-            backdrop-blur-xl
-            transition-all
-            duration-300
-            hover:bg-white/10
-          "
+        <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          transition={{ delay: i * 0.15, duration: 0.6, ease: 'easeOut' }} whileHover={{ y: -6 }}
+          className="group relative glass-border rounded-2xl p-8 bg-white/5 backdrop-blur-xl transition-all duration-300 hover:bg-white/10"
         >
-          {/* Halo */}
           <div className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition pointer-events-none bg-gradient-to-br from-cyan-400/10 via-transparent to-transparent" />
-
-          {/* Icône */}
-          <div
-            className={`
-              mb-5
-              inline-flex
-              items-center
-              justify-center
-              w-12 h-12
-              rounded-xl
-              bg-white/10
-              border border-white/15
-              ${item.color}
-            `}
-          >
+          <div className={`mb-5 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 border border-white/15 ${item.color}`}>
             <Icon className="w-6 h-6" />
           </div>
-
-          {/* Texte */}
-          <h3 className="text-xl font-semibold text-white mb-2">
-            {item.title}
-          </h3>
-
-          <p className="text-sm leading-relaxed text-gray-300">
-            {item.desc}
-          </p>
+          <h3 className="text-xl font-semibold text-white mb-2">{item.title}</h3>
+          <p className="text-sm leading-relaxed text-gray-300">{item.desc}</p>
         </motion.div>
       );
     })}
   </div>
 </section>
+
+{/* -------------------- Événements et QR Codes -------------------- */}
+<section id="events" className="relative mt-32 w-full max-w-5xl mx-auto px-4">
+  <motion.h2 className="text-center text-3xl md:text-4xl font-bold text-white mb-12"
+    initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }}
+  >
+    {t('features.events.title')}
+  </motion.h2>
+
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    {[
+      { icon: ScanLine, title: t('features.events.create.title'), desc: t('features.events.create.desc'), color: "text-cyan-400" },
+      { icon: Nfc, title: t('features.events.qr.title'), desc: t('features.events.qr.desc'), color: "text-blue-400" },
+      { icon: BarChart3, title: t('features.events.analytics.title'), desc: t('features.events.analytics.desc'), color: "text-emerald-400" },
+    ].map((item, i) => {
+      const Icon = item.icon;
+      return (
+        <motion.div key={i} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          transition={{ delay: i * 0.15, duration: 0.6, ease: 'easeOut' }} whileHover={{ y: -6 }}
+          className="group relative glass-border rounded-2xl p-8 bg-white/5 backdrop-blur-xl transition-all duration-300 hover:bg-white/10"
+        >
+          <div className="absolute -inset-px rounded-2xl opacity-0 group-hover:opacity-100 transition pointer-events-none bg-gradient-to-br from-cyan-400/10 via-transparent to-transparent" />
+          <div className={`mb-5 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/10 border border-white/15 ${item.color}`}>
+            <Icon className="w-6 h-6" />
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">{item.title}</h3>
+          <p className="text-sm leading-relaxed text-gray-300">{item.desc}</p>
+        </motion.div>
+      );
+    })}
+  </div>
+</section>
+
+{/* -------------------- Comptes Super Pro / Vente en Ligne -------------------- */}
+<section id="enterprise" className="relative mt-32 w-full max-w-5xl mx-auto px-4 text-center">
+  <motion.h2 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+    transition={{ duration: 0.6 }} className="text-3xl md:text-4xl font-bold text-white mb-8"
+  >
+    {t('features.superpro.title')}
+  </motion.h2>
+
+  <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3, duration: 0.6 }}
+    className="text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10"
+  >
+    {t('features.superpro.desc')}
+  </motion.p>
+</section>
+
 
     </div>
   );

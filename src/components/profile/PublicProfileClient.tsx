@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
@@ -26,7 +27,9 @@ import { Folder, Award } from 'lucide-react';
 import FollowButton from './FollowButton';
 import ActionItem from './ActionItem';
 import ProfileActions from './ProfileActions';
-// 🔹 Types (inchangé — ton version finale)
+import { createClient } from '@/src/lib/supabase/client';
+
+// 🔹 Types
 type Profile = {
   id: string;
   full_name: string;
@@ -79,15 +82,15 @@ type Profile = {
 
 type Props = {
   profile: Profile;
-  followers?: number;
-  following?: number;
-  isOwner?: boolean;
-  isInitiallyFollowing?: boolean;
-  currentUserId?: string | null;
+  followers: number;
+  following: number;
+  isOwner: boolean;
+  isInitiallyFollowing: boolean;
+  currentUserId: string | null;
+  onFollowChange?: (newCount: number, isNowFollowing: boolean) => void;
 };
 
-
-// 🔹 BioToggle (inchangé)
+// 🔹 BioToggle
 const BioToggle = ({ bio }: { bio: string }) => {
   const [expanded, setExpanded] = useState(false);
   const [height, setHeight] = useState<number | 'auto'>('auto');
@@ -112,10 +115,8 @@ const BioToggle = ({ bio }: { bio: string }) => {
     }
   }, [expanded, bio]);
 
-
-
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       <p ref={contentRef} className="absolute opacity-0 pointer-events-none whitespace-pre-line">
         {bio}
       </p>
@@ -165,39 +166,78 @@ const isSectionVisible = (section: string, profile: Profile): boolean => {
   return profile.sections_visibility?.[section] !== false;
 };
 
-// 🔹 Fonction anniversaire
 const isBirthdayToday = (profile: Profile) => {
   if (!profile.birth_day || !profile.birth_month || profile.disable_birthday_icon) return false;
   const today = new Date();
   return today.getDate() === profile.birth_day && today.getMonth() + 1 === profile.birth_month;
 };
 
+const getMonthName = (month: number): string => {
+  const months = ['Jan', 'Fév', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'];
+  return months[month - 1] || '';
+};
+
 export default function PublicProfileClient({
   profile,
-  followers = 0,
-  following = 0,
+  followers: initialFollowers = 0,
+  following: initialFollowing = 0,
   isOwner = false,
   isInitiallyFollowing = false,
   currentUserId = null,
+  onFollowChange,
 }: Props) {
+  const router = useRouter();
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [scansCount, setScansCount] = useState(0);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
+  const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
+  const [followersCount, setFollowersCount] = useState(initialFollowers);
 
+  // 🔹 ✅ Correct useEffect — stable deps
   useEffect(() => {
-  const fetchPortfolio = async () => {
-    const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
-    const { portfolios, certificates } = await res.json();
-    console.log('✅ portfolios:', portfolios); // 🔹
-    console.log('✅ certificates:', certificates); // 🔹
-    setPortfolios(portfolios);
-    setCertificates(certificates);
+    setIsFollowing(isInitiallyFollowing);
+    setFollowersCount(initialFollowers);
+  }, [isInitiallyFollowing, initialFollowers]);
+
+  // 🔹 ✅ handleFollowToggle dans le bon scope
+  const handleFollowToggle = async () => {
+    if (!currentUserId) return router.push('/auth/sign-in');
+
+    const supabase = createClient();
+
+    if (isFollowing) {
+      // Unfollow
+      await supabase
+        .from('follows')
+        .delete()
+        .eq('follower_id', currentUserId)
+        .eq('followed_id', profile.id);
+      onFollowChange?.(followersCount - 1, false);
+    } else {
+      // Follow
+      await supabase
+        .from('follows')
+        .insert({ follower_id: currentUserId, followed_id: profile.id });
+      onFollowChange?.(followersCount + 1, true);
+    }
+
+    setIsFollowing(!isFollowing);
+    setFollowersCount(prev => isFollowing ? prev - 1 : prev + 1);
   };
-  fetchPortfolio();
-}, [profile.id]);
+
+  // 🔹 Effets
+  useEffect(() => {
+    const fetchPortfolio = async () => {
+      const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
+      const { portfolios, certificates } = await res.json();
+      setPortfolios(portfolios);
+      setCertificates(certificates);
+    };
+    fetchPortfolio();
+  }, [profile.id]);
 
   useEffect(() => {
     fetch(`/api/analytics?profile_id=${profile.id}&range=all`)
@@ -235,53 +275,51 @@ export default function PublicProfileClient({
       ? cleanCoverUrl
       : `${baseUrl}/${cleanCoverUrl.replace(/^\/+/, '')}`
     : '/default.png';
-const [bubbles, setBubbles] = useState<Array<{id: number, w: number, h: number, l: number, t: number}>>([]);
-useEffect(() => {
-  // 🔹 Génère côté client uniquement
-  const generated = Array.from({ length: 18 }, (_, i) => ({
-    id: i,
-    w: 6 + Math.random() * 20,
-    h: 6 + Math.random() * 20,
-    l: Math.random() * 100,
-    t: Math.random() * 100,
-  }));
-  setBubbles(generated);
-}, []);
+
+  const [bubbles, setBubbles] = useState<Array<{id: number, w: number, h: number, l: number, t: number}>>([]);
+  useEffect(() => {
+    const generated = Array.from({ length: 18 }, (_, i) => ({
+      id: i,
+      w: 6 + Math.random() * 20,
+      h: 6 + Math.random() * 20,
+      l: Math.random() * 100,
+      t: Math.random() * 100,
+    }));
+    setBubbles(generated);
+  }, []);
 
   return (
     <div className="relative min-h-screen">
-      {/* 🔹 Background animé */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-blue-900/10 to-indigo-900/5"></div>
         <div className="absolute inset-0 overflow-hidden">
           {bubbles.map(bubble => (
-                  <motion.div
-                    key={bubble.id}
-                    className="absolute rounded-full bg-white/5"
-                    style={{
-                      width: `${bubble.w}px`,
-                      height: `${bubble.h}px`,
-                      left: `${bubble.l}%`,
-                      top: `${bubble.t}%`,
-                    }}
-                    animate={{
-                      y: [0, -40, 0],
-                      x: [0, Math.sin(bubble.id) * 30, 0],
-                      scale: [1, 1.1, 1],
-                    }}
-                    transition={{
-                      duration: 8 + bubble.id * 0.7,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                      delay: bubble.id * 0.2,
-                    }}
-                  />
-                ))}
+            <motion.div
+              key={bubble.id}
+              className="absolute rounded-full bg-white/5"
+              style={{
+                width: `${bubble.w}px`,
+                height: `${bubble.h}px`,
+                left: `${bubble.l}%`,
+                top: `${bubble.t}%`,
+              }}
+              animate={{
+                y: [0, -40, 0],
+                x: [0, Math.sin(bubble.id) * 30, 0],
+                scale: [1, 1.1, 1],
+              }}
+              transition={{
+                duration: 8 + bubble.id * 0.7,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: bubble.id * 0.2,
+              }}
+            />
+          ))}
         </div>
       </div>
 
       <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
-        {/* 🔹 En-tête */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -336,15 +374,15 @@ useEffect(() => {
             transition={{ delay: 0.4 }}
           >
             <p className="text-cyan-300 font-mono text-sm flex items-center justify-center gap-1">
-               @{profile.username}
-  {profile.verified && (
-    <img 
-      src="/badge.png" 
-      alt="✅ Vérifié" 
-      className="w-4 h-4 rounded-full"
-      title="Profil vérifié"
-    />
-  )}
+              @{profile.username}
+              {profile.verified && (
+                <img 
+                  src="/badge.png" 
+                  alt="✅ Vérifié" 
+                  className="w-4 h-4 rounded-full"
+                  title="Profil vérifié"
+                />
+              )}
             </p>
             
             <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
@@ -370,7 +408,6 @@ useEffect(() => {
               )}
               {profile.professional_status && (
                 <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
-
                   {profile.professional_status === 'student' && 'Étudiant'}
                   {profile.professional_status === 'employed' && 'En poste'}
                   {profile.professional_status === 'freelance' && 'Freelance'}
@@ -394,7 +431,6 @@ useEffect(() => {
           </motion.div>
         </motion.header>
 
-        {/* 🔹 Stats */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -407,8 +443,8 @@ useEffect(() => {
           <StatBox label="J’aime">
             <GlacialLikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
           </StatBox>
-          <StatBox label="Followers">{followers}</StatBox>
-          {following > 0 && <StatBox label="Suivi(e)s">{following}</StatBox>}
+          <StatBox label="Followers">{followersCount}</StatBox>
+          {initialFollowing > 0 && <StatBox label="Suivi(e)s">{initialFollowing}</StatBox>}
           <StatBox label="Carte NFC">
             <motion.div
               animate={{ 
@@ -429,34 +465,36 @@ useEffect(() => {
           </StatBox>
         </motion.div>
 
-        {/* 🔹 Bouton Suivre */}
-        {!isOwner && (
+        {!isOwner && currentUserId && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7 }}
             className="mt-6 flex justify-center"
           >
-            {currentUserId ? (
-              <FollowButton
-                targetId={profile.id}
-                isInitiallyFollowing={isInitiallyFollowing}
-              />
-            ) : (
-              <Button
-                size="sm"
-                variant="outline"
-                className="flex items-center gap-2 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
-                onClick={() => window.location.href = '/auth/sign-in'}
-              >
-                <UserCheck className="w-4 h-4" />
-                Suivre
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant={isFollowing ? "default" : "outline"}
+              className={`flex items-center gap-2 ${
+                isFollowing 
+                  ? 'bg-red-600 hover:bg-red-500' 
+                  : 'border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10'
+              }`}
+              onClick={handleFollowToggle}
+            >
+              {isFollowing ? (
+                <>
+                  <UserCheck className="w-4 h-4" /> Déjà abonné
+                </>
+              ) : (
+                <>
+                  <UserCheck className="w-4 h-4" /> Suivre
+                </>
+              )}
+            </Button>
           </motion.div>
         )}
 
-        {/* 🔹 Bio courte */}
         {profile.bio_short && (
           <motion.p
             initial={{ opacity: 0 }}
@@ -468,7 +506,6 @@ useEffect(() => {
           </motion.p>
         )}
 
-        {/* 🔹 Identité personnelle compacte */}
         {(profile.birth_day || profile.city || profile.country || profile.availability) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -507,45 +544,42 @@ useEffect(() => {
           </motion.div>
         )}
 
-{/* 🔹 Compétences */}
-{profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 1.0 }}
-    className="mt-6"
-  >
-    <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
-      <div className="flex flex-wrap gap-2">
-        {profile.skills.map((skill, i) => (
-          <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
-            {skill}
-          </Badge>
-        ))}
-      </div>
-    </Section>
-  </motion.div>
-)}
+        {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="mt-6"
+          >
+            <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.map((skill, i) => (
+                  <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </Section>
+          </motion.div>
+        )}
 
-{/* 🔹 ✅ ProfileActions — NOUVEAU BLOC */}
-<motion.div
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 1.1 }}
-  className="mt-6"
->
-  <Section title="Contact rapide" icon={<Send className="text-cyan-400 w-5 h-5" />}>
-    <ProfileActions profile={profile} />
-  </Section>
-</motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+          className="mt-6"
+        >
+          <Section title="Contact rapide" icon={<Send className="text-cyan-400 w-5 h-5" />}>
+            <ProfileActions profile={profile} />
+          </Section>
+        </motion.div>
 
-{/* 🔹 Actions — centrées (existant) */}
-<motion.div
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 1.2 }}
-  className="w-full px-2 mt-8"
->
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="w-full px-2 mt-8"
+        >
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-wrap justify-center gap-3 py-3">
               {isSectionVisible('contact', profile) && profile.email && (
@@ -578,8 +612,6 @@ useEffect(() => {
               {profile.tiktok && (
                 <ActionItem icon={<SiTiktok className="w-5 h-5 text-black" />} label="TikTok" href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`} />
               )}
-              
-              {/* 🔹 vCard classique */}
               <ActionItem
                 icon={<Download className="w-5 h-5 text-purple-400" />}
                 label="vCard"
@@ -594,8 +626,6 @@ useEffect(() => {
                   URL.revokeObjectURL(url);
                 }}
               />
-              
-              {/* 🔹 CV PDF */}
               {profile.cv_url && (
                 <ActionItem
                   icon={<FileText className="w-5 h-5 text-gray-400" />}
@@ -603,8 +633,6 @@ useEffect(() => {
                   href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
                 />
               )}
-              
-              {/* 🔹 Calendly */}
               {profile.calendly && (
                 <ActionItem
                   icon={<Calendar className="w-5 h-5 text-cyan-400" />}
@@ -612,8 +640,6 @@ useEffect(() => {
                   href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
                 />
               )}
-              
-              {/* 🔹 Portfolio */}
               {profile.portfolio_url && (
                 <ActionItem
                   icon={<Folder className="w-5 h-5 text-cyan-400" />}
@@ -627,7 +653,6 @@ useEffect(() => {
 
         <div className="h-8"></div>
 
-        {/* 🔹 Sections — staggered */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -637,7 +662,6 @@ useEffect(() => {
           }}
           className="space-y-6"
         >
-          {/* 🔹 À propos */}
           {profile.bio_long && isSectionVisible('bio', profile) && (
             <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
               <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
@@ -645,71 +669,60 @@ useEffect(() => {
               </Section>
             </motion.div>
           )}
+          {/* 🔹 Projets — rendu conditionnel */}
+{isSectionVisible('portfolio', profile) && (
+  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+    <CollapsibleSection
+      title="Projets"
+      icon={<Folder className="text-cyan-400 w-5 h-5" />}
+      itemCount={portfolios.length}
+      defaultOpen={false}
+    >
+      <PortfolioSection items={portfolios} />
+    </CollapsibleSection>
+  </motion.div>
+)}
 
-          {/* 🔹 Projets */}
-          {isSectionVisible('portfolio', profile) && portfolios.length > 0 && (
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-              <CollapsibleSection
-                title="Projets"
-                icon={<Folder className="text-cyan-400 w-5 h-5" />}
-                itemCount={portfolios.length}
-                defaultOpen={false}
-              >
-                <PortfolioSection items={portfolios} />
-              </CollapsibleSection>
-            </motion.div>
-          )}
-
-          {/* 🔹 Certifications */}
-          {isSectionVisible('certificates', profile) && certificates.length > 0 && (
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-              <CollapsibleSection
-                title="Certifications"
-                icon={<Award className="text-yellow-400 w-5 h-5" />}
-                itemCount={certificates.length}
-                defaultOpen={false}
-              >
-                <CertificatesSection items={certificates} />
-              </CollapsibleSection>
-            </motion.div>
-          )}
-        </motion.div>
+{/* 🔹 Certifications — rendu conditionnel */}
+{isSectionVisible('certificates', profile) && (
+  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+    <CollapsibleSection
+      title="Certifications"
+      icon={<Award className="text-yellow-400 w-5 h-5" />}
+      itemCount={certificates.length}
+      defaultOpen={false}
+    >
+      <CertificatesSection items={certificates} />
+    </CollapsibleSection>
+  </motion.div>
+)}        </motion.div>
 
         <ScanTracker profileId={profile.id} />
 
-        
+        <AnimatePresence>
+          {showQRModal && (
+            <QRModal
+              key="qr-modal"
+              isOpen={showQRModal}
+              onClose={() => setShowQRModal(false)}
+              profileUrl={profileUrl}
+              username={profile.username}
+              shortUrl={shortUrl}
+            />
+          )}
+          {isContactModalOpen && (
+            <ContactModal
+              key="contact-modal"
+              isOpen={isContactModalOpen}
+              onClose={() => setIsContactModalOpen(false)}
+              profileId={profile.id}
+            />
+          )}
+        </AnimatePresence>
       </div>
-
-      {/* 🔹 Modaux */}
-      <AnimatePresence>
-        {showQRModal && (
-          <QRModal
-            key="qr-modal"
-            isOpen={showQRModal}
-            onClose={() => setShowQRModal(false)}
-            profileUrl={profileUrl}
-            username={profile.username}
-            shortUrl={shortUrl}
-          />
-        )}
-        {isContactModalOpen && (
-          <ContactModal
-            key="contact-modal"
-            isOpen={isContactModalOpen}
-            onClose={() => setIsContactModalOpen(false)}
-            profileId={profile.id}
-          />
-        )}
-      </AnimatePresence>
     </div>
   );
 }
-
-// 🔹 Fonctions utilitaires
-const getMonthName = (month: number): string => {
-  const months = ['Jan', 'Fév', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept', 'Oct', 'Nov', 'Déc'];
-  return months[month - 1] || '';
-};
 
 // 🔹 Composants enfants
 const StatBox = ({ label, children }: { label: string; children: React.ReactNode }) => (

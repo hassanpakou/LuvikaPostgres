@@ -7,18 +7,37 @@
     "discover": "Koyeba"
   },
   "features": {
-    "title": "Kosala nini LUVIKA?",
+    "title": "Ndenge nini LUVIKA?",
     "nfc": {
-      "title": "NFC mpe Kôde QR",
-      "desc": "Kokotisa profil wana na mpona to na scan"
+      "title": "NFC & QR Code",
+      "desc": "Sangisa profile na yo na kokata to kokamata"
     },
     "stats": {
-      "title": "Statistiki",
-      "desc": "Scan, visité, bato oyo bakendaka kala — ntina mosusu eza te"
+      "title": "Statistiques",
+      "desc": "Scans, visites, présence — nyonso ezali kolongwa"
     },
     "multi": {
-      "title": "Bakarte mosusu",
-      "desc": "Oyo ekoki kosala? Kobatela bakarte NFC mosusu"
+      "title": "Multi-Cartes",
+      "desc": "Oyo azali professionnel? Gérer ba cartes NFC mingi"
+    },
+    "events": {
+      "title": "Evénements na QR Codes",
+      "create": {
+        "title": "Kokoma évènements",
+        "desc": "Salisa ba salons, conférences to webinaires mpe kokomisa ba informations nyonso"
+      },
+      "qr": {
+        "title": "Kokoma QR Codes",
+        "desc": "Sangisa vite profile, cartes to événements na QR codes oyo esalemi na yo"
+      },
+      "analytics": {
+        "title": "Analytics avancées",
+        "desc": "Talá ba vues, interactions mpe performance ya ba cartes na événements"
+      }
+    },
+    "superpro": {
+      "title": "Comptes Super Pro & Vente en Ligne",
+      "desc": "Comptes Super Pro esalisaka ba entreprises kozwa ba produits na services na carte digitale. Gérer ba cartes mingi, talá ba ventes mpe interactions, mpe sangisa ba offres na QR codes mpo kozwa ba clients na bisika nyonso"
     }
   },
   "event": {
