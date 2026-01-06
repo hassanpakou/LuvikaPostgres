@@ -1,22 +1,22 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Kotonga nini ozala — Karte bizinesi ya NFC ya mpo ya intelligence · Kôde QR · Abonnement · Mikolo",
+  "tagline": "Révèle qui tu es — Profil public · NFC · QR Code · Abonnements · Événements",
   "cta": {
-    "create": "Kokanga profil wana",
-    "discover": "Koyeba"
+    "create": "Créer mon profil",
+    "discover": "Découvrir"
   },
   "features": {
-    "title": "Kosala nini LUVIKA ?",
+    "title": "Pourquoi LUVIKA ?",
     "nfc": {
-      "title": "NFC mpe Kôde QR",
-      "desc": "Kokotisa profil wana na mpona to na scan"
+      "title": "NFC & QR Code",
+      "desc": "Partagez votre profil en un tap ou scan"
     },
     "stats": {
-      "title": "Statistiki",
-      "desc": "Scan, visité, présences — tout est tracé"
+      "title": "Statistiques",
+      "desc": "Scans, visites, présences — tout est tracé"
     },
     "multi": {
-      "title": "Cartes multiples",
+      "title": "Multi-cartes",
       "desc": "Professionnel ? Gérez plusieurs cartes NFC"
     }
   },
@@ -28,7 +28,7 @@
     }
   },
   "dashboard": {
-    "greeting": "Mbote, {name} 👋",
+    "greeting": "Bonjour, {name} 👋",
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
     "export_csv": "Exporter (.csv)",
@@ -39,7 +39,7 @@
     "quick_menu": {
       "visibility": "Visibilité",
       "contact": "Messages",
-      "qr": "Kôde QR",
+      "qr": "QR Code",
       "nfc": "Cartes NFC",
       "report": "Signaler",
       "message": "Message perso",
@@ -87,10 +87,10 @@
       "success_message": "Un administrateur vous contactera sous 24h."
     },
     "qr": {
-      "title": "Kôde QR ya profil",
-      "alt": "Kôde QR po {username}",
-      "instructions": "Scan po kobatela profil wana",
-      "open_link": "Lisaka lien"
+      "title": "QR Code de profil",
+      "alt": "QR Code pour {username}",
+      "instructions": "Scannez pour accéder à votre profil",
+      "open_link": "Ouvrir le lien"
     },
     "nfc": {
       "title": "Cartes NFC ({count})",
@@ -242,6 +242,9 @@
     },
     "signup": {
       "title": "Créer un compte",
+      "identity_step": "1. Identité",
+      "email_step": "3. Adresse email",
+      "security_step": "4. Sécurité",
       "full_name": "Nom complet",
       "full_name_placeholder": "ex: Nestor PHAKU",
       "username": "Nom d’utilisateur (URL)",
@@ -261,7 +264,7 @@
       "privacy": "En continuant, vous acceptez nos",
       "terms": "Conditions d’utilisation",
       "identity_desc": "Commencez par nous dire qui vous êtes.",
-      "email_desc": "Nous allons vous envoyer un code de vérification.",
+      "email_desc": "Nous vous enverrons un lien de confirmation",
       "security_desc": "Choisissez un mot de passe fort. La 2FA est activée par défaut.",
       "code_sent": "✅ Code envoyé ! Vérifiez vos emails (y compris les spams).",
       "invalid_code": "Code invalide ou expiré.",
@@ -286,9 +289,7 @@
       "email_exists": "📧 Vous avez déjà un compte avec cet email. Connectez-vous ou utilisez un autre email.",
       "check_email": "✅ Vérifiez vos emails — un lien de confirmation vous a été envoyé.",
       "choose_plan": "Choisissez votre plan",
-      "plan_desc": "Démarrez gratuitement, passez à Premium pour plus de fonctionnalités",
-      "email_step": "3. Adresse email",
-      "email_desc": "Nous vous enverrons un lien de confirmation"
+      "plan_desc": "Démarrez gratuitement, passez à Premium pour plus de fonctionnalités"
     },
     "reset": {
       "title": "Nouveau mot de passe",
@@ -368,7 +369,13 @@
       "deactivate": "Désactiver",
       "title": "Gestion des abonnements",
       "description": "Activez ou changez le plan d’un utilisateur.",
-      "action": "Gérer les abonnements"
+      "action": "Gérer les abonnements",
+      "edit": "Modifier",
+      "change_plan": "Modifier le plan",
+      "select_plan": "Sélectionner un plan",
+      "expires_help": "Laisser vide pour un abonnement à vie",
+      "updated_success": "Plan mis à jour avec succès",
+      "update_error": "Échec de la mise à jour"
     },
     "nfc": {
       "status": "Statut",
@@ -378,8 +385,17 @@
       "status_values": {
         "active": "Active",
         "lost": "Perdue",
-        "blocked": "Bloquée"
-      }
+        "blocked": "Bloquée",
+        "inactive": "Inactive"
+      },
+      "activated": "Activée le",
+      "assigned_to": "Assignée à",
+      "card_id": "ID Carte",
+      "created_at": "Créée le",
+      "actions": "Actions",
+      "activate": "Activer",
+      "block": "Bloquer",
+      "unassign": "Désassigner"
     },
     "users": {
       "name": "Nom",
@@ -402,7 +418,8 @@
     "plans": {
       "basic": "Basic",
       "premium": "Premium",
-      "enterprise": "Entreprise"
+      "entreprise": "Entreprise",
+      "undefined": "Non défini"
     },
     "actions": {
       "title": "Actions rapides",
@@ -448,22 +465,6 @@
       "title": "Commandes de cartes",
       "subtitle": "Suivez et validez les demandes de cartes physiques.",
       "no_orders": "Aucune commande pour le moment."
-    },
-    "subscription": {
-      "edit": "Modifier",
-      "change_plan": "Modifier le plan",
-      "plan": "Plan",
-      "select_plan": "Sélectionner un plan",
-      "expires": "Expire le",
-      "expires_help": "Laisser vide pour un abonnement à vie",
-      "never": "Jamais",
-      "updated_success": "Plan mis à jour avec succès",
-      "update_error": "Échec de la mise à jour"
-    },
-    "plans": {
-      "basic": "Basic",
-      "premium": "Premium",
-      "entreprise": "Entreprise"
     }
   },
   "navbar": {
@@ -600,7 +601,7 @@
           "dashboard": "Dashboard avancé"
         }
       },
-      "enterprise": {
+      "entreprise": {
         "title": "Entreprise",
         "desc": "Pour équipes & entreprises",
         "popular": "",
@@ -628,7 +629,7 @@
     "cancel": "❌ Échec annulation"
   },
   "common": {
-    "save": "Kobatela",
-    "saving": "Kobatela..."
+    "save": "Enregistrer",
+    "saving": "Enregistrement..."
   }
 }

@@ -1,6 +1,6 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Reveal who you are — Smart NFC business card · QR Code · Subscriptions · Events",
+  "tagline": "Reveal who you are — Smart digital business card with NFC · QR Code · Subscriptions · Events",
   "cta": {
     "create": "Create my profile",
     "discover": "Discover"
@@ -42,16 +42,16 @@
       "qr": "QR Code",
       "nfc": "NFC Cards",
       "report": "Report",
-      "message": "Custom message",
+      "message": "Personal message",
       "orders": "Orders",
       "upgrade": "Upgrade"
     },
     "contact_requests": {
       "title": "Visitor messages",
-      "description": "Allow people viewing your public profile to leave you a message.",
+      "description": "Allow people who view your public profile to leave you a message.",
       "label": "Receive messages",
-      "enabled": "Enabled – visitors can contact you",
-      "disabled": "Disabled – form hidden",
+      "enabled": "Enabled — visitors can contact you",
+      "disabled": "Disabled — form hidden",
       "enable": "Enable",
       "disable": "Disable"
     },
@@ -66,8 +66,8 @@
       "days_plural": "{count} days"
     },
     "orders": {
-      "title": "NFC card orders",
-      "description": "Manage your pending NFC orders.",
+      "title": "Card orders",
+      "description": "Manage your ongoing NFC card orders.",
       "manage": "Manage orders"
     },
     "subscription": {
@@ -81,7 +81,7 @@
       "active": "✅ Active",
       "inactive": "⚠️ Inactive",
       "active_until": "Your plan is active until {date}.",
-      "upgrade_prompt": "Your account is on Freemium. Contact an admin to upgrade.",
+      "upgrade_prompt": "Your account is on Freemium mode. Contact an admin to activate a plan.",
       "request_upgrade": "Request upgrade",
       "success_title": "✅ Success!",
       "success_message": "An admin will contact you within 24h."
@@ -103,10 +103,10 @@
         "inactive": "Inactive"
       },
       "upgrade_required": "⚠️ Premium plan required",
-      "add_card": "Add NFC card"
+      "add_card": "Add an NFC card"
     },
     "stats": {
-      "title": "Engagement Analytics",
+      "title": "Engagement statistics",
       "total_scans": "Total scans",
       "nfc_scans": "NFC scans",
       "qr_scans": "QR scans",
@@ -130,10 +130,10 @@
         "other": "Other (specify)"
       },
       "custom_reason": "Specify reason",
-      "custom_reason_placeholder": "Ex: broken card, printing error...",
+      "custom_reason_placeholder": "e.g., broken card, printing error...",
       "submit_report": "Report card",
       "custom_message": "Custom message",
-      "custom_message_placeholder": "Ex: I'm changing roles, please update my profile...",
+      "custom_message_placeholder": "e.g., I’ve changed roles; please update my profile...",
       "send_message": "Send message"
     },
     "settings": {
@@ -154,13 +154,13 @@
         "title": "Photo & Cover",
         "avatar": "Profile picture",
         "cover": "Cover photo",
-        "upload_avatar": "Change picture",
+        "upload_avatar": "Change photo",
         "upload_cover": "Click to upload cover"
       },
       "personal": {
         "title": "Personal information",
         "full_name": "Full name",
-        "full_name_placeholder": "ex: Hassan M.",
+        "full_name_placeholder": "e.g., Hassan M.",
         "username": "Username",
         "username_placeholder": "your_name",
         "job_title": "Job title",
@@ -168,7 +168,7 @@
         "company": "Company",
         "company_placeholder": "LUVIKA",
         "bio_short": "Short bio",
-        "bio_short_placeholder": "One powerful line",
+        "bio_short_placeholder": "One-punch bio",
         "bio_long": "Full bio",
         "bio_long_placeholder": "Your journey, passions, values..."
       },
@@ -186,7 +186,7 @@
         "title": "Visibility",
         "description": "Choose what appears on your public profile",
         "portfolio_locked": "Unlock portfolio with Premium subscription",
-        "certificates_locked": "Certificates require Premium or Enterprise access"
+        "certificates_locked": "Certificates are reserved for Premium/Enterprise accounts"
       },
       "advanced": {
         "title": "Advanced options",
@@ -201,7 +201,7 @@
   "auth": {
     "welcome": {
       "title": "Welcome back!",
-      "message": "Great to see you on LUVIKA. Ready to create? 🌟"
+      "message": "Glad to see you on LUVIKA again. Ready to create? 🌟"
     },
     "complete": {
       "title": "Complete your profile",
@@ -210,14 +210,14 @@
       "full_name_placeholder": "Nestor Kipampe",
       "username": "Username",
       "username_placeholder": "nestor",
-      "username_hint": "Lowercase letters, numbers, hyphens and underscores only (3-20 chars)",
+      "username_hint": "Lowercase letters, numbers, dashes, underscores only (3–20 chars)",
       "username_available": "This username is available!",
-      "username_taken": "This username is taken",
+      "username_taken": "This username is already taken",
       "username_checking": "Checking...",
       "submit": "Finalize my account",
       "saving": "Saving...",
       "success": "Profile created successfully!",
-      "redirecting": "Redirecting to dashboard...",
+      "redirecting": "Redirecting to your dashboard...",
       "error_full_name_required": "Please enter your full name",
       "error_username_too_short": "Username must be at least 3 characters",
       "error_generic": "An error occurred. Please try again.",
@@ -227,9 +227,9 @@
       "title_identity": "1. Who are you?",
       "desc_identity": "Full name and username (your profile URL)",
       "title_contact": "2. How to reach you?",
-      "desc_contact": "Phone, WhatsApp — all private by default",
+      "desc_contact": "Phone, WhatsApp — private by default",
       "title_bio": "3. Tell us about yourself",
-      "desc_bio": "Job title, company, short bio — customize your card",
+      "desc_bio": "Role, company, short bio — personalize your card",
       "phone": "Phone",
       "whatsapp": "WhatsApp",
       "job_title": "Job title",
@@ -238,12 +238,15 @@
       "skip": "Skip",
       "back": "Back",
       "next": "Next",
-      "finish": "Finish my profile"
+      "finish": "Complete my profile"
     },
     "signup": {
       "title": "Create an account",
+      "identity_step": "1. Identity",
+      "email_step": "3. Email address",
+      "security_step": "4. Security",
       "full_name": "Full name",
-      "full_name_placeholder": "ex: Nestor PHAKU",
+      "full_name_placeholder": "e.g., Nestor PHAKU",
       "username": "Username (URL)",
       "username_hint": "Your profile will be at: {url}",
       "email": "Email",
@@ -251,17 +254,17 @@
       "password_hint": "At least 6 characters",
       "submit": "Sign up",
       "creating": "Creating...",
-      "success": "✅ Account created successfully! You can now log in.",
-      "error_generic": "An error occurred. Try again or contact support.",
+      "success": "✅ Account created! You can now sign in.",
+      "error_generic": "An error occurred. Please retry or contact support.",
       "error_email": "Invalid or already used email.",
       "error_password": "Password too short (min. 6 chars).",
-      "error_username": "Invalid username (letters, numbers, _ or -).",
-      "already_have_account": "Already have an account?",
-      "sign_in": "Log in",
+      "error_username": "Invalid username (letters, numbers, _ or - only).",
+      "already_have_account": "Already a member?",
+      "sign_in": "Sign in",
       "privacy": "By continuing, you agree to our",
       "terms": "Terms of Service",
       "identity_desc": "Start by telling us who you are.",
-      "email_desc": "We’ll send you a verification code.",
+      "email_desc": "We’ll send you a confirmation link.",
       "security_desc": "Choose a strong password. 2FA is enabled by default.",
       "code_sent": "✅ Code sent! Check your inbox (including spam).",
       "invalid_code": "Invalid or expired code.",
@@ -283,12 +286,10 @@
       "error_name": "Name must be at least 2 characters.",
       "error_email_format": "Invalid email address.",
       "username_hint_plain": "Your profile: luvika.me/{username}",
-      "email_exists": "📧 You already have an account with this email. Log in or use another email.",
-      "check_email": "✅ Check your inbox — a confirmation link has been sent.",
+      "email_exists": "📧 You already have an account with this email. Sign in or use another.",
+      "check_email": "✅ Check your email — a confirmation link has been sent.",
       "choose_plan": "Choose your plan",
-      "plan_desc": "Start free, upgrade to Premium for more features",
-      "email_step": "3. Email address",
-      "email_desc": "We’ll send you a confirmation link"
+      "plan_desc": "Start free, upgrade to Premium for more features"
     },
     "reset": {
       "title": "New password",
@@ -297,24 +298,24 @@
       "submit": "Update",
       "verifying": "Verifying link...",
       "invalid_link": "Invalid or expired link.",
-      "error_update": "Failed to update.",
+      "error_update": "Update failed.",
       "success_title": "Password updated!",
-      "success_message": "Your password has been changed successfully."
+      "success_message": "Your password has been successfully changed."
     },
     "signin": {
-      "title": "Login",
+      "title": "Sign in",
       "email": "Email",
       "password": "Password",
       "forgot_password": "Forgot password?",
-      "submit": "Log in",
+      "submit": "Sign in",
       "connecting": "Connecting...",
-      "error_generic": "Unknown error. Please try later.",
-      "error_credentials": "Incorrect email or password.",
+      "error_generic": "Unknown error. Please try again later.",
+      "error_credentials": "Invalid email or password.",
       "error_email": "Invalid email address.",
-      "error_password": "Password required.",
+      "error_password": "Password is required.",
       "no_account": "Not registered yet?",
       "sign_up": "Create an account",
-      "subtitle": "Log in to your LUVIKA account.",
+      "subtitle": "Sign in to your LUVIKA account.",
       "profile_missing": "Your profile is incomplete. Please contact support."
     },
     "forgot_password": {
@@ -345,7 +346,7 @@
   },
   "admin": {
     "title": "💼 Admin Dashboard",
-    "subtitle": "Manage users, subscriptions and NFC cards",
+    "subtitle": "Manage users, subscriptions, and NFC cards",
     "stats": {
       "total_users": "Users",
       "active_subscriptions": "Active subscriptions",
@@ -368,7 +369,13 @@
       "deactivate": "Deactivate",
       "title": "Subscription management",
       "description": "Activate or change a user’s plan.",
-      "action": "Manage subscriptions"
+      "action": "Manage subscriptions",
+      "edit": "Edit",
+      "change_plan": "Change plan",
+      "select_plan": "Select plan",
+      "expires_help": "Leave empty for lifetime subscription",
+      "updated_success": "Plan updated successfully",
+      "update_error": "Update failed"
     },
     "nfc": {
       "status": "Status",
@@ -378,8 +385,17 @@
       "status_values": {
         "active": "Active",
         "lost": "Lost",
-        "blocked": "Blocked"
-      }
+        "blocked": "Blocked",
+        "inactive": "Inactive"
+      },
+      "activated": "Activated on",
+      "assigned_to": "Assigned to",
+      "card_id": "Card ID",
+      "created_at": "Created at",
+      "actions": "Actions",
+      "activate": "Activate",
+      "block": "Block",
+      "unassign": "Unassign"
     },
     "users": {
       "name": "Name",
@@ -391,7 +407,7 @@
     },
     "analytics": {
       "recent_activity": "Recent activity",
-      "coming_soon": "Detailed graphs and analytics coming soon."
+      "coming_soon": "Detailed charts and analytics coming soon."
     },
     "user_selector": {
       "placeholder": "Select a user...",
@@ -402,19 +418,20 @@
     "plans": {
       "basic": "Basic",
       "premium": "Premium",
-      "enterprise": "Enterprise"
+      "entreprise": "Enterprise",
+      "undefined": "Undefined"
     },
     "actions": {
       "title": "Quick actions",
       "welcome_email": {
         "title": "📧 Welcome email",
-        "description": "Send a QR Code email to a new user",
+        "description": "Send a QR Code welcome email to a new user",
         "button": "Send now",
         "sending": "Sending…"
       },
       "email_success": "✅ Email sent successfully!",
-      "email_error": "❌ Email sending failed.",
-      "error_generic": "An error occurred. Please try again."
+      "email_error": "❌ Sending failed.",
+      "error_generic": "An error occurred. Please retry."
     },
     "modules": {
       "subscriptions": {
@@ -424,13 +441,13 @@
         "action": "Manage subscriptions"
       },
       "orders": {
-        "title": "NFC Orders",
-        "description": "Manage physical card orders: validation, shipping, tracking.",
+        "title": "NFC orders",
+        "description": "Manage NFC card orders: validation, shipping, tracking.",
         "action": "View orders"
       },
       "nfc": {
-        "title": "NFC Cards",
-        "description": "Block a lost or inactive card.",
+        "title": "NFC cards",
+        "description": "Block lost or inactive cards.",
         "action": "Supervise cards"
       },
       "users": {
@@ -439,7 +456,7 @@
         "action": "Manage users"
       },
       "analytics": {
-        "title": "Global stats",
+        "title": "Global analytics",
         "description": "Analyze trends and performance.",
         "action": "View analytics"
       }
@@ -448,22 +465,6 @@
       "title": "Card orders",
       "subtitle": "Track and validate physical card requests.",
       "no_orders": "No orders yet."
-    },
-    "subscription": {
-      "edit": "Edit",
-      "change_plan": "Change plan",
-      "plan": "Plan",
-      "select_plan": "Select a plan",
-      "expires": "Expires on",
-      "expires_help": "Leave empty for lifetime subscription",
-      "never": "Never",
-      "updated_success": "Plan updated successfully",
-      "update_error": "Update failed"
-    },
-    "plans": {
-      "basic": "Basic",
-      "premium": "Premium",
-      "entreprise": "Enterprise"
     }
   },
   "navbar": {
@@ -473,23 +474,23 @@
     "about": "About",
     "contact": "Contact",
     "download": "Download",
-    "sign_in": "Login",
+    "sign_in": "Sign in",
     "sign_up": "Sign up",
     "language": "Language",
-    "sign_out": "Logout",
-    "sign_out_confirm_title": "Logout",
-    "sign_out_confirm_message": "Are you sure you want to log out?",
-    "sign_out_confirm_yes": "Yes, logout",
+    "sign_out": "Sign out",
+    "sign_out_confirm_title": "Sign out",
+    "sign_out_confirm_message": "Are you sure you want to sign out?",
+    "sign_out_confirm_yes": "Yes, sign out",
     "sign_out_confirm_no": "Cancel",
     "farewell_title": "Goodbye!",
-    "farewell_message": "Thank you for using LUVIKA. You’ll be missed… 😢",
+    "farewell_message": "Thanks for using LUVIKA. We’ll miss you… 😢",
     "profile_completion": "Profile completion",
     "edit_profile": "Edit profile",
     "completed": "completed"
   },
   "about": {
     "title": "About",
-    "subtitle": "LUVIKA was born from a simple vision: to give meaning back to professional networking, with elegance, security, and African pride.",
+    "subtitle": "LUVIKA was born from a simple vision: to give meaning back to professional networking — with elegance, security, and African pride.",
     "mission": {
       "title": "Our mission",
       "content": "Transform the physical business card into a smart, controllable, secure, and accessible digital identity — especially for African entrepreneurs, developers, and leaders."
@@ -500,7 +501,7 @@
       "accessibility": "Accessibility",
       "accessibility_desc": "A simple, multilingual interface (French, Lingála, English), designed for everyone.",
       "african_pride": "African pride",
-      "african_pride_desc": "A solution designed in Kinshasa, for Africa and the world."
+      "african_pride_desc": "A solution born in Kinshasa, for Africa and the world."
     },
     "team": {
       "title": "Our team",
@@ -510,7 +511,7 @@
   },
   "contact": {
     "title": "Contact",
-    "subtitle": "A question, an idea, a collaboration? We love to connect.",
+    "subtitle": "A question, idea, or collaboration? We love to connect.",
     "address": "Address",
     "email": "Email",
     "phone": "Phone",
@@ -518,7 +519,7 @@
     "name": "Name",
     "name_placeholder": "Your name",
     "message": "Message",
-    "message_placeholder": "Hello, I would like...",
+    "message_placeholder": "Hello, I’d like to...",
     "send": "Send"
   },
   "download": {
@@ -534,7 +535,7 @@
     },
     "step3": {
       "title": "3. Share!",
-      "desc": "Scan → contact saved → connection made."
+      "desc": "Scan → contact saved → connection established."
     },
     "cta_title": "Ready to reveal who you are?",
     "cta_desc": "Start for free — no credit card required.",
@@ -551,18 +552,18 @@
     "blog": "Blog",
     "legal": "Legal",
     "privacy": "Privacy",
-    "terms": "Terms of use",
+    "terms": "Terms of Service",
     "cookies": "Cookie management",
     "tagline": "LUVIKA — Reveal who you are. A smart, African, and secure digital identity.",
-    "copyright": "All rights reserved. Designed in Kinshasa with ❤️."
+    "copyright": "All rights reserved. Crafted in Kinshasa with ❤️."
   },
   "pricing": {
     "title": "Plans & Pricing",
     "billing": {
       "monthly": "Monthly",
       "yearly": "Yearly",
-      "per_month": "/month",
-      "per_year": "/year"
+      "per_month": "/mo",
+      "per_year": "/yr"
     },
     "cta": {
       "choose": "Choose {plan}"
@@ -581,26 +582,26 @@
           "users": "1 user",
           "events": "No events",
           "presence": "Basic visibility",
-          "stats": "Limited stats",
+          "stats": "Limited statistics",
           "roles": "No team roles",
           "dashboard": "Simple dashboard"
         }
       },
       "premium": {
         "title": "Premium",
-        "desc": "For ambitious pros",
+        "desc": "For ambitious professionals",
         "popular": "Most popular",
         "features": {
           "nfc": "Unlimited NFC cards",
           "users": "Up to 5 users",
           "events": "Basic events",
-          "presence": "Priority visibility",
-          "stats": "Advanced stats",
+          "presence": "Enhanced visibility",
+          "stats": "Advanced statistics",
           "roles": "Team roles",
           "dashboard": "Advanced dashboard"
         }
       },
-      "enterprise": {
+      "entreprise": {
         "title": "Enterprise",
         "desc": "For teams & companies",
         "popular": "",
