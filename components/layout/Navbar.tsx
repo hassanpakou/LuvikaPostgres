@@ -660,7 +660,7 @@ export default function Navbar() {
                   >
                     <span className="flex items-center gap-1">
                       <Shield className="h-4 w-4" />
-                      DASHBOARD ADMIN
+                      TABLEAU DE BORD ADMIN
                     </span>
                     <div className="absolute inset-0 animated-bg-admin rounded-xl blur-sm opacity-60 -z-10" />
                   </Button>
@@ -677,7 +677,7 @@ export default function Navbar() {
                   >
                     <span className="flex items-center gap-1">
                       <UserIcon className="h-4 w-4" />
-                      DASHBOARD USER
+                      TABLEAU DE BORD UTILISATEUR
                     </span>
                     <div className="absolute inset-0 animated-bg-user rounded-xl blur-sm opacity-60 -z-10" />
                   </Button>
