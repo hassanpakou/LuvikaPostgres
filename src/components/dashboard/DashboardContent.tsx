@@ -25,6 +25,7 @@ import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import CreateEventForm from '@/src/components/events/CreateEventForm';
 import PortfolioModal from '@/src/components/dashboard/PortfolioModal';
 import CertificatesModal from '@/src/components/dashboard/CertificatesModal'; // ✅ Ajouté
+import EventFormModal from './EventFormModal';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -865,6 +866,7 @@ export default function DashboardContent({
   const [scansCount, setScansCount] = useState(0);
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
   const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false); // ✅ Nouveau
+  const [isEventFormOpen, setIsEventFormOpen] = useState(false);
 
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
@@ -912,15 +914,16 @@ export default function DashboardContent({
 const handleQuickAction = (actionId: string) => {
   if (actionId === 'event') {
     setIsEventModalOpen(true);
+  } else if (actionId === 'event-create') { // ✅ ajout manquant
+    setIsEventFormOpen(true);
   } else if (actionId === 'portfolio') {
     setIsPortfolioModalOpen(true);
-  } else if (actionId === 'certificates') { // ✅ Ajouté
+  } else if (actionId === 'certificates') {
     setIsCertificatesModalOpen(true);
   } else {
     setActiveModal(actionId);
   }
 };
-
   const updateVisibility = (section: string, checked: boolean) => {
     const newVisibility = { ...sectionsVisibility, [section]: checked };
     setSectionsVisibility(newVisibility);
@@ -1071,7 +1074,8 @@ const handleQuickAction = (actionId: string) => {
     { id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-400 to-pink-500' },
     { id: 'followers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
     { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
-    { id: 'event', label: 'Événement', icon: <Calendar size={14} />, color: 'from-amber-500 to-orange-500', disabled: profile.plan === 'freemium' || profile.plan === 'basic',},
+    { id: 'event', label: 'Voir événements', icon: <Calendar size={14} />, color: 'from-indigo-500 to-violet-500', disabled: profile.plan === 'freemium' || profile.plan === 'basic',},
+    { id: 'event-create', label: 'Créer événement', icon: <Plus />, color: 'from-green-500 to-emerald-500' }, // ✅ ajouté
     { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-cyan-500 to-blue-500' },
     { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
     { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
@@ -1174,6 +1178,7 @@ const handleQuickAction = (actionId: string) => {
       </div>
     </motion.div>
   )}
+  
 </AnimatePresence>
       {/* 🔹 ✅ Bouton Messages reçus */}
       {profile.accepts_contact_requests && (
@@ -1369,7 +1374,37 @@ const handleQuickAction = (actionId: string) => {
           )}
         </CardContent>
       </Card>
-
+{/* 🔹 Modal Événements — ajoute ceci */}
+<AnimatePresence>
+{isEventModalOpen && (
+  <motion.div
+    key="event-modal"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 bg-black/40 backdrop-blur flex items-center justify-center p-4"
+    onClick={() => setIsEventModalOpen(false)}
+  >
+    <motion.div
+      initial={{ scale: 0.95, y: 20 }}
+      animate={{ scale: 1, y: 0 }}
+      exit={{ scale: 0.95, y: 20 }}
+      className="glass-border w-full max-w-4xl h-[85vh] overflow-auto rounded-2xl border border-white/15 bg-black/30 backdrop-blur-xl"
+      onClick={e => e.stopPropagation()}
+    >
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-white">📅 Gestion des événements</h2>
+          <Button variant="ghost" size="sm" onClick={() => setIsEventModalOpen(false)}>
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        <EventAttendeesSection plan={profile.plan ?? null} />
+      </div>
+    </motion.div>
+  </motion.div>
+)}
+</AnimatePresence>
       {/* 🔹 ✅ Modaux — TOUTES les clés ajoutées */}
 <AnimatePresence>
   {activeModal === 'visibility' && (
@@ -1470,6 +1505,15 @@ const handleQuickAction = (actionId: string) => {
       onClose={closeModal}
     />
   )}
+  {/* 🔹 Modal création */}
+<EventFormModal 
+  isOpen={isEventFormOpen} 
+  onClose={() => setIsEventFormOpen(false)}
+  onEventCreated={(eventId) => {
+    // 🔹 Optionnel : recharge la liste ou ouvre le modal événements
+    setIsEventModalOpen(true);
+  }}
+/>
   {activeModal === 'followers' && (
     <FollowersModal
       key="modal-followers"

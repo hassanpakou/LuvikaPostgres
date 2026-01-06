@@ -1,13 +1,14 @@
-// src/app/events/[id]/check-in/page.tsx
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import CheckInClient from '../../../../components/events/CheckInClient';
+import CheckInClient from '@/src/components/events/CheckInClient'; // ✅ chemin relatif corrigé
+import { X, Lock, Clock } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 export default async function EventCheckInPage({ 
   params 
 }: { 
-  params: { id: string };
+  params: { id: string }; 
 }) {
   const eventId = params.id;
 
@@ -15,22 +16,79 @@ export default async function EventCheckInPage({
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    {
+      cookies: {
+        // 🔹 ✅ NOUVELLE API — seulement getAll + setAll
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set({ name, value, ...options });
+            });
+          } catch (error) {
+            // En SSR, setAll peut échouer après le stream → safe to ignore
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('⚠️ setAll ignored in SSR (streaming started)');
+            }
+          }
+        },
+      },
+    }
   );
 
-  // 🔐 Récupère l'événement côté serveur
-const { data: {  event } } = await supabase
+  const { data : event } = await supabase
     .from('events')
-    .select('*')
+    .select('id, title, starts_at, ends_at, is_public')
     .eq('id', eventId)
     .single();
 
   if (!event) notFound();
 
-  // 🔐 Récupère la session
-const { data: { session } } = await supabase.auth.getSession();
-  const isOrganizer = session?.user.id === event.user_id;
+  const now = new Date();
+  const startsAt = new Date(event.starts_at);
+  const endsAt = new Date(event.ends_at);
 
-  // ✅ Passe uniquement des données sérialisables
-  return <CheckInClient eventId={eventId} isOrganizer={isOrganizer} />;
+  if (!event.is_public) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        <Card className="glass-border p-8 text-center max-w-md">
+          <Lock className="w-12 h-12 mx-auto text-amber-400 mb-4" />
+          <h2 className="text-xl font-bold mb-2">Accès privé</h2>
+          <p className="text-gray-300">Cet événement est réservé aux invités.</p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (now < startsAt) {
+    const diff = Math.ceil((startsAt.getTime() - now.getTime()) / 60000);
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        <Card className="glass-border p-8 text-center max-w-md">
+          <Clock className="w-12 h-12 mx-auto text-blue-400 mb-4 animate-pulse" />
+          <h2 className="text-xl font-bold mb-2">⏳ Bientôt !</h2>
+          <p className="text-gray-300">
+            L’événement « {event.title} » commence dans <span className="text-cyan-300 font-bold">{diff} min</span>.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  if (now > endsAt) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        <Card className="glass-border p-8 text-center max-w-md">
+          <X className="w-12 h-12 mx-auto text-red-400 mb-4" />
+          <h2 className="text-xl font-bold mb-2">Événement terminé</h2>
+          <p className="text-gray-300">Merci d’être venu(e) !</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // ✅ OK → on rend le client
+  return <CheckInClient eventId={eventId} isOrganizer={false} />;
 }

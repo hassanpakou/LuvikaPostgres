@@ -1,12 +1,13 @@
-// src/components/dashboard/EventAttendeesSection.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, User, Clock, MapPin } from 'lucide-react';
+import { Calendar, User, Clock, MapPin, QrCode } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { createClient } from '@/src/lib/supabase/client';
+import QRModal from '@/src/components/profile/QRModal'; // ✅ Assure-toi que ce composant existe
 
 type Event = {
   id: string;
@@ -15,6 +16,7 @@ type Event = {
   starts_at: string;
   ends_at: string;
   attendee_count: number;
+  qr_code_url?: string; // ✅ ajouté (optionnel)
 };
 
 type Attendee = {
@@ -30,6 +32,9 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [attendees, setAttendees] = useState<Attendee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showQRModal, setShowQRModal] = useState(false); // ✅ Ajouté
+
+  const cleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -44,18 +49,53 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         setLoading(false);
       }
     };
+
     if (!isFreePlan) {
       fetchEvents();
     }
+
+    return () => {
+      if (cleanupRef.current) cleanupRef.current();
+    };
   }, [isFreePlan]);
 
   const loadAttendees = async (event: Event) => {
     setSelectedEvent(event);
     try {
-      const res = await fetch(`/api/events/${event.id}/attendees`);
-      if (!res.ok) throw new Error('API error');
-      const { attendees } = await res.json();
-      setAttendees(attendees);
+      const supabase = createClient();
+
+      const { data: attendeesData, error: fetchError } = await supabase
+        .from('event_attendees')
+        .select('*')
+        .eq('event_id', event.id)
+        .order('scanned_at', { ascending: false });
+
+      if (fetchError) throw fetchError;
+      setAttendees(attendeesData || []);
+
+      const channel = supabase
+        .channel(`event-${event.id}-attendees`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'event_attendees',
+          filter: `event_id=eq.${event.id}`,
+        }, (payload) => {
+          setAttendees(prev => [payload.new as Attendee, ...prev]);
+          setEvents(prev => prev.map(e =>
+            e.id === event.id
+              ? { ...e, attendee_count: (e.attendee_count || 0) + 1 }
+              : e
+          ));
+        })
+        .subscribe();
+
+      const cleanup = () => {
+        if (channel) supabase.removeChannel(channel);
+      };
+
+      if (cleanupRef.current) cleanupRef.current();
+      cleanupRef.current = cleanup;
     } catch (err) {
       console.error('❌ Failed to load attendees', err);
     }
@@ -63,7 +103,6 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
 
   const now = new Date();
 
-  // 🔹 ✅ Freemium → widget upgrade
   if (isFreePlan) {
     return (
       <Card className="glass-border bg-gradient-to-br from-gray-900/50 to-amber-900/10 border border-white/10">
@@ -111,7 +150,6 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
     );
   }
 
-  // 🔹 ✅ Chargement
   if (loading) {
     return (
       <Card className="glass-border bg-transparent border-white/10">
@@ -128,7 +166,6 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
     );
   }
 
-  // 🔹 ✅ Contenu principal
   return (
     <Card className="glass-border bg-transparent border-white/10">
       <CardHeader>
@@ -154,7 +191,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
 
                 return (
                   <motion.div
-                    key={event.id} // ✅ UNIQUE
+                    key={event.id}
                     whileHover={{ y: -2 }}
                     className={`glass-border p-4 rounded-xl cursor-pointer ${
                       selectedEvent?.id === event.id
@@ -191,6 +228,20 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
                     <div className="mt-2 flex items-center gap-1.5">
                       <User className="w-3.5 h-3.5 text-cyan-400" />
                       <span className="text-sm text-cyan-300">{event.attendee_count} présents</span>
+                      {/* 🔹 ✅ Bouton QR — déplacé ici */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEvent(event);
+                          setShowQRModal(true);
+                        }}
+                        title="Voir QR"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </Button>
                     </div>
                   </motion.div>
                 );
@@ -209,7 +260,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
                   <ul className="space-y-2">
                     {attendees.map(att => (
                       <li
-                        key={att.id || `${att.name}-${att.scanned_at}`} // ✅ UNIQUE
+                        key={att.id || `${att.name}-${att.scanned_at}`}
                         className="flex items-center justify-between p-3 glass-border rounded-lg"
                       >
                         <div>
@@ -233,6 +284,18 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
           </div>
         )}
       </CardContent>
+
+      {/* 🔹 ✅ Modal QR — intégré */}
+      <QRModal
+        isOpen={showQRModal}
+        onClose={() => setShowQRModal(false)}
+        profileUrl={
+          selectedEvent?.qr_code_url ||
+          `https://luvika.vercel.app/events/${selectedEvent?.id}/check-in` ||
+          ''
+        }
+        username={selectedEvent?.name || 'Événement'}
+      />
     </Card>
   );
 }

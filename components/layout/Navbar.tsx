@@ -785,11 +785,7 @@ export default function Navbar() {
                       {t('navbar.sign_in')}
                     </Button>
                   </Link>
-                  <Link href="/auth/sign-up" onClick={() => setMobileMenuOpen(false)}>
-                    <Button className="w-full h-10 text-sm rounded-xl">
-                      {t('navbar.sign_up')}
-                    </Button>
-                  </Link>
+  
                 </>
               )}
             </div>
