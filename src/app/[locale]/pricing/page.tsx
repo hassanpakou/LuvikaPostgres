@@ -1,3 +1,4 @@
+// src/app/[locale]/pricing/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import PricingPlans from '../../../components/pricing/PricingPlans';
@@ -14,7 +15,7 @@ export default async function PricingPage({
 
   const freemiumTitle = t('plans.freemium.title');
   const premiumTitle = t('plans.premium.title');
-  const enterpriseTitle = t('plans.enterprise.title');
+  const entrepriseTitle = t('plans.entreprise.title'); // ← "entreprise" avec "s"
 
   return (
     <div className="min-h-screen py-16">
@@ -28,13 +29,13 @@ export default async function PricingPage({
           ctaChoose={{
             freemium: t('cta.choose', { plan: freemiumTitle }),
             premium: t('cta.choose', { plan: premiumTitle }),
-            enterprise: t('cta.choose', { plan: enterpriseTitle }),
+            entreprise: t('cta.choose', { plan: entrepriseTitle }), // ← même clé
           }}
           customPlan={t('footer.custom_plan')}
           contactUs={t('footer.contact_us')}
-          plans={[  // ✅ CHANGÉ : 'plan' → 'plans' (avec 's')
+          plans={[
             {
-              key: 'freemium',
+              key: 'freemium' as const,
               title: freemiumTitle,
               desc: t('plans.freemium.desc'),
               features: [
@@ -50,7 +51,7 @@ export default async function PricingPage({
               price: { mensuel: 0, annuel: 0 },
             },
             {
-              key: 'premium',
+              key: 'premium' as const,
               title: premiumTitle,
               desc: t('plans.premium.desc'),
               features: [
@@ -66,17 +67,17 @@ export default async function PricingPage({
               price: { mensuel: 12, annuel: 120 },
             },
             {
-              key: 'enterprise',
-              title: enterpriseTitle,
-              desc: t('plans.enterprise.desc'),
+              key: 'entreprise' as const, // ← "entreprise" + as const
+              title: entrepriseTitle,
+              desc: t('plans.entreprise.desc'), // ← "entreprise"
               features: [
-                t('plans.enterprise.features.nfc'),
-                t('plans.enterprise.features.users'),
-                t('plans.enterprise.features.events'),
-                t('plans.enterprise.features.presence'),
-                t('plans.enterprise.features.stats'),
-                t('plans.enterprise.features.roles'),
-                t('plans.enterprise.features.dashboard'),
+                t('plans.entreprise.features.nfc'),
+                t('plans.entreprise.features.users'),
+                t('plans.entreprise.features.events'),
+                t('plans.entreprise.features.presence'),
+                t('plans.entreprise.features.stats'),
+                t('plans.entreprise.features.roles'),
+                t('plans.entreprise.features.dashboard'),
               ],
               badge: '',
               price: { mensuel: 39, annuel: 390 },

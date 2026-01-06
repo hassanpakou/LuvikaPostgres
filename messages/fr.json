@@ -1,6 +1,6 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Révèle qui tu es — Profil public · NFC · QR Code · Abonnements · Événements",
+  "tagline": "Révèle qui tu es — Identité professionnelle digitale · NFC · QR Code · Abonnements · Vente en ligne · Événements",
   "cta": {
     "create": "Créer mon profil",
     "discover": "Découvrir"
@@ -76,7 +76,7 @@
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "enterprise": "Entreprise"
+        "entreprise": "Entreprise"
       },
       "active": "✅ Actif",
       "inactive": "⚠️ Inactif",
@@ -486,7 +486,8 @@
     "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢",
     "profile_completion": "Complétion du profil",
     "edit_profile": "Modifier le profil",
-    "completed": "complété"
+    "completed": "complété",
+    "view_public_profile": "Voir mon profil public"
   },
   "about": {
     "title": "À propos",
@@ -576,7 +577,7 @@
       "freemium": {
         "title": "Freemium",
         "desc": "Pour commencer",
-        "popular": "",
+        "popular": "Le plus populaire",
         "features": {
           "nfc": "1 carte NFC",
           "users": "1 utilisateur",

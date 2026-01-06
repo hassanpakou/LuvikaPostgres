@@ -254,7 +254,7 @@ export default function SignInPage() {
 
                   {/* ✕ Fermer */}
                   <button
-                    onClick={closeWelcomeModal}
+                    onClick={closeWelcomeModal}  aria-label="Close welcome modal"
                     className="absolute top-4 right-4 text-gray-300 hover:text-white z-10"
                   >
                     <X className="h-5 w-5" />

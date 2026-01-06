@@ -1,4 +1,3 @@
-// src/components/pricing/PricingPlans.tsx
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
@@ -10,15 +9,15 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-// ✅ Singulier + features + price ajoutés
+// 🔹 ✅ CORRIGÉ : 'entreprise' au lieu de 'entreprise'
 type Plan = {
-  key: 'freemium' | 'premium' | 'enterprise'; // ← adapté à ton page.tsx
+  key: 'freemium' | 'premium' | 'entreprise'; // ✅ Cohérent avec fr.json
   title: string;
   desc: string;
-  features: string[];        // ← obligatoire
+  features: string[];
   badge?: string;
   highlight?: boolean;
-  price: { mensuel: number; annuel: number }; // ← obligatoire
+  price: { mensuel: number; annuel: number };
 };
 
 type Profile = {
@@ -28,7 +27,6 @@ type Profile = {
   price: { usd: number; cdf: number; cfa: number; kwz: number };
 };
 
-// ✅ Ajout de `plans: Plan[]` dans les props
 export default function PricingPlans({
   title,
   billingMonthly,
@@ -38,7 +36,7 @@ export default function PricingPlans({
   ctaChoose,
   customPlan,
   contactUs,
-  plans, // ← reçu en props
+  plans,
 }: {
   title: string;
   billingMonthly: string;
@@ -48,13 +46,12 @@ export default function PricingPlans({
   ctaChoose: Record<string, string>;
   customPlan: string;
   contactUs: string;
-  plans: Plan[]; // ← typé
+  plans: Plan[];
 }) {
   const { scrollYProgress } = useScroll();
   const [currency, setCurrency] = useState<'usd' | 'cdf' | 'cfa' | 'kwz'>('usd');
   const [activeTab, setActiveTab] = useState<'profiles' | 'logic'>('profiles');
 
-  // ✅ Profils professionnels (inchangés)
   const profiles: Profile[] = [
     { id: 'student', name: 'Étudiant', icon: <GraduationCap className="w-4 h-4" />, price: { usd: 1.5, cdf: 3300, cfa: 900, kwz: 1275 } },
     { id: 'employee', name: 'Employé', icon: <Briefcase className="w-4 h-4" />, price: { usd: 2, cdf: 4400, cfa: 1200, kwz: 1700 } },
@@ -66,7 +63,6 @@ export default function PricingPlans({
 
   return (
     <section className="py-10 px-4 max-w-6xl mx-auto">
-      {/* Header LUVIKA */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -85,7 +81,6 @@ export default function PricingPlans({
         <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
       </motion.div>
 
-      {/* Toggle devises */}
       <div className="flex justify-center mb-10">
         <div className="inline-flex bg-white/5 backdrop-blur border border-white/10 rounded-lg p-1">
           {(['usd', 'cdf', 'cfa', 'kwz'] as const).map((cur) => (
@@ -104,16 +99,18 @@ export default function PricingPlans({
         </div>
       </div>
 
-      {/* ✅ Utilise `plans` reçu en props */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-12">
         {plans.map((plan, idx) => {
           const Icon = idx === 0 ? ShieldCheck : idx === 1 ? Crown : Building;
+          
+          // 🔹 ✅ 'entreprise' ajouté ici
           const colors = {
             freemium: { bg: 'bg-gray-800/30', border: 'border-gray-500/30', text: 'text-gray-300', primary: 'text-gray-400' },
             premium: { bg: 'bg-cyan-900/20', border: 'border-cyan-400/40 ring-1 ring-cyan-400/20', text: 'text-white', primary: 'text-cyan-300' },
-            enterprise: { bg: 'bg-purple-900/20', border: 'border-purple-400/40', text: 'text-white', primary: 'text-purple-300' },
+            entreprise: { bg: 'bg-purple-900/20', border: 'border-purple-400/40', text: 'text-white', primary: 'text-purple-300' }, // ✅
           };
-          // ✅ Mapping avec 'freemium', 'premium', 'enterprise'
+
+          // 🔹 ✅ 'entreprise' dans le mapping
           const color = colors[plan.key as keyof typeof colors] || colors.freemium;
           const isHighlighted = plan.key === 'premium';
 
@@ -143,7 +140,6 @@ export default function PricingPlans({
               
               <p className="text-xs text-gray-400 mb-2">{plan.desc}</p>
 
-              {/* ✅ Afficher les features */}
               <ul className="space-y-1.5 mb-4">
                 {plan.features.map((feature, i) => (
                   <li key={i} className="flex items-center gap-1.5 text-xs">
@@ -153,7 +149,6 @@ export default function PricingPlans({
                 ))}
               </ul>
 
-              {/* ✅ Prix */}
               <div className="text-center mb-4">
                 <div className="text-2xl font-bold text-white">
                   {plan.price.mensuel === 0 ? 'Gratuit' : `$${plan.price.mensuel}`}
@@ -163,9 +158,8 @@ export default function PricingPlans({
                 </div>
               </div>
 
-              {/* CTA */}
               <Link 
-                href={plan.key === 'enterprise' ? "/contact" : "/auth/sign-up"} 
+                href={plan.key === 'entreprise' ? "/contact" : "/auth/sign-up"} // ✅ 'entreprise'
                 className="block"
               >
                 <motion.button
@@ -188,7 +182,6 @@ export default function PricingPlans({
         })}
       </div>
 
-      {/* Reste identique — Tabbed section + CTA final */}
       <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-5 mb-10">
         <div className="flex gap-4 mb-4">
           <button
@@ -264,7 +257,6 @@ export default function PricingPlans({
         )}
       </div>
 
-      {/* CTA final */}
       <motion.div 
         className="text-center max-w-2xl mx-auto"
         initial={{ opacity: 0 }}

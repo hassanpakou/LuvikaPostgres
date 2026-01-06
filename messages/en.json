@@ -1,6 +1,6 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Reveal who you are — Smart digital business card with NFC · QR Code · Subscriptions · Events",
+  "tagline": "Reveal who you are — Digital professional identity · NFC · QR Code · Subscriptions · Online sales · Events",
   "cta": {
     "create": "Create my profile",
     "discover": "Discover"
@@ -76,7 +76,7 @@
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "enterprise": "Enterprise"
+        "entreprise": "Enterprise"
       },
       "active": "✅ Active",
       "inactive": "⚠️ Inactive",
@@ -486,7 +486,8 @@
     "farewell_message": "Thanks for using LUVIKA. We’ll miss you… 😢",
     "profile_completion": "Profile completion",
     "edit_profile": "Edit profile",
-    "completed": "completed"
+    "completed": "completed",
+    "view_public_profile": "View my public profile"
   },
   "about": {
     "title": "About",

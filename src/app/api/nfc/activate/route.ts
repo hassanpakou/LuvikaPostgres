@@ -1,82 +1,57 @@
-// src/app/api/nfc/activate/route.ts
-// Route réservée à l'admin pour activer une carte NFC
-
+// src/app/api/scans/route.ts
 import { createServerClient } from '@supabase/ssr';
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 
-const ActivateSchema = z.object({
-  card_id: z.string().min(1),
-  user_id: z.string().uuid(),
-});
+import { NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
+  const { profile_id, scan_type } = await request.json();
+
+  if (!profile_id || !scan_type) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
+
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+  );
+
   try {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return req.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              req.cookies.set({ name, value, ...options })
-            );
-          },
-        },
-      }
-    );
-    const { data: { session } } = await supabase.auth.getSession();
+    // 🔹 ✅ RGPD : anonymise l'IP (hash + troncature) — optionnel
+    let anonymizedIp = null;
+const headersList = await headers();
+let ip = headersList.get('x-real-ip') || 
+         headersList.get('x-forwarded-for')?.split(',')[0] || 
+         '127.0.0.1';
 
-    // 🔐 Vérification rôle admin
-    if (!session?.user || session.user.user_metadata?.role !== 'admin') {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+// 🔹 Nettoie l'IP
+ip = ip.trim().replace(/[^0-9a-f.:]/g, '');
+if (!ip || ip === '::1' || ip === '127.0.0.1') ip = '0.0.0.0';    if (ip && ip !== '0.0.0.0') {
+      // Hash + 8 premiers chars → impossible à reverse, mais groupable
+      const hash = require('crypto').createHash('sha256').update(ip).digest('hex');
+      anonymizedIp = hash.substring(0, 8);
     }
 
-    const body = await req.json();
-    const parsed = ActivateSchema.parse(body);
-
-    // Vérifie que l'utilisateur existe
-    const { count } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
-      .eq('id', parsed.user_id);
-
-    if (count === 0) {
-      return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
-    }
-
-    // Insère ou met à jour la carte
+    // 🔹 ✅ Insère le scan
     const { error } = await supabase
-      .from('nfc_cards')
-      .upsert({
-        card_id: parsed.card_id,
-        user_id: parsed.user_id,
-        status: 'active',
-        activated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'card_id', // Met à jour si déjà existante
+      .from('scans')
+      .insert({
+        id: uuidv4(),
+        profile_id,
+        scan_type,
+        ip_anonymized: anonymizedIp, // ✅ stocké, non identifiable
+        created_at: new Date().toISOString(),
       });
 
     if (error) throw error;
 
-    // Log dans admin_actions
-    await supabase.from('admin_actions').insert({
-      admin_id: session.user.id,
-      action: 'activate_nfc_card',
-      target_user_id: parsed.user_id,
-      details: { card_id: parsed.card_id },
-    });
-
-    return NextResponse.json({ success: true, message: 'Carte activée' });
-
-  } catch (err: any) {
-    console.error('Erreur activation NFC:', err);
-    return NextResponse.json(
-      { success: false, error: err.message || 'Erreur inconnue' },
-      { status: 400 }
-    );
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('❌ Scan logging error:', error);
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
   }
 }

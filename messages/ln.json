@@ -1,6 +1,7 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Kotonga nini ozala — Profil ya mokonzi · NFC · Kôde QR · Abonnement · Mikolo",
+  "tagline": "Sangá oyo ozali — Identity professionnelle digitale · NFC · QR Code · Abonnement · Ventes na ligne · Evenements"
+,
   "cta": {
     "create": "Kokanga profil wana",
     "discover": "Koyeba"
@@ -76,7 +77,7 @@
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "enterprise": "Entreprise"
+        "entreprise": "Entreprise"
       },
       "active": "✅ Ekoki",
       "inactive": "⚠️ Ekoki te",
@@ -486,7 +487,8 @@
     "farewell_message": "Merci pe oyokaki LUVIKA. Tosalela yo… 😢",
     "profile_completion": "Kobatela profil",
     "edit_profile": "Kobongola profil",
-    "completed": "ezalaki"
+    "completed": "ezalaki",
+    "view_public_profile": "Tala profil na ngai ya eteni"
   },
   "about": {
     "title": "Na bantu",

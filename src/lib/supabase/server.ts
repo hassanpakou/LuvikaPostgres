@@ -2,49 +2,38 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-// ✅ Pour les Server Components (pages, layouts) — READ-ONLY
 export async function createClientForPage() {
   const cookieStore = await cookies();
-
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        // ✅ SEULEMENT `get` — lecture seule, autorisée dans les pages
-        get(name) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        // ❌ `set` et `remove` supprimés → interdits dans les pages
-      },
-    }
-  );
-}
-
-// ✅ Pour les Route Handlers & Server Actions — FULL ACCESS
-export async function createClientForAction() {
-  const cookieStore = await cookies();
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          cookieStore.delete({ name, ...options });
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              if (name && value !== undefined) {
+                cookieStore.set({ name, value, ...options });
+              }
+            });
+          } catch (error) {
+            // Ignore in Server Components (only setAll in Route Handlers)
+            if (process.env.NODE_ENV === 'development') {
+              console.warn('🍪 setAll ignored in Server Component (safe)');
+            }
+          }
         },
       },
     }
   );
 }
 
-// ✅ Helper pratique pour l’auth (lecture seule)
+// ✅ Identique — on réutilise la même logique partout
+export const createClientForAction = createClientForPage;
+
 export const auth = {
   async getUser() {
     const supabase = await createClientForPage();
