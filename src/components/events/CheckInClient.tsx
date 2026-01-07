@@ -50,7 +50,7 @@ export default function CheckInClient({ eventId, isOrganizer, eventTitle }: Prop
   }, [status, isOrganizer, router]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-gray-900 to-black">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br">
       <Card className="glass-border w-full max-w-md p-6 border border-white/10 bg-white/5 backdrop-blur-xl">
         <div className="mb-5 flex flex-col items-center">
           {status === 'loading' && (
