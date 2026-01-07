@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation'; // ✅ importé
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
@@ -27,9 +27,9 @@ import { Folder, Award } from 'lucide-react';
 import FollowButton from './FollowButton';
 import ActionItem from './ActionItem';
 import ProfileActions from './ProfileActions';
-import { createClient } from '@/src/lib/supabase/client'; // ✅ importé
+import { createClient } from '@/src/lib/supabase/client';
 
-// 🔹 Types (inchangé)
+// 🔹 Types
 type Profile = {
   id: string;
   full_name: string;
@@ -90,7 +90,7 @@ type Props = {
   onFollowChange?: (newCount: number, isNowFollowing: boolean) => void;
 };
 
-// 🔹 BioToggle (inchangé)
+// 🔹 BioToggle
 const BioToggle = ({ bio }: { bio: string }) => {
   const [expanded, setExpanded] = useState(false);
   const [height, setHeight] = useState<number | 'auto'>('auto');
@@ -101,8 +101,6 @@ const BioToggle = ({ bio }: { bio: string }) => {
   const truncated = words.length > 30 
     ? words.slice(0, 30).join(' ') + '…' 
     : bio;
-
-// 🔹 Dans PublicProfileClient.tsx
 
   useEffect(() => {
     if (!contentRef.current || !truncatedRef.current) return;
@@ -118,7 +116,7 @@ const BioToggle = ({ bio }: { bio: string }) => {
   }, [expanded, bio]);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative">
       <p ref={contentRef} className="absolute opacity-0 pointer-events-none whitespace-pre-line">
         {bio}
       </p>
@@ -188,27 +186,27 @@ export default function PublicProfileClient({
   currentUserId = null,
   onFollowChange,
 }: Props) {
-  const router = useRouter(); // ✅ instancié
+  const router = useRouter();
   const [showQRModal, setShowQRModal] = useState(false);
   const [hasLostCard, setHasLostCard] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [scansCount, setScansCount] = useState(0);
   const [portfolios, setPortfolios] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
-
-  // 🔹 ✅ États critiques ajoutés
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
   const [followersCount, setFollowersCount] = useState(initialFollowers);
- useEffect(() => {
+
+  // 🔹 ✅ Correct useEffect — stable deps
+  useEffect(() => {
     setIsFollowing(isInitiallyFollowing);
     setFollowersCount(initialFollowers);
   }, [isInitiallyFollowing, initialFollowers]);
 
-  // 🔹 ✅ Fonction déplacée ici — scope correct
+  // 🔹 ✅ handleFollowToggle dans le bon scope
   const handleFollowToggle = async () => {
     if (!currentUserId) return router.push('/auth/sign-in');
 
-    const supabase = createClient(); // ✅ utilisé
+    const supabase = createClient();
 
     if (isFollowing) {
       // Unfollow
@@ -229,7 +227,8 @@ export default function PublicProfileClient({
     setIsFollowing(!isFollowing);
     setFollowersCount(prev => isFollowing ? prev - 1 : prev + 1);
   };
- // 🔹 Effets inchangés…
+
+  // 🔹 Effets
   useEffect(() => {
     const fetchPortfolio = async () => {
       const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
@@ -291,7 +290,6 @@ export default function PublicProfileClient({
 
   return (
     <div className="relative min-h-screen">
-      {/* Background animé */}
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-blue-900/10 to-indigo-900/5"></div>
         <div className="absolute inset-0 overflow-hidden">
@@ -322,7 +320,6 @@ export default function PublicProfileClient({
       </div>
 
       <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
-        {/* En-tête */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -434,7 +431,6 @@ export default function PublicProfileClient({
           </motion.div>
         </motion.header>
 
-        {/* Stats */}
         <motion.div
           initial="hidden"
           animate="visible"
@@ -469,7 +465,6 @@ export default function PublicProfileClient({
           </StatBox>
         </motion.div>
 
-        {/* Bouton Suivre — utilise handleFollowToggle */}
         {!isOwner && currentUserId && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -500,18 +495,164 @@ export default function PublicProfileClient({
           </motion.div>
         )}
 
-        {/* ... reste du JSX inchangé ... */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed"
-        >
-          {profile.bio_short}
-        </motion.p>
+        {profile.bio_short && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed"
+          >
+            {profile.bio_short}
+          </motion.p>
+        )}
 
-        {/* Sections suivantes inchangées — juste passer followersCount au besoin */}
-        
+        {(profile.birth_day || profile.city || profile.country || profile.availability) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9 }}
+            className="mt-6 flex flex-wrap justify-center gap-4 text-gray-400 text-sm"
+          >
+            {profile.birth_day && profile.birth_month && (
+              <div className="flex items-center gap-1">
+                <Cake className="w-4 h-4" />
+                <span>
+                  {profile.birth_day} {getMonthName(profile.birth_month)}
+                  {!profile.hide_birth_year && profile.birth_year && ` ${profile.birth_year}`}
+                </span>
+              </div>
+            )}
+            {(profile.city || profile.country) && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <span>{[profile.city, profile.country].filter(Boolean).join(', ')}</span>
+              </div>
+            )}
+            {profile.availability && (
+              <div className="flex items-center gap-1">
+                <CheckCircle className={`w-4 h-4 ${
+                  profile.availability === 'available' ? 'text-emerald-400' :
+                  profile.availability === 'unavailable' ? 'text-red-400' : 'text-cyan-400'
+                }`} />
+                <span>
+                  {profile.availability === 'available' && 'Disponible'}
+                  {profile.availability === 'unavailable' && 'Indisponible'}
+                  {profile.availability === 'by_appointment' && 'Sur RDV'}
+                </span>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.0 }}
+            className="mt-6"
+          >
+            <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
+              <div className="flex flex-wrap gap-2">
+                {profile.skills.map((skill, i) => (
+                  <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </Section>
+          </motion.div>
+        )}
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.1 }}
+          className="mt-6"
+        >
+          <Section title="Contact rapide" icon={<Send className="text-cyan-400 w-5 h-5" />}>
+            <ProfileActions profile={profile} />
+          </Section>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.2 }}
+          className="w-full px-2 mt-8"
+        >
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-3 py-3">
+              {isSectionVisible('contact', profile) && profile.email && (
+                <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
+              )}
+              {isSectionVisible('contact', profile) && profile.phone && (
+                <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
+              )}
+              {isSectionVisible('contact', profile) && profile.whatsapp && (
+                <ActionItem icon={<MessageCircle className="w-5 h-5 text-emerald-400" />} label="WhatsApp" href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} />
+              )}
+              {profile.address && (
+                <ActionItem icon={<MapPin className="w-5 h-5 text-amber-400" />} label="Carte" href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} />
+              )}
+              {profile.website && (
+                <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
+              )}
+              {profile.instagram && (
+                <ActionItem icon={<Instagram className="w-5 h-5 text-pink-400" />} label="IG" href={`https://instagram.com/${profile.instagram.trim()}`} />
+              )}
+              {profile.linkedin && (
+                <ActionItem icon={<Linkedin className="w-5 h-5 text-blue-500" />} label="LinkedIn" href={`https://linkedin.com/in/${profile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`} />
+              )}
+              {profile.github && (
+                <ActionItem icon={<Github className="w-5 h-5 text-gray-400" />} label="GitHub" href={`https://github.com/${profile.github.replace(/^https?:\/\//, '')}`} />
+              )}
+              {profile.gitlab && (
+                <ActionItem icon={<Gitlab className="w-5 h-5 text-orange-500" />} label="GitLab" href={`https://gitlab.com/${profile.gitlab.replace(/^https?:\/\//, '')}`} />
+              )}
+              {profile.tiktok && (
+                <ActionItem icon={<SiTiktok className="w-5 h-5 text-black" />} label="TikTok" href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`} />
+              )}
+              <ActionItem
+                icon={<Download className="w-5 h-5 text-purple-400" />}
+                label="vCard"
+                onClick={() => {
+                  const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
+                  const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${profile.username}.vcf`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              />
+              {profile.cv_url && (
+                <ActionItem
+                  icon={<FileText className="w-5 h-5 text-gray-400" />}
+                  label="CV"
+                  href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
+                />
+              )}
+              {profile.calendly && (
+                <ActionItem
+                  icon={<Calendar className="w-5 h-5 text-cyan-400" />}
+                  label="RDV"
+                  href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
+                />
+              )}
+              {profile.portfolio_url && (
+                <ActionItem
+                  icon={<Folder className="w-5 h-5 text-cyan-400" />}
+                  label="Portfolio"
+                  href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
+                />
+              )}
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="h-8"></div>
+
         <motion.div
           initial="hidden"
           animate="visible"
@@ -528,31 +669,33 @@ export default function PublicProfileClient({
               </Section>
             </motion.div>
           )}
-          {isSectionVisible('portfolio', profile) && portfolios.length > 0 && (
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-              <CollapsibleSection
-                title="Projets"
-                icon={<Folder className="text-cyan-400 w-5 h-5" />}
-                itemCount={portfolios.length}
-                defaultOpen={false}
-              >
-                <PortfolioSection items={portfolios} />
-              </CollapsibleSection>
-            </motion.div>
-          )}
-          {isSectionVisible('certificates', profile) && certificates.length > 0 && (
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-              <CollapsibleSection
-                title="Certifications"
-                icon={<Award className="text-yellow-400 w-5 h-5" />}
-                itemCount={certificates.length}
-                defaultOpen={false}
-              >
-                <CertificatesSection items={certificates} />
-              </CollapsibleSection>
-            </motion.div>
-          )}
-        </motion.div>
+          {/* 🔹 Projets — rendu conditionnel */}
+{isSectionVisible('portfolio', profile) && (
+  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+    <CollapsibleSection
+      title="Projets"
+      icon={<Folder className="text-cyan-400 w-5 h-5" />}
+      itemCount={portfolios.length}
+      defaultOpen={false}
+    >
+      <PortfolioSection items={portfolios} />
+    </CollapsibleSection>
+  </motion.div>
+)}
+
+{/* 🔹 Certifications — rendu conditionnel */}
+{isSectionVisible('certificates', profile) && (
+  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
+    <CollapsibleSection
+      title="Certifications"
+      icon={<Award className="text-yellow-400 w-5 h-5" />}
+      itemCount={certificates.length}
+      defaultOpen={false}
+    >
+      <CertificatesSection items={certificates} />
+    </CollapsibleSection>
+  </motion.div>
+)}        </motion.div>
 
         <ScanTracker profileId={profile.id} />
 
@@ -581,7 +724,7 @@ export default function PublicProfileClient({
   );
 }
 
-// 🔹 Composants enfants (inchangés)
+// 🔹 Composants enfants
 const StatBox = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="min-w-[64px] flex flex-col items-center">
     <div className="text-xl font-semibold text-white leading-tight">{children}</div>

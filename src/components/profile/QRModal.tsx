@@ -1,40 +1,40 @@
 // src/components/profile/QRModal.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion'; // ✅ plus besoin de AnimatePresence ici
 import { Button } from '@/components/ui/button';
-import { ExternalLink, QrCode, Copy, Download } from 'lucide-react';
+import { ExternalLink, QrCode, Copy } from 'lucide-react';
 import QRCode from 'qrcode';
-
-type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  profileUrl: string;
-  username: string;
-  shortUrl?: string;
-};
 
 export default function QRModal({
   isOpen,
   onClose,
   profileUrl,
   username,
-  shortUrl,
-}: Props) {
+  shortUrl, // ✅ Ajoute cette ligne
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  profileUrl: string;
+  username: string;
+  shortUrl?: string; // ✅ optionnel
+}) {
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const displayUrl = shortUrl || profileUrl;
 
   useEffect(() => {
     if (isOpen) {
       setQrDataUrl(null);
       setQrError(null);
-      // 🔹 ✅ Génération QR personnalisé (avec logo)
-      generateQRWithLogo(profileUrl)
+      QRCode.toDataURL(profileUrl, {
+        width: 240,
+        margin: 2,
+        color: { dark: '#1e40af', light: '#ffffff' },
+        type: 'image/png',
+      })
         .then(setQrDataUrl)
         .catch(err => {
           console.error('❌ Échec génération QR:', err);
@@ -43,59 +43,17 @@ export default function QRModal({
     }
   }, [isOpen, profileUrl]);
 
-  // 🔹 ✅ Fonction download manquante
-  const downloadQR = () => {
-    if (!qrDataUrl) return;
-    const link = document.createElement('a');
-    link.download = `luvika-${username}-qr.png`;
-    link.href = qrDataUrl;
-    link.click();
-  };
-
-  // 🔹 ✅ Génération avec logo (qr.png)
-  const generateQRWithLogo = async (url: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      QRCode.toCanvas(canvasRef.current!, url, {
-        width: 300,
-        margin: 2,
-        color: { dark: '#1e40af', light: '#ffffff' },
-      }, async (error) => {
-        if (error) return reject(error);
-
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return reject('Canvas context unavailable');
-
-        // 🔹 Dessine le logo central (qr.png)
-        const logo = new Image();
-        logo.crossOrigin = 'anonymous';
-        logo.onload = () => {
-          const size = 60;
-          const x = (canvas.width - size) / 2;
-          const y = (canvas.height - size) / 2;
-          ctx.drawImage(logo, x, y, size, size);
-          resolve(canvas.toDataURL('image/png'));
-        };
-        logo.onerror = () => reject('❌ Logo non chargé');
-        logo.src = '/qr.png'; // ✅ ton image dans /public/qr.png
-      });
-    });
-  };
-
   const copyLink = () => {
     navigator.clipboard.writeText(profileUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // 🔹 ✅ Canvas caché pour la génération
-  if (isOpen) {
-    return (
-      <>
-        {/* 🔹 Canvas caché — obligatoire pour toCanvas */}
-        <canvas ref={canvasRef} width={300} height={300} className="hidden" />
-
-        {/* 🔹 Overlay */}
+  // ✅ Pas de return null — on gère l’affichage via les variants
+  return (
+    <>
+      {/* ✅ Overlay — sans AnimatePresence */}
+      {isOpen && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -106,7 +64,7 @@ export default function QRModal({
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {[...Array(12)].map((_, i) => (
               <motion.div
-                key={`bubble-${i}`}
+                key={`bubble-${i}`} // ✅ clé unique
                 className="absolute w-2 h-2 rounded-full bg-cyan-300/20"
                 style={{
                   left: `${10 + (i * 15) + Math.random() * 20}%`,
@@ -124,8 +82,10 @@ export default function QRModal({
             ))}
           </div>
         </motion.div>
+      )}
 
-        {/* 🔹 Modal */}
+      {/* ✅ Modal — sans AnimatePresence */}
+      {isOpen && (
         <motion.div
           initial={{ scale: 0.9, opacity: 0, y: 40 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -133,6 +93,7 @@ export default function QRModal({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onClick={(e) => e.stopPropagation()}
         >
+          
           <motion.div
             initial={{ rotateY: -30 }}
             animate={{ rotateY: 0 }}
@@ -185,30 +146,27 @@ export default function QRModal({
                   </span>
                 </p>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Button
                     variant="outline"
                     className="flex-1 border-cyan-400/30 text-cyan-200 hover:bg-cyan-500/10"
                     onClick={copyLink}
                   >
                     <Copy className="mr-1.5 h-4 w-4" />
-                    {copied ? '✅ Copié !' : '📋 Copier'}
+                    {copied ? '✅ Copié !' : '📋 Copier le lien'}
                   </Button>
                   <Button
-                    className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-500"
-                    onClick={downloadQR} // ✅ maintenant définie
+                    onClick={() => window.open(profileUrl, '_blank')}
+                    className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600"
                   >
-                    <Download className="w-4 h-4 mr-1" />
-                    Télécharger
+                    🌐 Ouvrir le profil
                   </Button>
                 </div>
               </div>
             </div>
           </motion.div>
         </motion.div>
-      </>
-    );
-  }
-
-  return null; // ✅ Si !isOpen → rien
+      )}
+    </>
+  );
 }
