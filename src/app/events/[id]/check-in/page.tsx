@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import CheckInClient from '@/src/components/events/CheckInClient'; // ✅ chemin relatif corrigé
+import CheckInClient from '@/src/components/events/CheckInClient'; // ✅ chemin court
 import { X, Lock, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
@@ -18,29 +18,20 @@ export default async function EventCheckInPage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        // 🔹 ✅ NOUVELLE API — seulement getAll + setAll
-        getAll() {
-          return cookieStore.getAll();
-        },
+        getAll() { return cookieStore.getAll(); },
         setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set({ name, value, ...options });
-            });
-          } catch (error) {
-            // En SSR, setAll peut échouer après le stream → safe to ignore
-            if (process.env.NODE_ENV === 'development') {
-              console.warn('⚠️ setAll ignored in SSR (streaming started)');
-            }
-          }
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set({ name, value, ...options })
+          );
         },
       },
     }
   );
 
+  // 🔹 ✅ Sélection complète — inclut qr_code_url
   const { data : event } = await supabase
     .from('events')
-    .select('id, title, starts_at, ends_at, is_public')
+    .select('id, title, starts_at, ends_at, is_public, qr_code_url')
     .eq('id', eventId)
     .single();
 
@@ -89,6 +80,10 @@ export default async function EventCheckInPage({
     );
   }
 
-  // ✅ OK → on rend le client
-  return <CheckInClient eventId={eventId} isOrganizer={false} />;
+  // ✅ OK → on rend le client avec eventTitle
+  return <CheckInClient 
+    eventId={eventId} 
+    isOrganizer={false} 
+    eventTitle={event.title} 
+  />;
 }

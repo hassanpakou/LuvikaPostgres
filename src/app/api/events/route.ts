@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { revalidatePath } from 'next/cache';
 
-// 🔹 POST : créer un événement — ✅ CORRIGÉ
+// 🔹 POST : créer un événement
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
@@ -13,36 +13,29 @@ export async function POST(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          // 🔹 ✅ Nouvelle API — seulement getAll + setAll
-          getAll() {
-            return cookieStore.getAll();
-          },
+          getAll() { return cookieStore.getAll(); },
           setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set({ name, value, ...options })
-              );
-            } catch (error) {
-              // Safe to ignore in SSR (streaming already started)
-            }
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set({ name, value, ...options })
+            );
           },
         },
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data : { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
     const body = await request.json();
     const { title, description, location, starts_at, ends_at } = body;
     if (!title || !starts_at) return NextResponse.json({ error: 'Titre et date requis' }, { status: 400 });
 
-    // 🔹 ✅ URL VRAIE — route publique existante
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') || 'https://luvika.vercel.app';
+    // 🔹 ✅ URL CORRECTE — sans espaces, avec `/check-in`
+    const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app').replace(/\s+$/, '').replace(/\/+$/, '');
     const eventId = uuidv4();
-    const qrCodeUrl = `${baseUrl}/events/${eventId}/check-in`; // ✅ /events/xxx/check-in
+    const qrCodeUrl = `${baseUrl}/events/${eventId}/check-in`; // ✅
 
-    const { data, error } = await supabase
+    const { data : event, error } = await supabase
       .from('events')
       .insert({
         id: eventId,
@@ -53,7 +46,6 @@ export async function POST(request: Request) {
         ends_at,
         qr_code_url: qrCodeUrl,
         is_public: true,
-        max_participants: null,
         profile_id: user.id,
       })
       .select()
@@ -61,18 +53,16 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // 🔹 ✅ Rafraîchit le dashboard immédiatement
     revalidatePath('/dashboard', 'page');
     revalidatePath(`/events/${eventId}/check-in`, 'page');
 
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(event, { status: 201 });
   } catch (err: any) {
-    console.error('❌ Création échouée:', err);
-    return NextResponse.json({ error: err.message || 'Échec' }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-// 🔹 GET : lister les événements — ✅ CORRIGÉ
+// 🔹 GET : lister les événements
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -91,13 +81,13 @@ export async function GET() {
       }
     );
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data : { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
     const { data, error } = await supabase
       .from('events')
       .select(`
-        id, title, location, starts_at, ends_at,
+        *,
         attendee_count: event_attendees(count)
       `)
       .eq('profile_id', user.id)
@@ -107,14 +97,13 @@ export async function GET() {
 
     const eventsWithCount = (data || []).map(event => ({
       ...event,
-      attendee_count: Array.isArray(event.attendee_count)
-        ? event.attendee_count[0]?.count || 0
-        : event.attendee_count,
+      attendee_count: event.attendee_count?.count || 0,
+      // 🔹 ✅ Ajout si absent (fallback)
+      qr_code_url: event.qr_code_url || `${process.env.NEXT_PUBLIC_SITE_URL}/events/${event.id}/check-in`,
     }));
 
     return NextResponse.json({ events: eventsWithCount });
   } catch (err: any) {
-    console.error('❌ Liste échouée:', err);
-    return NextResponse.json({ error: err.message || 'Échec' }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
