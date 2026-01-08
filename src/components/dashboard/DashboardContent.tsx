@@ -1110,9 +1110,15 @@ const handleQuickAction = (actionId: string) => {
       {/* En-tête */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            {t('greeting', { name: profile.full_name })}
-          </h1>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white">
+  {(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return t('greeting_morning', { name: profile.full_name });
+    if (hour >= 12 && hour < 17) return t('greeting_afternoon', { name: profile.full_name });
+    if (hour >= 17 && hour < 22) return t('greeting_evening', { name: profile.full_name });
+    return t('greeting_night', { name: profile.full_name });
+  })()}
+</h1>
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <p className="text-gray-400 text-sm sm:text-base">{t('subtitle')}</p>
             <button
