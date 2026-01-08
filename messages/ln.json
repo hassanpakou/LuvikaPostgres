@@ -47,8 +47,11 @@
       "view_participants": "Koyeba bato oyo bakendaka"
     }
   },
-  "dashboard": {
-    "greeting": "Mbote, {name} 👋",
+   "dashboard": {
+  "greeting_morning": "Mbote, {name} 🌞",
+  "greeting_afternoon": "Ndenge, {name} ☀️",
+  "greeting_evening": "Mpoio, {name} 🌙",
+  "greeting_night": "Lobiaki malamu, {name} 🌃",
     "subtitle": "Kobatela identité ya numérique ya intelligence",
     "view_public": "Koluka profil wana ya mokonzi",
     "export_csv": "Kotia (.csv)",
