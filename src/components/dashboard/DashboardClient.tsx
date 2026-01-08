@@ -67,7 +67,7 @@ export default function DashboardClient() {
         .from('profiles')
         .select(`
           *,
-          nfc_cards!inner(*)
+          nfc_cards(*)
         `)
         .eq('id', session.user.id)
         .single();
