@@ -25,6 +25,7 @@ import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import PortfolioModal from '@/src/components/dashboard/PortfolioModal';
 import CertificatesModal from '@/src/components/dashboard/CertificatesModal'; // ✅ Ajouté
 import EventFormModal from './EventFormModal';
+import { createClient } from '@/src/lib/supabase/client';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -533,22 +534,6 @@ const UpgradeModal = ({
   );
 };
 
-const [hasCompany, setHasCompany] = useState(false);
-
-useEffect(() => {
-  const checkCompany = async () => {
-    if (user?.id && subscription.plan === 'entreprise') {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('companies')
-        .select('id')
-        .eq('owner_id', user.id)
-        .single();
-      setHasCompany(!!data);
-    }
-  };
-  checkCompany();
-}, [user?.id, subscription.plan]);
 
 // 🔹 ✅ Modal : QR Code
 const QRModal = ({
@@ -1074,6 +1059,24 @@ const handleUpgradeRequest = async () => {
       alert('❌ Échec.');
     }
   };
+
+
+const [hasCompany, setHasCompany] = useState(false);
+
+useEffect(() => {
+  const checkCompany = async () => {
+    if (user?.id && subscription.plan === 'entreprise') {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('owner_id', user.id)
+        .single();
+      setHasCompany(!!data);
+    }
+  };
+  checkCompany();
+}, [user?.id, subscription.plan]);
 
   useEffect(() => {
   const fetchScans = async () => {
