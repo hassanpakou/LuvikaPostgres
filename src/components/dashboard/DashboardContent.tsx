@@ -953,32 +953,30 @@ const handleQuickAction = (actionId: string) => {
 
 const handleUpgradeRequest = async () => {
   if (!user || !profile) return;
-
   setIsSubmitting(true);
   try {
     let targetPlan = 'premium';
-    let message = 'Demande de passage à Premium envoyée.';
-
-    // 🔹 Si déjà premium → demande entreprise
     if (profile.plan === 'premium') {
       targetPlan = 'entreprise';
-      message = 'Demande de conversion en compte Entreprise envoyée à l’admin.';
     }
 
     const res = await fetch('/api/upgrade-request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        user_id: user.id, 
+      body: JSON.stringify({
+        user_id: user.id,
         profile_id: profile.id,
-        target_plan: targetPlan 
+        target_plan: targetPlan
       }),
     });
 
     if (res.ok) {
       closeModal();
-      alert(message); // ou utilise un toast
-      // Optionnel : refresh le profil
+      alert(
+        targetPlan === 'entreprise'
+          ? '✅ Demande de conversion en Entreprise envoyée.'
+          : '✅ Demande de passage à Premium envoyée.'
+      );
       window.location.reload();
     } else {
       throw new Error();
@@ -989,7 +987,6 @@ const handleUpgradeRequest = async () => {
     setIsSubmitting(false);
   }
 };
-
   const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
     try {
       const res = await fetch('/api/profile/sections-visibility', {
@@ -1292,15 +1289,17 @@ useEffect(() => {
               ? t('subscription.active_until', { date: '∞' })
               : t('subscription.upgrade_prompt')}
           </p>
-          {!subscription.active && (
-            <Button
-              size="sm"
-              className="mt-3 bg-gradient-to-r from-blue-600 to-cyan-500"
-              onClick={() => setActiveModal('upgrade')}
-            >
-              {t('subscription.request_upgrade')}
-            </Button>
-          )}
+          {profile.plan !== 'entreprise' && (
+  <Button
+    size="sm"
+    className="mt-3 bg-gradient-to-r from-blue-600 to-cyan-500"
+    onClick={() => setActiveModal('upgrade')}
+  >
+    {profile.plan === 'basic'
+      ? t('subscription.upgrade_to_premium')
+      : t('subscription.request_enterprise')}
+  </Button>
+)}
         </CardContent>
       </Card>
 
