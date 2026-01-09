@@ -1105,6 +1105,7 @@ const handleQuickAction = (actionId: string) => {
   }, []);
 
   return (
+<<<<<<< HEAD
 <div className="space-y-8 pb-28">
   {/* En-tête */}
   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -1127,6 +1128,62 @@ const handleQuickAction = (actionId: string) => {
           <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
           <span className="text-sm">{profile.likes_count ?? 0}</span>
         </button>
+=======
+    <div className="space-y-8 pb-28">
+      {/* En-tête */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-white">
+  {(() => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return t('greeting_morning', { name: profile.full_name });
+    if (hour >= 12 && hour < 17) return t('greeting_afternoon', { name: profile.full_name });
+    if (hour >= 17 && hour < 22) return t('greeting_evening', { name: profile.full_name });
+    return t('greeting_night', { name: profile.full_name });
+  })()}
+</h1>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <p className="text-gray-400 text-sm sm:text-base">{t('subtitle')}</p>
+            <button
+              onClick={handleLike}
+              className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
+            >
+              <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
+              <span className="text-sm">{profile.likes_count ?? 0}</span>
+            </button>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full md:w-auto">
+          <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
+            <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10">
+              {t('view_public')}
+            </Button>
+          </Link>
+          <Button
+            onClick={handleExport}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500"
+          >
+            <Download className="h-4 w-4" />
+            {t('export_csv')}
+          </Button>
+          <Button
+            onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
+            className="w-full sm:w-auto bg-gradient-to-r from-blue-900 to-blue-900"
+          >
+            {t('orders.manage')}
+          </Button>
+          <Button
+  onClick={() => setShowEventForm(true)}
+  className="group flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition-all"
+>
+  <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
+    <Calendar className="w-4 h-4" />
+  </span>
+  <span className="font-medium">Nouvel événement</span>
+</Button>
+
+        </div>
+>>>>>>> 73794b31e57a9f5a49cbb3ba58ead8a5bb9a5d5e
       </div>
     </div>
 

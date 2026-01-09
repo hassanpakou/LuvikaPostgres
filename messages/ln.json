@@ -47,7 +47,11 @@
       "view_participants": "Koyeba bato oyo bakendaka"
     }
   },
+<<<<<<< HEAD
   "dashboard": {
+=======
+   "dashboard": {
+>>>>>>> 73794b31e57a9f5a49cbb3ba58ead8a5bb9a5d5e
   "greeting_morning": "Mbote, {name} 🌞",
   "greeting_afternoon": "Ndenge, {name} ☀️",
   "greeting_evening": "Mpoio, {name} 🌙",
