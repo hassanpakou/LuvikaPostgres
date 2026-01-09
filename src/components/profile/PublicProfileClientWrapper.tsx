@@ -1,7 +1,7 @@
 // src/components/profile/PublicProfileClientWrapper.tsx
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import { createClient } from '@/src/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -20,27 +20,24 @@ export default function PublicProfileClientWrapper({
   const [isFollowing, setIsFollowing] = useState(false);
 
   const router = useRouter();
+  const realtimeChannels = useRef<any[]>([]);
 
-  // 🔹 Mémoïsée pour éviter les re-souscriptions
-  const setupRealtime = useCallback((profileId: string, supabase: any) => {
-    // 🔹 Channel followers
-    const followChannel = supabase
-      .channel(`follows-${profileId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'follows',
-        filter: `followed_id=eq.${profileId}`,
-      }, () => {
-        supabase
-          .from('follows')
-          .select('*', { count: 'exact', head: true })
-          .eq('followed_id', profileId)
-          .then(({ count }: { count: number }) => setFollowers(count || 0));
-      })
-      .subscribe();
+  // 🔹 Fonction pour charger les stats initiales
+  const fetchStats = async (supabase: any, profileId: string, userId: string | null) => {
+    const [{ count: followersCount }, { count: followingCount }, { count: isFollowingCount }] = await Promise.all([
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', profileId),
+      userId ? supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId) : Promise.resolve({ count: 0 }),
+      userId ? supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', userId).eq('followed_id', profileId) : Promise.resolve({ count: 0 }),
+    ]);
 
-    // 🔹 Channel profil (bio, photo, sections_visibility…)
+    setFollowers(followersCount || 0);
+    setFollowing(followingCount || 0);
+    setIsFollowing((isFollowingCount || 0) > 0);
+  };
+
+  // 🔹 Configuration Realtime
+  const setupRealtime = useCallback((profileId: string, supabase: any, userId: string | null) => {
+    // 🔸 Canal : mises à jour du profil
     const profileChannel = supabase
       .channel(`profile-${profileId}`)
       .on('postgres_changes', {
@@ -53,13 +50,23 @@ export default function PublicProfileClientWrapper({
       })
       .subscribe();
 
-    return { followChannel, profileChannel };
+    // 🔸 Canal : changements de follows
+    const followChannel = supabase
+      .channel(`follows-${profileId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'follows',
+        filter: `followed_id=eq.${profileId}`,
+      }, () => {
+        fetchStats(supabase, profileId, userId);
+      })
+      .subscribe();
+
+    realtimeChannels.current = [profileChannel, followChannel];
   }, []);
 
   useEffect(() => {
-    let followChannel: any = null;
-    let profileChannel: any = null;
-
     const init = async () => {
       const { locale, username } = await params;
       if (!['fr', 'ln', 'en'].includes(locale)) return notFound();
@@ -67,19 +74,19 @@ export default function PublicProfileClientWrapper({
       const decodedUsername = decodeURIComponent(username).toLowerCase();
       const supabase = createClient();
 
-      // 🔹 Session
       const { data: { session } } = await supabase.auth.getSession();
       const user = session?.user || null;
       setCurrentUser(user);
 
-      // 🔹 Profil
+      // 🔹 Chargement initial du profil
       const { data: profile, error } = await supabase
         .from('profiles')
         .select(`
           *,
+          avatar_url,
+          cover_url,
           plan,
           accepts_contact_requests,
-          cover_url,
           sections_visibility
         `)
         .ilike('username', decodedUsername.trim())
@@ -90,7 +97,6 @@ export default function PublicProfileClientWrapper({
         return notFound();
       }
 
-      // 🔹 Permissions
       const isOwner = user?.id === profile.id;
       const isAdmin = user?.user_metadata?.role === 'admin';
       if (!profile.is_public && !isOwner && !isAdmin) {
@@ -98,28 +104,22 @@ export default function PublicProfileClientWrapper({
         return;
       }
 
-      // 🔹 Stats initiales
-      const [{ count: followersCount }, { count: followingCount }, { count: isFollowingCount }] = await Promise.all([
-        supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', profile.id),
-        user ? supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id) : Promise.resolve({ count: 0 }),
-        user ? supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id).eq('followed_id', profile.id) : Promise.resolve({ count: 0 }),
-      ]);
-
       setProfileData(profile);
-      setFollowers(followersCount || 0);
-      setFollowing(followingCount || 0);
-      setIsFollowing((isFollowingCount || 0) > 0);
+      await fetchStats(supabase, profile.id, user?.id || null);
       setLoading(false);
 
-      // 🔹 🔁 Realtime (seulement si profil chargé)
-      ({ followChannel, profileChannel } = setupRealtime(profile.id, supabase));
+      // 🔹 🔁 Démarrage Realtime
+      setupRealtime(profile.id, supabase, user?.id || null);
     };
 
     init();
 
+    // 🔹 Nettoyage au démontage
     return () => {
-      if (followChannel) followChannel.unsubscribe();
-      if (profileChannel) profileChannel.unsubscribe();
+      realtimeChannels.current.forEach(channel => {
+        if (channel?.unsubscribe) channel.unsubscribe();
+      });
+      realtimeChannels.current = [];
     };
   }, [params, router, setupRealtime]);
 

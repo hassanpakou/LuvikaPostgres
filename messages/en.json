@@ -47,7 +47,10 @@
     }
   },
   "dashboard": {
-    "greeting": "Hello, {name} 👋",
+  "greeting_morning": "Good morning, {name} 🌞",
+  "greeting_afternoon": "Good afternoon, {name} ☀️",
+  "greeting_evening": "Good evening, {name} 🌙",
+  "greeting_night": "Hey there, {name} 🌃",
     "subtitle": "Manage your smart digital identity",
     "view_public": "View my public profile",
     "export_csv": "Export (.csv)",

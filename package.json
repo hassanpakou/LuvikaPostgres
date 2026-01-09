@@ -52,7 +52,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/chart.js": "^2.9.41",
-    "@types/date-fns": "^2.5.3",
+    "@types/date-fns": "^2.6.3",
     "@types/node": "^20.19.27",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",

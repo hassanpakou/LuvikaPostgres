@@ -47,7 +47,10 @@
     }
   },
   "dashboard": {
-    "greeting": "Bonjour, {name} 👋",
+  "greeting_morning": "Bonjour, {name} 🌞",
+  "greeting_afternoon": "Bon après-midi, {name} ☀️",
+  "greeting_evening": "Bonsoir, {name} 🌙",
+  "greeting_night": "Coucou, {name} 🌃",
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
     "export_csv": "Exporter (.csv)",
@@ -651,5 +654,87 @@
   "common": {
     "save": "Enregistrer",
     "saving": "Enregistrement..."
+  },
+"enterprise": {
+  "title": "🏢 Espace Entreprise",
+  "subtitle": "Gérez votre boutique, vos employés, vos cartes et votre présence — en temps réel.",
+  "modules": {
+    "dashboard": {
+      "title": "Tableau de bord",
+      "desc": "Vue d’ensemble en temps réel de votre activité"
+    },
+    "shop": {
+      "title": "Boutique & Produits",
+      "desc": "Catalogue public, stock, promotions",
+      "edit_title": "Modifier le produit",
+    "product_info": "Informations produit",
+    "image": "Image",
+    "image_help": "JPG/PNG jusqu’à 5MB",
+    "name": "Nom du produit",
+    "name_placeholder": "ex: T-shirt LUVIKA",
+    "slug": "URL personnalisée",
+    "slug_placeholder": "tshirt-luvika",
+    "description": "Description",
+    "description_placeholder": "Décrivez votre produit...",
+    "price": "Prix",
+    "promo_price": "Prix promotionnel",
+    "stock": "Stock",
+    "sku": "Référence (SKU)",
+    "sku_placeholder": "LUVIKA-TSHIRT-001",
+    "sku_help": "Code unique pour le suivi des stocks",
+    "optional": "Optionnel",
+    "save": "Enregistrer",
+    "saving": "Sauvegarde...",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "save_success": "✅ Produit mis à jour",
+    "save_error": "❌ Échec de la sauvegarde",
+    "load_error": "❌ Impossible de charger le produit",
+    "upload_error": "❌ Échec de l’upload",
+    "invalid_image": "⚠️ Format invalide (JPG/PNG seulement)",
+    "image_too_large": "⚠️ Image trop grande (max 5MB)",
+    "missing_fields": "⚠️ Veuillez remplir tous les champs requis",
+    "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.",
+    "delete_success": "✅ Produit supprimé",
+    "delete_error": "❌ Échec de la suppression",
+    "new_product": "Nouveau produit",
+    "images": "Images du produit",
+    "image_help_multi": "Jusqu’à 5 images (JPG/PNG, max 5MB)",
+    "max_5_images": "⚠️ Maximum 5 images",
+    "create_product": "Créer le produit",
+    "create_success": "✅ Produit créé",
+    "create_error": "❌ Échec création",
+    "uploading": "Upload en cours...",
+    "saving": "Sauvegarde..."
+    },
+    "orders": {
+      "title": "Commandes",
+      "desc": "Suivi des ventes et expéditions"
+    },
+    "employees": {
+      "title": "Employés",
+      "desc": "Gestion RH légère et rôles"
+    },
+    "cards": {
+      "title": "Cartes Pro",
+      "desc": "Cartes NFC illimitées pour toute l’équipe"
+    },
+    "attendance": {
+      "title": "Présence",
+      "desc": "Pointage par QR Code en temps réel"
+    },
+    "communication": {
+      "title": "Communication",
+      "desc": "Messages internes et annonces"
+    },
+    "settings": {
+      "title": "Paramètres",
+      "desc": "Configuration de votre entreprise"
+    }
+  },
+  "value_prop": {
+    "title": "Votre entreprise, unifiée et vivante",
+    "desc": "Luvika n’est pas un profil — c’est votre outil métier quotidien, conçu pour l’Afrique et scalable à l’international."
   }
+}
 }
