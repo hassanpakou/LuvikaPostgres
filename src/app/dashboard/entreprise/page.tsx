@@ -170,8 +170,9 @@ const { playSound } = useSoundNotification();
         .eq('owner_id', user.id)
         .single();
 
-      if (!company) {
+     if (!company) {
   console.error('❌ Aucune entreprise trouvée pour cet utilisateur');
+  alert('Votre compte entreprise n’est pas encore configuré. Contactez le support.');
   router.push('/dashboard');
   return;
 }

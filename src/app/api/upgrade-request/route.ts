@@ -13,22 +13,70 @@ export async function POST(req: Request) {
     );
 
     const { data : { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    }
 
-    const { user_id, profile_id } = await req.json();
+    const { user_id, profile_id, target_plan } = await req.json();
 
-    // ✅ Enregistre la demande
-    const { error } = await supabase.from('upgrade_requests').insert({
-      user_id,
-      profile_id,
-      status: 'pending',
-      requested_at: new Date().toISOString(),
-    });
+    if (user.id !== user_id) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+    }
 
-    if (error) throw error;
+    // 🔹 ✅ Sélectionne tous les champs nécessaires
+    const { data : profile } = await supabase
+      .from('profiles')
+      .select('plan, full_name, username')
+      .eq('id', profile_id)
+      .single();
+
+    if (!profile || profile.plan === target_plan) {
+      return NextResponse.json({ error: 'Demande invalide' }, { status: 400 });
+    }
+
+    const { error: insertError } = await supabase
+      .from('upgrade_requests')
+      .insert({
+        user_id,
+        profile_id,
+        target_plan,
+        status: 'pending',
+        requested_at: new Date().toISOString(),
+      });
+
+    if (insertError) throw insertError;
+
+    if (target_plan === 'entreprise') {
+      const { data : existingCompany } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('owner_id', user_id)
+        .single();
+
+      if (!existingCompany) {
+        // ✅ Maintenant safe — full_name et username existent
+        const firstName = profile.full_name?.split(' ')[0] || 'Entreprise';
+        const companyName = `${firstName} Entreprise`;
+        const slug = (profile.username || `entreprise-${user_id.substring(0, 8)}`).toLowerCase();
+
+        const { error: companyError } = await supabase
+          .from('companies')
+          .insert({
+            owner_id: user_id,
+            name: companyName,
+            slug: slug,
+            plan: 'entreprise',
+          });
+
+        if (companyError) {
+          console.error('❌ Échec création entreprise:', companyError);
+        }
+      }
+    }
 
     return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: 'Échec' }, { status: 500 });
+  } catch (err: any) {
+    console.error('❌ Erreur upgrade request:', err);
+    return NextResponse.json({ error: err.message || 'Échec de la demande' }, { status: 500 });
   }
 }
