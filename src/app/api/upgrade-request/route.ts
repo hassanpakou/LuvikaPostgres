@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    // 🔹 ✅ Sélectionne tous les champs nécessaires
+    // 🔹 Récupère les champs nécessaires
     const { data : profile } = await supabase
       .from('profiles')
       .select('plan, full_name, username')
@@ -34,6 +34,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Demande invalide' }, { status: 400 });
     }
 
+    // 🔹 Validation du parcours de mise à niveau
+    if (profile.plan === 'basic' && target_plan !== 'premium') {
+      return NextResponse.json({ error: 'Passage direct à entreprise non autorisé' }, { status: 400 });
+    }
+    if (profile.plan === 'premium' && target_plan !== 'entreprise') {
+      return NextResponse.json({ error: 'Mise à niveau invalide' }, { status: 400 });
+    }
+
+    // 🔹 Enregistre la demande
     const { error: insertError } = await supabase
       .from('upgrade_requests')
       .insert({
@@ -46,6 +55,7 @@ export async function POST(req: Request) {
 
     if (insertError) throw insertError;
 
+    // 🔹 Si c’est une demande "entreprise", crée l’entreprise immédiatement
     if (target_plan === 'entreprise') {
       const { data : existingCompany } = await supabase
         .from('companies')
@@ -54,7 +64,6 @@ export async function POST(req: Request) {
         .single();
 
       if (!existingCompany) {
-        // ✅ Maintenant safe — full_name et username existent
         const firstName = profile.full_name?.split(' ')[0] || 'Entreprise';
         const companyName = `${firstName} Entreprise`;
         const slug = (profile.username || `entreprise-${user_id.substring(0, 8)}`).toLowerCase();
@@ -70,6 +79,7 @@ export async function POST(req: Request) {
 
         if (companyError) {
           console.error('❌ Échec création entreprise:', companyError);
+          // ⚠️ On ne bloque pas la demande, mais on log l’erreur
         }
       }
     }

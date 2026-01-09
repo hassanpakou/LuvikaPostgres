@@ -320,116 +320,149 @@ export default function PublicProfileClient({
       </div>
 
       <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
-        <motion.header
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="text-center mb-8"
+<motion.header
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6, ease: "easeOut" }}
+  className="text-center mb-8 relative"
+>
+  {/* Bannière de couverture (cover_url) avec dégradé design */}
+  {profile.cover_url && (
+    <div className="absolute inset-x-0 top-0 h-48 overflow-hidden rounded-t-2xl">
+      <img
+        src={profile.cover_url}
+        alt="Cover"
+        className="w-full h-full object-cover"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = 'none';
+        }}
+      />
+      {/* Dégradé personnalisé : foncé en bas → transparent en haut */}
+      <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/80 via-blue-900/40 to-transparent"></div>
+    </div>
+  )}
+
+  <div className="relative inline-block mt-24">
+    {/* Avatar */}
+    {profile.avatar_url ? (
+      <motion.img
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        src={profile.avatar_url}
+        alt={`${profile.full_name} avatar`}
+        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/30 shadow-xl mx-auto"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = '/default-avatar.png';
+        }}
+      />
+    ) : (
+      <motion.div
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto"
+      >
+        {profile.full_name?.charAt(0).toUpperCase() || '?'}
+      </motion.div>
+    )}
+
+    {/* Badge plan */}
+    {profile.plan && profile.plan !== 'basic' && (
+      <motion.div
+        initial={{ scale: 0, opacity: 0, rotate: -15 }}
+        animate={{ scale: 1, opacity: 1, rotate: 0 }}
+        transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+        className="absolute -top-2 -right-2"
+      >
+        <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
+          profile.plan === 'premium'
+            ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+            : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+        }`}>
+          {profile.plan === 'premium' ? '⭐ Premium' : '🚀 Entreprise'}
+        </Badge>
+      </motion.div>
+    )}
+
+    {/* Bouton QR Code */}
+    <motion.button
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => setShowQRModal(true)}
+      className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg border border-white/20"
+      aria-label="Afficher QR Code"
+    >
+      <QrCode className="w-5 h-5 text-white" />
+    </motion.button>
+  </div>
+
+  <motion.div 
+    className="mt-6"
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.4 }}
+  >
+    <p className="text-cyan-300 font-mono text-sm flex items-center justify-center gap-1">
+      @{profile.username}
+      {profile.verified && (
+        <img 
+          src="/badge.png" 
+          alt="✅ Vérifié" 
+          className="w-4 h-4 rounded-full"
+          title="Profil vérifié"
+        />
+      )}
+    </p>
+    
+    <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
+      {profile.full_name}
+      {isBirthdayToday(profile) && (
+        <motion.div
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          title="Joyeux anniversaire ! 🎉"
         >
-          <div className="relative inline-block">
-            <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto"
-            >
-              {profile.full_name?.charAt(0).toUpperCase() || '?'}
-            </motion.div>
+          <Cake className="w-6 h-6 text-pink-400" />
+        </motion.div>
+      )}
+    </h1>
+    
+    <div className="mt-2 flex flex-wrap justify-center gap-2 text-gray-400 text-sm">
+      {profile.nickname && <span className="font-medium">{profile.nickname}</span>}
+      {profile.pronouns && <span className="px-2 py-0.5 bg-white/5 rounded">{profile.pronouns}</span>}
+      {profile.job_title && (
+        <span>
+          {profile.job_title}{profile.company && ` · ${profile.company}`}
+        </span>
+      )}
+      {profile.professional_status && (
+        <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
+          {profile.professional_status === 'student' && 'Étudiant'}
+          {profile.professional_status === 'employed' && 'En poste'}
+          {profile.professional_status === 'freelance' && 'Freelance'}
+          {profile.professional_status === 'open_to_work' && 'Ouvert'}
+          {profile.professional_status === 'other' && 'Autre'}
+        </span>
+      )}
+    </div>
 
-            {profile.plan && profile.plan !== 'basic' && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0, rotate: -15 }}
-                animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                className="absolute -top-2 -right-2"
-              >
-                <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
-                  profile.plan === 'premium'
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                    : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-                }`}>
-                  {profile.plan === 'premium' ? '⭐ Premium' : '🚀 Entreprise'}
-                </Badge>
-              </motion.div>
-            )}
-
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowQRModal(true)}
-              className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg border border-white/20"
-              aria-label="Afficher QR Code"
-            >
-              <QrCode className="w-5 h-5 text-white" />
-            </motion.button>
-          </div>
-
-          <motion.div 
-            className="mt-6"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <p className="text-cyan-300 font-mono text-sm flex items-center justify-center gap-1">
-              @{profile.username}
-              {profile.verified && (
-                <img 
-                  src="/badge.png" 
-                  alt="✅ Vérifié" 
-                  className="w-4 h-4 rounded-full"
-                  title="Profil vérifié"
-                />
-              )}
-            </p>
-            
-            <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
-              {profile.full_name}
-              {isBirthdayToday(profile) && (
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  title="Joyeux anniversaire ! 🎉"
-                >
-                  <Cake className="w-6 h-6 text-pink-400" />
-                </motion.div>
-              )}
-            </h1>
-            
-            <div className="mt-2 flex flex-wrap justify-center gap-2 text-gray-400 text-sm">
-              {profile.nickname && <span className="font-medium">{profile.nickname}</span>}
-              {profile.pronouns && <span className="px-2 py-0.5 bg-white/5 rounded">{profile.pronouns}</span>}
-              {profile.job_title && (
-                <span>
-                  {profile.job_title}{profile.company && ` · ${profile.company}`}
-                </span>
-              )}
-              {profile.professional_status && (
-                <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
-                  {profile.professional_status === 'student' && 'Étudiant'}
-                  {profile.professional_status === 'employed' && 'En poste'}
-                  {profile.professional_status === 'freelance' && 'Freelance'}
-                  {profile.professional_status === 'open_to_work' && 'Ouvert'}
-                  {profile.professional_status === 'other' && 'Autre'}
-                </span>
-              )}
-            </div>
-
-            {scansCount > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="mt-3 flex items-center justify-center gap-2"
-              >
-                <BadgeLevel info={getBadgeInfo(scansCount)} />
-                <span className="text-gray-400 text-sm">{scansCount} scan{scansCount > 1 ? 's' : ''}</span>
-              </motion.div>
-            )}
-          </motion.div>
-        </motion.header>
+    {scansCount > 0 && (
+      <motion.div
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mt-3 flex items-center justify-center gap-2"
+      >
+        <BadgeLevel info={getBadgeInfo(scansCount)} />
+        <span className="text-gray-400 text-sm">{scansCount} scan{scansCount > 1 ? 's' : ''}</span>
+      </motion.div>
+    )}
+  </motion.div>
+</motion.header>
 
         <motion.div
           initial="hidden"

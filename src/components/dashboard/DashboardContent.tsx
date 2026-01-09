@@ -533,6 +533,23 @@ const UpgradeModal = ({
   );
 };
 
+const [hasCompany, setHasCompany] = useState(false);
+
+useEffect(() => {
+  const checkCompany = async () => {
+    if (user?.id && subscription.plan === 'entreprise') {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('owner_id', user.id)
+        .single();
+      setHasCompany(!!data);
+    }
+  };
+  checkCompany();
+}, [user?.id, subscription.plan]);
+
 // 🔹 ✅ Modal : QR Code
 const QRModal = ({
   isOpen,
@@ -949,26 +966,44 @@ const handleQuickAction = (actionId: string) => {
     }
   };
 
-  const handleUpgradeRequest = async () => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch('/api/upgrade-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: user.id, profile_id: profile.id }),
-      });
-      if (res.ok) {
-        closeModal();
-        setShowSuccessModal(true);
-      } else {
-        throw new Error();
-      }
-    } catch {
-      alert('❌ Échec. Veuillez réessayer.');
-    } finally {
-      setIsSubmitting(false);
+const handleUpgradeRequest = async () => {
+  if (!user || !profile) return;
+
+  setIsSubmitting(true);
+  try {
+    let targetPlan = 'premium';
+    let message = 'Demande de passage à Premium envoyée.';
+
+    // 🔹 Si déjà premium → demande entreprise
+    if (profile.plan === 'premium') {
+      targetPlan = 'entreprise';
+      message = 'Demande de conversion en compte Entreprise envoyée à l’admin.';
     }
-  };
+
+    const res = await fetch('/api/upgrade-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        user_id: user.id, 
+        profile_id: profile.id,
+        target_plan: targetPlan 
+      }),
+    });
+
+    if (res.ok) {
+      closeModal();
+      alert(message); // ou utilise un toast
+      // Optionnel : refresh le profil
+      window.location.reload();
+    } else {
+      throw new Error();
+    }
+  } catch {
+    alert('❌ Échec. Veuillez réessayer.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
     try {
@@ -1164,17 +1199,17 @@ const handleQuickAction = (actionId: string) => {
       </Button>
 
       {/* Bouton Espace Entreprise */}
-      {subscription.plan === 'entreprise' && (
-        <Button
-          onClick={() => router.push('/dashboard/entreprise')}
-          className="w-full sm:w-auto bg-gradient-to-r from-indigo-700 to-purple-800 hover:from-indigo-600 hover:to-purple-700 text-white font-medium shadow-lg"
-        >
-          <span className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Espace Entreprise
-          </span>
-        </Button>
-      )}
+      {subscription.plan === 'entreprise' && hasCompany && (
+  <Button
+    onClick={() => router.push('/dashboard/entreprise')}
+    className="w-full sm:w-auto bg-gradient-to-r from-indigo-700 to-purple-800 hover:from-indigo-600 hover:to-purple-700 text-white font-medium shadow-lg"
+  >
+    <span className="flex items-center gap-2">
+      <Building className="h-4 w-4" />
+      Espace Entreprise
+    </span>
+  </Button>
+)}
     </div>
   </div>
 
