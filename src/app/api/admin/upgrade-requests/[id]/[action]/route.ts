@@ -1,4 +1,3 @@
-// src/app/api/admin/upgrade-requests/[id]/[action]/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -20,7 +19,7 @@ export async function POST(
     }
   );
 
-  const { data : { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
   }
@@ -32,9 +31,10 @@ export async function POST(
   }
 
   try {
-    const { data : upgradeReq } = await supabase
+    // 🔹 Étape 1 : Charger la demande
+    const { data: upgradeReq } = await supabase
       .from('upgrade_requests')
-      .select('id, profile_id, status')
+      .select('id, status, profile_id, target_plan')
       .eq('id', id)
       .single();
 
@@ -42,30 +42,88 @@ export async function POST(
       return NextResponse.json({ error: 'Demande introuvable ou déjà traitée' }, { status: 400 });
     }
 
+    // 🔹 Étape 2 : Charger le profil séparément
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, plan, full_name, username')
+      .eq('id', upgradeReq.profile_id)
+      .single();
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profil utilisateur introuvable' }, { status: 400 });
+    }
+
+    const { profile_id, target_plan } = upgradeReq;
+
+    // 🔹 Étape 3 : Récupérer les notes
+    let admin_notes = `Traité par ${user.email} — ${action === 'approved' ? 'Approuvé' : 'Rejeté'}`;
+    try {
+      const body = await request.json();
+      if (body?.admin_notes) admin_notes = body.admin_notes;
+    } catch (e) { /* ignore */ }
+
+    // 🔹 Étape 4 : Mettre à jour la demande
     const { error: updateErr } = await supabase
       .from('upgrade_requests')
       .update({
         status: action,
         processed_at: new Date().toISOString(),
-        admin_notes: `Traité par ${user.email} — ${action === 'approved' ? 'Approuvé' : 'Rejeté'}`,
+        admin_notes,
       })
       .eq('id', id);
 
     if (updateErr) throw updateErr;
 
+    // 🔹 Étape 5 : Traitement si approuvé
     if (action === 'approved') {
-      // 🔹 ✅ Paramètre CORRECT : profile_uuid
+      // a. Utiliser la fonction RPC sécurisée
       const { error: rpcError } = await supabase
-        .rpc('admin_set_premium_plan', { 
-          profile_uuid: upgradeReq.profile_id  // ✅ nom exact du paramètre
-        });
+        .rpc('admin_set_premium_plan', { profile_uuid: profile_id });
 
       if (rpcError) {
-        console.error('❌ Échec admin_set_premium_plan:', rpcError);
+        console.error('❌ Échec RPC:', rpcError);
         throw rpcError;
       }
 
-      console.log(`✅ Profil ${upgradeReq.profile_id} mis à jour en Premium`);
+      // b. Créer l'entreprise si nécessaire
+      if (target_plan === 'entreprise') {
+        const { data: existingCompany } = await supabase
+          .from('companies')
+          .select('id')
+          .eq('owner_id', profile_id)
+          .single();
+
+        if (!existingCompany) {
+          const firstName = profile.full_name?.split(' ')[0] || 'Entreprise';
+          const companyName = `${firstName} Entreprise`;
+          let slug = (profile.username || `entreprise-${profile_id.substring(0, 8)}`).toLowerCase();
+          
+          // Génère un slug unique
+          let counter = 1;
+          while (true) {
+            const { data: exists } = await supabase
+              .from('companies')
+              .select('id')
+              .eq('slug', slug)
+              .single();
+            
+            if (!exists) break;
+            slug = `${slug}-${counter}`;
+            counter++;
+          }
+
+          const { error: companyErr } = await supabase
+            .from('companies')
+            .insert({
+              owner_id: profile_id,
+              name: companyName,
+              slug: slug,
+              plan: 'entreprise',
+            });
+
+          if (companyErr) console.error('❌ Échec création entreprise:', companyErr);
+        }
+      }
     }
 
     console.log(`✅ Demande ${id} ${action} par ${user.email}`);

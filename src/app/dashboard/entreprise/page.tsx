@@ -28,7 +28,7 @@ export default function EnterpriseDashboard() {
   const router = useRouter();
   const supabase = createClient();
   const realtimeChannels = useRef<any[]>([]);
-const { playSound } = useSoundNotification();
+  const { playSound } = useSoundNotification();
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -37,7 +37,7 @@ const { playSound } = useSoundNotification();
     activeEmployees: 0,
     activeCards: 0,
     profileId: '',
-    companyId: '' // 🔹 Ajouté pour les canaux realtime
+    companyId: ''
   });
 
   const modules: Module[] = [
@@ -110,7 +110,7 @@ const { playSound } = useSoundNotification();
   // 🔹 Fonction de chargement initial + mise à jour
   const fetchAndUpdateStats = async (companyId: string, userId: string) => {
     try {
-      const [{ data: orders }, { data: employees }, {  data: cards }] = await Promise.all([
+      const [{ data: orders }, { data: employees }, { data: cards }] = await Promise.all([
         supabase.from('orders').select('total_amount, status').eq('seller_id', companyId),
         supabase.from('employees').select('status').eq('company_id', companyId),
         supabase.from('cards').select('status').eq('company_id', companyId)
@@ -140,91 +140,89 @@ const { playSound } = useSoundNotification();
   };
 
   useEffect(() => {
-  let companyId = '';
-  let userId = '';
+    let companyId = '';
+    let userId = '';
 
-  const init = async () => {
-    try {
-      const { data : { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/auth/sign-in');
-        return;
-      }
+    const init = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          router.push('/auth/sign-in');
+          return;
+        }
 
-      // 🔹 🔒 VÉRIFICATION SÉCURITÉ : plan entreprise requis
-      const { data : profile } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', user.id)
-        .single();
+        // 🔹 Affiche un loader pendant la vérification
+        setLoading(true);
 
-      if (profile?.plan !== 'entreprise') {
-        console.warn('⚠️ Accès refusé au dashboard entreprise — plan incorrect');
-        router.push('/dashboard'); // 🔙 Redirection vers le dashboard principal
-        return;
-      }
+        // 🔹 Vérification améliorée : plan OU entreprise existante
+        const [{ data: profile }, { data: company }] = await Promise.all([
+          supabase.from('profiles').select('plan').eq('id', user.id).single(),
+          supabase.from('companies').select('id').eq('owner_id', user.id).single()
+        ]);
 
-      const { data : company } = await supabase
-        .from('companies')
-        .select('id')
-        .eq('owner_id', user.id)
-        .single();
+        // ✅ Autorise l'accès si :
+        // - Le plan est 'entreprise' OU
+        // - Une entreprise existe (même si le plan n'est pas encore sync)
+        if (profile?.plan !== 'entreprise' && !company) {
+          console.warn('⚠️ Accès refusé — ni plan entreprise, ni entreprise associée');
+          router.push('/dashboard');
+          return;
+        }
 
-     if (!company) {
-  console.error('❌ Aucune entreprise trouvée pour cet utilisateur');
-  alert('Votre compte entreprise n’est pas encore configuré. Contactez le support.');
-  router.push('/dashboard');
-  return;
-}
+        if (!company) {
+          alert('Votre compte entreprise est en cours de configuration...');
+          router.push('/dashboard');
+          return;
+        }
 
-      userId = user.id;
-      companyId = company.id;
+        userId = user.id;
+        companyId = company.id;
 
-      // ... reste du code inchangé
         // 🔹 Chargement initial
         await fetchAndUpdateStats(companyId, userId);
 
         // 🔹 🔁 REALTIME — Commandes
-const ordersChannel = supabase
-  .channel(`orders-${companyId}`)
-  .on('postgres_changes', {
-    event: '*',
-    schema: 'public',
-    table: 'orders',
-    filter: `seller_id=eq.${companyId}`
-  }, (payload) => {
-    fetchAndUpdateStats(companyId, userId);
-    if (payload.eventType === 'INSERT') {
-      playSound(); // 🔊 Son uniquement pour les nouvelles commandes
-    }
-  })
-  .subscribe();
+        const ordersChannel = supabase
+          .channel(`orders-${companyId}`)
+          .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'orders',
+            filter: `seller_id=eq.${companyId}`
+          }, (payload) => {
+            fetchAndUpdateStats(companyId, userId);
+            if (payload.eventType === 'INSERT') {
+              playSound(); // 🔊 Son uniquement pour les nouvelles commandes
+            }
+          })
+          .subscribe();
 
-// 🔹 🔁 REALTIME — Employés
-const employeesChannel = supabase
-  .channel(`employees-${companyId}`)
-  .on('postgres_changes', {
-    event: '*',
-    schema: 'public',
-    table: 'employees',
-    filter: `company_id=eq.${companyId}`
-  }, () => fetchAndUpdateStats(companyId, userId))
-  .subscribe();
+        // 🔹 🔁 REALTIME — Employés
+        const employeesChannel = supabase
+          .channel(`employees-${companyId}`)
+          .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'employees',
+            filter: `company_id=eq.${companyId}`
+          }, () => fetchAndUpdateStats(companyId, userId))
+          .subscribe();
 
-// 🔹 🔁 REALTIME — Cartes
-const cardsChannel = supabase
-  .channel(`cards-${companyId}`)
-  .on('postgres_changes', {
-    event: '*',
-    schema: 'public',
-    table: 'cards',
-    filter: `company_id=eq.${companyId}`
-  }, () => fetchAndUpdateStats(companyId, userId))
-  .subscribe();
+        // 🔹 🔁 REALTIME — Cartes
+        const cardsChannel = supabase
+          .channel(`cards-${companyId}`)
+          .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'cards',
+            filter: `company_id=eq.${companyId}`
+          }, () => fetchAndUpdateStats(companyId, userId))
+          .subscribe();
+
         realtimeChannels.current = [ordersChannel, employeesChannel, cardsChannel];
       } catch (err) {
         console.error('❌ Init échouée:', err);
-        setLoading(false);
+        router.push('/dashboard');
       }
     };
 
@@ -233,10 +231,21 @@ const cardsChannel = supabase
     // 🔹 Nettoyage des canaux au démontage
     return () => {
       realtimeChannels.current.forEach(channel => {
-        supabase.removeChannel(channel);
+        if (channel?.unsubscribe) channel.unsubscribe();
       });
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-white">Chargement de votre espace entreprise...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

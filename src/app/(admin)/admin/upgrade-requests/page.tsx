@@ -6,17 +6,20 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, FileText, Clock, CheckCircle, XCircle } from 'lucide-react';
-import { UpgradeRequestActions } from '../../../../../src/components/admin/UpgradeRequestActions'; // ✅ import
+import { UpgradeRequestActions } from '../../../../../src/components/admin/UpgradeRequestActions';
+
 type UpgradeRequest = {
   id: string;
   created_at: string;
   status: 'pending' | 'approved' | 'rejected';
   admin_notes: string | null;
   processed_at: string | null;
+  target_plan: string; // ✅ ajouté
   profiles: {
     full_name: string;
     username: string;
     email: string;
+    plan: string; // ✅ ajouté
   } | null;
 };
 
@@ -28,29 +31,23 @@ export default async function UpgradeRequestsPage() {
     { cookies: { get: (name) => cookieStore.get(name)?.value } }
   );
 
-  const { data : { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
     redirect('/auth/sign-in');
   }
 
-  const { data : requests, error } = await supabase
+  // 🔹 Ajout de 'plan' et 'target_plan' dans la requête
+  const { data: requests, error } = await supabase
     .from('upgrade_requests')
     .select(`
       *,
-      profiles!inner (id, full_name, username, email)
+      profiles!inner (id, full_name, username, email, plan)
     `)
     .order('created_at', { ascending: false });
 
   if (error) throw error;
 
   const t = await getTranslations();
-
-  const handleAction = async (id: string, status: 'approved' | 'rejected') => {
-    const res = await fetch(`/api/admin/upgrade-requests/${id}/${status}`, {
-      method: 'POST',
-    });
-    if (res.ok) window.location.reload();
-  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -134,8 +131,12 @@ export default async function UpgradeRequestsPage() {
                 </div>
 
                 {req.status === 'pending' && (
-    <UpgradeRequestActions id={req.id} /> // ✅ safe — composant client
-  )}
+                  <UpgradeRequestActions 
+                    id={req.id} 
+                    currentPlan={req.profiles?.plan as 'basic' | 'premium'}
+                    targetPlan={req.target_plan as 'entreprise'}
+                  />
+                )}
               </CardContent>
             </Card>
           ))}

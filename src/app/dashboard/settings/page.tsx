@@ -263,7 +263,8 @@ const removeSkill = (index: number) => {
     if (!profile) return;
     setSaving(true);
     setMessage(null);
-// 🔹 Dans handleSave(), après `if (error) throw error;` :
+router.refresh(); // 👈 Force Next.js à recharger les données serveur/client
+
 const { data: updatedProfile } = await supabase
   .from('profiles')
   .select('*')

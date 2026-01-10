@@ -977,7 +977,7 @@ const handleUpgradeRequest = async () => {
           ? '✅ Demande de conversion en Entreprise envoyée.'
           : '✅ Demande de passage à Premium envoyée.'
       );
-      window.location.reload();
+      window.location.reload(); // ⚠️ Essentiel pour rafraîchir le plan et hasCompany
     } else {
       throw new Error();
     }
@@ -987,7 +987,8 @@ const handleUpgradeRequest = async () => {
     setIsSubmitting(false);
   }
 };
-  const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
+
+const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
     try {
       const res = await fetch('/api/profile/sections-visibility', {
         method: 'POST',
@@ -1524,7 +1525,7 @@ useEffect(() => {
       onClose={closeModal}
     />
   )}
-  {activeModal === 'upgrade' && !subscription.active && (
+  {activeModal === 'upgrade' && profile.plan !== 'entreprise' && (
     <UpgradeModal
       key="modal-upgrade"
       isOpen={true}
