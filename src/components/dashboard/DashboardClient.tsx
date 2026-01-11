@@ -89,7 +89,7 @@ export default function DashboardClient() {
       setFollowers(count || 0);
 
       // 🔹 Scans
-      const {  scansData } = await supabase
+      const { data: scansData } = await supabase
         .from('scans')
         .select('*, profiles!left(username, full_name)')
         .eq('profile_id', session.user.id)
