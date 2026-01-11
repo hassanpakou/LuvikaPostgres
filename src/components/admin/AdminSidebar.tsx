@@ -11,9 +11,9 @@ import { useAdminLayout } from '@/src/contexts/AdminLayoutContext';
 
 const menu = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
-  { name: 'Demandes Upgrade', icon: FileText, href: '/admin/upgrade-requests' },
-  { name: 'Utilisateurs', icon: Users, href: '/admin/users' },
-  { name: 'Abonnements', icon: CreditCard, href: '/admin/subscriptions' },
+  { name: 'Demandes Upgrade', icon: FileText, href: '/admin/admin/upgrade-requests' },
+  { name: 'Utilisateurs', icon: Users, href: '/admin/admin/users' },
+  { name: 'Abonnements', icon: CreditCard, href: '/admin/admin/subscriptions' },
 ];
 
 export function AdminSidebar() {
