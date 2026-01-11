@@ -11,8 +11,8 @@ type Scan = {
   id: string;
   scan_type: string;
   created_at: string;
-  profile_id: string;       // ✅ obligatoire pour le filtre
-  scanner_id?: string;      // ✅ optionnel (peut être null pour anonyme)
+  profile_id: string;
+  scanner_id?: string;
   profiles?: {
     username?: string;
     full_name?: string;
@@ -58,19 +58,27 @@ export default function DashboardClient() {
 
     const init = async () => {
       // 🔹 Auth
-      const { data: { session } } = await supabase.auth.getSession();
+      const {  { session } } = await supabase.auth.getSession();
       if (!session?.user) return router.push('/auth/sign-in');
       setUser(session.user);
 
-      // 🔹 Profil + scans
-      const { data: profileData } = await supabase
+      // 🔹 Profil (sans nfc_cards)
+      const {  profileData, error: profileError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          nfc_cards(*)
-        `)
+        .select('*')
         .eq('id', session.user.id)
         .single();
+
+      if (profileError || !profileData) {
+        console.error('❌ Profil introuvable');
+        return router.push('/auth/sign-in');
+      }
+
+      // 🔹 ✅ VÉRIFICATION UNIQUE : profil complet ?
+      if (!profileData.onboarding_done) {
+        return router.push('/auth/complete');
+      }
+
       setProfile(profileData);
 
       // 🔹 Followers
@@ -81,7 +89,7 @@ export default function DashboardClient() {
       setFollowers(count || 0);
 
       // 🔹 Scans
-      const { data: scansData } = await supabase
+      const {  scansData } = await supabase
         .from('scans')
         .select('*, profiles!left(username, full_name)')
         .eq('profile_id', session.user.id)
@@ -112,8 +120,7 @@ export default function DashboardClient() {
           filter: `profile_id=eq.${session.user.id}`,
         }, async (payload) => {
           const newScan = payload.new as Scan;
-          // Récupère les détails du scanner
-          const { data: scannerProfile } = await supabase
+          const {  scannerProfile } = await supabase
             .from('profiles')
             .select('username, full_name')
             .eq('id', newScan.scanner_id)
@@ -136,13 +143,13 @@ export default function DashboardClient() {
   if (!profile) return null;
 
   const isAdmin = profile.role === 'admin';
-  const cards = profile.nfc_cards || [];
+  // ✅ Pas de chargement de nfc_cards ici → inutile pour le dashboard principal
 
   return (
     <DashboardContent
       user={user}
       profile={profile}
-      cards={cards}
+      cards={[]} // ✅ Vide par défaut — les cartes ne sont pas nécessaires ici
       recentScans={scans.map(scan => ({
         ...scan,
         relativeTime: scan.created_at ? formatDistance(scan.created_at) : '—',
