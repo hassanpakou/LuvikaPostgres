@@ -7,6 +7,18 @@ import { createClient } from '@/src/lib/supabase/client';
 import DashboardContent from '@/src/components/dashboard/DashboardContent';
 import { generateQRBase64 } from '@/lib/qr';
 
+// 🔹 Types explicites
+type Profile = {
+  id: string;
+  username?: string;
+  full_name?: string;
+  role: string;
+  plan: string;
+  onboarding_done: boolean;
+  nfc_cards?: any[]; // ou définissez un type plus précis si nécessaire
+  [key: string]: any; // pour les autres champs optionnels
+};
+
 type Scan = {
   id: string;
   scan_type: string;
@@ -43,7 +55,7 @@ const PLAN_COLORS = {
 
 export default function DashboardClient() {
   const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null); // ✅ Typé
   const [scans, setScans] = useState<Scan[]>([]);
   const [totalScans, setTotalScans] = useState(0);
   const [followers, setFollowers] = useState(0);
@@ -58,14 +70,14 @@ export default function DashboardClient() {
 
     const init = async () => {
       // 🔹 Auth
-      const { data: { session } } = await supabase.auth.getSession();
+      const {  { session } } = await supabase.auth.getSession();
       if (!session?.user) return router.push('/auth/sign-in');
       setUser(session.user);
 
       // 🔹 Profil (sans nfc_cards pour l'instant)
-      const { data: profileData, error: profileError } = await supabase
+      const {  profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('*') // ✅ Supprimé nfc_cards ici
+        .select('*')
         .eq('id', session.user.id)
         .single();
 
@@ -77,17 +89,27 @@ export default function DashboardClient() {
       // 🔹 ✅ VÉRIFICATION ONBOARDING
       if (!profileData.onboarding_done) {
         console.log('🔄 Redirection vers onboarding incomplet');
-        return router.push('/auth/complete'); // ✅ ou votre route de complétion
+        return router.push('/auth/complete');
       }
 
-      setProfile(profileData);
+      // ✅ Convertir en Profile
+      const typedProfile: Profile = {
+        ...profileData,
+        nfc_cards: []
+      };
+      setProfile(typedProfile);
 
       // 🔹 Chargement des cartes NFC (seulement si onboarding terminé)
-      const { data: cardsData } = await supabase
+      const {  cardsData } = await supabase
         .from('nfc_cards')
         .select('*')
         .eq('profile_id', session.user.id);
-      setProfile(prev => ({ ...prev, nfc_cards: cardsData || [] }));
+
+      // ✅ Mise à jour typée
+      setProfile(prev => prev ? ({ 
+        ...prev, 
+        nfc_cards: cardsData || [] 
+      }) : null);
 
       // 🔹 Followers
       const { count } = await supabase
@@ -97,7 +119,7 @@ export default function DashboardClient() {
       setFollowers(count || 0);
 
       // 🔹 Scans
-      const { data: scansData } = await supabase
+      const {  scansData } = await supabase
         .from('scans')
         .select('*, profiles!left(username, full_name)')
         .eq('profile_id', session.user.id)
@@ -128,7 +150,7 @@ export default function DashboardClient() {
           filter: `profile_id=eq.${session.user.id}`,
         }, async (payload) => {
           const newScan = payload.new as Scan;
-          const { data: scannerProfile } = await supabase
+          const {  scannerProfile } = await supabase
             .from('profiles')
             .select('username, full_name')
             .eq('id', newScan.scanner_id)
