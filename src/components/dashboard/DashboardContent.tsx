@@ -1201,15 +1201,16 @@ useEffect(() => {
 
       {/* Bouton Espace Entreprise */}
       {subscription.plan === 'entreprise' && hasCompany && (
-  <Button
-    onClick={() => router.push('/dashboard/entreprise')}
-    className="w-full sm:w-auto bg-gradient-to-r from-indigo-700 to-purple-800 hover:from-indigo-600 hover:to-purple-700 text-white font-medium shadow-lg"
-  >
-    <span className="flex items-center gap-2">
-      <Building className="h-4 w-4" />
-      Espace Entreprise
-    </span>
-  </Button>
+  <Link href="/dashboard/entreprise">
+    <Button
+      className="w-full sm:w-auto bg-gradient-to-r from-indigo-700 to-purple-800 hover:from-indigo-600 hover:to-purple-700 text-white font-medium shadow-lg"
+    >
+      <span className="flex items-center gap-2">
+        <Building className="h-4 w-4" />
+        Espace Entreprise
+      </span>
+    </Button>
+  </Link>
 )}
     </div>
   </div>

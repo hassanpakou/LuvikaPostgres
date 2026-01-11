@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { 
   LayoutDashboard, Store, Package, Users, IdCard, Clock, Megaphone, Settings,
   TrendingUp, Building, ShoppingCart, UserCheck, QrCode, MessageSquare, FileText
@@ -25,6 +25,7 @@ type Module = {
 
 export default function EnterpriseDashboard() {
   const t = useTranslations('enterprise');
+  const locale = useLocale();
   const router = useRouter();
   const supabase = createClient();
   const realtimeChannels = useRef<any[]>([]);
@@ -151,20 +152,18 @@ export default function EnterpriseDashboard() {
           return;
         }
 
-        // 🔹 Affiche un loader pendant la vérification
         setLoading(true);
 
-        // 🔹 Vérification améliorée : plan OU entreprise existante
         const [{ data: profile }, { data: company }] = await Promise.all([
           supabase.from('profiles').select('plan').eq('id', user.id).single(),
-          supabase.from('companies').select('id').eq('owner_id', user.id).single()
+          supabase.from('companies').select('id').eq('owner_id', user.id).maybeSingle()
         ]);
 
-        // ✅ Autorise l'accès si :
-        // - Le plan est 'entreprise' OU
-        // - Une entreprise existe (même si le plan n'est pas encore sync)
-        if (profile?.plan !== 'entreprise' && !company) {
-          console.warn('⚠️ Accès refusé — ni plan entreprise, ni entreprise associée');
+        const plan = profile?.plan?.toLowerCase();
+        const isEnterprisePlan = plan === 'entreprise';
+        
+        // Sécurité : Redirection si pas d'entreprise et pas de plan entreprise
+        if (!company && !isEnterprisePlan) {
           router.push('/dashboard');
           return;
         }
@@ -178,7 +177,7 @@ export default function EnterpriseDashboard() {
         userId = user.id;
         companyId = company.id;
 
-        // 🔹 Chargement initial
+        // 🔹 Chargement initial des stats
         await fetchAndUpdateStats(companyId, userId);
 
         // 🔹 🔁 REALTIME — Commandes
@@ -220,8 +219,8 @@ export default function EnterpriseDashboard() {
           .subscribe();
 
         realtimeChannels.current = [ordersChannel, employeesChannel, cardsChannel];
-      } catch (err) {
-        console.error('❌ Init échouée:', err);
+      } catch (err: any) {
+        console.error('❌ Init échouée (EnterpriseDashboard):', err);
         router.push('/dashboard');
       }
     };

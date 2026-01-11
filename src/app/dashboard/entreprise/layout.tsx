@@ -20,11 +20,16 @@ export default async function AdminLayout({
 
   const { data : profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, plan')
     .eq('id', user.id)
     .single();
 
-  if (profile?.role !== 'admin') {
+  // Autorise l'accès si Admin OU Plan Entreprise
+  const isEnterprise = profile?.plan?.toLowerCase() === 'entreprise';
+  const isAdmin = profile?.role === 'admin';
+
+  if (!isAdmin && !isEnterprise) {
+    console.warn('🚫 Accès Layout Entreprise refusé:', { role: profile?.role, plan: profile?.plan });
     redirect('/dashboard');
   }
 
