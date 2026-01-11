@@ -11,8 +11,8 @@ type Scan = {
   id: string;
   scan_type: string;
   created_at: string;
-  profile_id: string;       // ✅ obligatoire pour le filtre
-  scanner_id?: string;      // ✅ optionnel (peut être null pour anonyme)
+  profile_id: string;
+  scanner_id?: string;
   profiles?: {
     username?: string;
     full_name?: string;
@@ -62,16 +62,32 @@ export default function DashboardClient() {
       if (!session?.user) return router.push('/auth/sign-in');
       setUser(session.user);
 
-      // 🔹 Profil + scans
-      const { data: profileData } = await supabase
+      // 🔹 Profil (sans nfc_cards pour l'instant)
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          nfc_cards(*)
-        `)
+        .select('*') // ✅ Supprimé nfc_cards ici
         .eq('id', session.user.id)
         .single();
+
+      if (profileError || !profileData) {
+        console.error('❌ Profil introuvable');
+        return router.push('/auth/sign-in');
+      }
+
+      // 🔹 ✅ VÉRIFICATION ONBOARDING
+      if (!profileData.onboarding_done) {
+        console.log('🔄 Redirection vers onboarding incomplet');
+        return router.push('/auth/complete'); // ✅ ou votre route de complétion
+      }
+
       setProfile(profileData);
+
+      // 🔹 Chargement des cartes NFC (seulement si onboarding terminé)
+      const { data: cardsData } = await supabase
+        .from('nfc_cards')
+        .select('*')
+        .eq('profile_id', session.user.id);
+      setProfile(prev => ({ ...prev, nfc_cards: cardsData || [] }));
 
       // 🔹 Followers
       const { count } = await supabase
@@ -112,7 +128,6 @@ export default function DashboardClient() {
           filter: `profile_id=eq.${session.user.id}`,
         }, async (payload) => {
           const newScan = payload.new as Scan;
-          // Récupère les détails du scanner
           const { data: scannerProfile } = await supabase
             .from('profiles')
             .select('username, full_name')
