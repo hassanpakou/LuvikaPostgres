@@ -120,7 +120,7 @@ export default function DashboardClient() {
           filter: `profile_id=eq.${session.user.id}`,
         }, async (payload) => {
           const newScan = payload.new as Scan;
-          const {  scannerProfile } = await supabase
+          const { data : scannerProfile } = await supabase
             .from('profiles')
             .select('username, full_name')
             .eq('id', newScan.scanner_id)
