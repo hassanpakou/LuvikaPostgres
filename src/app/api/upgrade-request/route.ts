@@ -50,9 +50,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Vous avez déjà ce plan' }, { status: 400 });
     }
 
-    // 🔹 Validation du parcours
-    if (planOrder[target_plan] <= planOrder[currentPlan]) {
-      return NextResponse.json({ error: 'Mise à niveau invalide' }, { status: 400 });
+    // ✅ Validation du parcours : basic → premium → entreprise
+    if (planOrder[target_plan] !== planOrder[currentPlan] + 1) {
+      return NextResponse.json({ 
+        error: 'Mise à niveau invalide : vous devez suivre le parcours étape par étape' 
+      }, { status: 400 });
     }
 
     // 🔹 Enregistre la demande SANS créer l'entreprise
