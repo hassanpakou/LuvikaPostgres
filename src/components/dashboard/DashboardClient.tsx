@@ -58,12 +58,12 @@ export default function DashboardClient() {
 
     const init = async () => {
       // 🔹 Auth
-      const {  { session } } = await supabase.auth.getSession();
+      const { data : { session } } = await supabase.auth.getSession();
       if (!session?.user) return router.push('/auth/sign-in');
       setUser(session.user);
 
       // 🔹 Profil (sans nfc_cards)
-      const {  profileData, error: profileError } = await supabase
+      const { data : profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
