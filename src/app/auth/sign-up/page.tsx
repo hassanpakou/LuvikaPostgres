@@ -203,10 +203,10 @@ export default function SignUpPage() {
   };
 
   const stepTitles = {
-    plan: t('auth.signup.choose_plan'),
-    identity: t('auth.signup.title'),
-    email: t('auth.signup.email_step'),
-    security: t('auth.signup.security_step'),
+    plan: t(''),
+    identity: t(''),
+    email: t(''),
+    security: t(''),
   };
 
   return (
