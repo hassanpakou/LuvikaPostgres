@@ -1,3 +1,4 @@
+// src/src/components/dashboard/DashboardClient.tsx
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -57,13 +58,12 @@ export default function DashboardClient() {
 
     const init = async () => {
       try {
-        // 🔹 ✅ UTILISE getUser() — PAS getSession()
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        // 🔹 ✅ UTILISE getUser() — validation côté serveur
+        const { data : { user: authUser }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !authUser) {
           if (!hasRedirected.current) {
             hasRedirected.current = true;
-            console.warn('🚨 Session invalide — redirection vers /auth/sign-in');
             router.push('/auth/sign-in');
           }
           return;
@@ -71,36 +71,34 @@ export default function DashboardClient() {
 
         setUser(authUser);
 
-        // 🔹 Charger le profil
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            nfc_cards!inner(*)
-          `)
-          .eq('id', authUser.id)
-          .single();
+       // 🔹 ✅ CORRECTION CLÉ : syntaxe valide sans commentaires
+const { data: profileData, error: profileError } = await supabase
+  .from('profiles')
+  .select(`
+    *,
+    nfc_cards(*)
+  `)
+  .eq('id', authUser.id)
+  .single();
 
-        // 🔹 Si profil absent → onboarding
+        // 🔹 ✅ Redirige vers /complete-profile si profil absent
         if (profileError || !profileData) {
           if (!hasRedirected.current) {
             hasRedirected.current = true;
-            console.error('🚨 Profil introuvable — redirection vers /complete-profile');
             router.push('/complete-profile');
           }
           return;
         }
 
-        // 🔹 Si onboarding non terminé → onboarding
+        // 🔹 ✅ Redirige si onboarding non terminé
         if (profileData.onboarding_done !== true) {
           if (!hasRedirected.current) {
             hasRedirected.current = true;
-            console.warn('⚠️ Onboarding non terminé — redirection vers /complete-profile');
             router.push('/complete-profile');
           }
           return;
         }
-console.log('🔍 Profile query result:', { profileData, profileError });
+
         setProfile(profileData);
 
         // 🔹 Followers
@@ -111,7 +109,7 @@ console.log('🔍 Profile query result:', { profileData, profileError });
         setFollowers(count || 0);
 
         // 🔹 Scans
-        const { data: scansData } = await supabase
+        const { data : scansData } = await supabase
           .from('scans')
           .select('*, profiles!left(username, full_name)')
           .eq('profile_id', authUser.id)
@@ -120,7 +118,7 @@ console.log('🔍 Profile query result:', { profileData, profileError });
         setScans(scansData || []);
         setTotalScans(scansData?.length || 0);
 
-        // 🔹 QR Code
+        // 🔹 ✅ Protection QR : vérifie que username existe
         if (profileData.username) {
           const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app')
             .trim()
@@ -146,7 +144,7 @@ console.log('🔍 Profile query result:', { profileData, profileError });
             filter: `profile_id=eq.${authUser.id}`,
           }, async (payload) => {
             const newScan = payload.new as Scan;
-            const { data: scannerProfile } = await supabase
+            const { data : scannerProfile } = await supabase
               .from('profiles')
               .select('username, full_name')
               .eq('id', newScan.scanner_id)
@@ -198,7 +196,7 @@ console.log('🔍 Profile query result:', { profileData, profileError });
       totalScans={totalScans}
       totalFollowers={followers}
       qrBase64={qrBase64}
-      profileUrl={`${process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, '') || 'https://luvika.vercel.app'}/${profile.username}`}
+      profileUrl={`https://luvika.me/${profile.username}`}
       planColors={PLAN_COLORS}
       isAdmin={isAdmin}
     />
