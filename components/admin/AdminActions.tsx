@@ -10,7 +10,7 @@ import {
   Users, CreditCard, Scan, Package, Shield, BarChart3, 
   Send, Eye, MessageCircle, QrCode, AlertTriangle, FileText 
 } from 'lucide-react';
-import UserSelector from '@/src/app/(admin)/UserSelector';
+import UserSelector from '@/src/app/admin/UserSelector';
 import { createClient } from '@/src/lib/supabase/client';
 
 type Stats = {
@@ -99,14 +99,14 @@ export default function AdminActions() {
 
   // 🔹 Modules admin
   const modules = [
-    { key: 'subscriptions', icon: CreditCard, title: t('admin.modules.subscriptions.title'), description: t('admin.modules.subscriptions.description'), href: '/admin/subscriptions', stat: stats?.active_subscriptions },
-    { key: 'nfc', icon: Shield, title: t('admin.modules.nfc.title'), description: t('admin.modules.nfc.description'), href: '/admin/nfc', stat: stats?.nfc_cards },
-    { key: 'users', icon: Users, title: t('admin.modules.users.title'), description: t('admin.modules.users.description'), href: '/admin/users', stat: stats?.total_users },
-    { key: 'orders', icon: Package, title: t('admin.modules.orders.title'), description: t('admin.modules.orders.description'), href: '/admin/orders', stat: stats?.orders },
-    { key: 'contact_requests', icon: MessageCircle, title: 'Messages visiteurs', description: 'Gérez les demandes de contact', href: '/admin/contact-requests', badge: { color: 'bg-yellow-500/20 text-yellow-300', icon: AlertTriangle } },
-    { key: 'events', icon: QrCode, title: 'Événements', description: 'Créez et gérez des QR codes d’événements', href: '/admin/events', badge: { color: 'bg-cyan-500/20 text-cyan-300', icon: Eye } },
-    { key: 'upgrade_requests', icon: FileText, title: 'Demandes de mise à niveau', description: 'Approuvez ou rejetez les demandes Premium', href: '/admin/upgrade-requests', badge: { color: 'bg-purple-500/20 text-purple-300', icon: Shield } },
-    { key: 'analytics', icon: BarChart3, title: t('admin.modules.analytics.title'), description: t('admin.modules.analytics.description'), href: '/admin/analytics' },
+    { key: 'subscriptions', icon: CreditCard, title: t('admin.modules.subscriptions.title'), description: t('admin.modules.subscriptions.description'), href: '/admin/admin/subscriptions', stat: stats?.active_subscriptions },
+    { key: 'nfc', icon: Shield, title: t('admin.modules.nfc.title'), description: t('admin.modules.nfc.description'), href: '/admin/admin/nfc', stat: stats?.nfc_cards },
+    { key: 'users', icon: Users, title: t('admin.modules.users.title'), description: t('admin.modules.users.description'), href: '/admin/admin/users', stat: stats?.total_users },
+    { key: 'orders', icon: Package, title: t('admin.modules.orders.title'), description: t('admin.modules.orders.description'), href: '/admin/admin/orders', stat: stats?.orders },
+    { key: 'contact_requests', icon: MessageCircle, title: 'Messages visiteurs', description: 'Gérez les demandes de contact', href: '/admin/admin/contact-requests', badge: { color: 'bg-yellow-500/20 text-yellow-300', icon: AlertTriangle } },
+    { key: 'events', icon: QrCode, title: 'Événements', description: 'Créez et gérez des QR codes d’événements', href: '/admin/admin/events', badge: { color: 'bg-cyan-500/20 text-cyan-300', icon: Eye } },
+    { key: 'upgrade_requests', icon: FileText, title: 'Demandes de mise à niveau', description: 'Approuvez ou rejetez les demandes Premium', href: '/admin/admin/upgrade-requests', badge: { color: 'bg-purple-500/20 text-purple-300', icon: Shield } },
+    { key: 'analytics', icon: BarChart3, title: t('admin.modules.analytics.title'), description: t('admin.modules.analytics.description'), href: '/admin/admin/analytics' },
   ];
 
   return (

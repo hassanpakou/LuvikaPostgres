@@ -1,7 +1,7 @@
 // src/app/[locale]/pricing/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import PricingPlans from '../../../components/pricing/PricingPlans';
+import PricingPlans from '@/src/components/pricing/PricingPlans';
 
 export default async function PricingPage({
   params,

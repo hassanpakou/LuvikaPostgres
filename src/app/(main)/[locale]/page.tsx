@@ -1,7 +1,7 @@
 // src/app/[locale]/page.tsx
 // ✅ Page d'accueil animée — Server Component + Client Components
 
-import { HomePageContent } from '../../components/home/HomePageContent';
+import { HomePageContent } from '@/src/components/home/HomePageContent';
 
 export default async function LocalizedHomePage({
   params,
