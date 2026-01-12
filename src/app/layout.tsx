@@ -53,7 +53,7 @@ export default async function RootLayout({
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white`} suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
-          <Toaster /> {/* ← Obligatoire pour voir les toasts */}
+          <Toaster richColors position="top-right" />{/* ← Obligatoire pour voir les toasts */}
         </NextIntlClientProvider>
       </body>
     </html>

@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Edit, Trash2, Eye, Share2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner'; // ← optionnel mais recommandé
+import { toast } from 'sonner';
 
 export default function ShopPage() {
   const t = useTranslations('enterprise.modules.shop');
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [username, setUsername] = useState<string | null>(null); // ← pour le partage
+  const [username, setUsername] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -32,6 +32,9 @@ export default function ShopPage() {
 
       if (profile?.username) {
         setUsername(profile.username);
+        console.log("✅ Username chargé :", profile.username); // ← Diagnostic ajouté
+      } else {
+        console.warn("⚠️ Aucun username trouvé pour l'utilisateur", user.id);
       }
 
       // Récupère l'entreprise
@@ -64,13 +67,13 @@ export default function ShopPage() {
       return () => { supabase.removeChannel(channel); };
     };
 
-    
     fetchShopData();
   }, []);
 
   const handleShareShop = () => {
     if (!username) {
       toast.error("Impossible de générer le lien");
+      console.error("❌ Username manquant, impossible de partager");
       return;
     }
     const locale = localStorage.getItem('NEXT_LOCALE') || 'fr';
