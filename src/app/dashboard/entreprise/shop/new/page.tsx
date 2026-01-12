@@ -1,4 +1,4 @@
-// src/app/dashboard/entreprise/shop/new.tsx
+// src/app/dashboard/entreprise/shop/new/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -14,9 +14,23 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
 export default function NewProductPage() {
-  const t = useTranslations('enterprise.shop');
+  const t = useTranslations('enterprise.modules.shop');
   const router = useRouter();
   const supabase = createClient();
+
+  // 🔑 Fonction de nettoyage du slug — accessible partout
+  const cleanSlug = (input: string): string => {
+    return input
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/[\s-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  };
+
+  const [previewSlug, setPreviewSlug] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -60,9 +74,11 @@ export default function NewProductPage() {
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
+      // ✅ AWAIT obligatoire ici
+      const { data } = await supabase.storage
         .from('product-images')
         .getPublicUrl(fileName);
+        
       urls.push(data.publicUrl);
     }
     return urls;
@@ -73,17 +89,37 @@ export default function NewProductPage() {
     setSaving(true);
 
     try {
-      const { data : { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Récupère l'entreprise
-      const { data : company } = await supabase
+      const { data: company } = await supabase
         .from('companies')
         .select('id')
         .eq('owner_id', user.id)
         .single();
 
       if (!company) throw new Error('Company not found');
+
+      // 🔑 Génère toujours un slug à partir du nom si non fourni ou invalide
+      let finalSlug = formData.slug ? cleanSlug(formData.slug) : '';
+      if (!finalSlug) {
+        finalSlug = cleanSlug(formData.name);
+      }
+
+      // ❌ Bloque les slugs vides ou trop courts
+      if (!finalSlug || finalSlug.length < 2) {
+        toast.error(t('missing_fields'));
+        setSaving(false);
+        return;
+      }
+
+      // ❌ Bloque les slugs réservés ou suspects
+      const reservedSlugs = ['admin', 'api', 'auth', 'dashboard', 'p', 'shop', 'profile'];
+      if (reservedSlugs.includes(finalSlug) || /https?:|www|\.(com|net|org)/.test(formData.slug)) {
+        toast.error(t('invalid_slug'));
+        setSaving(false);
+        return;
+      }
 
       // Upload images
       let imageUrls: string[] = [];
@@ -99,7 +135,7 @@ export default function NewProductPage() {
         .insert({
           seller_id: company.id,
           name: formData.name.trim(),
-          slug: formData.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+          slug: finalSlug,
           description: formData.description.trim(),
           price: parseFloat(formData.price),
           promo_price: formData.promo_price ? parseFloat(formData.promo_price) : null,
@@ -155,30 +191,27 @@ export default function NewProductPage() {
                       type="button"
                       onClick={() => removeImage(index)}
                       className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
-                    aria-label="Supprimer l’image"
->
+                      aria-label="Supprimer l’image"
+                    >
                       <X className="w-3 h-3 text-white" />
                     </button>
                   </div>
                 ))}
                 {images.length < 5 && (
                   <label
-  className="w-20 h-20 border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/5"
->
-  <span className="sr-only">Ajouter des images du produit</span>
-
-  <Plus className="w-6 h-6 text-gray-400" />
-
-  <input
-    type="file"
-    accept="image/*"
-    multiple
-    onChange={handleImageChange}
-    className="hidden"
-    aria-describedby="product-images-help"
-  />
-</label>
-
+                    className="w-20 h-20 border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center cursor-pointer hover:bg-white/5"
+                  >
+                    <span className="sr-only">Ajouter des images du produit</span>
+                    <Plus className="w-6 h-6 text-gray-400" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageChange}
+                      className="hidden"
+                      aria-describedby="product-images-help"
+                    />
+                  </label>
                 )}
               </div>
               <p className="text-xs text-gray-400 mt-1">{t('image_help_multi')}</p>
@@ -191,7 +224,13 @@ export default function NewProductPage() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) => {
+                    const newName = e.target.value;
+                    setFormData(prev => ({ ...prev, name: newName }));
+                    if (!formData.slug.trim()) {
+                      setPreviewSlug(cleanSlug(newName));
+                    }
+                  }}
                   required
                 />
               </div>
@@ -200,9 +239,20 @@ export default function NewProductPage() {
                 <Input
                   id="slug"
                   value={formData.slug}
-                  onChange={(e) => setFormData({...formData, slug: e.target.value})}
+                  onChange={(e) => {
+                    const newSlug = e.target.value;
+                    setFormData(prev => ({ ...prev, slug: newSlug }));
+                    if (newSlug.trim() === '') {
+                      setPreviewSlug(cleanSlug(formData.name));
+                    }
+                  }}
                   required
                 />
+                {formData.slug.trim() === '' && previewSlug && (
+                  <p className="text-xs text-cyan-400 mt-1">
+                    {t('slug_preview')}: <code className="bg-cyan-900/30 px-1 rounded">{previewSlug}</code>
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="price">{t('price')}</Label>
@@ -212,7 +262,7 @@ export default function NewProductPage() {
                   min="0"
                   step="0.01"
                   value={formData.price}
-                  onChange={(e) => setFormData({...formData, price: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                   required
                 />
               </div>
@@ -224,7 +274,7 @@ export default function NewProductPage() {
                   min="0"
                   step="0.01"
                   value={formData.promo_price}
-                  onChange={(e) => setFormData({...formData, promo_price: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, promo_price: e.target.value })}
                 />
               </div>
               <div>
@@ -234,7 +284,7 @@ export default function NewProductPage() {
                   type="number"
                   min="0"
                   value={formData.stock_quantity}
-                  onChange={(e) => setFormData({...formData, stock_quantity: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
                   required
                 />
               </div>
@@ -243,7 +293,7 @@ export default function NewProductPage() {
                 <Input
                   id="sku"
                   value={formData.sku}
-                  onChange={(e) => setFormData({...formData, sku: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                 />
               </div>
             </div>
@@ -253,7 +303,7 @@ export default function NewProductPage() {
               <Textarea
                 id="description"
                 value={formData.description}
-                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
               />
             </div>

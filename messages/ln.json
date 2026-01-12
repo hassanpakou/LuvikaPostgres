@@ -515,230 +515,304 @@
     "completed": "complété",
     "view_public_profile": "Voir mon profil public"
   },
-  "about": {
-    "title": "À propos",
-    "subtitle": "LUVIKA est né d’une vision simple : redonner du sens au networking professionnel, avec élégance, sécurité, et fierté africaine.",
-    "mission": {
-      "title": "Notre mission",
-      "content": "Transformer la carte de visite physique en une identité numérique intelligente, contrôlable, sécurisée, et accessible à tous — en particulier aux entrepreneurs, développeurs, et leaders africains."
-    },
-    "values": {
-      "security": "Sécurité",
-      "security_desc": "Vos données restent sous votre contrôle. Rien n’est partagé sans votre consentement.",
-      "accessibility": "Accessibilité",
-      "accessibility_desc": "Une interface simple, multilingue (français, lingála, anglais), conçue pour tous.",
-      "african_pride": "Fierté africaine",
-      "african_pride_desc": "Une solution pensée à Kinshasa, pour l’Afrique et le monde."
-    },
-    "team": {
-      "title": "Notre équipe",
-      "content": "Une équipe passionnée de développeurs, designers, et entrepreneurs basée à Kinshasa, RDC.",
-      "cta": "Rejoignez-nous"
-    }
+"about": {
+  "title": "Makambo mpo na biso",
+  "subtitle": "LUVIKA ebimisami na vision ya moke : kopesa ndenge ya solo na networking ya profesionel, na elegance, sécurité, mpe fierté africaine.",
+  "mission": {
+    "title": "Mission na biso",
+    "content": "Kobongisa carte ya visite ya physique na identité numérique ya malamu, oyo ekoki kozwa contrôle, sécurisée, mpe accessible na bato nyonso — mingi mpo na entrepreneurs, développeurs, mpe ba leaders ya Afrique."
   },
-  "contact": {
-    "title": "Contact",
-    "subtitle": "Une question, une idée, une collaboration ? On adore échanger.",
-    "address": "Adresse",
-    "email": "Email",
-    "phone": "Téléphone",
-    "form_title": "Envoyez-nous un message",
-    "name": "Nom",
-    "name_placeholder": "Votre nom",
-    "message": "Message",
-    "message_placeholder": "Bonjour, je voudrais...",
-    "send": "Envoyer"
+  "values": {
+    "security": "Sécurité",
+    "security_desc": "Ba données na yo ekomi na contrôle na yo. Mosala te ezo partager soki okanisi te.",
+    "accessibility": "Accessibilité",
+    "accessibility_desc": "Interface ya simple, multilingual (français, lingála, anglais), ebimisami mpo na bato nyonso.",
+    "african_pride": "Fierté africaine",
+    "african_pride_desc": "Solution oyo ebongisami na Kinshasa, mpo na Afrique mpe mokili mobimba."
   },
-  "download": {
-    "title": "Télécharger",
-    "subtitle": "LUVIKA est gratuit, ouvert à tous, et fonctionne sans installation.",
-    "step1": {
-      "title": "1. Créez votre profil",
-      "desc": "En 2 minutes, remplissez vos infos et personnalisez votre identité."
-    },
-    "step2": {
-      "title": "2. Générez votre QR Code",
-      "desc": "Ou associez une carte NFC (option Premium)."
-    },
-    "step3": {
-      "title": "3. Partagez !",
-      "desc": "Scan → contact sauvegardé → connexion établie."
-    },
-    "cta_title": "Prêt à révéler qui tu es ?",
-    "cta_desc": "Commencez gratuitement — aucune carte bancaire requise.",
-    "download_now": "Commencer maintenant"
+  "team": {
+    "title": "Equipe na biso",
+    "content": "Equipe ya passionnée ya développeurs, designers, mpe entrepreneurs oyo ezali na Kinshasa, RDC.",
+    "cta": "Kokutana na biso"
+  }
+}
+,
+"contact": {
+  "title": "Kokanisa",
+  "subtitle": "Motuna moko, idée moko, collaboration ? Tozali kosepela koyebisa.",
+  "address": "Adresse",
+  "email": "Email",
+  "phone": "Nimero ya telefone",
+  "form_title": "Tuma biso message",
+  "name": "Nkombo",
+  "name_placeholder": "Nkombo na yo",
+  "message": "Message",
+  "message_placeholder": "Mbote, nalingi...",
+  "send": "Tuma"
+}
+,
+"download": {
+  "title": "Kozua",
+  "subtitle": "LUVIKA ezali gratuit, ezali ouvert pona bato nyonso, mpe ezali kosala na nzela ya sans installation.",
+  "step1": {
+    "title": "1. Salá profil na yo",
+    "desc": "Na minutes 2, tiela makambo na yo mpe personalizá identité na yo."
+  },
+  "step2": {
+    "title": "2. Bimisa QR Code na yo",
+    "desc": "To soki olingi, sala association na carte NFC (option Premium)."
+  },
+  "step3": {
+    "title": "3. Sambá !",
+    "desc": "Scan → contact ezwaki → connexion ekomi."
+  },
+  "cta_title": "Ozali prêt kozala oyo ozali ?",
+  "cta_desc": "Tanga gratuit — te carte bancaire esengeli.",
+  "download_now": "Tanga sik’oyo"
+}
+,
+  "footer": {
+  "product": "Produit",
+  "features": "Mikano",
+  "pricing": "Mitindo",
+  "download": "Kozua",
+  "company": "Entreprise",
+  "about": "Makambo",
+  "contact": "Tuna biso",
+  "blog": "Blog",
+  "legal": "Mibeko",
+  "privacy": "Bokebi ya makambo",
+  "terms": "Mibeko ya kosalela",
+  "cookies": "Kobatela cookies",
+  "tagline": "LUVIKA — Zalá oyo ozali. Carte digitale oyo ezali malamu, Afrika, mpe oyo ebetamaka.",
+  "copyright": "Bokonzi nyonso ezali reservé. Ebandaki na Kinshasa na motema."
+}
+,
+  "pricing": {
+  "title": "Plan & Mitindo",
+  "billing": {
+    "monthly": "Sanza na sanza",
+    "yearly": "Mbula moko",
+    "per_month": "/sanza",
+    "per_year": "/mbula"
+  },
+  "cta": {
+    "choose": "Lobela {plan}"
   },
   "footer": {
-    "product": "Produit",
-    "features": "Fonctionnalités",
-    "pricing": "Tarifs",
-    "download": "Télécharger",
-    "company": "Entreprise",
-    "about": "À propos",
-    "contact": "Contact",
-    "blog": "Blog",
-    "legal": "Légal",
-    "privacy": "Confidentialité",
-    "terms": "Conditions d'utilisation",
-    "cookies": "Gestion des cookies",
-    "tagline": "LUVIKA — Révèle qui tu es. Une identité numérique intelligente, africaine, et sécurisée.",
-    "copyright": "Tous droits réservés. Conçu à Kinshasa avec ❤️."
+    "custom_plan": "Ozali na mposa ya plan oyo ebongisamaka na yo?",
+    "contact_us": "Tuna biso"
   },
-  "pricing": {
-    "title": "Plans & Tarifs",
-    "billing": {
-      "monthly": "Mensuel",
-      "yearly": "Annuel",
-      "per_month": "/mois",
-      "per_year": "/an"
-    },
-    "cta": {
-      "choose": "Choisir {plan}"
-    },
-    "footer": {
-      "custom_plan": "Besoin d’un plan personnalisé ?",
-      "contact_us": "Contactez-nous"
-    },
     "plans": {
-      "freemium": {
-        "title": "Freemium",
-        "desc": "Pour commencer",
-        "popular": "Le plus populaire",
-        "features": {
-          "nfc": "1 carte NFC",
-          "users": "1 utilisateur",
-          "events": "Pas d’événements",
-          "presence": "Visibilité de base",
-          "stats": "Statistiques limitées",
-          "roles": "Pas de rôles d’équipe",
-          "dashboard": "Dashboard simple"
-        }
-      },
       "premium": {
-        "title": "Premium",
-        "desc": "Pour les pros ambitieux",
-        "popular": "Le plus populaire",
-        "features": {
-          "nfc": "Cartes NFC illimitées",
-          "users": "Jusqu’à 5 utilisateurs",
-          "events": "Événements basiques",
-          "presence": "Mise en avant",
-          "stats": "Statistiques avancées",
-          "roles": "Rôles d’équipe",
-          "dashboard": "Dashboard avancé"
-        }
-      },
+  "title": "Premium",
+  "desc": "Po ba pros oyo bazali na ndingisa",
+  "popular": "Oyebi mingi",
+  "features": {
+    "nfc": "Bilaka NFC te‑limité",
+    "users": "Banda na ba utilisateurs 5",
+    "events": "Evenements ya ntina",
+    "presence": "Kokende na motuya",
+    "stats": "Statistiques avancés",
+    "roles": "Roles ya équipe",
+    "dashboard": "Dashboard avancé"
+  }
+}
+,
+      "premium": {
+  "title": "Premium",
+  "desc": "Po ba pros oyo bazali na ndingisa",
+  "popular": "Oyebi mingi",
+  "features": {
+    "nfc": "Bilaka NFC te‑limité",
+    "users": "Banda na ba utilisateurs 5",
+    "events": "Evenements ya ntina",
+    "presence": "Kokende na motuya",
+    "stats": "Statistiques avancés",
+    "roles": "Roles ya équipe",
+    "dashboard": "Dashboard avancé"
+  }
+}
+,
       "entreprise": {
-        "title": "Entreprise",
-        "desc": "Pour équipes & entreprises",
-        "popular": "",
-        "features": {
-          "nfc": "Cartes NFC illimitées + custom",
-          "users": "Utilisateurs illimités",
-          "events": "Événements avancés",
-          "presence": "Visibilité prioritaire",
-          "stats": "Analytics consolidés",
-          "roles": "Rôles avancés + audit",
-          "dashboard": "Dashboard global + API"
-        }
+  "title": "Entreprise",
+  "desc": "Pona lisanga mpe entreprise",
+  "popular": "",
+  "features": {
+    "nfc": "Bilaka NFC te‑limité + personnalisé",
+    "users": "Ba utilisateurs te‑limité",
+    "events": "Evenements avancés",
+    "presence": "Kokende na visibilité prioritaire",
+    "stats": "Analytics consolidés",
+    "roles": "Roles avancés + audit",
+    "dashboard": "Dashboard global + API"
+  }
       }
     }
   },
-  "validate_button": "Valider",
-  "cancel_button": "Annuler",
-  "confirm_cancel": "Êtes-vous sûr de vouloir annuler cette commande ? Cette action est irréversible.",
-  "action_success": {
-    "validate": "✅ Commande validée !",
-    "cancel": "✅ Commande annulée."
-  },
-  "action_error": {
-    "validate": "❌ Échec validation",
-    "cancel": "❌ Échec annulation"
-  },
+"validate_button": "Sikisa",
+"cancel_button": "Kokanisa",
+"confirm_cancel": "Ozali na solo mpo na kokanisa commande oyo ? Mosala oyo ekoki te kozongela.",
+"action_success": {
+  "validate": "✅ Commande esikisé !",
+  "cancel": "✅ Commande ekomaki kokanisa."
+},
+"action_error": {
+  "validate": "❌ Echec ya sikiselo",
+  "cancel": "❌ Echec ya kokanisa"
+}
+,
   "common": {
-    "save": "Enregistrer",
-    "saving": "Enregistrement..."
-  },
-  "enterprise": {
-    "title": "🏢 Espace Entreprise",
-    "subtitle": "Gérez votre boutique, vos employés, vos cartes et votre présence — en temps réel.",
-    "modules": {
-      "dashboard": {
-        "title": "Tableau de bord",
-        "desc": "Vue d’ensemble en temps réel de votre activité"
-      },
-      "shop": {
-        "title": "Boutique & Produits",
-        "desc": "Catalogue public, stock, promotions",
-        "edit_title": "Modifier le produit",
-        "product_info": "Informations produit",
-        "image": "Image",
-        "image_help": "JPG/PNG jusqu’à 5MB",
-        "name": "Nom du produit",
-        "name_placeholder": "ex: T-shirt LUVIKA",
-        "slug": "URL personnalisée",
-        "slug_placeholder": "tshirt-luvika",
-        "description": "Description",
-        "description_placeholder": "Décrivez votre produit...",
-        "price": "Prix",
-        "promo_price": "Prix promotionnel",
-        "stock": "Stock",
-        "sku": "Référence (SKU)",
-        "sku_placeholder": "LUVIKA-TSHIRT-001",
-        "sku_help": "Code unique pour le suivi des stocks",
-        "optional": "Optionnel",
-        "save": "Enregistrer",
-        "saving": "Sauvegarde...",
-        "cancel": "Annuler",
-        "delete": "Supprimer",
-        "save_success": "✅ Produit mis à jour",
-        "save_error": "❌ Échec de la sauvegarde",
-        "load_error": "❌ Impossible de charger le produit",
-        "upload_error": "❌ Échec de l’upload",
-        "invalid_image": "⚠️ Format invalide (JPG/PNG seulement)",
-        "image_too_large": "⚠️ Image trop grande (max 5MB)",
-        "missing_fields": "⚠️ Veuillez remplir tous les champs requis",
-        "delete_confirm": "Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.",
-        "delete_success": "✅ Produit supprimé",
-        "delete_error": "❌ Échec de la suppression",
-        "new_product": "Nouveau produit",
-        "images": "Images du produit",
-        "image_help_multi": "Jusqu’à 5 images (JPG/PNG, max 5MB)",
-        "max_5_images": "⚠️ Maximum 5 images",
-        "create_product": "Créer le produit",
-        "create_success": "✅ Produit créé",
-        "create_error": "❌ Échec création",
-        "uploading": "Upload en cours...",
-        "saving": "Sauvegarde..."
-      },
+  "save": "Bomba",
+  "saving": "Kobomba..."
+},
+"enterprise": {
+  "title": "🏢 Espace Entreprise",
+  "subtitle": "Sukisa boutique, bato bakomi, cartes mpe présence na yo — na ntango ya solo.",
+  "modules": {
+    "dashboard": {
+      "title": "Tableau de bord",
+      "desc": "Talá activité na yo na ntango ya solo"
+    },"product": {
+  "add_to_cart": "Kobakisa na panier",
+  "added_to_cart": "✅ Ekomaki na panier !",
+  "cart_error": "❌ Ekoki te kobakisa na panier",
+  "favorite_error": "❌ Likambo ya favori esili malamu te",
+  "add_to_favorites": "Kobakisa na ba favoris",
+  "remove_from_favorites": "Kokima na ba favoris",
+  "quantity": "Eteni",
+  "order_now": "Komalisa kosenga sikoyo",
+  "whatsapp_order": "Kosenga na WhatsApp",
+  "seller_not_found": "Moteki oyo aza te",
+    "no_whatsapp": "Moteki oyo azo zuama te na WhatsApp",
+    "quantity_exceeds_stock": "Eteni oyo osengi ekoki te na stock oyo ezalaka",
+"in_stock": "{count} ezali na stock",
+"add_favorite": "Kosala na kondima",
+    "remove_favorite": "Kolongola na kondima"
+
+},
+"shop": {
+  "title": "Boutique & Biloko",
+  "desc": "Catalogue ya bato nyonso, stock, promotions",
+  "edit_title": "Kobongisa eloko",
+  "product_info": "Makambo ya eloko",
+  "image": "Elilingi",
+  "image_help": "JPG/PNG mpo na 5MB",
+  "name": "Kombo ya eloko",
+  "name_placeholder": "ex: T-shirt LUVIKA",
+  "slug": "URL oyo obongisaki",
+  "slug_placeholder": "tshirt-luvika",
+  "description": "Likoniselo",
+  "description_placeholder": "Lobela eloko na yo...",
+  "price": "Mbongo",
+  "promo_price": "Mbongo ya promotion",
+  "stock": "Stock",
+  "sku": "Référence (SKU)",
+  "sku_placeholder": "LUVIKA-TSHIRT-001",
+  "sku_help": "Kode moko mpo na kosolola stock",
+  "optional": "Ya likanisi",
+  "save": "Kobika",
+  "saving": "Kobika...",
+  "cancel": "Kosila",
+  "delete": "Kofuta",
+  "save_success": "✅ Eloko esili kobika",
+  "save_error": "❌ Kobika ekufaki",
+  "load_error": "❌ Ekoki te kozwa eloko",
+  "upload_error": "❌ Upload ekufaki",
+  "invalid_image": "⚠️ Format ezangi malamu (JPG/PNG kaka)",
+  "image_too_large": "⚠️ Elilingi ekomi monene mingi (max 5MB)",
+  "missing_fields": "⚠️ Tolinga kozala na bisika nyonso",
+  "delete_confirm": "Ozali na kondima ya kofuta eloko oyo? Ekosala te mosusu.",
+  "delete_success": "✅ Eloko esili kofutwa",
+  "delete_error": "❌ Kofuta ekufaki",
+  "new_product": "Eloko ya sika",
+  "images": "Bililingi ya eloko",
+  "image_help_multi": "Mingi te 5 (JPG/PNG, max 5MB)",
+  "max_5_images": "⚠️ Max 5 bililingi",
+  "create_product": "Kokoma eloko",
+  "create_success": "✅ Eloko esili kokoma",
+  "create_error": "❌ Kokoma ekufaki",
+  "uploading": "Uploading ezali...",
+  "no_products": "Eloko te",
+  "add_product": "Kokoma eloko",
+  "edit_product": "Kobongisa eloko",
+  "delete_product": "Kofuta",
+  "view_coming_soon": "Ekozala tango mosusu",
+  "view_product": "Komona eloko",
+  "invalid_slug": "Slug esengeli kozala te na URL to ba mot ya réservés",
+  "slug_preview": "Kotala URL"
+},
       "orders": {
-        "title": "Commandes",
-        "desc": "Suivi des ventes et expéditions"
-      },
-      "employees": {
-        "title": "Employés",
-        "desc": "Gestion RH légère et rôles"
-      },
+  "title": "Ba commandes",
+  "desc": "Kobanga mposa ya biloko mpe kozwa bango",
+  "no_orders": "Commande te",
+  "total_revenue": "Mbongo nyonso",
+  "pending_orders": "Ba commandes ezali kozela",
+  "completed_orders": "Ba commandes esili",
+  "recent_orders": "Ba commandes ya sika"
+}
+
+,
+  "employees": {
+  "title": "Bato bakomi",
+  "desc": "Kobongisa bato bakomi na nzela ya malamu mpe role na bango",
+  "add_employee": "Kosalela moto",
+  "full_name": "Nkombo nyonso",
+  "full_name_placeholder": "ndakisa: Nestor P",
+  "email": "Email",
+  "email_placeholder": "phaku@entreprise.com",
+  "phone": "Nimero ya telefone",
+  "phone_placeholder": "+243 890 177 601",
+  "position": "Fonction",
+  "position_placeholder": "Développeur, RH, nsima",
+  "role": "Role",
+  "select_role": "Lobela role",
+  "roles": {
+    "employee": "Moto akomi",
+    "manager": "Manager",
+    "admin": "Administrateur"
+  },
+  "cancel": "Kokanisa",
+  "confirm_add": "Kosalela moto",
+  "adding": "Kosalela...",
+  "add_success": "✅ Moto akomaka malamu !",
+  "add_error": "❌ Kosalela moto eza na likambo. Soki lokola te."
+},
       "cards": {
         "title": "Cartes Pro",
         "desc": "Cartes NFC illimitées pour toute l’équipe"
       },
       "attendance": {
         "title": "Présence",
-        "desc": "Pointage par QR Code en temps réel"
+        "desc": "Pointage par QR Code en temps réel",
+        "recent_logs": "Présence ya sika"
       },
       "communication": {
         "title": "Communication",
-        "desc": "Messages internes et annonces"
+        "desc": "Messages internes et annonces",
+        "broadcast_title": "Message ya bato nyonso",
+        "broadcast_desc": "Tinda message na basali nyonso",
+        "message_placeholder": "Komá message awa...",
+        "send_broadcast": "Tinda",
+        "sending": "Kotinda..."
       },
       "settings": {
-        "title": "Paramètres",
-        "desc": "Configuration de votre entreprise"
-      }
+  "title": "Paramètres",
+  "desc": "Kokokisa makambo ya entreprise na yo",
+  "company_info": "Makambo ya entreprise",
+  "name": "Nkombo",
+  "email": "Email",
+  "phone": "Nimero ya telefone",
+  "address": "Adresse",
+  "save": "Bomba",
+  "saving": "Kobomba..."
+}
+
     },
     "value_prop": {
-      "title": "Votre entreprise, unifiée et vivante",
-      "desc": "Luvika n’est pas un profil — c’est votre outil métier quotidien, conçu pour l’Afrique et scalable à l’international."
-    }
+  "title": "Entreprise na yo, moko mpe esalemi",
+  "desc": "Luvika ezali te profil kaka — ezali outil ya mosala na mokolo na mokolo, esalemi mpo na Afrique mpe ekoki kokola mpe kosalela na mabele mosusu."
+}
+
   }
 }

@@ -1,4 +1,4 @@
-// src/app/dashboard/entreprise/shop/[id]/edit.tsx
+// src/app/dashboard/entreprise/shop/[id]/edit/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -29,7 +29,7 @@ type Product = {
 };
 
 export default function EditProductPage() {
-  const t = useTranslations('enterprise.shop');
+  const t = useTranslations('enterprise.modules.shop');
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const productId = params.id;
@@ -214,7 +214,7 @@ export default function EditProductPage() {
       if (error) throw error;
 
       toast.success(t('delete_success'));
-      router.push('/dashboard/entreprise/shop');
+      router.push('/shop');
     } catch (err) {
       console.error('❌ Suppression échouée:', err);
       toast.error(t('delete_error'));
@@ -392,7 +392,7 @@ export default function EditProductPage() {
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => router.push('/dashboard/entreprise/shop')}
+              onClick={() => router.push('/shop')}
               className="flex-1 border-white/20 text-white hover:bg-white/10"
             >
               <RotateCcw className="w-4 h-4 mr-2" />

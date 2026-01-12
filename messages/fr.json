@@ -667,6 +667,25 @@
         "title": "Tableau de bord",
         "desc": "Vue d’ensemble en temps réel de votre activité"
       },
+      "product": {
+    "add_to_cart": "Ajouter au panier",
+    "added_to_cart": "✅ Ajouté au panier !",
+    "cart_error": "❌ Impossible d’ajouter au panier",
+    "favorite_error": "❌ Erreur favori",
+    "add_to_favorites": "Ajouter aux favoris",
+    "remove_from_favorites": "Retirer des favoris",
+    "quantity": "Quantité",
+    "order_now": "Commander maintenant",
+    "whatsapp_order": "Commander sur WhatsApp",
+  "seller_not_found": "Vendeur introuvable",
+    "no_whatsapp": "Ce vendeur n’est pas joignable par WhatsApp",
+    "quantity_exceeds_stock": "La quantité demandée dépasse le stock disponible",
+    "in_stock": "{count} en stock",
+    "add_favorite": "Ajouter aux favoris",
+    "remove_favorite": "Retirer des favoris"
+}
+
+,
       "shop": {
         "title": "Boutique & Produits",
         "desc": "Catalogue public, stock, promotions",
@@ -709,31 +728,76 @@
         "create_success": "✅ Produit créé",
         "create_error": "❌ Échec création",
         "uploading": "Upload en cours...",
-        "saving": "Sauvegarde..."
+        "no_products": "Aucun produit enregistré",
+        "add_product": "Ajouter un produit",
+        "edit_product": "Modifier le produit",
+        "delete_product": "Supprimer",
+        "view_coming_soon": "Disponible prochainement",
+        "view_product": "Voir le produit",
+        "invalid_slug": "Le slug ne doit pas contenir d'URL ou de mots réservés",
+        "slug_preview": "Aperçu du lien"
       },
       "orders": {
         "title": "Commandes",
-        "desc": "Suivi des ventes et expéditions"
+        "desc": "Suivi des ventes et expéditions",
+        "total_revenue": "Revenu total",
+        "pending_orders": "Commandes en attente",
+        "completed_orders": "Commandes livrées",
+        "recent_orders": "Commandes récentes"
       },
       "employees": {
-        "title": "Employés",
-        "desc": "Gestion RH légère et rôles"
-      },
+  "title": "Employés",
+  "desc": "Gestion RH légère et rôles",
+  "add_employee": "Ajouter un employé",
+  "full_name": "Nom complet",
+  "full_name_placeholder": "ex: Nestor P.",
+  "email": "Email",
+  "email_placeholder": "phaku@entreprise.com",
+  "phone": "Téléphone",
+  "phone_placeholder": "+243 890 177 601",
+  "position": "Poste",
+  "position_placeholder": "Développeur, RH, etc.",
+  "role": "Rôle",
+  "select_role": "Choisir un rôle",
+  "roles": {
+    "employee": "Employé",
+    "manager": "Manager",
+    "admin": "Administrateur"
+  },
+  "cancel": "Annuler",
+  "confirm_add": "Ajouter l'employé",
+  "adding": "Ajout en cours...",
+  "add_success": "✅ Employé ajouté avec succès !",
+  "add_error": "❌ Échec de l'ajout. Réessayez."
+},
       "cards": {
         "title": "Cartes Pro",
         "desc": "Cartes NFC illimitées pour toute l’équipe"
       },
       "attendance": {
         "title": "Présence",
-        "desc": "Pointage par QR Code en temps réel"
+        "desc": "Pointage par QR Code en temps réel",
+        "recent_logs": "Présences récentes"
       },
       "communication": {
         "title": "Communication",
-        "desc": "Messages internes et annonces"
+        "desc": "Messages internes et annonces",
+        "broadcast_title": "Message global",
+        "broadcast_desc": "Envoyer un message à tous les employés",
+        "message_placeholder": "Écrivez votre message ici...",
+        "send_broadcast": "Envoyer",
+        "sending": "Envoi..."
       },
       "settings": {
         "title": "Paramètres",
-        "desc": "Configuration de votre entreprise"
+        "desc": "Configuration de votre entreprise",
+        "company_info": "Informations de l’entreprise",
+        "name": "Nom",
+        "email": "Email",
+        "phone": "Téléphone",
+        "address": "Adresse",
+        "save": "Enregistrer",
+        "saving": "Enregistrement..."
       }
     },
     "value_prop": {

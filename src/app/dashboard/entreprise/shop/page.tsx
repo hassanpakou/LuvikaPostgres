@@ -90,15 +90,24 @@ export default function ShopPage() {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end gap-2">
-                <Button variant="ghost" size="sm" onClick={() => window.open(`/${product.slug}`, '_blank')}>
-                  <Eye className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/entreprise/shop/${product.id}/edit`)}>
-                  <Edit className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                {/* 🔜 À activer quand /p/[slug] sera prêt */}
+<Button
+  variant="ghost"
+  size="sm"
+  onClick={() => {
+    const locale = localStorage.getItem('NEXT_LOCALE') || 'fr';
+    window.open(`/${locale}/p/${product.slug}`, '_blank');
+  }}
+  title={t('view_product')}
+>
+  <Eye className="w-4 h-4 text-cyan-400" />
+</Button>
+<Button variant="ghost" size="sm" onClick={() => router.push(`/dashboard/entreprise/shop/${product.id}/edit`)}>
+  <Edit className="w-4 h-4" />
+</Button>
+<Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300">
+  <Trash2 className="w-4 h-4" />
+</Button>
               </CardFooter>
             </Card>
           ))}

@@ -22,7 +22,7 @@ export function Toaster() {
               {title && <p className="font-medium">{title}</p>}
               {description && <p className="text-sm text-gray-300">{description}</p>}
             </div>
-            <button onClick={() => dismiss(id)}>
+            <button onClick={() => dismiss(id)} aria-label="Fermer la notification">
               <X className="w-4 h-4 text-gray-400 hover:text-white" />
             </button>
           </div>

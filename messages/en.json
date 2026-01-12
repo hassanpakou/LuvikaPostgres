@@ -666,7 +666,19 @@
       "dashboard": {
         "title": "Dashboard",
         "desc": "Real-time overview of your activity"
-      },
+      },"product": {
+    "add_to_cart": "Add to cart",
+    "added_to_cart": "✅ Added to cart!",
+    "cart_error": "❌ Could not add to cart",
+    "favorite_error": "❌ Favorite error",
+    "add_to_favorites": "Add to favorites",
+    "remove_from_favorites": "Remove from favorites",
+    "quantity_exceeds_stock": "Requested quantity exceeds available stock",
+"in_stock": "{count} in stock",
+"add_favorite": "Add to favorites",
+    "remove_favorite": "Remove from favorites"
+
+  },
       "shop": {
         "title": "Shop & Products",
         "desc": "Public catalog, stock, promotions",
@@ -688,7 +700,6 @@
         "sku_help": "Unique code for stock tracking",
         "optional": "Optional",
         "save": "Save",
-        "saving": "Saving...",
         "cancel": "Cancel",
         "delete": "Delete",
         "save_success": "✅ Product updated",
@@ -709,31 +720,77 @@
         "create_success": "✅ Product created",
         "create_error": "❌ Creation failed",
         "uploading": "Uploading...",
-        "saving": "Saving..."
+        "saving": "Saving...",
+        "no_products": "No products registered",
+        "add_product": "Add product",
+        "edit_product": "Edit product",
+        "delete_product": "Delete",
+        "view_coming_soon": "View coming soon",
+        "view_product": "View product",
+        "invalid_slug": "The slug must not contain URLs or reserved words",
+        "slug_preview": "slug preview"
       },
       "orders": {
         "title": "Orders",
-        "desc": "Sales and shipping tracking"
+        "desc": "Sales and shipping tracking",
+        "total_revenue": "Total revenue",
+        "pending_orders": "Pending orders",
+        "completed_orders": "Completed orders",
+        "recent_orders": "Recent orders"
       },
       "employees": {
-        "title": "Employees",
-        "desc": "Light HR management and roles"
-      },
+  "title": "Employees",
+  "desc": "Lightweight HR management and roles",
+  "add_employee": "Add Employee",
+  "full_name": "Full Name",
+  "full_name_placeholder": "e.g., Nestor P",
+  "email": "Email",
+  "email_placeholder": "phaku@company.com",
+  "phone": "Phone",
+  "phone_placeholder": "+243 890 177 601",
+  "position": "Position",
+  "position_placeholder": "Developer, HR, etc.",
+  "role": "Role",
+  "select_role": "Select a role",
+  "roles": {
+    "employee": "Employee",
+    "manager": "Manager",
+    "admin": "Administrator"
+  },
+  "cancel": "Cancel",
+  "confirm_add": "Add Employee",
+  "adding": "Adding...",
+  "add_success": "✅ Employee added successfully!",
+  "add_error": "❌ Failed to add employee. Please try again."
+},
       "cards": {
         "title": "Pro Cards",
         "desc": "Unlimited NFC cards for your entire team"
       },
       "attendance": {
         "title": "Attendance",
-        "desc": "Real-time QR Code check-in"
+        "desc": "Real-time QR Code check-in",
+        "recent_logs": "Recent attendance logs"
       },
       "communication": {
         "title": "Communication",
-        "desc": "Internal messages and announcements"
+        "desc": "Internal messages and announcements",
+        "broadcast_title": "Broadcast message",
+        "broadcast_desc": "Send a message to all employees",
+        "message_placeholder": "Write your message here...",
+        "send_broadcast": "Send",
+        "sending": "Sending..."
       },
       "settings": {
         "title": "Settings",
-        "desc": "Configure your company"
+        "desc": "Configure your company",
+        "company_info": "Company information",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "address": "Address",
+        "save": "Save",
+        "saving": "Saving..."
       }
     },
     "value_prop": {
