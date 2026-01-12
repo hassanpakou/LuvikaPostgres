@@ -688,7 +688,8 @@
     "quantity_exceeds_stock": "Eteni oyo osengi ekoki te na stock oyo ezalaka",
 "in_stock": "{count} ezali na stock",
 "add_favorite": "Kosala na kondima",
-    "remove_favorite": "Kolongola na kondima"
+    "remove_favorite": "Kolongola na kondima",
+    "no_description": "Makambo eza te"
 
 },
 "shop": {

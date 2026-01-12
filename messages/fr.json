@@ -682,7 +682,8 @@
     "quantity_exceeds_stock": "La quantité demandée dépasse le stock disponible",
     "in_stock": "{count} en stock",
     "add_favorite": "Ajouter aux favoris",
-    "remove_favorite": "Retirer des favoris"
+    "remove_favorite": "Retirer des favoris",
+    "no_description": "Aucune description"
 }
 
 ,

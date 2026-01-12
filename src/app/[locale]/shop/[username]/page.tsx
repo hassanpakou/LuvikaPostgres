@@ -17,6 +17,7 @@ interface Product {
   slug: string;
   is_active: boolean;
   created_at: string;
+  images: string[];
 }
 
 export default async function PublicShopPage({
@@ -110,9 +111,24 @@ export default async function PublicShopPage({
                   <CardTitle className="text-white">{product.name}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-gray-400 text-sm mb-4 line-clamp-2">
-                    {product.description?.slice(0, 80) || 'Aucune description'}
+                  {/* 🖼️ Image du produit */}
+                  <div className="mb-4 aspect-square w-full bg-gray-800/50 rounded-xl overflow-hidden border border-white/10 flex items-center justify-center">
+                    {product.images && product.images.length > 0 ? (
+                      <img 
+                        src={product.images[0]}
+                        alt={product.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="text-gray-500 text-lg">📷</span>
+                    )}
+                  </div>
+
+                  <p className="text-gray-400 text-sm mb-3 line-clamp-2">
+                    {product.description?.slice(0, 80) || t('no_description')}
                   </p>
+                  
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-emerald-400">
                       ${product.promo_price || product.price}
