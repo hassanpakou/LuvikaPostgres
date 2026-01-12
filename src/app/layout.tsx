@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
+import { Toaster } from 'sonner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -52,6 +53,7 @@ export default async function RootLayout({
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white`} suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <Toaster /> {/* ← Obligatoire pour voir les toasts */}
         </NextIntlClientProvider>
       </body>
     </html>

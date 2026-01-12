@@ -1166,53 +1166,61 @@ useEffect(() => {
       </div>
     </div>
 
-    {/* Wrapper des boutons */}
-    <div className="flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
-      <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
-        <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10">
-          {t('view_public')}
-        </Button>
-      </Link>
+{/* Wrapper des boutons */}
+<div className="flex flex-wrap gap-3 w-full">
 
-      <Button
-        onClick={handleExport}
-        className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500"
-      >
-        <Download className="h-4 w-4" />
-        {t('export_csv')}
-      </Button>
-
-      <Button
-        onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
-        className="w-full sm:w-auto bg-gradient-to-r from-blue-900 to-blue-900"
-      >
-        {t('orders.manage')}
-      </Button>
-
-      <Button
-        onClick={() => setIsEventModalOpen(true)}
-        className="group w-full sm:w-auto flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition-all"
-      >
-        <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
-          <Calendar className="w-4 h-4" />
-        </span>
-        <span className="font-medium">Voir vos événements</span>
-      </Button>
-
-      {/* Bouton Espace Entreprise */}
-      {subscription.plan === 'entreprise' && hasCompany && (
-  <Link href="/dashboard/entreprise">
+  {/* Voir profil public */}
+  <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
     <Button
-      className="w-full sm:w-auto bg-gradient-to-r from-indigo-700 to-purple-800 hover:from-indigo-600 hover:to-purple-700 text-white font-medium shadow-lg"
+      variant="outline"
+      className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 py-2 px-4 sm:px-6 transition"
     >
-      <span className="flex items-center gap-2">
-        <Building className="h-4 w-4" />
-        Espace Entreprise
-      </span>
+      {t('view_public')}
     </Button>
   </Link>
-)}
-    </div>
+
+  {/* Export CSV */}
+  <Button
+    onClick={handleExport}
+    className="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:from-blue-500 hover:to-cyan-400 transition transform hover:-translate-y-0.5 hover:scale-105"
+  >
+    <Download className="h-5 w-5" />
+    <span className="font-medium">{t('export_csv')}</span>
+  </Button>
+
+  {/* Gestion des commandes */}
+  <Button
+    onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
+    className="w-full sm:w-auto py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-900 to-blue-900 text-white font-medium shadow-md hover:from-blue-800 hover:to-blue-800 transition transform hover:-translate-y-0.5 hover:scale-105"
+  >
+    {t('orders.manage')}
+  </Button>
+
+  {/* Voir vos événements */}
+  <Button
+    onClick={() => setIsEventModalOpen(true)}
+    className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
+  >
+    <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
+      <Calendar className="h-5 w-5" />
+    </span>
+    <span className="font-medium">Voir vos événements</span>
+  </Button>
+
+  {/* Bouton Espace Entreprise (DISTINGUÉ) */}
+  {subscription.plan === 'entreprise' && hasCompany && (
+    <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
+      <Button
+        className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
+      >
+        <Building className="h-5 w-5" />
+        <span>Espace Entreprise</span>
+      </Button>
+    </Link>
+  )}
+
+</div>
+
   </div>
 
 <AnimatePresence>

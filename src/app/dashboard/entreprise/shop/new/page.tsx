@@ -162,7 +162,8 @@ export default function NewProductPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-white">{t('new_product')}</h1>
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button className="bg-gradient-to-r from-red-600 to-red-600 hover:from-danger-500 hover:to-danger-500 py-2.5 px-4 rounded-xl backdrop-blur-md border border-white/10 shadow-lg shadow-cyan-500/10 transition-all duration-300 flex items-center gap-2"
+     variant="ghost" size="sm" onClick={() => router.back()}>
           <X className="w-4 h-4" />
         </Button>
       </div>
