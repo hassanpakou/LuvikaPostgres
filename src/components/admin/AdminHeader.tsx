@@ -5,16 +5,7 @@ import { LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/src/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { createNotifier } from '@/src/lib/notify';
-import error from 'next/error';
-import { useTranslations } from 'next-intl';
 
-const t = useTranslations();
-const notify = createNotifier(t);
-
-if (error) {
-  notify.ServerError();
-}
 export function AdminHeader() {
   const router = useRouter();
   const supabase = createClient();
