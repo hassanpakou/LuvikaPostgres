@@ -11,7 +11,8 @@ export default async function PublicProfilePage({
   params: Promise<{ locale: string; username: string }>;
 }) {
   const { locale, username } = await params;
-  if (!['fr', 'ln', 'en'].includes(locale)) notFound();
+  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+  if (!supported.includes(locale as any)) notFound();
 
   const decodedUsername = decodeURIComponent(username).toLowerCase();
 

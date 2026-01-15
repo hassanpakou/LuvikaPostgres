@@ -13,7 +13,15 @@ import {
   User, Phone, Briefcase, 
   Check, AlertCircle, X, SkipForward 
 } from 'lucide-react';
+import { createNotifier } from '@/src/lib/notify';
+import error from 'next/error';
 
+const t = useTranslations();
+const notify = createNotifier(t);
+
+if (error) {
+  notify.ServerError();
+}
 type Step = 'identity' | 'contact' | 'bio';
 type FormData = {
   full_name: string;

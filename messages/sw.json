@@ -1,0 +1,821 @@
+{
+  "LUVIKA": "LUVIKA",
+  "tagline": "Onyesha ni nani wewe — Utambulisho wa kisasa wa kitaaluma · NFC · Kodi ya QR · Usajili · Uuzaji mtandaoni · Matukio",
+  "cta": {
+    "create": "Unda wasifu wangu",
+    "discover": "Gundua"
+  },
+  "system": {
+    "connection_lost": "LUVIKA — Muunganiko umeshindikana. Angalia mtandao wako.",
+    "connection_back": "Muunganiko umerekebishwa.",
+    "server_error": "Seva haijaipatikana. Jaribu tena baadaye.",
+    "action_error": "Hitilafu imetokea. Tafadhali jaribu tena."
+  },
+  "features": {
+    "title": "Kwa nini LUVIKA?",
+    "nfc": {
+      "title": "NFC na Kodi ya QR",
+      "desc": "Shiriki wasifu wako kwa mgusa mmoja au kupitia kodi"
+    },
+    "stats": {
+      "title": "Takwimu",
+      "desc": "Usajili, ziara, uwepo — yote yanarekodiwa"
+    },
+    "multi": {
+      "title": "Kadi nyingi",
+      "desc": "Watu wa kitaaluma? Dhibiti kadi zako nyingi za NFC"
+    },
+    "events": {
+      "title": "Matukio na Kodi za QR",
+      "create": {
+        "title": "Unda matukio",
+        "desc": "Panga maandalizi, mikutano au webinar na ukusanye taarifa zote mahali pamoja."
+      },
+      "qr": {
+        "title": "Kutengeneza kodi za QR",
+        "desc": "Shiriki kwa haraka kadi, wasifu au matukio kupitia kodi za QR zilizobadilishwa."
+      },
+      "analytics": {
+        "title": "Uchambuzi wa kina",
+        "desc": "Fuata viwango, mchanganyiko na utendaji wa kadi zako na matukio."
+      }
+    },
+    "superpro": {
+      "title": "Akaunti za Super Pro na uuzaji mtandaoni",
+      "desc": "Akaunti za Super Pro zinaruhusu biashara kuuza bidhaa na huduma moja kwa moja kutoka kwenye kadi yao ya kidijitali. Simamia kadi nyingi, fuata mauzo yako na ushiriki ofa zako kupitia kodi za QR ili kufikia wateja wako popote."
+    }
+  },
+  "event": {
+    "checkin": {
+      "success": "✅ Uwepo umethibitishwa!",
+      "thanks": "Asante kwa kushiriki katika {title}.",
+      "view_participants": "Angalia washiriki"
+    }
+  },
+  "dashboard": {
+    "greeting_morning": "Habari za asubuhi, {name} 🌞",
+    "greeting_afternoon": "Habari za mchana, {name} ☀️",
+    "greeting_evening": "Habari za jioni, {name} 🌙",
+    "greeting_night": "Hujambo, {name} 🌃",
+    "subtitle": "Simamia utambulisho wako wa kidijitali",
+    "view_public": "Tazama wasifu wangu wa umma",
+    "export_csv": "Pakua (.csv)",
+    "visibility": {
+      "title": "Uonekano wa sehemu",
+      "description": "Chagua kinachoweza kuonekana kwa wageni."
+    },
+    "quick_menu": {
+      "visibility": "Uonekano",
+      "contact": "Ujumbe",
+      "qr": "Kodi ya QR",
+      "nfc": "Kadi za NFC",
+      "report": "Ripoti",
+      "message": "Ujumbe binafsi",
+      "orders": "Oda",
+      "upgrade": "Boresha"
+    },
+    "contact_requests": {
+      "title": "Ujumbe wa wageni",
+      "description": "Ruhusu watu wanaotembelea wasifu wako wa umma kuacha ujumbe.",
+      "label": "Pokea ujumbe",
+      "enabled": "Imewashwa – wageni wanaweza kuwasiliana nawe",
+      "disabled": "Imezimwa – fomu imefichwa",
+      "enable": "Washa",
+      "disable": "Zima"
+    },
+    "time": {
+      "seconds": "sekunde {count}",
+      "seconds_plural": "sekunde {count}",
+      "minutes": "dakika {count}",
+      "minutes_plural": "dakika {count}",
+      "hours": "saa {count}",
+      "hours_plural": "saa {count}",
+      "days": "siku {count}",
+      "days_plural": "siku {count}"
+    },
+    "orders": {
+      "title": "Oda za kadi",
+      "description": "Simamia oda zako za NFC zinazofanyika.",
+      "manage": "Simamia oda"
+    },
+    "subscription": {
+      "title": "Usajili",
+      "plans": {
+        "freemium": "Freemium",
+        "basic": "Freemium",
+        "premium": "Premium",
+        "entreprise": "Biashara"
+      },
+      "active": "✅ Imefanyika",
+      "inactive": "⚠️ Haijasimamiwi",
+      "active_until": "Mpango wako utakuwa wa kusimamia hadi {date}.",
+      "upgrade_prompt": "Akaunti yako iko kwenye hali ya Freemium. Wasiliana na msimamizi ili kuweka mpango.",
+      "request_upgrade": "Omba uboreshaji",
+      "success_title": "✅ Umefanikiwa!",
+      "success_message": "Msimamizi atawasiliana nawe ndani ya saa 24.",
+      "upgrade_to_premium": "Badilisha kwa Premium",
+      "request_enterprise": "Geuza kuwa akaunti ya Biashara"
+    },
+    "qr": {
+      "title": "Kodi ya QR ya wasifu",
+      "alt": "Kodi ya QR kwa {username}",
+      "instructions": "Skanisha ili kufikia wasifu wako",
+      "open_link": "Fungua kiungo"
+    },
+    "nfc": {
+      "title": "Kadi za NFC ({count})",
+      "empty": "Hakuna kadi za NFC zilizoshirikiwa.",
+      "ago": "zilizopita",
+      "status": {
+        "active": "Imefanyika",
+        "lost": "Iliopotea",
+        "blocked": "Imezuiwa",
+        "inactive": "Haijasimamiwi"
+      },
+      "upgrade_required": "⚠️ Mpango wa Premium unahitajika",
+      "add_card": "Ongeza kadi ya NFC"
+    },
+    "stats": {
+      "title": "Takwimu za utangamano",
+      "total_scans": "Jumla ya skani",
+      "nfc_scans": "Skani za NFC",
+      "qr_scans": "Skani za QR",
+      "recent_visitors": "Wageni wa hivi karibuni",
+      "no_scans": "Hakuna skani za hivi karibuni.",
+      "anonymous": "Mgeni asiyejulikana",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
+    },
+    "other_features": {
+      "title": "Kipengele kingine",
+      "description": "Simamia kadi yako ya NFC au ushiriki ujumbe uliotengenezwa.",
+      "report_card": "Ripoti kadi yako",
+      "reasons": {
+        "lost": "Kadi iliyopotea",
+        "stolen": "Kadi iliyochomwa",
+        "damaged": "Kadi iliyoharibika",
+        "no_longer_needed": "Siwezi kuitumia tena",
+        "other": "Nyingine (eleza)"
+      },
+      "custom_reason": "Eleza sababu",
+      "custom_reason_placeholder": "Mfano: kadi imevunjika, makosa ya chapisho...",
+      "submit_report": "Ripoti kadi",
+      "custom_message": "Ujumbe uliotengenezwa",
+      "custom_message_placeholder": "Mfano: Nina badilisha nafasi, tafadhali sasisha wasifu wangu...",
+      "send_message": "Tuma ujumbe"
+    },
+    "settings": {
+      "title": "Mipangilio ya wasifu",
+      "saving": "Inahifadhi...",
+      "save": "Hifadhi",
+      "save_success": "✅ Wasifu umesasishwa",
+      "save_error": "❌ Hitilafu ya kuhifadhi",
+      "load_error": "❌ Haikuweza kupakia wasifu",
+      "avatar_uploaded": "✅ Picha ya wasifu imesasishwa",
+      "avatar_error": "❌ Hitilafu ya kupakia",
+      "avatar_invalid": "⚠️ Muundo si sahihi (JPG/PNG pekee)",
+      "cover_uploaded": "✅ Picha ya kifuniko imesasishwa",
+      "cover_error": "❌ Hitilafu ya kupakia",
+      "cover_invalid": "⚠️ Muundo si sahihi (JPG/PNG pekee)",
+      "url_copied": "✅ Kiungo kimekopiwa",
+      "photo": {
+        "title": "Picha na Kifuniko",
+        "avatar": "Picha ya wasifu",
+        "cover": "Picha ya kifuniko",
+        "upload_avatar": "Badilisha picha",
+        "upload_cover": "Bofya ili kupakia kifuniko"
+      },
+      "personal": {
+        "title": "Taarifa binafsi",
+        "full_name": "Jina kamili",
+        "full_name_placeholder": "mfano: Hassan M.",
+        "username": "Jina la mtumiaji",
+        "username_placeholder": "jina_lako",
+        "job_title": "Cheo",
+        "job_title_placeholder": "Msanidi wa Programu Kamili",
+        "company": "Kampuni",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Ukumbusho mfupi",
+        "bio_short_placeholder": "Mstari mmoja wenye nguvu",
+        "bio_long": "Ukumbusho kamili",
+        "bio_long_placeholder": "Safarnama yako, mapenzi, maadili..."
+      },
+      "contact": {
+        "title": "Mawasiliano",
+        "email": "Barua pepe",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Simu",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Anwani",
+        "address_placeholder": "Kinshasa, RDC",
+        "website": "Tovuti"
+      },
+      "visibility": {
+        "title": "Uonekano",
+        "description": "Chagua kinachonekana kwenye wasifu wako wa umma",
+        "portfolio_locked": "Fungua portfolio kwa usajili wa Premium",
+        "certificates_locked": "Vyeti vinavyotolewa kwa akaunti za Premium/Biashara pekee"
+      },
+      "advanced": {
+        "title": "Chaguzi za kina",
+        "public_profile": "Wasifu wa umma",
+        "public_profile_desc": "Inaonekana bila kuingia",
+        "contact_requests": "Ujumbe wa umma",
+        "contact_requests_desc": "Ruhusu wageni kuandika kwako",
+        "profile_url": "URL ya wasifu"
+      }
+    }
+  },
+  "auth": {
+    "welcome": {
+      "title": "Karibu!",
+      "message": "Nimefurahi kukurudi kwenye LUVIKA. Tayari kuanzisha? 🌟"
+    },
+    "complete": {
+      "title": "Kamilisha wasifu wako",
+      "description": "Taarifa chache ili kuboresha akaunti yako",
+      "full_name": "Jina kamili",
+      "full_name_placeholder": "Nestor Kipampe",
+      "username": "Jina la mtumiaji",
+      "username_placeholder": "nestor",
+      "username_hint": "Herufi ndogo, tarakimu, alama za kuunganisha na alama za chini pekee (herufi 3-20)",
+      "username_available": "Jina hili la mtumiaji linapatikana!",
+      "username_taken": "Jina hili la mtumiaji limechukuliwa tayari",
+      "username_checking": "Inathibitishwa...",
+      "submit": "Maliza akaunti yangu",
+      "saving": "Inahifadhi...",
+      "success": "Wasifu umetengenezwa kwa mafanikio!",
+      "redirecting": "Inaelekeza kwenye dashibodi yako...",
+      "error_full_name_required": "Tafadhali ingiza jina lako kamili",
+      "error_username_too_short": "Jina la mtumiaji lazima liwe na herufi angalau 3",
+      "error_generic": "Hitilafu imetokea. Tafadhali jaribu tena.",
+      "step_identity": "Utambulisho",
+      "step_contact": "Mawasiliano",
+      "step_bio": "Ukumbusho",
+      "title_identity": "1. Ni nani wewe?",
+      "desc_identity": "Jina kamili na jina la mtumiaji (URL ya wasifu wako)",
+      "title_contact": "2. Jinsi ya kuwasiliana nawe?",
+      "desc_contact": "Simu, WhatsApp — yote ni faragha kwa chaguo-msingi",
+      "title_bio": "3. Tuseme kuhusu wewe",
+      "desc_bio": "Cheo, kampuni, ukumbusho mfupi — boresha kadi yako",
+      "phone": "Simu",
+      "whatsapp": "WhatsApp",
+      "job_title": "Cheo",
+      "company": "Kampuni",
+      "bio_short": "Ukumbusho mfupi",
+      "skip": "Ruka",
+      "back": "Rudi",
+      "next": "Endelea",
+      "finish": "Maliza wasifu wangu"
+    },
+    "signup": {
+      "title": "Unda akaunti",
+      "identity_step": "1. Utambulisho",
+      "email_step": "3. Barua pepe",
+      "security_step": "4. Usalama",
+      "full_name": "Jina kamili",
+      "full_name_placeholder": "mfano: Nestor PHAKU",
+      "username": "Jina la mtumiaji (URL)",
+      "username_hint": "Wasifu wako utakuwa: {url}",
+      "email": "Barua pepe",
+      "password": "Nenosiri",
+      "password_hint": "Herufi angalau 6",
+      "submit": "Jisajili",
+      "creating": "Inaundwa...",
+      "success": "✅ Akaunti imeundwa kwa mafanikio! Sasa unaweza kuingia.",
+      "error_generic": "Hitilafu imetokea. Tafadhali jaribu tena au wasiliana na usaidizi.",
+      "error_email": "Barua pepe isiyohalali au tayari inatumika.",
+      "error_password": "Nenosiri ni fupi sana (kiwango cha chini ni herufi 6).",
+      "error_username": "Jina la mtumiaji si sahihi (herufi, tarakimu, _ au -).",
+      "already_have_account": "Je, tayari una akaunti?",
+      "sign_in": "Ingia",
+      "privacy": "Kwa kuendelea, unakubali",
+      "terms": "Sheria za matumizi",
+      "identity_desc": "Anza kwa kutuambia ni nani wewe.",
+      "email_desc": "Tutakutumia kiungo cha uthibitisho",
+      "security_desc": "Chagua nenosiri lenye nguvu. 2FA imeanzishwa kwa chaguo-msingi.",
+      "code_sent": "✅ Msimbo umetumwa! Angalia barua pepe yako (pamoja na spam).",
+      "invalid_code": "Msimbo si sahihi au umekwisha muda wake.",
+      "sending": "Inatuma...",
+      "send_code": "Tuma msimbo",
+      "verify_code": "Thibitisha msimbo",
+      "otp": "Msimbo wa uthibitisho (tarakimu 8)",
+      "password_length": "Herufi angalau 8",
+      "password_uppercase": "Herufi kubwa moja",
+      "password_lowercase": "Herufi ndogo moja",
+      "password_number": "Nambari moja",
+      "password_confirm": "Thibitisha nenosiri",
+      "password_special": "Alama maalum moja",
+      "password_match": "Manenosiri yanalingana",
+      "2fa_enabled": "🔒 Uthibitisho wa hatua mbili (2FA) umewashwa kwa usalama wako.",
+      "back": "Rudi",
+      "next": "Endelea",
+      "create_account": "Unda akaunti yangu",
+      "error_name": "Jina lazima liwe na herufi angalau 2.",
+      "error_email_format": "Barua pepe isiyohalali.",
+      "username_hint_plain": "Wasifu wako: luvika.me/{username}",
+      "email_exists": "📧 Tayari una akaunti na barua pepe hii. Ingia au tumia barua pepe nyingine.",
+      "check_email": "✅ Angalia barua pepe yako — kiungo cha uthibitisho kimekutumwa.",
+      "choose_plan": "Chagua mpango wako",
+      "plan_desc": "Anza bure, boresha kwa Premium kwa vipengele zaidi"
+    },
+    "reset": {
+      "title": "Nenosiri mpya",
+      "subtitle": "Ingiza nenosiri mpya yenye usalama.",
+      "new_password": "Nenosiri mpya",
+      "submit": "Sasisha",
+      "verifying": "Kiungo kinathibitishwa...",
+      "invalid_link": "Kiungo si sahihi au kimekwisha muda wake.",
+      "error_update": "Imeshindikana kusasisha.",
+      "success_title": "Nenosiri limeboreshwa!",
+      "success_message": "Nenosiri lako limebadilishwa kwa mafanikio."
+    },
+    "signin": {
+      "title": "Ingia",
+      "email": "Barua pepe",
+      "password": "Nenosiri",
+      "forgot_password": "Umesahau nenosiri?",
+      "submit": "Ingia",
+      "connecting": "Inaunganisha...",
+      "error_generic": "Hitilafu isiyojulikana. Tafadhali jaribu tena baadaye.",
+      "error_credentials": "Barua pepe au nenosiri si sahihi.",
+      "error_email": "Barua pepe isiyohalali.",
+      "error_password": "Nenosiri linahitajika.",
+      "no_account": "Bado huna akaunti?",
+      "sign_up": "Unda akaunti",
+      "subtitle": "Ingia kwenye akaunti yako ya LUVIKA.",
+      "profile_missing": "Wasifu wako hauna taarifa za kutosha. Tafadhali wasiliana na usaidizi."
+    },
+    "forgot_password": {
+      "title": "Umesahau nenosiri",
+      "subtitle": "Ingiza barua pepe yako ili upokee kiungo cha kurekebisha.",
+      "otp_subtitle": "Msimbo umekutumwa kwa barua pepe.",
+      "reset_subtitle": "Chagua nenosiri mpya yenye usalama.",
+      "email": "Barua pepe",
+      "otp": "Msimbo wa uthibitisho",
+      "new_password": "Nenosiri mpya",
+      "confirm_password": "Thibitisha nenosiri",
+      "submit": "Tuma kiungo",
+      "verify": "Thibitisha msimbo",
+      "reset": "Rekebisha",
+      "sending": "Inatuma...",
+      "email_sent": "✅ Kiungo kimekutumwa! Angalia barua pepe yako.",
+      "back_to_login": "Rudi kwenye kuingia",
+      "error": "Barua pepe haikupatikana.",
+      "error_generic": "Hitilafu isiyojulikana.",
+      "success": "✅ Nenosiri limeboreshwa!",
+      "password_length": "Herufi angalau 8",
+      "password_uppercase": "Herufi kubwa",
+      "password_lowercase": "Herufi ndogo",
+      "password_number": "Nambari",
+      "password_special": "Alama maalum",
+      "password_match": "Manenosiri yanalingana"
+    }
+  },
+  "admin": {
+    "title": "💼 Eneo la Usimamizi",
+    "subtitle": "Simamia watumiaji, usajili na kadi za NFC",
+    "stats": {
+      "total_users": "Watumiaji",
+      "active_subscriptions": "Usajili wa kusimamia",
+      "total_scans": "Jumla ya skani",
+      "orders": "Oda",
+      "nfc_cards": "Kadi za NFC"
+    },
+    "nav": {
+      "orders": "Oda",
+      "back_to_dashboard": "Rudi kwenye dashibodi"
+    },
+    "subscription": {
+      "plan": "Mpango",
+      "activated": "Imeanzishwa tarehe",
+      "expires": "Itaisha tarehe",
+      "active": "Imefanyika",
+      "inactive": "Haijasimamiwi",
+      "never": "Kamwe",
+      "activate": "Anzisha",
+      "deactivate": "Zima",
+      "title": "Usimamizi wa usajili",
+      "description": "Anzisha au badilisha mpango wa mtumiaji.",
+      "action": "Simamia usajili",
+      "edit": "Hariri",
+      "change_plan": "Badilisha mpango",
+      "select_plan": "Chagua mpango",
+      "expires_help": "Acha tupu kwa usajili wa maisha",
+      "updated_success": "Mpango umesasishwa kwa mafanikio",
+      "update_error": "Imeshindikana kusasisha",
+      "upgrade_to_premium": "Badilisha kwa Premium",
+      "request_enterprise": "Geuza kuwa akaunti ya Biashara"
+    },
+    "nfc": {
+      "status": "Hali",
+      "created": "Imeundwa tarehe",
+      "no_cards": "Hakuna kadi za NFC kwa sasa.",
+      "block_card": "Zima kadi",
+      "status_values": {
+        "active": "Imefanyika",
+        "lost": "Iliopotea",
+        "blocked": "Imezuiwa",
+        "inactive": "Haijasimamiwi"
+      },
+      "activated": "Imeanzishwa tarehe",
+      "assigned_to": "Imeshirikiwa kwa",
+      "card_id": "Kitambulisho cha Kadi",
+      "created_at": "Imeundwa tarehe",
+      "actions": "Vitendo",
+      "activate": "Anzisha",
+      "block": "Zima",
+      "unassign": "Ondoa ushiriki"
+    },
+    "users": {
+      "name": "Jina",
+      "username": "Jina la mtumiaji",
+      "email": "Barua pepe",
+      "role": "Jukumu",
+      "actions": "Vitendo",
+      "no_users": "Hakuna watumiaji kwa sasa."
+    },
+    "analytics": {
+      "recent_activity": "Shughuli za hivi karibuni",
+      "coming_soon": "Michoro na uchambuzi wa kina itakuwa karibu."
+    },
+    "user_selector": {
+      "placeholder": "Chagua mtumiaji...",
+      "search": "Tafuta mtumiaji...",
+      "loading": "Inapakia...",
+      "no_results": "Hakuna mtumiaji aliyepatikana."
+    },
+    "plans": {
+      "basic": "Msingi",
+      "premium": "Premium",
+      "entreprise": "Biashara",
+      "undefined": "Haijafafanuliwa"
+    },
+    "actions": {
+      "title": "Vitendo vya haraka",
+      "welcome_email": {
+        "title": "📧 Barua pepe ya karibu",
+        "description": "Tuma barua pepe na Kodi ya QR kwa mtumiaji mpya",
+        "button": "Tuma sasa",
+        "sending": "Inatuma…"
+      },
+      "email_success": "✅ Barua pepe imekusanywa kwa mafanikio!",
+      "email_error": "❌ Hitilafu ya kutuma.",
+      "error_generic": "Hitilafu imetokea. Tafadhali jaribu tena."
+    },
+    "modules": {
+      "subscriptions": {
+        "no_active": "Hakuna usajili wa kusimamia kwa sasa.",
+        "title": "Usimamizi wa usajili",
+        "description": "Anzisha au badilisha mpango wa mtumiaji.",
+        "action": "Simamia usajili"
+      },
+      "orders": {
+        "title": "Oda za NFC",
+        "description": "Simamia oda za kadi za NFC: uthibitisho, utumishi, ufuatiliaji.",
+        "action": "Tazama oda"
+      },
+      "nfc": {
+        "title": "Kadi za NFC",
+        "description": "Zima kadi iliyopotea au isiyofanya kazi.",
+        "action": "Angalia kadi"
+      },
+      "users": {
+        "title": "Watumiaji",
+        "description": "Dhibiti wasifu na ripoti za kupotea.",
+        "action": "Simamia watumiaji"
+      },
+      "analytics": {
+        "title": "Takwimu za jumla",
+        "description": "Chambua mwelekeo na utendaji.",
+        "action": "Tazama takwimu"
+      }
+    },
+    "orders": {
+      "title": "Oda za kadi",
+      "subtitle": "Fuata na thibitisha maombi ya kadi halisi.",
+      "no_orders": "Hakuna oda kwa sasa."
+    }
+  },
+  "navbar": {
+    "home": "Nyumbani",
+    "features": "Vipengele",
+    "pricing": "Bei",
+    "about": "Kuhusu",
+    "contact": "Mawasiliano",
+    "download": "Pakua",
+    "sign_in": "Ingia",
+    "sign_up": "Jisajili",
+    "language": "Lugha",
+    "sign_out": "Toka",
+    "sign_out_confirm_title": "Toka",
+    "sign_out_confirm_message": "Una uhakika unataka kutoka?",
+    "sign_out_confirm_yes": "Ndiyo, tokana",
+    "sign_out_confirm_no": "Ghairi",
+    "farewell_title": "Kwaheri!",
+    "farewell_message": "Asante kwa kutumia LUVIKA. Tutakukosa… 😢",
+    "profile_completion": "Ukamilisho wa wasifu",
+    "edit_profile": "Hariri wasifu",
+    "completed": "imekamilika",
+    "view_public_profile": "Tazama wasifu wangu wa umma"
+  },
+  "about": {
+    "title": "Kuhusu",
+    "subtitle": "LUVIKA ilianzishwa kwa maono rahisi: kurudisha maana ya mitandao ya kitaaluma, kwa uzuri, usalama, na kiburi cha Kiafrika.",
+    "mission": {
+      "title": "Ujumbe wetu",
+      "content": "Kubadilisha kadi ya kibao kuwa utambulisho wa kidijitali wenye akili, unaozidishwa, salama, na unaofikika kwa wote — hasa wajasiriamali, wasanidi, na viongozi wa Kiafrika."
+    },
+    "values": {
+      "security": "Usalama",
+      "security_desc": "Data zako zinabaki chini ya udhibiti wako. Hakuna kitu kinachoshirikiwa bila ruhusa yako.",
+      "accessibility": "Ufikivu",
+      "accessibility_desc": "Kiolesura rahisi, cha lugha nyingi (Kifaransa, Lingala, Kiingereza), kilichotengenezwa kwa ajili ya wote.",
+      "african_pride": "Kiburi cha Kiafrika",
+      "african_pride_desc": "Suluhisho lililotengenezwa Kinshasa, kwa Afrika na dunia nzima."
+    },
+    "team": {
+      "title": "Timu yetu",
+      "content": "Timu yenye hamu ya wasanidi, wabunifu, na wajasiriamali wenye makao yao Kinshasa, RDC.",
+      "cta": "Jiunge nasi"
+    }
+  },
+  "contact": {
+    "title": "Mawasiliano",
+    "subtitle": "Swali, wazo, au ushirikiano? Tunapenda kuzungumza.",
+    "address": "Anwani",
+    "email": "Barua pepe",
+    "phone": "Simu",
+    "form_title": "Tutumie ujumbe",
+    "name": "Jina",
+    "name_placeholder": "Jina lako",
+    "message": "Ujumbe",
+    "message_placeholder": "Habari, ningependa...",
+    "send": "Tuma"
+  },
+  "download": {
+    "title": "Pakua",
+    "subtitle": "LUVIKA ni bure, inapatikana kwa wote, na inafanya kazi bila usakinishaji.",
+    "step1": {
+      "title": "1. Unda wasifu wako",
+      "desc": "Katika dakika 2, jaza taarifa zako na uboresha utambulisho wako."
+    },
+    "step2": {
+      "title": "2. Tengeneza Kodi yako ya QR",
+      "desc": "Au ushiriki kadi ya NFC (chaguo la Premium)."
+    },
+    "step3": {
+      "title": "3. Shiriki!",
+      "desc": "Skanisha → wasiliana umehifadhiwa → muunganiko umetengenezwa."
+    },
+    "cta_title": "Tayari kuonyesha ni nani wewe?",
+    "cta_desc": "Anza bure — hakuna kadi ya benki inahitajika.",
+    "download_now": "Anza sasa"
+  },
+  "footer": {
+    "product": "Bidhaa",
+    "features": "Vipengele",
+    "pricing": "Bei",
+    "download": "Pakua",
+    "company": "Kampuni",
+    "about": "Kuhusu",
+    "contact": "Mawasiliano",
+    "blog": "Blogu",
+    "legal": "Sheria",
+    "privacy": "Faragha",
+    "terms": "Sheria za matumizi",
+    "cookies": "Usimamizi wa vyakula vya kompyuta",
+    "tagline": "LUVIKA — Onyesha ni nani wewe. Utambulisho wa kidijitali wenye akili, wa Kiafrika, na salama.",
+    "copyright": "Haki zote zimehifadhiwa. Iliundwa Kinshasa kwa ❤️."
+  },
+  "pricing": {
+    "title": "Mipango na Bei",
+    "billing": {
+      "monthly": "Kila mwezi",
+      "yearly": "Kila mwaka",
+      "per_month": "/mwezi",
+      "per_year": "/mwaka"
+    },
+    "cta": {
+      "choose": "Chagua {plan}"
+    },
+    "footer": {
+      "custom_plan": "Unahitaji mpango uliosanidiwa?",
+      "contact_us": "Wasiliana nasi"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Freemium",
+        "desc": "Kuanzia",
+        "popular": "Unaotumiwa zaidi",
+        "features": {
+          "nfc": "Kadi 1 ya NFC",
+          "users": "Mtumiaji 1",
+          "events": "Hakuna matukio",
+          "presence": "Uonekano wa msingi",
+          "stats": "Takwimu zilizopunguzwa",
+          "roles": "Hakuna majukumu ya timu",
+          "dashboard": "Dashibodi rahisi"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "desc": "Kwa wataalamu wenye lengo",
+        "popular": "Unaotumiwa zaidi",
+        "features": {
+          "nfc": "Kadi za NFC zisizo na kikomo",
+          "users": "Watumiaji hadi 5",
+          "events": "Matukio ya msingi",
+          "presence": "Uonekano wa juu",
+          "stats": "Takwimu za kina",
+          "roles": "Majukumu ya timu",
+          "dashboard": "Dashibodi ya kina"
+        }
+      },
+      "entreprise": {
+        "title": "Biashara",
+        "desc": "Kwa timu na biashara",
+        "popular": "",
+        "features": {
+          "nfc": "Kadi za NFC zisizo na kikomo + zilizobadilishwa",
+          "users": "Watumiaji wasio na kikomo",
+          "events": "Matukio ya kina",
+          "presence": "Uonekano wa kipaumile",
+          "stats": "Uchambuzi wa pamoja",
+          "roles": "Majukumu ya kina + ukaguzi",
+          "dashboard": "Dashibodi ya jumla + API"
+        }
+      }
+    }
+  },
+  "validate_button": "Thibitisha",
+  "cancel_button": "Ghairi",
+  "confirm_cancel": "Una uhakika unataka ghairi oda hii? Hatua hii haiwezi kurudishwa.",
+  "action_success": {
+    "validate": "✅ Oda imeidhinishwa!",
+    "cancel": "✅ Oda imeghairiwa."
+  },
+  "action_error": {
+    "validate": "❌ Uthibitisho umeshindikana",
+    "cancel": "❌ Ughairi umeshindikana"
+  },
+  "common": {
+    "save": "Hifadhi",
+    "saving": "Inahifadhi..."
+  },
+  "enterprise": {
+    "title": "🏢 Eneo la Biashara",
+    "subtitle": "Simamia duka lako, wafanyakazi, kadi na uwepo wako — kwa wakati halisi.",
+    "modules": {
+      "dashboard": {
+        "title": "Dashibodi",
+        "desc": "Muonekano wa jumla wa shughuli yako kwa wakati halisi"
+      },
+      "product": {
+        "add_to_cart": "Ongeza kwenye kikapu",
+        "added_to_cart": "✅ Imeongezwa kwenye kikapu!",
+        "cart_error": "❌ Haiwezi kuongezwa kwenye kikapu",
+        "favorite_error": "❌ Hitilafu ya vipendwa",
+        "add_to_favorites": "Ongeza kwenye vipendwa",
+        "remove_from_favorites": "Ondoa kutoka kwenye vipendwa",
+        "quantity": "Kiasi",
+        "order_now": "Agiza sasa",
+        "whatsapp_order": "Agiza kwa WhatsApp",
+        "seller_not_found": "Muuzaji hapatikani",
+        "no_whatsapp": "Muuzaji huyu hapatikani kwa WhatsApp",
+        "quantity_exceeds_stock": "Kiasi kilichohitajika kimezidi hifadhi zilizopo",
+        "in_stock": "{count} kwenye hifadhi",
+        "add_favorite": "Ongeza kwenye vipendwa",
+        "remove_favorite": "Ondoa kutoka kwenye vipendwa",
+        "no_description": "Hakuna maelezo"
+      },
+      "shop": {
+        "title": "Duka na Bidhaa",
+        "desc": "Katalogi ya umma, hifadhi, mafungu",
+        "edit_title": "Hariri bidhaa",
+        "product_info": "Taarifa za bidhaa",
+        "image": "Picha",
+        "image_help": "JPG/PNG hadi MB 5",
+        "name": "Jina la bidhaa",
+        "name_placeholder": "mfano: Shati la LUVIKA",
+        "slug": "URL iliyobadilishwa",
+        "slug_placeholder": "shati-la-luvika",
+        "description": "Maelezo",
+        "description_placeholder": "Fafanua bidhaa yako...",
+        "price": "Bei",
+        "promo_price": "Bei ya mafungu",
+        "stock": "Hifadhi",
+        "sku": "Kumbukumbu (SKU)",
+        "sku_placeholder": "LUVIKA-SHT-001",
+        "sku_help": "Nambari pekee kwa ufuatiliaji wa hifadhi",
+        "optional": "Hiari",
+        "save": "Hifadhi",
+        "saving": "Inahifadhi...",
+        "cancel": "Ghairi",
+        "delete": "Futa",
+        "save_success": "✅ Bidhaa imesasishwa",
+        "save_error": "❌ Hitilafu ya kuhifadhi",
+        "load_error": "❌ Haikuweza kupakia bidhaa",
+        "upload_error": "❌ Hitilafu ya kupakia",
+        "invalid_image": "⚠️ Muundo si sahihi (JPG/PNG pekee)",
+        "image_too_large": "⚠️ Picha ni kubwa sana (kiwango cha juu ni MB 5)",
+        "missing_fields": "⚠️ Tafadhali jaza sehemu zote zinazohitajika",
+        "delete_confirm": "Una uhakika unataka kufuta bidhaa hii? Hatua hii haiwezi kurudishwa.",
+        "delete_success": "✅ Bidhaa imefutwa",
+        "delete_error": "❌ Hitilafu ya kufuta",
+        "new_product": "Bidhaa mpya",
+        "images": "Picha za bidhaa",
+        "image_help_multi": "Hadithi 5 za picha (JPG/PNG, kiwango cha juu ni MB 5)",
+        "max_5_images": "⚠️ Kiwango cha juu ni picha 5",
+        "create_product": "Unda bidhaa",
+        "create_success": "✅ Bidhaa imeundwa",
+        "create_error": "❌ Hitilafu ya kuunda",
+        "uploading": "Inapakia...",
+        "no_products": "Hakuna bidhaa zilizorekodiwa",
+        "add_product": "Ongeza bidhaa",
+        "edit_product": "Hariri bidhaa",
+        "delete_product": "Futa",
+        "view_coming_soon": "Itapatikana karibu",
+        "view_product": "Tazama bidhaa",
+        "invalid_slug": "Slug haina kuruhusiwa kujumuisha URL au maneno yaliyohifadhiwa",
+        "slug_preview": "Onyesho la awali la kiungo"
+      },
+      "orders": {
+        "title": "Oda",
+        "desc": "Ufuatiliaji wa mauzo na utumishi",
+        "total_revenue": "Mapato ya jumla",
+        "pending_orders": "Oda zinazosubiri",
+        "completed_orders": "Oda zilizomalizika",
+        "recent_orders": "Oda za hivi karibuni"
+      },
+      "employees": {
+        "title": "Wafanyakazi",
+        "desc": "Usimamizi rahisi wa wafanyakazi na majukumu",
+        "add_employee": "Ongeza mfanyakazi",
+        "full_name": "Jina kamili",
+        "full_name_placeholder": "mfano: Nestor P.",
+        "email": "Barua pepe",
+        "email_placeholder": "phaku@biashara.com",
+        "phone": "Simu",
+        "phone_placeholder": "+243 890 177 601",
+        "position": "Cheo",
+        "position_placeholder": "Msanidi, HR, n.k.",
+        "role": "Jukumu",
+        "select_role": "Chagua jukumu",
+        "roles": {
+          "employee": "Mfanyakazi",
+          "manager": "Meneja",
+          "admin": "Msimamizi"
+        },
+        "cancel": "Ghairi",
+        "confirm_add": "Ongeza mfanyakazi",
+        "adding": "Inaongeza...",
+        "add_success": "✅ Mfanyakazi ameongezwa kwa mafanikio!",
+        "add_error": "❌ Hitilafu ya kuongeza. Tafadhali jaribu tena."
+      },
+      "cards": {
+        "title": "Kadi za Wataalamu",
+        "desc": "Kadi za NFC zisizo na kikomo kwa timu yote"
+      },
+      "attendance": {
+        "title": "Uwepo",
+        "desc": "Usajili kwa Kodi ya QR kwa wakati halisi",
+        "recent_logs": "Uwepo wa hivi karibuni"
+      },
+      "communication": {
+        "title": "Mawasiliano",
+        "desc": "Ujumbe wa ndani na tangazo",
+        "broadcast_title": "Ujumbe wa jumla",
+        "broadcast_desc": "Tuma ujumbe kwa wafanyakazi wote",
+        "message_placeholder": "Andika ujumbe wako hapa...",
+        "send_broadcast": "Tuma",
+        "sending": "Inatuma..."
+      },
+      "settings": {
+        "title": "Mipangilio",
+        "desc": "Usanidi wa biashara yako",
+        "company_info": "Taarifa za biashara",
+        "name": "Jina",
+        "email": "Barua pepe",
+        "phone": "Simu",
+        "address": "Anwani",
+        "city": "Mji",
+        "country": "Nchi",
+        "website": "Tovuti",
+        "description": "Maelezo",
+        "logo_url": "URL ya nembo",
+        "save": "Hifadhi",
+        "saving": "Inahifadhi...",
+        "save_success": "✅ Wasifu umesasishwa",
+        "save_error": "❌ Hitilafu ya kuhifadhi",
+        "loading": "Inapakia..."
+      }
+    },
+    "value_prop": {
+      "title": "Biashara yako, imeunganishwa na hai",
+      "desc": "Luvika si wasifu tu — ni zana yako ya kila siku, iliyoundwa kwa Afrika na inayoweza kuelekea kimataifa."
+    }
+  }
+}

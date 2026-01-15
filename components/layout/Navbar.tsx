@@ -2,19 +2,25 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Menu, X, Globe, LogOut, Shield, User as UserIcon, X as XIcon, Eye } from 'lucide-react';
 import { createClient } from '@/src/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
 
-type Locale = 'fr' | 'ln' | 'en';
+type Locale = 'ar' | 'en' | 'es' | 'fr' | 'kg' | 'ln' | 'nl' | 'pt' | 'sw';
 
 const languages: Record<Locale, { name: string; flag: string }> = {
+  ar: { name: 'العربية', flag: '🇸🇦' },
+  en: { name: 'English', flag: '🇺🇸' },
+  es: { name: 'Español', flag: '🇪🇸' },
   fr: { name: 'Français', flag: '🇫🇷' },
+  kg: { name: 'Kikongo', flag: '🇨🇩' },
   ln: { name: 'Lingála', flag: '🇨🇩' },
-  en: { name: 'English', flag: '🇬🇧' },
+  nl: { name: 'Nederlands', flag: '🇳🇱' },
+  pt: { name: 'Português', flag: '🇵🇹' },
+  sw: { name: 'Kiswahili', flag: '🇹🇿' },
 };
 
 // 🔹 Calcule la complétion du profil (0–100%)
@@ -339,7 +345,9 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
   const locale = useLocale() as Locale;
+  const pathname = usePathname();
   const t = useTranslations();
   const router = useRouter();
 
@@ -376,8 +384,16 @@ export default function Navbar() {
   };
 
   const changeLanguage = (newLocale: Locale) => {
-    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
-    router.refresh();
+    const supported: Locale[] = ['ar','en','es','fr','kg','ln','nl','pt','sw'];
+    const segments = pathname.split('/');
+    // segments[0] === '' car pathname commence par '/'
+    if (segments.length > 1 && supported.includes(segments[1] as Locale)) {
+      segments[1] = newLocale; // remplace la locale existante
+    } else {
+      segments.splice(1, 0, newLocale); // insère la locale si absente
+    }
+    const newPath = segments.join('/') || '/';
+    router.push(newPath);
     setMobileMenuOpen(false);
   };
 
@@ -426,8 +442,7 @@ export default function Navbar() {
               </Link>
             </motion.div>
 
-            <nav
-              className={`hidden md:flex space-x-0.5 ${isAdmin ? 'opacity-50 pointer-events-none' : ''}`}
+            <nav className={`hidden md:flex space-x-0.5 ${isAdmin ? 'opacity-50 pointer-events-none' : ''}`}
               aria-disabled={isAdmin}
             >
               {navLinks.map((link, i) => (
@@ -483,20 +498,21 @@ export default function Navbar() {
               )}
 
               {!isAdmin && (
-                <div className="relative group">
+                <div className="relative">
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 px-3 rounded-xl transition-all duration-300 group"
+                    onClick={() => setShowLangDropdown(!showLangDropdown)}
+                    className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 px-3 rounded-xl transition-all duration-300"
                   >
-                    <Globe className="h-4 w-4 mr-1 group-hover:rotate-12 transition-transform" />
+                    <Globe className="h-4 w-4 mr-1" />
                     <span className="font-medium">{languages[locale].flag}</span>
                   </Button>
-                  <div className="absolute right-0 mt-2 w-40 glass-border py-1 z-50 opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-300 rounded-xl">
-                    {(['fr', 'ln', 'en'] as Locale[]).map((lang) => (
+                  <div className={`absolute right-0 mt-2 w-40 glass-border py-1 z-50 ${showLangDropdown ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'} transition-opacity duration-300 rounded-xl max-h-48 overflow-y-auto`}>
+                    {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
                       <button
                         key={lang}
-                        onClick={() => changeLanguage(lang)}
+                        onClick={() => { changeLanguage(lang); setShowLangDropdown(false); }}
                         className={`
                           w-full px-3 py-2 text-left flex items-center space-x-2
                           hover:bg-white/10 transition-all rounded-lg text-sm
@@ -688,19 +704,21 @@ export default function Navbar() {
             {!isAdmin && (
               <div className="pt-3 border-t border-white/10">
                 <p className="px-2 text-xs text-gray-400 mb-2">{t('navbar.language')}</p>
-                <div className="flex gap-2">
-                  {(['fr', 'ln', 'en'] as Locale[]).map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => changeLanguage(lang)}
-                      className={`
-                        flex items-center justify-center w-8 h-8 rounded-xl text-xs
-                        ${locale === lang ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-gray-300'}
-                      `}
-                    >
-                      {languages[lang].flag}
-                    </button>
-                  ))}
+                <div className="overflow-x-auto">
+                  <div className="flex gap-2 min-w-max">
+                    {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => changeLanguage(lang)}
+                        className={`
+                          flex items-center justify-center w-8 h-8 rounded-xl text-xs
+                          ${locale === lang ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-gray-300'}
+                        `}
+                      >
+                        {languages[lang].flag}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

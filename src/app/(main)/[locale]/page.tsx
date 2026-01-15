@@ -2,6 +2,8 @@
 // ✅ Page d'accueil animée — Server Component + Client Components
 
 import { HomePageContent } from '@/src/components/home/HomePageContent';
+import { createNotifier } from '@/src/lib/notify';
+import error from 'next/error';
 
 export default async function LocalizedHomePage({
   params,
@@ -11,9 +13,9 @@ export default async function LocalizedHomePage({
   const { locale } = await params;
 
   // Optionnel : validation
-  if (!['fr', 'ln', 'en'].includes(locale)) {
-    // Redirige vers fr si locale invalide
-    return <div>Redirection...</div>; // ou throw new Error()
+  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+  if (!supported.includes(locale as any)) {
+    return <div>Redirection...</div>;
   }
 
   return <HomePageContent />;

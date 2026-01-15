@@ -27,7 +27,7 @@ export function AdminLayoutProvider({ children }: { children: React.ReactNode })
 export function useAdminLayout() {
   const context = useContext(AdminLayoutContext);
   if (!context) {
-    throw new Error('useAdminLayout must be used within AdminLayoutProvider');
+    throw new Error('useAdminLayout doit être utilisé dans AdminLayoutProvider');
   }
   return context;
 }

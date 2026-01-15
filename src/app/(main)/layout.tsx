@@ -2,6 +2,8 @@ import { getTranslations } from 'next-intl/server';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/src/components/layout/Footer';
 import { headers } from 'next/headers';
+import { Toaster } from 'sonner';
+import { NetworkWatcher } from '@/src/components/system/NetworkWatcher';
 
 export default async function MainLayout({
   children,
@@ -27,8 +29,11 @@ export default async function MainLayout({
 
       {!isProfilePage && <Navbar />}
       <main className={isProfilePage ? "w-full" : "container mx-auto px-4 py-0 max-w-6xl"}>
-        {children}
-      </main>
+{children}
+          <Toaster richColors position="top-right" />
+          {/* ← Obligatoire pour voir les toasts & pour surveiller la connexion globale*/}
+        <NetworkWatcher/>     
+       </main>
       
       {!isProfilePage && (
         <Footer

@@ -8,7 +8,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { createClient } from '@/src/lib/supabase/client';
 import AdminActions from '@/components/admin/AdminActions';
+import { createNotifier } from '@/src/lib/notify';
+import error from 'next/error';
+import { useTranslations } from 'next-intl';
 
+const t = useTranslations();
+const notify = createNotifier(t);
+
+if (error) {
+  notify.ServerError();
+}
 type AdminStats = {
   totalEnterprises: number;
   totalEmployees: number;

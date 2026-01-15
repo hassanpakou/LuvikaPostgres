@@ -3,12 +3,27 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import ProfileCard3D from '@/components/cards/ProfileCard3D';
 import { ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3, Layers, QrCode } from 'lucide-react';
 
+// 🔑 Fonction déterministe pour le pattern QR
+const getQrBlockClass = (index: number): string => {
+  // Coins fixes (QR standard)
+  const fixedBlack = [0,1,2,6,7,8,12,13,14,30,31,32,36,37,38,42,43,44];
+  if (fixedBlack.includes(index)) {
+    return 'bg-gray-900';
+  }
+  
+  // Pattern aléatoire MAIS DÉTERMINISTE (même résultat côté serveur et client)
+  // Utilise l'index pour générer une "pseudo-random" stable
+  const hash = (index * 2654435761) % 49; // nombre premier magique
+  return hash > 35 ? 'bg-cyan-400/80' : 'bg-gray-200';
+};
+
 export function HomePageContent() {
   const t = useTranslations();
+  const locale = useLocale();
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 py-12">
@@ -54,7 +69,7 @@ export function HomePageContent() {
     transition={{ delay: 0.5 }}
     className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent"
   >
-    Prêt à révéler qui tu es ?
+    {t('download.cta_title')}
   </motion.h2>
   <motion.p
     initial={{ opacity: 0 }}
@@ -62,7 +77,7 @@ export function HomePageContent() {
     transition={{ delay: 0.6 }}
     className="mt-4 text-gray-300 max-w-2xl mx-auto"
   >
-    Rejoins des milliers de professionnels qui transforment leur identité numérique, avec contrôle, sécurité et élégance.
+    {t('download.cta_desc')}
   </motion.p>
 </motion.div>
 
@@ -102,7 +117,7 @@ export function HomePageContent() {
       "
     >
       <span className="flex items-center gap-2">
-        Commencer gratuitement
+        {t('download.download_now')}
         <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
       </span>
       <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/30 to-cyan-400/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md" />
@@ -111,7 +126,7 @@ export function HomePageContent() {
   </Link>
 
   {/* ⚪ Bouton secondaire — sans icône + animations internes */}
-  <Link href="/pricing">
+  <Link href={`/${locale}/pricing`}>
     <motion.button
       whileHover={{ scale: 1.03, y: -2 }}
       whileTap={{ scale: 0.98 }}
@@ -139,7 +154,7 @@ export function HomePageContent() {
         overflow-hidden
       "
     >
-      Voir les tarifs
+      {t('navbar.pricing')}
 
       {/* 🌊 Onde concentrique (démarre au centre) */}
       <motion.div
@@ -383,7 +398,7 @@ export function HomePageContent() {
       className="inline-block"
     >
       <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
-        Gérez vos <span className="text-cyan-400">événements</span> intelligemment
+        {t('features.events.title')}
       </h2>
       <div className="w-24 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-400 mx-auto mt-4 rounded-full"></div>
     </motion.div>
@@ -407,18 +422,13 @@ export function HomePageContent() {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/50 to-blue-900/50 rounded-2xl border border-cyan-500/30 backdrop-blur-sm"></div>
           
-          {/* 🔹 QR Code stylisé */}
+          {/* 🔹 QR Code stylisé — CORRIGÉ */}
           <div className="absolute inset-6 bg-white rounded-lg flex items-center justify-center">
             <div className="grid grid-cols-7 gap-1 w-48 h-48">
               {[...Array(49)].map((_, i) => (
                 <div
                   key={i}
-                  className={`w-full h-full rounded ${
-                    // Pattern QR stylisé
-                    [0,1,2,6,7,8,12,13,14,30,31,32,36,37,38,42,43,44].includes(i)
-                      ? 'bg-gray-900'
-                      : Math.random() > 0.7 ? 'bg-cyan-400/80' : 'bg-gray-200'
-                  }`}
+                  className={`w-full h-full rounded ${getQrBlockClass(i)}`}
                 />
               ))}
             </div>
@@ -586,10 +596,10 @@ export function HomePageContent() {
         className="inline-block"
       >
         <a
-          href="/contact"
+          href={`/${locale}/contact`}
           className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-medium rounded-xl shadow-xl hover:shadow-cyan-500/30 transition-all duration-300 group"
         >
-          <span>Demander une démo</span>
+          <span>{t('navbar.contact')}</span>
           <motion.div
             className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 transition-colors"
             animate={{ x: [0, 4, 0] }}

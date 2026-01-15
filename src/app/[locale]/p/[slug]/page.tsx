@@ -16,7 +16,8 @@ export default async function ProductPublicPage({
 }) {
   const { locale, slug } = await params;
 
-  if (!['fr', 'en', 'ln'].includes(locale)) {
+  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+  if (!supported.includes(locale as any)) {
     return notFound();
   }
 

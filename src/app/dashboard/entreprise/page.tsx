@@ -47,7 +47,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.dashboard.title'),
       description: t('modules.dashboard.desc'),
       icon: <LayoutDashboard className="w-6 h-6" />,
-      color: 'bg-blue-500/20 text-blue-400',
+      color: 'from-blue-500 to-cyan-500',
       path: '/dashboard/entreprise'
     },
     {
@@ -55,7 +55,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.shop.title'),
       description: t('modules.shop.desc'),
       icon: <Store className="w-6 h-6" />,
-      color: 'bg-emerald-500/20 text-emerald-400',
+      color: 'from-emerald-500 to-teal-500',
       path: '/dashboard/entreprise/shop'
     },
     {
@@ -63,7 +63,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.orders.title'),
       description: t('modules.orders.desc'),
       icon: <Package className="w-6 h-6" />,
-      color: 'bg-amber-500/20 text-amber-400',
+      color: 'from-amber-500 to-orange-500',
       path: '/dashboard/entreprise/orders'
     },
     {
@@ -71,7 +71,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.employees.title'),
       description: t('modules.employees.desc'),
       icon: <Users className="w-6 h-6" />,
-      color: 'bg-cyan-500/20 text-cyan-400',
+      color: 'from-cyan-500 to-blue-500',
       path: '/dashboard/entreprise/employees'
     },
     {
@@ -79,7 +79,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.cards.title'),
       description: t('modules.cards.desc'),
       icon: <IdCard className="w-6 h-6" />,
-      color: 'bg-violet-500/20 text-violet-400',
+      color: 'from-violet-500 to-purple-500',
       path: '/dashboard/entreprise/cards'
     },
     {
@@ -87,7 +87,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.attendance.title'),
       description: t('modules.attendance.desc'),
       icon: <Clock className="w-6 h-6" />,
-      color: 'bg-green-500/20 text-green-400',
+      color: 'from-green-500 to-emerald-500',
       path: '/dashboard/entreprise/attendance'
     },
     {
@@ -95,7 +95,7 @@ export default function EnterpriseDashboard() {
       title: t('modules.communication.title'),
       description: t('modules.communication.desc'),
       icon: <Megaphone className="w-6 h-6" />,
-      color: 'bg-rose-500/20 text-rose-400',
+      color: 'from-rose-500 to-pink-500',
       path: '/dashboard/entreprise/communication'
     },
     {
@@ -103,12 +103,11 @@ export default function EnterpriseDashboard() {
       title: t('modules.settings.title'),
       description: t('modules.settings.desc'),
       icon: <Settings className="w-6 h-6" />,
-      color: 'bg-gray-500/20 text-gray-400',
+      color: 'from-gray-500 to-gray-600',
       path: '/dashboard/entreprise/settings'
     }
   ];
 
-  // 🔹 Fonction de chargement initial + mise à jour
   const fetchAndUpdateStats = async (companyId: string, userId: string) => {
     try {
       const [{ data: orders }, { data: employees }, { data: cards }] = await Promise.all([
@@ -162,7 +161,6 @@ export default function EnterpriseDashboard() {
         const plan = profile?.plan?.toLowerCase();
         const isEnterprisePlan = plan === 'entreprise';
         
-        // Sécurité : Redirection si pas d'entreprise et pas de plan entreprise
         if (!company && !isEnterprisePlan) {
           router.push('/dashboard');
           return;
@@ -177,10 +175,8 @@ export default function EnterpriseDashboard() {
         userId = user.id;
         companyId = company.id;
 
-        // 🔹 Chargement initial des stats
         await fetchAndUpdateStats(companyId, userId);
 
-        // 🔹 🔁 REALTIME — Commandes
         const ordersChannel = supabase
           .channel(`orders-${companyId}`)
           .on('postgres_changes', {
@@ -191,12 +187,11 @@ export default function EnterpriseDashboard() {
           }, (payload) => {
             fetchAndUpdateStats(companyId, userId);
             if (payload.eventType === 'INSERT') {
-              playSound(); // 🔊 Son uniquement pour les nouvelles commandes
+              playSound();
             }
           })
           .subscribe();
 
-        // 🔹 🔁 REALTIME — Employés
         const employeesChannel = supabase
           .channel(`employees-${companyId}`)
           .on('postgres_changes', {
@@ -207,7 +202,6 @@ export default function EnterpriseDashboard() {
           }, () => fetchAndUpdateStats(companyId, userId))
           .subscribe();
 
-        // 🔹 🔁 REALTIME — Cartes
         const cardsChannel = supabase
           .channel(`cards-${companyId}`)
           .on('postgres_changes', {
@@ -227,7 +221,6 @@ export default function EnterpriseDashboard() {
 
     init();
 
-    // 🔹 Nettoyage des canaux au démontage
     return () => {
       realtimeChannels.current.forEach(channel => {
         if (channel?.unsubscribe) channel.unsubscribe();
@@ -239,8 +232,9 @@ export default function EnterpriseDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-white">Chargement de votre espace entreprise...</p>
+          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-xl text-white font-medium">Chargement de votre espace entreprise...</p>
+          <p className="text-gray-400 mt-2">Préparation de vos données en temps réel</p>
         </div>
       </div>
     );
@@ -248,76 +242,101 @@ export default function EnterpriseDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* En-tête */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600/30 mb-6">
-          <Building className="w-8 h-8 text-indigo-300" />
+      {/* 🔝 En-tête élégant */}
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-600/30 to-purple-600/30 mb-6 border border-indigo-500/30 shadow-lg shadow-indigo-500/10">
+          <Building className="w-10 h-10 text-indigo-300" />
         </div>
-        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent">
+        <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-200 via-cyan-200 to-purple-200 bg-clip-text text-transparent">
           {t('title')}
         </h1>
-        <p className="text-gray-400 mt-3 max-w-2xl mx-auto">
+        <p className="text-gray-300 mt-4 max-w-3xl mx-auto text-lg">
           {t('subtitle')}
         </p>
       </div>
 
-      {/* 🔹 Statistiques clés — MAINTENANT EN TEMPS RÉEL */}
+      {/* 📊 Statistiques clés — Design premium */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="glass-border text-center p-6">
-          <TrendingUp className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-          <p className="text-gray-400">Ventes totales</p>
-          <p className="text-2xl font-bold text-white">{stats.totalRevenue.toLocaleString()} $</p>
-        </Card>
-        <Card className="glass-border text-center p-6">
-          <Package className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-          <p className="text-gray-400">Commandes en cours</p>
-          <p className="text-2xl font-bold text-white">{stats.pendingOrders}</p>
-        </Card>
-        <Card className="glass-border text-center p-6">
-          <Users className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
-          <p className="text-gray-400">Employés actifs</p>
-          <p className="text-2xl font-bold text-white">{stats.activeEmployees}</p>
-        </Card>
-        <Card className="glass-border text-center p-6">
-          <IdCard className="w-8 h-8 text-indigo-400 mx-auto mb-2" />
-          <p className="text-gray-400">Cartes actives</p>
-          <p className="text-2xl font-bold text-white">{stats.activeCards}</p>
-        </Card>
-      </div>
-
-      {/* 🔹 Graphique d'activité */}
-      {!loading && (
-        <AnalyticsChart profileId={stats.profileId} />
-      )}
-
-      {/* Modules */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {modules.map((module) => (
+        {[
+          { 
+            title: "Ventes totales", 
+            value: `${stats.totalRevenue.toLocaleString()} $`, 
+            icon: <TrendingUp className="w-6 h-6" />, 
+            color: "from-emerald-500 to-teal-500" 
+          },
+          { 
+            title: "Commandes en cours", 
+            value: stats.pendingOrders, 
+            icon: <Package className="w-6 h-6" />, 
+            color: "from-amber-500 to-orange-500" 
+          },
+          { 
+            title: "Employés actifs", 
+            value: stats.activeEmployees, 
+            icon: <Users className="w-6 h-6" />, 
+            color: "from-cyan-500 to-blue-500" 
+          },
+          { 
+            title: "Cartes actives", 
+            value: stats.activeCards, 
+            icon: <IdCard className="w-6 h-6" />, 
+            color: "from-violet-500 to-purple-500" 
+          }
+        ].map((stat, index) => (
           <Card 
-            key={module.id}
-            className="glass-border bg-gray-800/40 hover:bg-gray-800/60 border border-gray-700/50 backdrop-blur-xl transition-all duration-300 cursor-pointer group"
-            onClick={() => router.push(module.path)}
+            key={index}
+            className="glass-border overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-300 group"
           >
-            <CardHeader className="pb-3">
-              <div className={`w-12 h-12 rounded-xl ${module.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                {module.icon}
+            <CardContent className="p-6">
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                {stat.icon}
               </div>
-              <CardTitle className="text-white text-lg">{module.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-400 text-sm">{module.description}</p>
+              <p className="text-gray-400 text-sm mb-1">{stat.title}</p>
+              <p className="text-2xl font-bold text-white">{stat.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Valeur ajoutée */}
-      <div className="mt-12 glass-border bg-gradient-to-r from-indigo-900/30 to-purple-900/30 p-6 rounded-2xl border border-indigo-500/20">
-        <div className="flex items-start gap-4">
-          <TrendingUp className="w-8 h-8 text-indigo-400 mt-1" />
-          <div>
-            <h3 className="text-xl font-bold text-white mb-2">{t('value_prop.title')}</h3>
-            <p className="text-gray-300">{t('value_prop.desc')}</p>
+      {/* 📈 Graphique d'activité */}
+      {!loading && (
+        <div className="glass-border bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
+          <AnalyticsChart profileId={stats.profileId} />
+        </div>
+      )}
+
+      {/* 🧩 Modules — Cartes interactives */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {modules.map((module) => (
+          <Card 
+            key={module.id}
+            className="glass-border overflow-hidden bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer group hover:shadow-xl hover:shadow-white/5"
+            onClick={() => router.push(module.path)}
+          >
+            <CardHeader className="pb-4 pt-6 px-6">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-r ${module.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                {module.icon}
+              </div>
+              <CardTitle className="text-white text-lg font-semibold group-hover:text-cyan-300 transition-colors">
+                {module.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              <p className="text-gray-400 text-sm leading-relaxed">{module.description}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* 💎 Valeur ajoutée — Bannière premium */}
+      <div className="mt-12 glass-border bg-gradient-to-r from-indigo-900/40 to-purple-900/40 backdrop-blur-xl p-8 rounded-3xl border border-indigo-500/30">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-shrink-0 w-16 h-16 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 flex items-center justify-center">
+            <TrendingUp className="w-8 h-8 text-white" />
+          </div>
+          <div className="text-center md:text-left">
+            <h3 className="text-2xl font-bold text-white mb-3">{t('value_prop.title')}</h3>
+            <p className="text-gray-200 max-w-2xl">{t('value_prop.desc')}</p>
           </div>
         </div>
       </div>

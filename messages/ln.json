@@ -5,6 +5,12 @@
     "create": "Kosala profil nakisa",
     "discover": "Koyeba"
   },
+  "system": {
+    "connection_lost": "LUVIKA — Connexion ebebisami. Tala internet nayo.",
+    "connection_back": "Connexion ezongi malamu.",
+    "server_error": "Serveur azalaki te sik'oyo. Meka lisusu.",
+    "action_error": "Erreur moko esalemi. Meka lisusu."
+  },
   "features": {
     "title": "Kozanga LUVIKA?",
     "nfc": {
@@ -797,19 +803,27 @@
         "send_broadcast": "Tinda",
         "sending": "Kotinda..."
       },
-      "settings": {
-  "title": "Paramètres",
-  "desc": "Kokokisa makambo ya entreprise na yo",
-  "company_info": "Makambo ya entreprise",
-  "name": "Nkombo",
-  "email": "Email",
-  "phone": "Nimero ya telefone",
-  "address": "Adresse",
-  "save": "Bomba",
-  "saving": "Kobomba..."
+  "settings": {
+    "title": "Parametre",
+    "desc": "Bongisa entreprise na yo",
+    "company_info": "Basango ya entreprise",
+    "name": "Kombo",
+    "email": "Email",
+    "phone": "Telefone",
+    "address": "Adresse",
+    "city": "Engumba",
+    "country": "Ekolo",
+    "website": "Site web",
+    "description": "Ndimbola",
+    "logo_url": "URL ya logo",
+    "save": "Kobomba",
+    "saving": "Kobombama...",
+    "save_success": "✅ Profil ebongisami",
+    "save_error": "❌ Kobomba elongi te",
+    "loading": "Kokota..."
+  }
 }
-
-    },
+,
     "value_prop": {
   "title": "Entreprise na yo, moko mpe esalemi",
   "desc": "Luvika ezali te profil kaka — ezali outil ya mosala na mokolo na mokolo, esalemi mpo na Afrique mpe ekoki kokola mpe kosalela na mabele mosusu."

@@ -10,7 +10,16 @@ import { createClient } from '@/src/lib/supabase/client';
 import AdminActions from '@/components/admin/AdminActions';
 import { AdminSidebar } from '@/src/components/admin/AdminSidebar';
 import { useAdminLayout } from '@/src/contexts/AdminLayoutContext';
+import { createNotifier } from '@/src/lib/notify';
+import error from 'next/error';
+import { useTranslations } from 'next-intl';
 
+const t = useTranslations();
+const notify = createNotifier(t);
+
+if (error) {
+  notify.ServerError();
+}
 type AdminStats = {
   totalEnterprises: number;
   totalEmployees: number;

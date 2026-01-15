@@ -1,0 +1,821 @@
+{
+  "LUVIKA": "LUVIKA",
+  "tagline": "اكشف عن هويتك — الهوية المهنية الرقمية · NFC · رمز الاستجابة السريعة · الاشتراكات · البيع عبر الإنترنت · الفعاليات",
+  "cta": {
+    "create": "إنشاء ملفي الشخصي",
+    "discover": "اكتشف"
+  },
+  "system": {
+    "connection_lost": "LUVIKA — فشل الاتصال. تحقق من اتصالك بالإنترنت.",
+    "connection_back": "تم استعادة الاتصال.",
+    "server_error": "الخادم غير متاح. حاول مرة أخرى لاحقًا.",
+    "action_error": "حدث خطأ. حاول مرة أخرى."
+  },
+  "features": {
+    "title": "لماذا LUVIKA؟",
+    "nfc": {
+      "title": "NFC ورمز الاستجابة السريعة",
+      "desc": "شارك ملفك الشخصي بلمسة واحدة أو مسح الرمز"
+    },
+    "stats": {
+      "title": "الإحصائيات",
+      "desc": "المسح، الزيارات، الحضور — كل شيء مُتتبع"
+    },
+    "multi": {
+      "title": "بطاقات متعددة",
+      "desc": "محترف؟ قم بإدارة عدة بطاقات NFC"
+    },
+    "events": {
+      "title": "الفعاليات وأكواد QR",
+      "create": {
+        "title": "إنشاء فعاليات",
+        "desc": "نظم معارضك، مؤتمراتك أو ندواتك واجمع كل المعلومات في مكان واحد."
+      },
+      "qr": {
+        "title": "إنشاء أكواد QR",
+        "desc": "مشاركة سريعة للبطاقات، الملفات الشخصية أو الفعاليات عبر أكواد QR مخصصة."
+      },
+      "analytics": {
+        "title": "تحليلات متقدمة",
+        "desc": "تتبع المشاهدات، التفاعلات، وأداء بطاقاتك وفعاليّاتك."
+      }
+    },
+    "superpro": {
+      "title": "حسابات Super Pro والبيع عبر الإنترنت",
+      "desc": "تسمح حسابات Super Pro للشركات ببيع منتجاتها وخدماتها مباشرةً من بطاقتها الرقمية. قم بإدارة بطاقات متعددة، تتبع مبيعاتك، وشارك عروضك عبر أكواد QR للوصول إلى عملائك في أي مكان."
+    }
+  },
+  "event": {
+    "checkin": {
+      "success": "✅ تم تأكيد الحضور!",
+      "thanks": "شكرًا لمشاركتك في {title}.",
+      "view_participants": "عرض المشاركين"
+    }
+  },
+  "dashboard": {
+    "greeting_morning": "صباح الخير، {name} 🌞",
+    "greeting_afternoon": "مساء الخير، {name} ☀️",
+    "greeting_evening": "مساء النور، {name} 🌙",
+    "greeting_night": "مرحبًا، {name} 🌃",
+    "subtitle": "أدر هويتك الرقمية الذكية",
+    "view_public": "عرض ملفي العام",
+    "export_csv": "تصدير (.csv)",
+    "visibility": {
+      "title": "رؤية الأقسام",
+      "description": "اختر ما يمكن للزوار رؤيته."
+    },
+    "quick_menu": {
+      "visibility": "الرؤية",
+      "contact": "الرسائل",
+      "qr": "رمز الاستجابة السريعة",
+      "nfc": "بطاقات NFC",
+      "report": "إبلاغ",
+      "message": "رسالة شخصية",
+      "orders": "الطلبات",
+      "upgrade": "ترقية"
+    },
+    "contact_requests": {
+      "title": "رسائل الزوار",
+      "description": "اسمح للأشخاص الذين يزورون ملفك العام بترك رسالة لك.",
+      "label": "تلقي الرسائل",
+      "enabled": "مفعل – يمكن للزوار التواصل معك",
+      "disabled": "معطّل – النموذج مخفي",
+      "enable": "تفعيل",
+      "disable": "تعطيل"
+    },
+    "time": {
+      "seconds": "{count} ثانية",
+      "seconds_plural": "{count} ثوانٍ",
+      "minutes": "{count} دقيقة",
+      "minutes_plural": "{count} دقائق",
+      "hours": "{count} ساعة",
+      "hours_plural": "{count} ساعات",
+      "days": "{count} يوم",
+      "days_plural": "{count} أيام"
+    },
+    "orders": {
+      "title": "طلبات البطاقات",
+      "description": "أدر طلباتك الجارية لبطاقات NFC.",
+      "manage": "إدارة الطلبات"
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "plans": {
+        "freemium": "مجاني",
+        "basic": "مجاني",
+        "premium": "بريميوم",
+        "entreprise": "مؤسسة"
+      },
+      "active": "✅ نشط",
+      "inactive": "⚠️ غير نشط",
+      "active_until": "خطة الاشتراك الخاصة بك نشطة حتى {date}.",
+      "upgrade_prompt": "حسابك في الوضع المجاني. اتصل بالمشرف لتفعيل خطة مدفوعة.",
+      "request_upgrade": "طلب ترقية",
+      "success_title": "✅ تم بنجاح!",
+      "success_message": "سيتواصل معك أحد المشرفين خلال 24 ساعة.",
+      "upgrade_to_premium": "الترقية إلى بريميوم",
+      "request_enterprise": "تحويل الحساب إلى مؤسسة"
+    },
+    "qr": {
+      "title": "رمز الاستجابة السريعة للملف الشخصي",
+      "alt": "رمز QR لـ {username}",
+      "instructions": "امسح الرمز للوصول إلى ملفك الشخصي",
+      "open_link": "فتح الرابط"
+    },
+    "nfc": {
+      "title": "بطاقات NFC ({count})",
+      "empty": "لا توجد بطاقات NFC مرتبطة.",
+      "ago": "منذ",
+      "status": {
+        "active": "نشطة",
+        "lost": "مفقودة",
+        "blocked": "محظورة",
+        "inactive": "غير نشطة"
+      },
+      "upgrade_required": "⚠️ يتطلب خطة بريميوم",
+      "add_card": "إضافة بطاقة NFC"
+    },
+    "stats": {
+      "title": "إحصائيات التفاعل",
+      "total_scans": "إجمالي عمليات المسح",
+      "nfc_scans": "مسح NFC",
+      "qr_scans": "مسح QR",
+      "recent_visitors": "آخر الزوار",
+      "no_scans": "لا توجد عمليات مسح حديثة.",
+      "anonymous": "زائر مجهول",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
+    },
+    "other_features": {
+      "title": "ميزات أخرى",
+      "description": "أدر بطاقة NFC الخاصة بك أو شارك رسالة مخصصة.",
+      "report_card": "إبلاغ عن بطاقتك",
+      "reasons": {
+        "lost": "البطاقة مفقودة",
+        "stolen": "البطاقة مسروقة",
+        "damaged": "البطاقة تالفة",
+        "no_longer_needed": "لم أعد بحاجة للبطاقة",
+        "other": "أخرى (حدد)"
+      },
+      "custom_reason": "حدد السبب",
+      "custom_reason_placeholder": "مثال: البطاقة مكسورة، خطأ في الطباعة...",
+      "submit_report": "إبلاغ عن البطاقة",
+      "custom_message": "رسالة مخصصة",
+      "custom_message_placeholder": "مثال: أنا أغيّر وظيفتي، يرجى تحديث ملفي...",
+      "send_message": "إرسال الرسالة"
+    },
+    "settings": {
+      "title": "إعدادات الملف الشخصي",
+      "saving": "جارٍ الحفظ...",
+      "save": "حفظ",
+      "save_success": "✅ تم تحديث الملف الشخصي",
+      "save_error": "❌ فشل الحفظ",
+      "load_error": "❌ تعذر تحميل الملف الشخصي",
+      "avatar_uploaded": "✅ تم تحديث صورة الملف الشخصي",
+      "avatar_error": "❌ فشل الرفع",
+      "avatar_invalid": "⚠️ تنسيق غير صالح (JPG/PNG فقط)",
+      "cover_uploaded": "✅ تم تحديث الغلاف",
+      "cover_error": "❌ فشل الرفع",
+      "cover_invalid": "⚠️ تنسيق غير صالح (JPG/PNG فقط)",
+      "url_copied": "✅ تم نسخ الرابط",
+      "photo": {
+        "title": "الصورة والغلاف",
+        "avatar": "صورة الملف الشخصي",
+        "cover": "صورة الغلاف",
+        "upload_avatar": "تغيير الصورة",
+        "upload_cover": "انقر لرفع غلاف"
+      },
+      "personal": {
+        "title": "المعلومات الشخصية",
+        "full_name": "الاسم الكامل",
+        "full_name_placeholder": "مثال: حسن م.",
+        "username": "اسم المستخدم",
+        "username_placeholder": "اسمك",
+        "job_title": "المسمى الوظيفي",
+        "job_title_placeholder": "مطور كامل المكدس",
+        "company": "الشركة",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "نبذة قصيرة",
+        "bio_short_placeholder": "سطر واحد جذاب",
+        "bio_long": "السيرة الذاتية الكاملة",
+        "bio_long_placeholder": "مسيرتك، شغفك، قيمك..."
+      },
+      "contact": {
+        "title": "معلومات الاتصال",
+        "email": "البريد الإلكتروني",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "الهاتف",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "العنوان",
+        "address_placeholder": "金沙萨，刚果民主共和国",
+        "website": "الموقع الإلكتروني"
+      },
+      "visibility": {
+        "title": "الرؤية",
+        "description": "اختر ما يظهر في ملفك العام",
+        "portfolio_locked": "افتح معرض الأعمال مع اشتراك بريميوم",
+        "certificates_locked": "الشهادات مخصصة لحسابات بريميوم/مؤسسة"
+      },
+      "advanced": {
+        "title": "خيارات متقدمة",
+        "public_profile": "الملف العام",
+        "public_profile_desc": "مرئي دون تسجيل الدخول",
+        "contact_requests": "الرسائل العامة",
+        "contact_requests_desc": "السماح للزوار بإرسال رسائل لك",
+        "profile_url": "رابط الملف الشخصي"
+      }
+    }
+  },
+  "auth": {
+    "welcome": {
+      "title": "مرحبًا بك!",
+      "message": "سعداء برؤيتك مجددًا على LUVIKA. مستعد للإبداع؟ 🌟"
+    },
+    "complete": {
+      "title": "أكمل ملفك الشخصي",
+      "description": "بعض المعلومات لتخصيص حسابك",
+      "full_name": "الاسم الكامل",
+      "full_name_placeholder": "نيستور كيبامبي",
+      "username": "اسم المستخدم",
+      "username_placeholder": "نيستور",
+      "username_hint": "أحرف صغيرة، أرقام، شرطات وشرطات سفلية فقط (3-20 حرفًا)",
+      "username_available": "اسم المستخدم هذا متاح!",
+      "username_taken": "اسم المستخدم هذا مستخدم بالفعل",
+      "username_checking": "قيد التحقق...",
+      "submit": "إنهاء حسابي",
+      "saving": "جارٍ الحفظ...",
+      "success": "تم إنشاء الملف الشخصي بنجاح!",
+      "redirecting": "إعادة التوجيه إلى لوحة التحكم...",
+      "error_full_name_required": "يرجى إدخال اسمك الكامل",
+      "error_username_too_short": "يجب أن يحتوي اسم المستخدم على 3 أحرف على الأقل",
+      "error_generic": "حدث خطأ. حاول مرة أخرى.",
+      "step_identity": "الهوية",
+      "step_contact": "الاتصال",
+      "step_bio": "السيرة",
+      "title_identity": "1. من أنت؟",
+      "desc_identity": "الاسم الكامل واسم المستخدم (رابط ملفك الشخصي)",
+      "title_contact": "2. كيف يمكننا التواصل معك؟",
+      "desc_contact": "الهاتف، واتساب — كل شيء خاص افتراضيًا",
+      "title_bio": "3. حدثنا عن نفسك",
+      "desc_bio": "المسمى الوظيفي، الشركة، نبذة قصيرة — خصّص بطاقتك",
+      "phone": "الهاتف",
+      "whatsapp": "واتساب",
+      "job_title": "المسمى الوظيفي",
+      "company": "الشركة",
+      "bio_short": "نبذة قصيرة",
+      "skip": "تخطي",
+      "back": "رجوع",
+      "next": "التالي",
+      "finish": "إنهاء ملفي الشخصي"
+    },
+    "signup": {
+      "title": "إنشاء حساب",
+      "identity_step": "1. الهوية",
+      "email_step": "3. البريد الإلكتروني",
+      "security_step": "4. الأمان",
+      "full_name": "الاسم الكامل",
+      "full_name_placeholder": "مثال: نيستور فاكو",
+      "username": "اسم المستخدم (الرابط)",
+      "username_hint": "سيكون ملفك على: {url}",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "password_hint": "6 أحرف على الأقل",
+      "submit": "التسجيل",
+      "creating": "قيد الإنشاء...",
+      "success": "✅ تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول.",
+      "error_generic": "حدث خطأ. حاول مرة أخرى أو اتصل بالدعم.",
+      "error_email": "بريد إلكتروني غير صالح أو مستخدم مسبقًا.",
+      "error_password": "كلمة المرور قصيرة جدًا (6 أحرف كحد أدنى).",
+      "error_username": "اسم مستخدم غير صالح (أحرف، أرقام، _ أو -).",
+      "already_have_account": "هل لديك حساب بالفعل؟",
+      "sign_in": "سجّل الدخول",
+      "privacy": "بالمتابعة، فإنك توافق على",
+      "terms": "شروط الاستخدام",
+      "identity_desc": "ابدأ بإخبارنا من أنت.",
+      "email_desc": "سنرسل لك رابط تأكيد",
+      "security_desc": "اختر كلمة مرور قوية. المصادقة الثنائية مفعلة افتراضيًا.",
+      "code_sent": "✅ تم إرسال الرمز! تحقق من بريدك (بما في ذلك الرسائل غير المرغوب فيها).",
+      "invalid_code": "رمز غير صالح أو منتهي الصلاحية.",
+      "sending": "قيد الإرسال...",
+      "send_code": "إرسال الرمز",
+      "verify_code": "التحقق من الرمز",
+      "otp": "رمز التحقق (8 أرقام)",
+      "password_length": "8 أحرف على الأقل",
+      "password_uppercase": "حرف كبير",
+      "password_lowercase": "حرف صغير",
+      "password_number": "رقم",
+      "password_confirm": "تأكيد كلمة المرور",
+      "password_special": "رمز خاص",
+      "password_match": "كلمات المرور متطابقة",
+      "2fa_enabled": "🔒 المصادقة الثنائية مفعلة افتراضيًا لأمانك.",
+      "back": "رجوع",
+      "next": "التالي",
+      "create_account": "إنشاء حسابي",
+      "error_name": "يجب أن يحتوي الاسم على حرفين على الأقل.",
+      "error_email_format": "بريد إلكتروني غير صالح.",
+      "username_hint_plain": "ملفك: luvika.me/{username}",
+      "email_exists": "📧 لديك حساب بالفعل بهذا البريد. سجّل الدخول أو استخدم بريدًا آخر.",
+      "check_email": "✅ تحقق من بريدك — تم إرسال رابط تأكيد.",
+      "choose_plan": "اختر خطتك",
+      "plan_desc": "ابدأ مجانًا، وانتقل إلى بريميوم لمزيد من الميزات"
+    },
+    "reset": {
+      "title": "كلمة مرور جديدة",
+      "subtitle": "أدخل كلمة مرور آمنة جديدة.",
+      "new_password": "كلمة المرور الجديدة",
+      "submit": "تحديث",
+      "verifying": "التحقق من الرابط...",
+      "invalid_link": "رابط غير صالح أو منتهي الصلاحية.",
+      "error_update": "فشل التحديث.",
+      "success_title": "تم تحديث كلمة المرور!",
+      "success_message": "تم تغيير كلمة المرور بنجاح."
+    },
+    "signin": {
+      "title": "تسجيل الدخول",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "forgot_password": "نسيت كلمة المرور؟",
+      "submit": "تسجيل الدخول",
+      "connecting": "قيد الاتصال...",
+      "error_generic": "خطأ غير معروف. حاول لاحقًا.",
+      "error_credentials": "بريد إلكتروني أو كلمة مرور غير صحيحة.",
+      "error_email": "بريد إلكتروني غير صالح.",
+      "error_password": "كلمة المرور مطلوبة.",
+      "no_account": "ليس لديك حساب بعد؟",
+      "sign_up": "إنشاء حساب",
+      "subtitle": "سجّل الدخول إلى حسابك في LUVIKA.",
+      "profile_missing": "ملفك الشخصي غير مكتمل. يرجى الاتصال بالدعم."
+    },
+    "forgot_password": {
+      "title": "نسيت كلمة المرور",
+      "subtitle": "أدخل بريدك الإلكتروني لتلقي رابط إعادة التعيين.",
+      "otp_subtitle": "تم إرسال رمز إلى بريدك الإلكتروني.",
+      "reset_subtitle": "اختر كلمة مرور آمنة جديدة.",
+      "email": "البريد الإلكتروني",
+      "otp": "رمز التحقق",
+      "new_password": "كلمة المرور الجديدة",
+      "confirm_password": "تأكيد كلمة المرور",
+      "submit": "إرسال الرابط",
+      "verify": "التحقق من الرمز",
+      "reset": "إعادة تعيين",
+      "sending": "قيد الإرسال...",
+      "email_sent": "✅ تم إرسال الرابط! تحقق من بريدك.",
+      "back_to_login": "العودة إلى تسجيل الدخول",
+      "error": "بريد إلكتروني غير موجود.",
+      "error_generic": "خطأ غير معروف.",
+      "success": "✅ تم تحديث كلمة المرور!",
+      "password_length": "8 أحرف على الأقل",
+      "password_uppercase": "حرف كبير",
+      "password_lowercase": "حرف صغير",
+      "password_number": "رقم",
+      "password_special": "رمز خاص",
+      "password_match": "كلمات المرور متطابقة"
+    }
+  },
+  "admin": {
+    "title": "💼 لوحة الإدارة",
+    "subtitle": "أدر المستخدمين، الاشتراكات، وبطاقات NFC",
+    "stats": {
+      "total_users": "المستخدمون",
+      "active_subscriptions": "الاشتراكات النشطة",
+      "total_scans": "إجمالي عمليات المسح",
+      "orders": "الطلبات",
+      "nfc_cards": "بطاقات NFC"
+    },
+    "nav": {
+      "orders": "الطلبات",
+      "back_to_dashboard": "العودة إلى لوحة التحكم"
+    },
+    "subscription": {
+      "plan": "الخطة",
+      "activated": "مفعل في",
+      "expires": "تنتهي في",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "never": "أبدًا",
+      "activate": "تفعيل",
+      "deactivate": "إلغاء التفعيل",
+      "title": "إدارة الاشتراكات",
+      "description": "فعّل أو غيّر خطة المستخدم.",
+      "action": "إدارة الاشتراكات",
+      "edit": "تعديل",
+      "change_plan": "تغيير الخطة",
+      "select_plan": "اختيار خطة",
+      "expires_help": "اتركه فارغًا لاشتراك مدى الحياة",
+      "updated_success": "تم تحديث الخطة بنجاح",
+      "update_error": "فشل التحديث",
+      "upgrade_to_premium": "الترقية إلى بريميوم",
+      "request_enterprise": "تحويل الحساب إلى مؤسسة"
+    },
+    "nfc": {
+      "status": "الحالة",
+      "created": "تم الإنشاء في",
+      "no_cards": "لا توجد بطاقات NFC حتى الآن.",
+      "block_card": "حظر البطاقة",
+      "status_values": {
+        "active": "نشطة",
+        "lost": "مفقودة",
+        "blocked": "محظورة",
+        "inactive": "غير نشطة"
+      },
+      "activated": "مفعلة في",
+      "assigned_to": "مخصصة لـ",
+      "card_id": "معرف البطاقة",
+      "created_at": "تم الإنشاء في",
+      "actions": "إجراءات",
+      "activate": "تفعيل",
+      "block": "حظر",
+      "unassign": "إلغاء التخصيص"
+    },
+    "users": {
+      "name": "الاسم",
+      "username": "اسم المستخدم",
+      "email": "البريد الإلكتروني",
+      "role": "الدور",
+      "actions": "إجراءات",
+      "no_users": "لا يوجد مستخدمون حتى الآن."
+    },
+    "analytics": {
+      "recent_activity": "النشاط الأخير",
+      "coming_soon": "رسوم بيانية وتحليلات مفصلة قريباً."
+    },
+    "user_selector": {
+      "placeholder": "اختر مستخدمًا...",
+      "search": "ابحث عن مستخدم...",
+      "loading": "قيد التحميل...",
+      "no_results": "لم يتم العثور على مستخدمين."
+    },
+    "plans": {
+      "basic": "أساسي",
+      "premium": "بريميوم",
+      "entreprise": "مؤسسة",
+      "undefined": "غير محدد"
+    },
+    "actions": {
+      "title": "إجراءات سريعة",
+      "welcome_email": {
+        "title": "📧 بريد ترحيبي",
+        "description": "أرسل بريدًا مع رمز QR لمستخدم جديد",
+        "button": "إرسال الآن",
+        "sending": "قيد الإرسال…"
+      },
+      "email_success": "✅ تم إرسال البريد بنجاح!",
+      "email_error": "❌ خطأ في الإرسال.",
+      "error_generic": "حدث خطأ. حاول مرة أخرى."
+    },
+    "modules": {
+      "subscriptions": {
+        "no_active": "لا توجد اشتراكات نشطة حتى الآن.",
+        "title": "إدارة الاشتراكات",
+        "description": "فعّل أو غيّر خطة المستخدم.",
+        "action": "إدارة الاشتراكات"
+      },
+      "orders": {
+        "title": "طلبات NFC",
+        "description": "أدر طلبات بطاقات NFC: التحقق، الشحن، التتبع.",
+        "action": "عرض الطلبات"
+      },
+      "nfc": {
+        "title": "بطاقات NFC",
+        "description": "احظر بطاقة مفقودة أو غير نشطة.",
+        "action": "مراقبة البطاقات"
+      },
+      "users": {
+        "title": "المستخدمون",
+        "description": "راجع الملفات الشخصية وإشعارات الفقدان.",
+        "action": "إدارة المستخدمين"
+      },
+      "analytics": {
+        "title": "الإحصائيات العامة",
+        "description": "حلّل الاتجاهات والأداء.",
+        "action": "عرض التحليلات"
+      }
+    },
+    "orders": {
+      "title": "طلبات البطاقات",
+      "subtitle": "تتبع وتحقق من طلبات البطاقات الفيزيائية.",
+      "no_orders": "لا توجد طلبات حتى الآن."
+    }
+  },
+  "navbar": {
+    "home": "الرئيسية",
+    "features": "الميزات",
+    "pricing": "الأسعار",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "download": "تنزيل",
+    "sign_in": "تسجيل الدخول",
+    "sign_up": "التسجيل",
+    "language": "اللغة",
+    "sign_out": "تسجيل الخروج",
+    "sign_out_confirm_title": "تسجيل الخروج",
+    "sign_out_confirm_message": "هل أنت متأكد أنك تريد تسجيل الخروج؟",
+    "sign_out_confirm_yes": "نعم، تسجيل الخروج",
+    "sign_out_confirm_no": "إلغاء",
+    "farewell_title": "وداعًا!",
+    "farewell_message": "شكرًا لاستخدامك LUVIKA. سنفتقدك… 😢",
+    "profile_completion": "إكمال الملف الشخصي",
+    "edit_profile": "تعديل الملف الشخصي",
+    "completed": "مكتمل",
+    "view_public_profile": "عرض ملفي العام"
+  },
+  "about": {
+    "title": "من نحن",
+    "subtitle": "وُلد LUVIKA من رؤية بسيطة: إعادة المعنى للتواصل المهني، مع الأناقة، والأمان، والفخر الإفريقي.",
+    "mission": {
+      "title": "مهمتنا",
+      "content": "تحويل بطاقة العمل التقليدية إلى هوية رقمية ذكية، قابلة للتحكم، آمنة، ومتاحة للجميع — خاصة رواد الأعمال، المطورين، والقادة الأفارقة."
+    },
+    "values": {
+      "security": "الأمان",
+      "security_desc": "تبقى بياناتك تحت سيطرتك. لا شيء يُشارك دون موافقتك.",
+      "accessibility": "الوصول",
+      "accessibility_desc": "واجهة بسيطة، متعددة اللغات (فرنسي، لينغالا، إنجليزي)، مصممة للجميع.",
+      "african_pride": "الفخر الإفريقي",
+      "african_pride_desc": "حل مصمم في كينشاسا، لأفريقيا والعالم."
+    },
+    "team": {
+      "title": "فريقنا",
+      "content": "فريق شغوف من المطورين، المصممين، ورواد الأعمال مقره في كينشاسا، جمهورية الكونغو الديمقراطية.",
+      "cta": "انضم إلينا"
+    }
+  },
+  "contact": {
+    "title": "اتصل بنا",
+    "subtitle": "سؤال، فكرة، تعاون؟ نحب التبادل.",
+    "address": "العنوان",
+    "email": "البريد الإلكتروني",
+    "phone": "الهاتف",
+    "form_title": "أرسل لنا رسالة",
+    "name": "الاسم",
+    "name_placeholder": "اسمك",
+    "message": "الرسالة",
+    "message_placeholder": "مرحباً، أود أن...",
+    "send": "إرسال"
+  },
+  "download": {
+    "title": "تنزيل",
+    "subtitle": "LUVIKA مجاني، مفتوح للجميع، ولا يتطلب تثبيتًا.",
+    "step1": {
+      "title": "1. أنشئ ملفك الشخصي",
+      "desc": "في دقيقتين، أدخل معلوماتك وخصّص هويتك."
+    },
+    "step2": {
+      "title": "2. ولّد رمز الاستجابة السريعة",
+      "desc": "أو اربط بطاقة NFC (خيار بريميوم)."
+    },
+    "step3": {
+      "title": "3. شارك!",
+      "desc": "امسح → احفظ جهة الاتصال → ابدأ التواصل."
+    },
+    "cta_title": "مستعد لكشف هويتك؟",
+    "cta_desc": "ابدأ مجانًا — لا حاجة لبطاقة ائتمان.",
+    "download_now": "ابدأ الآن"
+  },
+  "footer": {
+    "product": "المنتج",
+    "features": "الميزات",
+    "pricing": "الأسعار",
+    "download": "تنزيل",
+    "company": "الشركة",
+    "about": "من نحن",
+    "contact": "اتصل بنا",
+    "blog": "المدونة",
+    "legal": "قانوني",
+    "privacy": "الخصوصية",
+    "terms": "شروط الاستخدام",
+    "cookies": "إدارة ملفات تعريف الارتباط",
+    "tagline": "LUVIKA — اكشف عن هويتك. هوية رقمية ذكية، إفريقية، وآمنة.",
+    "copyright": "جميع الحقوق محفوظة. صُمم في كينشاسا بحب ❤️."
+  },
+  "pricing": {
+    "title": "الخطط والأسعار",
+    "billing": {
+      "monthly": "شهريًا",
+      "yearly": "سنويًا",
+      "per_month": "/شهر",
+      "per_year": "/سنة"
+    },
+    "cta": {
+      "choose": "اختيار {plan}"
+    },
+    "footer": {
+      "custom_plan": "تحتاج خطة مخصصة؟",
+      "contact_us": "اتصل بنا"
+    },
+    "plans": {
+      "freemium": {
+        "title": "مجاني",
+        "desc": "للبدء",
+        "popular": "الأكثر شيوعًا",
+        "features": {
+          "nfc": "بطاقة NFC واحدة",
+          "users": "مستخدم واحد",
+          "events": "بدون فعاليات",
+          "presence": "رؤية أساسية",
+          "stats": "إحصائيات محدودة",
+          "roles": "بدون أدوار الفريق",
+          "dashboard": "لوحة تحكم بسيطة"
+        }
+      },
+      "premium": {
+        "title": "بريميوم",
+        "desc": "للمحترفين الطموحين",
+        "popular": "الأكثر شيوعًا",
+        "features": {
+          "nfc": "بطاقات NFC غير محدودة",
+          "users": "حتى 5 مستخدمين",
+          "events": "فعاليات أساسية",
+          "presence": "إبراز",
+          "stats": "إحصائيات متقدمة",
+          "roles": "أدوار الفريق",
+          "dashboard": "لوحة تحكم متقدمة"
+        }
+      },
+      "entreprise": {
+        "title": "مؤسسة",
+        "desc": "للفِرق والشركات",
+        "popular": "",
+        "features": {
+          "nfc": "بطاقات NFC غير محدودة + مخصصة",
+          "users": "مستخدمون غير محدودون",
+          "events": "فعاليات متقدمة",
+          "presence": "رؤية أولوية",
+          "stats": "تحليلات موحدة",
+          "roles": "أدوار متقدمة + تدقيق",
+          "dashboard": "لوحة تحكم عالمية + API"
+        }
+      }
+    }
+  },
+  "validate_button": "التحقق",
+  "cancel_button": "إلغاء",
+  "confirm_cancel": "هل أنت متأكد من إلغاء هذا الطلب؟ هذا الإجراء لا رجعة فيه.",
+  "action_success": {
+    "validate": "✅ تم التحقق من الطلب!",
+    "cancel": "✅ تم إلغاء الطلب."
+  },
+  "action_error": {
+    "validate": "❌ فشل التحقق",
+    "cancel": "❌ فشل الإلغاء"
+  },
+  "common": {
+    "save": "حفظ",
+    "saving": "قيد الحفظ..."
+  },
+  "enterprise": {
+    "title": "🏢 لوحة المؤسسة",
+    "subtitle": "أدر متجرك، موظفيك، بطاقاتك، وحضورك — في الوقت الفعلي.",
+    "modules": {
+      "dashboard": {
+        "title": "لوحة التحكم",
+        "desc": "نظرة عامة على نشاطك في الوقت الفعلي"
+      },
+      "product": {
+        "add_to_cart": "إضافة إلى السلة",
+        "added_to_cart": "✅ تمت الإضافة إلى السلة!",
+        "cart_error": "❌ لا يمكن الإضافة إلى السلة",
+        "favorite_error": "❌ خطأ في المفضلة",
+        "add_to_favorites": "إضافة إلى المفضلة",
+        "remove_from_favorites": "إزالة من المفضلة",
+        "quantity": "الكمية",
+        "order_now": "اطلب الآن",
+        "whatsapp_order": "اطلب عبر واتساب",
+        "seller_not_found": "البائع غير موجود",
+        "no_whatsapp": "لا يمكن التواصل مع هذا البائع عبر واتساب",
+        "quantity_exceeds_stock": "الكمية المطلوبة تتجاوز المخزون المتاح",
+        "in_stock": "{count} متوفر",
+        "add_favorite": "إضافة إلى المفضلة",
+        "remove_favorite": "إزالة من المفضلة",
+        "no_description": "لا وصف"
+      },
+      "shop": {
+        "title": "المتجر والمنتجات",
+        "desc": "كتالوج عام، المخزون، العروض",
+        "edit_title": "تعديل المنتج",
+        "product_info": "معلومات المنتج",
+        "image": "الصورة",
+        "image_help": "JPG/PNG حتى 5MB",
+        "name": "اسم المنتج",
+        "name_placeholder": "مثال: تيشيرت LUVIKA",
+        "slug": "رابط مخصص",
+        "slug_placeholder": "تيشيرت-لوفيكا",
+        "description": "الوصف",
+        "description_placeholder": "صف منتجك...",
+        "price": "السعر",
+        "promo_price": "سعر التخفيض",
+        "stock": "المخزون",
+        "sku": "الرمز المرجعي (SKU)",
+        "sku_placeholder": "LUVIKA-TSHIRT-001",
+        "sku_help": "رمز فريد لتتبع المخزون",
+        "optional": "اختياري",
+        "save": "حفظ",
+        "saving": "قيد الحفظ...",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "save_success": "✅ تم تحديث المنتج",
+        "save_error": "❌ فشل الحفظ",
+        "load_error": "❌ تعذر تحميل المنتج",
+        "upload_error": "❌ فشل الرفع",
+        "invalid_image": "⚠️ تنسيق غير صالح (JPG/PNG فقط)",
+        "image_too_large": "⚠️ الصورة كبيرة جدًا (5MB كحد أقصى)",
+        "missing_fields": "⚠️ يرجى ملء جميع الحقول المطلوبة",
+        "delete_confirm": "هل أنت متأكد من حذف هذا المنتج؟ هذا الإجراء لا رجعة فيه.",
+        "delete_success": "✅ تم حذف المنتج",
+        "delete_error": "❌ فشل الحذف",
+        "new_product": "منتج جديد",
+        "images": "صور المنتج",
+        "image_help_multi": "حتى 5 صور (JPG/PNG، 5MB كحد أقصى)",
+        "max_5_images": "⚠️ الحد الأقصى 5 صور",
+        "create_product": "إنشاء المنتج",
+        "create_success": "✅ تم إنشاء المنتج",
+        "create_error": "❌ فشل الإنشاء",
+        "uploading": "قيد الرفع...",
+        "no_products": "لا توجد منتجات مسجلة",
+        "add_product": "إضافة منتج",
+        "edit_product": "تعديل المنتج",
+        "delete_product": "حذف",
+        "view_coming_soon": "سيتوفر قريبًا",
+        "view_product": "عرض المنتج",
+        "invalid_slug": "لا يجب أن يحتوي الرابط على عناوين URL أو كلمات محجوزة",
+        "slug_preview": "معاينة الرابط"
+      },
+      "orders": {
+        "title": "الطلبات",
+        "desc": "تتبع المبيعات والشحنات",
+        "total_revenue": "إجمالي الإيرادات",
+        "pending_orders": "الطلبات المعلقة",
+        "completed_orders": "الطلبات المكتملة",
+        "recent_orders": "الطلبات الأخيرة"
+      },
+      "employees": {
+        "title": "الموظفون",
+        "desc": "إدارة الموارد البشرية البسيطة والأدوار",
+        "add_employee": "إضافة موظف",
+        "full_name": "الاسم الكامل",
+        "full_name_placeholder": "مثال: نيستور ب.",
+        "email": "البريد الإلكتروني",
+        "email_placeholder": "phaku@entreprise.com",
+        "phone": "الهاتف",
+        "phone_placeholder": "+243 890 177 601",
+        "position": "المسمى الوظيفي",
+        "position_placeholder": "مطور، موارد بشرية، إلخ.",
+        "role": "الدور",
+        "select_role": "اختر دورًا",
+        "roles": {
+          "employee": "موظف",
+          "manager": "مدير",
+          "admin": "مدير النظام"
+        },
+        "cancel": "إلغاء",
+        "confirm_add": "إضافة الموظف",
+        "adding": "قيد الإضافة...",
+        "add_success": "✅ تم إضافة الموظف بنجاح!",
+        "add_error": "❌ فشل الإضافة. حاول مرة أخرى."
+      },
+      "cards": {
+        "title": "البطاقات الاحترافية",
+        "desc": "بطاقات NFC غير محدودة لجميع الفريق"
+      },
+      "attendance": {
+        "title": "الحضور",
+        "desc": "تسجيل الحضور عبر رمز QR في الوقت الفعلي",
+        "recent_logs": "سجلات الحضور الأخيرة"
+      },
+      "communication": {
+        "title": "الاتصال",
+        "desc": "الرسائل الداخلية والإعلانات",
+        "broadcast_title": "رسالة عامة",
+        "broadcast_desc": "أرسل رسالة لجميع الموظفين",
+        "message_placeholder": "اكتب رسالتك هنا...",
+        "send_broadcast": "إرسال",
+        "sending": "قيد الإرسال..."
+      },
+      "settings": {
+        "title": "الإعدادات",
+        "desc": "تكوين شركتك",
+        "company_info": "معلومات الشركة",
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "phone": "الهاتف",
+        "address": "العنوان",
+        "city": "المدينة",
+        "country": "البلد",
+        "website": "الموقع الإلكتروني",
+        "description": "الوصف",
+        "logo_url": "رابط الشعار",
+        "save": "حفظ",
+        "saving": "قيد الحفظ...",
+        "save_success": "✅ تم تحديث الملف الشخصي",
+        "save_error": "❌ فشل الحفظ",
+        "loading": "قيد التحميل..."
+      }
+    },
+    "value_prop": {
+      "title": "شركتك، موحدة وحية",
+      "desc": "Luvika ليس ملفًا شخصيًا — إنه أداة عملك اليومية، مصممة لأفريقيا وقابلة للتوسع عالميًا."
+    }
+  }
+}

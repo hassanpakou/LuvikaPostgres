@@ -9,7 +9,8 @@ export default async function PricingPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  if (!['fr', 'ln', 'en'].includes(locale)) notFound();
+  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+  if (!supported.includes(locale as any)) notFound();
 
   const t = await getTranslations('pricing');
 

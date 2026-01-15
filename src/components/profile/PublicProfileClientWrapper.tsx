@@ -69,7 +69,8 @@ export default function PublicProfileClientWrapper({
   useEffect(() => {
     const init = async () => {
       const { locale, username } = await params;
-      if (!['fr', 'ln', 'en'].includes(locale)) return notFound();
+      const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+      if (!supported.includes(locale as any)) return notFound();
 
       const decodedUsername = decodeURIComponent(username).toLowerCase();
       const supabase = createClient();

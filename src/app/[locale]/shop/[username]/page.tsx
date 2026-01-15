@@ -27,7 +27,8 @@ export default async function PublicShopPage({
 }) {
   const { locale, username } = await params;
 
-  if (!['fr', 'en', 'ln'].includes(locale)) {
+  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+  if (!supported.includes(locale as any)) {
     return notFound();
   }
 

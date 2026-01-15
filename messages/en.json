@@ -5,6 +5,12 @@
     "create": "Create my profile",
     "discover": "Discover"
   },
+  "system": {
+    "connection_lost": "LUVIKA — Connection failed. Check your internet.",
+    "connection_back": "Connection restored.",
+    "server_error": "Server unavaible. Please try again later.",
+    "action_error": "An error occurred. Please try again."
+  },
   "features": {
     "title": "Why LUVIKA?",
     "nfc": {
@@ -782,18 +788,27 @@
         "send_broadcast": "Send",
         "sending": "Sending..."
       },
-      "settings": {
-        "title": "Settings",
-        "desc": "Configure your company",
-        "company_info": "Company information",
-        "name": "Name",
-        "email": "Email",
-        "phone": "Phone",
-        "address": "Address",
-        "save": "Save",
-        "saving": "Saving..."
-      }
-    },
+  "settings": {
+    "title": "Settings",
+    "desc": "Configure your company",
+    "company_info": "Company information",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "address": "Address",
+    "city": "City",
+    "country": "Country",
+    "website": "Website",
+    "description": "Description",
+    "logo_url": "Logo URL",
+    "save": "Save",
+    "saving": "Saving...",
+    "save_success": "✅ Profile updated",
+    "save_error": "❌ Save failed",
+    "loading": "Loading..."
+  }
+}
+,
     "value_prop": {
       "title": "Your unified and living business",
       "desc": "Luvika isn’t just a profile — it’s your daily business tool, built for Africa and scalable globally."

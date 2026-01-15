@@ -1,87 +1,87 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Révèle qui tu es — Identité professionnelle digitale · NFC · QR Code · Abonnements · Vente en ligne · Événements",
+  "tagline": "Sambila bato oyo bokaka — Lukama ya bantina digital · NFC · Kod QR · Makambo ya monene · Vente en ligne · Makambo",
   "cta": {
-    "create": "Créer mon profil",
-    "discover": "Découvrir"
+    "create": "Kobeta lukama na ngai",
+    "discover": "Tanga"
   },
   "system": {
-    "connection_lost": "LUVIKA — Echec de connexion. Vérifieé votre internet.",
-    "connection_back": "Connexion rétablie.",
-    "server_error": "Serveur indisponible. Réessayez plus tard.",
-    "action_error": "Une erreur est survenue. Réessayez."
+    "connection_lost": "LUVIKA — Kobetela ekoki te. Yanda internet na yo.",
+    "connection_back": "Kobetela ekotaka.",
+    "server_error": "Serveur ezali te. Sola ntango mosusu.",
+    "action_error": "Problem ekotaka. Sola ntango mosusu."
   },
   "features": {
-    "title": "Pourquoi LUVIKA ?",
+    "title": "Ndenge LUVIKA?",
     "nfc": {
-      "title": "NFC & QR Code",
-      "desc": "Partagez votre profil en un tap ou scan"
+      "title": "NFC & Kod QR",
+      "desc": "Kosalela lukama na yo na ntango moko to na scan"
     },
     "stats": {
       "title": "Statistiques",
-      "desc": "Scans, visites, présences — tout est tracé"
+      "desc": "Scans, bitumba, bakonzi — bato nyonso bakotaka"
     },
     "multi": {
-      "title": "Multi-cartes",
-      "desc": "Professionnel ? Gérez plusieurs cartes NFC"
+      "title": "Bakabaka mingi",
+      "desc": "Bantina? Gere kabaka mingi NFC"
     },
     "events": {
-      "title": "Événements et QR Codes",
+      "title": "Makambo na kod QR",
       "create": {
-        "title": "Créer des événements",
-        "desc": "Organisez vos salons, conférences ou webinaires et centralisez toutes les informations."
+        "title": "Kobeta makambo",
+        "desc": "Sala salon, conférence to webinar pe centralisa makambo nyonso."
       },
       "qr": {
-        "title": "Génération de QR Codes",
-        "desc": "Partage rapide de cartes, profils ou événements via QR codes personnalisés."
+        "title": "Kobeta kod QR",
+        "desc": "Kosalela na vitese kabaka, lukama to makambo na kod QR oyo obetaka."
       },
       "analytics": {
-        "title": "Analytics avancées",
-        "desc": "Suivez les vues, interactions et performances de vos cartes et événements."
+        "title": "Analyses avancées",
+        "desc": "Landela bitumba, interactions pe performances ya kabaka na makambo na yo."
       }
     },
     "superpro": {
-      "title": "Comptes Super Pro et Vente en Ligne",
-      "desc": "Les comptes Super Pro permettent aux entreprises de vendre leurs produits et services directement depuis leur carte digitale. Gérez plusieurs cartes, suivez vos ventes et interactions, et partagez vos offres via QR codes pour toucher vos clients partout."
+      "title": "Bakambo Super Pro pe vente en ligne",
+      "desc": "Bakambo Super Pro bakopesa bango kosala ba produits pe ba services directement na kabaka digital. Gere kabaka mingi, landela vente na yo pe kosalela ba offres na kod QR kosala bato bazwaka yo kati."
     }
   },
   "event": {
     "checkin": {
       "success": "✅ Présence confirmée !",
       "thanks": "Merci d’avoir participé à {title}.",
-      "view_participants": "Voir les participants"
+      "view_participants": "Tanga bato oyo bazalaka"
     }
   },
   "dashboard": {
-    "greeting_morning": "Bonjour, {name} 🌞",
-    "greeting_afternoon": "Bon après-midi, {name} ☀️",
-    "greeting_evening": "Bonsoir, {name} 🌙",
-    "greeting_night": "Coucou, {name} 🌃",
-    "subtitle": "Gérez votre identité numérique intelligente",
-    "view_public": "Voir mon profil public",
-    "export_csv": "Exporter (.csv)",
+    "greeting_morning": "Mbote, {name} 🌞",
+    "greeting_afternoon": "Ndenge, {name} ☀️",
+    "greeting_evening": "Ndombolo, {name} 🌙",
+    "greeting_night": "Yo, {name} 🌃",
+    "subtitle": "Gere lukama digital na yo",
+    "view_public": "Tanga lukama public na ngai",
+    "export_csv": "Kosalela (.csv)",
     "visibility": {
-      "title": "Visibilité des sections",
-      "description": "Choisissez ce que les visiteurs peuvent voir."
+      "title": "Visibilité ya sections",
+      "description": "Sala na bato oyo bakendaka bakoyeba."
     },
     "quick_menu": {
       "visibility": "Visibilité",
       "contact": "Messages",
-      "qr": "QR Code",
-      "nfc": "Cartes NFC",
-      "report": "Signaler",
+      "qr": "Kod QR",
+      "nfc": "Bakabaka NFC",
+      "report": "Kosenga",
       "message": "Message perso",
       "orders": "Commandes",
-      "upgrade": "Upgrade"
+      "upgrade": "Kobongola"
     },
     "contact_requests": {
-      "title": "Messages des visiteurs",
-      "description": "Autorisez les personnes qui consultent votre profil public à vous laisser un message.",
-      "label": "Recevoir des messages",
-      "enabled": "Activé – les visiteurs peuvent vous contacter",
+      "title": "Messages ya bato oyo bakendaka",
+      "description": "Pesa bato oyo bakendaka lukama na yo kosalela message.",
+      "label": "Kosalela messages",
+      "enabled": "Activé – bato bakokaki yo",
       "disabled": "Désactivé – formulaire masqué",
-      "enable": "Activer",
-      "disable": "Désactiver"
+      "enable": "Kotondisa",
+      "disable": "Kosenga"
     },
     "time": {
       "seconds": "{count} seconde",
@@ -94,9 +94,9 @@
       "days_plural": "{count} jours"
     },
     "orders": {
-      "title": "Commandes de cartes",
-      "description": "Gérez vos commandes NFC en cours.",
-      "manage": "Gérer les commandes"
+      "title": "Commandes ya bakabaka",
+      "description": "Gere commandes NFC oyo ekotaka.",
+      "manage": "Gere commandes"
     },
     "subscription": {
       "title": "Abonnement",
@@ -108,24 +108,24 @@
       },
       "active": "✅ Actif",
       "inactive": "⚠️ Inactif",
-      "active_until": "Votre plan est actif jusqu’au {date}.",
-      "upgrade_prompt": "Votre compte est en mode Freemium. Contactez l’administrateur pour activer un plan.",
+      "active_until": "Plan na yo ezali actif kati {date}.",
+      "upgrade_prompt": "Compte na yo ezali Freemium. Kosenga administrateur kosala plan.",
       "request_upgrade": "Demander une mise à niveau",
       "success_title": "✅ Succès !",
-      "success_message": "Un administrateur vous contactera sous 24h.",
+      "success_message": "Administrateur akokaki yo na ntango 24h.",
       "upgrade_to_premium": "Passer à Premium",
       "request_enterprise": "Convertir en compte Entreprise"
     },
     "qr": {
-      "title": "QR Code de profil",
-      "alt": "QR Code pour {username}",
-      "instructions": "Scannez pour accéder à votre profil",
-      "open_link": "Ouvrir le lien"
+      "title": "Kod QR ya lukama",
+      "alt": "Kod QR po {username}",
+      "instructions": "Scan po akenda na lukama na yo",
+      "open_link": "Kobeta lien"
     },
     "nfc": {
-      "title": "Cartes NFC ({count})",
-      "empty": "Aucune carte NFC associée.",
-      "ago": "il y a",
+      "title": "Bakabaka NFC ({count})",
+      "empty": "Aza na kabaka NFC te.",
+      "ago": "ntango elandi",
       "status": {
         "active": "Active",
         "lost": "Perdue",
@@ -133,16 +133,16 @@
         "inactive": "Inactive"
       },
       "upgrade_required": "⚠️ Plan Premium requis",
-      "add_card": "Ajouter une carte NFC"
+      "add_card": "Kobeta kabaka NFC"
     },
     "stats": {
       "title": "Statistiques d’engagement",
       "total_scans": "Scans totaux",
       "nfc_scans": "Scans NFC",
       "qr_scans": "Scans QR",
-      "recent_visitors": "Derniers visiteurs",
-      "no_scans": "Aucun scan récent.",
-      "anonymous": "Visiteur anonyme",
+      "recent_visitors": "Bato oyo bazalaka",
+      "no_scans": "Aza na scan te.",
+      "anonymous": "Moto anonyme",
       "scan_type": {
         "nfc": "NFC",
         "qr": "QR"
@@ -150,26 +150,26 @@
     },
     "other_features": {
       "title": "Autres fonctionnalités",
-      "description": "Gérez votre carte NFC ou partagez un message personnalisé.",
-      "report_card": "Signaler votre carte",
+      "description": "Gere kabaka NFC na yo to kosalela message personnalisé.",
+      "report_card": "Kosenga kabaka na yo",
       "reasons": {
-        "lost": "Carte perdue",
-        "stolen": "Carte volée",
-        "damaged": "Carte endommagée",
+        "lost": "Kabaka perdue",
+        "stolen": "Kabaka volée",
+        "damaged": "Kabaka endommagée",
         "no_longer_needed": "Plus besoin de la carte",
         "other": "Autre (précisez)"
       },
       "custom_reason": "Précisez la raison",
       "custom_reason_placeholder": "Ex: carte cassée, erreur d'impression...",
-      "submit_report": "Signaler la carte",
+      "submit_report": "Kosenga kabaka",
       "custom_message": "Message personnalisé",
       "custom_message_placeholder": "Ex: Je change de poste, merci de mettre à jour mon profil...",
-      "send_message": "Envoyer le message"
+      "send_message": "Kosalela message"
     },
     "settings": {
       "title": "Paramètres du profil",
-      "saving": "Sauvegarde...",
-      "save": "Enregistrer",
+      "saving": "Kosala...",
+      "save": "Kosala",
       "save_success": "✅ Profil mis à jour",
       "save_error": "❌ Échec de la sauvegarde",
       "load_error": "❌ Impossible de charger le profil",
@@ -189,10 +189,10 @@
       },
       "personal": {
         "title": "Informations personnelles",
-        "full_name": "Nom complet",
+        "full_name": "Nkombo mingi",
         "full_name_placeholder": "ex: Hassan M.",
-        "username": "Nom d’utilisateur",
-        "username_placeholder": "votre_nom",
+        "username": "Nkombo ya utilisateur",
+        "username_placeholder": "nom_na_yo",
         "job_title": "Poste",
         "job_title_placeholder": "Développeur Full-Stack",
         "company": "Entreprise",
@@ -236,9 +236,9 @@
     "complete": {
       "title": "Complétez votre profil",
       "description": "Quelques informations pour personnaliser votre compte",
-      "full_name": "Nom complet",
+      "full_name": "Nkombo mingi",
       "full_name_placeholder": "Nestor Kipampe",
-      "username": "Nom d'utilisateur",
+      "username": "Nkombo ya utilisateur",
       "username_placeholder": "nestor",
       "username_hint": "Lettres minuscules, chiffres, tirets et underscores uniquement (3-20 caractères)",
       "username_available": "Ce nom d'utilisateur est disponible !",
@@ -275,9 +275,9 @@
       "identity_step": "1. Identité",
       "email_step": "3. Adresse email",
       "security_step": "4. Sécurité",
-      "full_name": "Nom complet",
+      "full_name": "Nkombo mingi",
       "full_name_placeholder": "ex: Nestor PHAKU",
-      "username": "Nom d’utilisateur (URL)",
+      "username": "Nkombo ya utilisateur (URL)",
       "username_hint": "Votre profil sera à : {url}",
       "email": "Email",
       "password": "Mot de passe",
@@ -674,25 +674,23 @@
         "desc": "Vue d’ensemble en temps réel de votre activité"
       },
       "product": {
-    "add_to_cart": "Ajouter au panier",
-    "added_to_cart": "✅ Ajouté au panier !",
-    "cart_error": "❌ Impossible d’ajouter au panier",
-    "favorite_error": "❌ Erreur favori",
-    "add_to_favorites": "Ajouter aux favoris",
-    "remove_from_favorites": "Retirer des favoris",
-    "quantity": "Quantité",
-    "order_now": "Commander maintenant",
-    "whatsapp_order": "Commander sur WhatsApp",
-  "seller_not_found": "Vendeur introuvable",
-    "no_whatsapp": "Ce vendeur n’est pas joignable par WhatsApp",
-    "quantity_exceeds_stock": "La quantité demandée dépasse le stock disponible",
-    "in_stock": "{count} en stock",
-    "add_favorite": "Ajouter aux favoris",
-    "remove_favorite": "Retirer des favoris",
-    "no_description": "Aucune description"
-}
-
-,
+        "add_to_cart": "Ajouter au panier",
+        "added_to_cart": "✅ Ajouté au panier !",
+        "cart_error": "❌ Impossible d’ajouter au panier",
+        "favorite_error": "❌ Erreur favori",
+        "add_to_favorites": "Ajouter aux favoris",
+        "remove_from_favorites": "Retirer des favoris",
+        "quantity": "Quantité",
+        "order_now": "Commander maintenant",
+        "whatsapp_order": "Commander sur WhatsApp",
+        "seller_not_found": "Vendeur introuvable",
+        "no_whatsapp": "Ce vendeur n’est pas joignable par WhatsApp",
+        "quantity_exceeds_stock": "La quantité demandée dépasse le stock disponible",
+        "in_stock": "{count} en stock",
+        "add_favorite": "Ajouter aux favoris",
+        "remove_favorite": "Retirer des favoris",
+        "no_description": "Aucune description"
+      },
       "shop": {
         "title": "Boutique & Produits",
         "desc": "Catalogue public, stock, promotions",
@@ -753,30 +751,30 @@
         "recent_orders": "Commandes récentes"
       },
       "employees": {
-  "title": "Employés",
-  "desc": "Gestion RH légère et rôles",
-  "add_employee": "Ajouter un employé",
-  "full_name": "Nom complet",
-  "full_name_placeholder": "ex: Nestor P.",
-  "email": "Email",
-  "email_placeholder": "phaku@entreprise.com",
-  "phone": "Téléphone",
-  "phone_placeholder": "+243 890 177 601",
-  "position": "Poste",
-  "position_placeholder": "Développeur, RH, etc.",
-  "role": "Rôle",
-  "select_role": "Choisir un rôle",
-  "roles": {
-    "employee": "Employé",
-    "manager": "Manager",
-    "admin": "Administrateur"
-  },
-  "cancel": "Annuler",
-  "confirm_add": "Ajouter l'employé",
-  "adding": "Ajout en cours...",
-  "add_success": "✅ Employé ajouté avec succès !",
-  "add_error": "❌ Échec de l'ajout. Réessayez."
-},
+        "title": "Employés",
+        "desc": "Gestion RH légère et rôles",
+        "add_employee": "Ajouter un employé",
+        "full_name": "Nom complet",
+        "full_name_placeholder": "ex: Nestor P.",
+        "email": "Email",
+        "email_placeholder": "phaku@entreprise.com",
+        "phone": "Téléphone",
+        "phone_placeholder": "+243 890 177 601",
+        "position": "Poste",
+        "position_placeholder": "Développeur, RH, etc.",
+        "role": "Rôle",
+        "select_role": "Choisir un rôle",
+        "roles": {
+          "employee": "Employé",
+          "manager": "Manager",
+          "admin": "Administrateur"
+        },
+        "cancel": "Annuler",
+        "confirm_add": "Ajouter l'employé",
+        "adding": "Ajout en cours...",
+        "add_success": "✅ Employé ajouté avec succès !",
+        "add_error": "❌ Échec de l'ajout. Réessayez."
+      },
       "cards": {
         "title": "Cartes Pro",
         "desc": "Cartes NFC illimitées pour toute l’équipe"

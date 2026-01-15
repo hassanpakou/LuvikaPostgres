@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { Toaster } from 'sonner';
 import { AdminHeader } from '@/src/components/admin/AdminHeader';
 import { AdminLayoutProvider } from '@/src/contexts/AdminLayoutContext';
+import { NetworkWatcher } from '@/src/components/system/NetworkWatcher';
 
 export default async function AdminLayout({
   children,
@@ -35,6 +36,9 @@ export default async function AdminLayout({
         <AdminHeader />
         {children}
         <Toaster position="top-right" richColors closeButton />
+        <Toaster position="top-right" richColors />
+        {/* ← Obligatoire pour voir les toasts & pour surveiller la connexion globale*/}
+        <NetworkWatcher/>
       </div>
     </AdminLayoutProvider>
   );
