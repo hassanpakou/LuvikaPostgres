@@ -8,7 +8,7 @@ import {
   Heart, Phone, Mail, MessageCircle, MapPin,
   Instagram, Globe, Download, QrCode, ExternalLink,
   CheckCircle, UserCheck, ArrowUp, ChevronDown, Send, Link as LinkIcon,
-  Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText
+  Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText, Share as ShareIcon
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import { createClient } from '@/src/lib/supabase/client';
 
 // 🔹 Types
 type Profile = {
+  created_at: any;
   id: string;
   full_name: string;
   username: string;
@@ -577,6 +578,59 @@ export default function PublicProfileClient({
           </motion.div>
         )}
 
+{/* 🔹 Badge type de compte + date d'adhésion */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.3 }}
+          className="mt-8 text-center text-gray-500 text-sm"
+        >
+          {profile.created_at && (
+            <>
+              {profile.plan === 'basic' && (
+                <span>Compte basic : ce compte utilise Luvika - Membre depuis {new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}.</span>
+              )}
+              {profile.plan === 'premium' && (
+                <span>Compte professionnel : ce compte utilise Luvika - Membre depuis {new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}.</span>
+              )}
+              {profile.plan === 'entreprise' && (
+                <span>Compte Entreprise/Business : ce compte utilise Luvika Business - Membre depuis {new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}.</span>
+              )}
+            </>
+          )}
+        </motion.div>
+
+        {/* 🔹 Bouton Partager — visible par tous */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="mt-6 flex justify-center"
+        >
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const url = window.location.href;
+              if (navigator.share) {
+                navigator.share({
+                  title: `Profil de ${profile.full_name}`,
+                  text: `Découvrez le profil de ${profile.full_name} sur LUVIKA`,
+                  url,
+                }).catch(console.warn);
+              } else {
+                navigator.clipboard.writeText(url)
+                  .then(() => alert('Lien copié !'))
+                  .catch(console.warn);
+              }
+            }}
+            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-gray-300"
+          >
+            <ShareIcon className="w-4 h-4" />
+            Partager ce profil
+          </Button>
+        </motion.div>
+
         {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -607,82 +661,108 @@ export default function PublicProfileClient({
           </Section>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-          className="w-full px-2 mt-8"
-        >
-          <div className="max-w-5xl mx-auto">
-            <div className="flex flex-wrap justify-center gap-3 py-3">
-              {isSectionVisible('contact', profile) && profile.email && (
-                <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
-              )}
-              {isSectionVisible('contact', profile) && profile.phone && (
-                <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
-              )}
-              {isSectionVisible('contact', profile) && profile.whatsapp && (
-                <ActionItem icon={<MessageCircle className="w-5 h-5 text-emerald-400" />} label="WhatsApp" href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} />
-              )}
-              {profile.address && (
-                <ActionItem icon={<MapPin className="w-5 h-5 text-amber-400" />} label="Carte" href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} />
-              )}
-              {profile.website && (
-                <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
-              )}
-              {profile.instagram && (
-                <ActionItem icon={<Instagram className="w-5 h-5 text-pink-400" />} label="IG" href={`https://instagram.com/${profile.instagram.trim()}`} />
-              )}
-              {profile.linkedin && (
-                <ActionItem icon={<Linkedin className="w-5 h-5 text-blue-500" />} label="LinkedIn" href={`https://linkedin.com/in/${profile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`} />
-              )}
-              {profile.github && (
-                <ActionItem icon={<Github className="w-5 h-5 text-gray-400" />} label="GitHub" href={`https://github.com/${profile.github.replace(/^https?:\/\//, '')}`} />
-              )}
-              {profile.gitlab && (
-                <ActionItem icon={<Gitlab className="w-5 h-5 text-orange-500" />} label="GitLab" href={`https://gitlab.com/${profile.gitlab.replace(/^https?:\/\//, '')}`} />
-              )}
-              {profile.tiktok && (
-                <ActionItem icon={<SiTiktok className="w-5 h-5 text-black" />} label="TikTok" href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`} />
-              )}
-              <ActionItem
-                icon={<Download className="w-5 h-5 text-purple-400" />}
-                label="vCard"
-                onClick={() => {
-                  const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
-                  const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `${profile.username}.vcf`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              />
-              {profile.cv_url && (
-                <ActionItem
-                  icon={<FileText className="w-5 h-5 text-gray-400" />}
-                  label="CV"
-                  href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
-                />
-              )}
-              {profile.calendly && (
-                <ActionItem
-                  icon={<Calendar className="w-5 h-5 text-cyan-400" />}
-                  label="RDV"
-                  href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
-                />
-              )}
-              {profile.portfolio_url && (
-                <ActionItem
-                  icon={<Folder className="w-5 h-5 text-cyan-400" />}
-                  label="Portfolio"
-                  href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
-                />
-              )}
-            </div>
-          </div>
-        </motion.div>
+        {/* 🔹 Liens de contact et réseaux sociaux — conditionnés à la section "social" */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 1.2 }}
+  className="w-full px-2 mt-8"
+>
+  <div className="max-w-5xl mx-auto">
+    <div className="flex flex-wrap justify-center gap-3 py-3">
+      {/* 🔸 Contact (toujours visible si section "contact" activée) */}
+      {isSectionVisible('contact', profile) && profile.email && (
+        <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
+      )}
+      {isSectionVisible('contact', profile) && profile.phone && (
+        <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
+      )}
+      {isSectionVisible('contact', profile) && profile.whatsapp && (
+        <ActionItem icon={<MessageCircle className="w-5 h-5 text-emerald-400" />} label="WhatsApp" href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} />
+      )}
+      {profile.address && (
+        <ActionItem icon={<MapPin className="w-5 h-5 text-amber-400" />} label="Carte" href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} />
+      )}
+      {profile.website && (
+        <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
+      )}
+
+      {/* 🔸 Réseaux sociaux — SEULEMENT si "social" est activé */}
+      {isSectionVisible('social', profile) && (
+        <>
+          {profile.instagram && (
+            <ActionItem icon={<Instagram className="w-5 h-5 text-pink-400" />} label="IG" href={`https://instagram.com/${profile.instagram.trim()}`} />
+          )}
+          {profile.linkedin && (
+            <ActionItem icon={<Linkedin className="w-5 h-5 text-blue-500" />} label="LinkedIn" href={`https://linkedin.com/in/${profile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`} />
+          )}
+          {profile.github && (
+            <ActionItem icon={<Github className="w-5 h-5 text-gray-400" />} label="GitHub" href={`https://github.com/${profile.github.replace(/^https?:\/\//, '')}`} />
+          )}
+          {profile.gitlab && (
+            <ActionItem icon={<Gitlab className="w-5 h-5 text-orange-500" />} label="GitLab" href={`https://gitlab.com/${profile.gitlab.replace(/^https?:\/\//, '')}`} />
+          )}
+          {profile.tiktok && (
+            <ActionItem icon={<SiTiktok className="w-5 h-5 text-black" />} label="TikTok" href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`} />
+          )}
+          {profile.snapchat && (
+            <ActionItem icon={<SnapchatIcon className="w-5 h-5 text-yellow-400" />} label="Snapchat" href={`https://snapchat.com/add/${profile.snapchat.replace(/^@/, '')}`} />
+          )}
+          {profile.telegram && (
+            <ActionItem icon={<TelegramIcon className="w-5 h-5 text-blue-400" />} label="Telegram" href={`https://t.me/${profile.telegram.replace(/^@/, '')}`} />
+          )}
+          {profile.behance && (
+            <ActionItem icon={<BehanceIcon className="w-5 h-5 text-blue-400" />} label="Behance" href={`https://${profile.behance.replace(/^https?:\/\//, '')}`} />
+          )}
+          {profile.dribbble && (
+            <ActionItem icon={<DribbbleIcon className="w-5 h-5 text-pink-400" />} label="Dribbble" href={`https://${profile.dribbble.replace(/^https?:\/\//, '')}`} />
+          )}
+        </>
+      )}
+
+      {/* 🔸 Liens professionnels — aussi liés à "social" */}
+      {isSectionVisible('social', profile) && (
+        <>
+          <ActionItem
+            icon={<Download className="w-5 h-5 text-purple-400" />}
+            label="vCard"
+            onClick={() => {
+              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
+              const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${profile.username}.vcf`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          />
+          {profile.cv_url && (
+            <ActionItem
+              icon={<FileText className="w-5 h-5 text-gray-400" />}
+              label="CV"
+              href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
+            />
+          )}
+          {profile.calendly && (
+            <ActionItem
+              icon={<Calendar className="w-5 h-5 text-cyan-400" />}
+              label="RDV"
+              href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
+            />
+          )}
+          {profile.portfolio_url && (
+            <ActionItem
+              icon={<Folder className="w-5 h-5 text-cyan-400" />}
+              label="Portfolio"
+              href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
+            />
+          )}
+        </>
+      )}
+    </div>
+  </div>
+</motion.div>
 
         <div className="h-8"></div>
 
@@ -730,6 +810,8 @@ export default function PublicProfileClient({
   </motion.div>
 )}        </motion.div>
 
+
+
         <ScanTracker profileId={profile.id} />
 
         <AnimatePresence>
@@ -758,6 +840,30 @@ export default function PublicProfileClient({
 }
 
 // 🔹 Composants enfants
+const SnapchatIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
+    <path fill="currentColor" d="M21.927 9.208l-.863-.527A5.486 5.486 0 0 0 12 7a5.486 5.486 0 0 0-9.064 1.681l-.863.527a1 1 0 0 0-.066 1.72l.902.55a3.489 3.489 0 0 1 0 5.643l-.902.55a1 1 0 0 0 .066 1.72l.863.527A5.486 5.486 0 0 0 12 23a5.486 5.486 0 0 0 9.064-1.681l.863-.527a1 1 0 0 0 .066-1.72l-.902-.55a3.489 3.489 0 0 1 0-5.643l.902-.55a1 1 0 0 0-.066-1.72z"/>
+  </svg>
+);
+
+const TelegramIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
+    <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2zm4.333 13.5l-1.45 4.35c-.15.45-.6.6-1 .45L12 19l-6.5 3.5c-.4.2-.8-.1-.6-.5l1.5-6.5L3.5 12c-.2-.4 0-.8.4-.8l17-7c.4-.2.8.1.6.5l-2.5 12.5c-.1.5-.5.8-.9.6l-2.767-1.167z"/>
+  </svg>
+);
+
+const BehanceIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
+    <path fill="currentColor" d="M0 0v24h24V0H0zm8.4 18.4H4.8V5.6h3.6c1.6 0 2.8.4 3.6 1.2s1.2 2 1.2 3.6s-.4 2.8-1.2 3.6s-2 1.2-3.6 1.2zm-1.2-1.6h2c1.2 0 2-.4 2.4-1.2s.6-2 .6-3.6s-.2-2.8-.6-3.6s-1.2-1.2-2.4-1.2H7.2v9.6zm5.6-10.4v1.6h-3.2v3.2h2.8v1.6h-2.8v3.2h3.2v1.6h-4.8V5.6h4.8v1.6z"/>
+  </svg>
+);
+
+const DribbbleIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
+    <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2m-1.1 17.2c-4.8 0-7.1-4.7-7.4-8.2c.3-3.5 2.7-8.2 7.4-8.2c1.1 0 2.1.2 3.1.7c.9-.5 2-.8 3.2-.8c4.6 0 7 4.7 7.3 8.3c-.3 3.6-2.7 8.2-7.3 8.2c-1.1 0-2.2-.3-3.2-.7c-.9.5-1.9.7-2.9.7m-.7-13.3c-3.6 0-5.4 4-5.6 7c.2 3 2 7 5.6 7c3.7 0 5.5-4 5.7-7c-.2-3.1-2-7.1-5.7-7m-4.2 5.5c.2.2.2.5.1.7c-.1.2-.3.3-.6.2c-2.2-.9-3.8-3.2-3.9-3.4c-.1-.2-.1-.4.1-.6c.2-.2.5-.2.7-.1c.1.1 1.7 2.2 3.7 3.2m10.2 0c1.9-1 3.4-3 3.6-3.2c.2-.2.4-.2.6-.1c.2.2.2.4.1.6c-.2.2-1.8 2.6-4 3.5c-.2.1-.5 0-.7-.2c-.2-.2-.1-.5.1-.8m-9.7-3.7c.2.2.2.5.1.7c-.1.2-.3.3-.6.2c-1.3-.5-2.2-2.2-2.3-3.4c.2-2.5 2.1-4.1 2.8-4.6c.2-.1.4-.1.6.1c.2.2.2.4.1.6c-.3.5-1.7 2-1.9 4.4m9.2 0c.1-.6.2-1.1.2-1.8c-.1-2.1-1.1-3.5-1.8-4.1c-.2-.1-.2-.4-.1-.6c.2-.2.4-.2.6-.1c.7.5 2.3 2 2.5 4.3c0 .7.1 1.2.2 1.8c0 .2.1.4-.1.5c-.1.1-.3.1-.4-.1c-.2-.2-.3-.3-.5-.5c-.2-.3-.6-.4-.9-.2c-.3.2-.4.6-.2.9c.3.6 1.2 2.4 2.5 3.4c.2.1.2.4.1.6c-.2.2-.4.2-.6.1c-1.4-1-2.3-2.8-2.5-3.4c-.2-.3-.2-.7.1-.9c.2-.2.6-.4.9-.2c.3.2.4.6.2.9c-.2.3-.2.3-.3.5c-.1.1-.3.2-.5.1c-.2-.1-.3-.4-.1-.7m-4.8 1.8c.9-.1 2.8-1.1 3.9-2.7c.2-.2.5-.2.7-.1c.2.2.2.5.1.7c-.8 1.6-2.6 2.7-4.1 2.9c-.3 0-.5-.2-.5-.4c-.1-.1 0-.2.1-.4z"/>
+  </svg>
+);
+
 const StatBox = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div className="min-w-[64px] flex flex-col items-center">
     <div className="text-xl font-semibold text-white leading-tight">{children}</div>

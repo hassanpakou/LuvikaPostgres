@@ -84,6 +84,7 @@ export default function PublicProfileClientWrapper({
         .from('profiles')
         .select(`
           *,
+            created_at,
           avatar_url,
           cover_url,
           plan,

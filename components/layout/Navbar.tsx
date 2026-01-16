@@ -1,11 +1,21 @@
 'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Globe, LogOut, Shield, User as UserIcon, X as XIcon, Eye } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Globe,
+  LogOut,
+  Shield,
+  User as UserIcon,
+  X as XIcon,
+  Eye,
+} from 'lucide-react';
 import { createClient } from '@/src/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
 
@@ -37,8 +47,8 @@ const getProfileCompletion = (metadata: any): number => {
     'website',
     'instagram',
   ];
-  const filled = requiredFields.filter(field =>
-    metadata[field] && metadata[field].toString().trim().length > 0
+  const filled = requiredFields.filter(
+    (field) => metadata[field] && metadata[field].toString().trim().length > 0
   ).length;
   return Math.min(100, Math.round((filled / requiredFields.length) * 100));
 };
@@ -53,16 +63,6 @@ const GlowingIconsStyle = `
   50% {
     box-shadow: 0 0 0 8px rgba(59, 130, 246, 0),
                 0 0 24px 8px rgba(59, 130, 246, 0.3);
-  }
-}
-@keyframes glowPulseAmber {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4),
-                0 0 12px 4px rgba(251, 191, 36, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0),
-                0 0 24px 8px rgba(251, 191, 36, 0.3);
   }
 }
 @keyframes floatBubble {
@@ -82,11 +82,6 @@ const GlowingIconsStyle = `
 .bubble-3 { animation: floatBubble 8s infinite; left: 42%; top: 102%; animation-delay: 0.7s; width: 30px; height: 30px; }
 .bubble-4 { animation: floatBubble 11s infinite; left: 62%; top: 100%; animation-delay: 0.3s; width: 18px; height: 18px; }
 .bubble-5 { animation: floatBubble 10s infinite; left: 82%; top: 107%; animation-delay: 2.1s; width: 26px; height: 26px; }
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 body.signout-open {
   overflow: hidden;
   overscroll-behavior: contain;
@@ -265,7 +260,7 @@ function SignOutConfirmSheet({
               animate={{
                 y: isDragging ? dragOffset : 0,
                 opacity: 1,
-                transition: isDragging ? { type: 'tween' } : { type: 'spring', damping: 28, stiffness: 300 }
+                transition: isDragging ? { type: 'tween' } : { type: 'spring', damping: 28, stiffness: 300 },
               }}
               exit={{ y: '100%', opacity: 0 }}
               className="fixed bottom-0 left-0 right-0 z-[101]"
@@ -273,7 +268,6 @@ function SignOutConfirmSheet({
             >
               <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-12 xl:mx-24">
                 <div className="relative backdrop-blur-2xl bg-transparent rounded-t-[32px] border border-white/10 dark:border-white/5 shadow-[0_-6px_28px_rgba(0,0,0,0.06)] overflow-hidden">
-                  {/* 🔹 Bulles à l’intérieur */}
                   <IceBubbles />
 
                   {/* Handle */}
@@ -285,7 +279,7 @@ function SignOutConfirmSheet({
                     <div className="w-14 h-1.5 bg-white/25 dark:bg-gray-300/25 rounded-full transition-transform active:scale-95" />
                   </div>
 
-                  {/* Contenu — texte avec ombre douce */}
+                  {/* Contenu */}
                   <div className="px-6 py-6 text-center relative z-10">
                     <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
                       <LogOut className="h-7 w-7 text-red-400 drop-shadow-sm" />
@@ -330,19 +324,21 @@ function SignOutConfirmSheet({
         )}
       </AnimatePresence>
 
-      <FarewellModal
-        isOpen={showFarewell}
-        onClose={() => setShowFarewell(false)}
-        t={t}
-      />
+      <FarewellModal isOpen={showFarewell} onClose={() => setShowFarewell(false)} t={t} />
     </>
   );
 }
 
-// 🔹 Navbar principal
+// 🔹 Navbar principal — SEUL EXPORT
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<{
+    avatar_url: string | null;
+    full_name: string | null;
+    username: string | null;
+    plan: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
@@ -351,19 +347,39 @@ export default function Navbar() {
   const t = useTranslations();
   const router = useRouter();
 
+  // 🔥 Charger user + profile au montage
   useEffect(() => {
-    const supabase = createClient();
-    const checkSession = async () => {
-      const { data : { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
+    const fetchUserAndProfile = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+        const { data } = await supabase
+          .from('profiles')
+          .select('avatar_url, full_name, username, plan')
+          .eq('id', session.user.id)
+          .single();
+        if (data) setProfile(data);
+      }
       setLoading(false);
-    };
-    checkSession();
 
-    const { data : { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => setUser(session?.user || null)
-    );
-    return () => subscription.unsubscribe();
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user || null);
+        if (session?.user) {
+          supabase
+            .from('profiles')
+            .select('avatar_url, full_name, username, plan')
+            .eq('id', session.user.id)
+            .single()
+            .then(({ data }) => setProfile(data || null));
+        } else {
+          setProfile(null);
+        }
+      });
+      return () => subscription.unsubscribe();
+    };
+
+    fetchUserAndProfile();
   }, []);
 
   const confirmAndSignOut = async () => {
@@ -384,13 +400,12 @@ export default function Navbar() {
   };
 
   const changeLanguage = (newLocale: Locale) => {
-    const supported: Locale[] = ['ar','en','es','fr','kg','ln','nl','pt','sw'];
+    const supported: Locale[] = ['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'];
     const segments = pathname.split('/');
-    // segments[0] === '' car pathname commence par '/'
     if (segments.length > 1 && supported.includes(segments[1] as Locale)) {
-      segments[1] = newLocale; // remplace la locale existante
+      segments[1] = newLocale;
     } else {
-      segments.splice(1, 0, newLocale); // insère la locale si absente
+      segments.splice(1, 0, newLocale);
     }
     const newPath = segments.join('/') || '/';
     router.push(newPath);
@@ -401,15 +416,16 @@ export default function Navbar() {
   const isAdmin = role === 'admin';
   const isUser = user && !isAdmin;
 
-  // 🔹 Routes publiques (si non connecté)
-  const navLinks = (!isAdmin && !isUser) ? [
-    { href: '/', label: t('navbar.home') },
-    { href: '/#features', label: t('navbar.features') },
-    { href: `/${locale}/pricing`, label: t('navbar.pricing') },
-    { href: `/${locale}/about`, label: t('navbar.about') },
-    { href: `/${locale}/contact`, label: t('navbar.contact') },
-    { href: `/${locale}/download`, label: t('navbar.download') },
-  ] : [];
+  const navLinks = !isAdmin && !isUser
+    ? [
+        { href: '/', label: t('navbar.home') },
+        { href: '/#features', label: t('navbar.features') },
+        { href: `/${locale}/pricing`, label: t('navbar.pricing') },
+        { href: `/${locale}/about`, label: t('navbar.about') },
+        { href: `/${locale}/contact`, label: t('navbar.contact') },
+        { href: `/${locale}/download`, label: t('navbar.download') },
+      ]
+    : [];
 
   if (loading) return null;
 
@@ -417,18 +433,9 @@ export default function Navbar() {
     <>
       <style>{GlowingIconsStyle}</style>
       <header className="sticky top-0 z-50 w-full">
-        <div className="
-          mx-4 mt-4 rounded-2xl border border-white/15 backdrop-blur-xl bg-white/5
-          shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-500
-          hover:border-cyan-300/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.15)]
-        ">
+        <div className="mx-4 mt-4 rounded-2xl border border-white/15 backdrop-blur-xl bg-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-500 hover:border-cyan-300/30 hover:shadow-[0_12px_40px_rgba(59,130,246,0.15)]">
           <div className="container mx-auto px-2 sm:px-4 py-3 flex justify-between items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* ✅ Logo redirige vers /admin ou /dashboard */}
+            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5 }}>
               <Link
                 href={isAdmin ? '/admin' : isUser ? '/dashboard' : '/'}
                 className="flex items-center space-x-2 group"
@@ -442,19 +449,12 @@ export default function Navbar() {
               </Link>
             </motion.div>
 
-            <nav className={`hidden md:flex space-x-0.5 ${isAdmin ? 'opacity-50 pointer-events-none' : ''}`}
-              aria-disabled={isAdmin}
-            >
+            <nav className={`hidden md:flex space-x-0.5 ${isAdmin ? 'opacity-50 pointer-events-none' : ''}`} aria-disabled={isAdmin}>
               {navLinks.map((link, i) => (
-                <motion.div 
-                  key={link.href} 
-                  initial={{ opacity: 0, y: -10 }} 
-                  animate={{ opacity: 1, y: 0 }} 
-                  transition={{ delay: 0.2 + i * 0.05 }}
-                >
-                  <Link 
-                    href={link.href} 
-                    className="relative px-3 py-2 rounded-xl text-gray-300 font-medium text-sm sm:text-base transition-all duration-300 group" 
+                <motion.div key={link.href} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.05 }}>
+                  <Link
+                    href={link.href}
+                    className="relative px-3 py-2 rounded-xl text-gray-300 font-medium text-sm sm:text-base transition-all duration-300 group"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {link.label}
@@ -468,13 +468,8 @@ export default function Navbar() {
               {isAdmin && (
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <Link href="/admin">
-                    <Button
-                      variant="default"
-                      className="px-4 py-2 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10"
-                    >
-                      <span className="relative z-10 flex items-center gap-1">
-                        TABLEAU DE BORD
-                      </span>
+                    <Button variant="default" className="px-4 py-2 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10">
+                      <span className="relative z-10 flex items-center gap-1">TABLEAU DE BORD</span>
                       <div className="absolute inset-0 animated-bg-admin rounded-xl blur-sm opacity-70 -z-10" />
                     </Button>
                   </Link>
@@ -484,13 +479,8 @@ export default function Navbar() {
               {isUser && (
                 <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
                   <Link href="/dashboard">
-                    <Button
-                      variant="default"
-                      className="px-4 py-2 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10"
-                    >
-                      <span className="relative z-10 flex items-center gap-1">
-                        TABLEAU DE BORD
-                      </span>
+                    <Button variant="default" className="px-4 py-2 rounded-xl font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden relative z-10">
+                      <span className="relative z-10 flex items-center gap-1">TABLEAU DE BORD</span>
                       <div className="absolute inset-0 animated-bg-user rounded-xl blur-sm opacity-70 -z-10" />
                     </Button>
                   </Link>
@@ -499,25 +489,30 @@ export default function Navbar() {
 
               {!isAdmin && (
                 <div className="relative">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setShowLangDropdown(!showLangDropdown)}
                     className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 px-3 rounded-xl transition-all duration-300"
                   >
                     <Globe className="h-4 w-4 mr-1" />
                     <span className="font-medium">{languages[locale].flag}</span>
                   </Button>
-                  <div className={`absolute right-0 mt-2 w-40 glass-border py-1 z-50 ${showLangDropdown ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'} transition-opacity duration-300 rounded-xl max-h-48 overflow-y-auto`}>
+                  <div
+                    className={`absolute right-0 mt-2 w-40 glass-border py-1 z-50 ${
+                      showLangDropdown ? 'opacity-100 visible pointer-events-auto' : 'opacity-0 invisible pointer-events-none'
+                    } transition-opacity duration-300 rounded-xl max-h-48 overflow-y-auto`}
+                  >
                     {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
                       <button
                         key={lang}
-                        onClick={() => { changeLanguage(lang); setShowLangDropdown(false); }}
-                        className={`
-                          w-full px-3 py-2 text-left flex items-center space-x-2
-                          hover:bg-white/10 transition-all rounded-lg text-sm
-                          ${locale === lang ? 'text-cyan-300' : 'text-gray-300'}
-                        `}
+                        onClick={() => {
+                          changeLanguage(lang);
+                          setShowLangDropdown(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left flex items-center space-x-2 hover:bg-white/10 transition-all rounded-lg text-sm ${
+                          locale === lang ? 'text-cyan-300' : 'text-gray-300'
+                        }`}
                       >
                         <span className="text-lg">{languages[lang].flag}</span>
                         <span>{languages[lang].name}</span>
@@ -535,23 +530,23 @@ export default function Navbar() {
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-300 focus:outline-none group-hover:scale-105"
                     aria-label="Menu utilisateur"
                   >
-                    {user.user_metadata?.avatar_url ? (
+                    {profile?.avatar_url ? (
                       <img
-                        src={user.user_metadata.avatar_url}
-                        alt={user.user_metadata.full_name || user.email?.charAt(0).toUpperCase()}
+                        src={profile.avatar_url}
+                        alt={profile.full_name || user.email?.charAt(0).toUpperCase()}
                         className="w-10 h-10 rounded-full object-cover"
                         referrerPolicy="no-referrer"
                       />
-                    ) : user.user_metadata?.full_name ? (
+                    ) : profile?.full_name ? (
                       <span>
-                        {user.user_metadata.full_name
+                        {profile.full_name
                           .split(' ')
                           .map((n: string) => n[0])
                           .join('')
                           .toUpperCase()
                           .slice(0, 2)}
                       </span>
-                    ) : user.email ? (
+                    ) : user?.email ? (
                       <span>{user.email.charAt(0).toUpperCase()}</span>
                     ) : (
                       <UserIcon className="w-5 h-5" />
@@ -561,15 +556,15 @@ export default function Navbar() {
                   {/* 🔹 Menu déroulant */}
                   <div className="absolute right-0 mt-2 w-64 glass-border py-2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 rounded-xl backdrop-blur-xl bg-white/5 border border-white/10 shadow-xl">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-white">
-                        {user.user_metadata?.full_name || user.email}
-                      </p>
+                      <p className="text-sm font-medium text-white">{user.user_metadata?.full_name || user.email}</p>
                       {user.user_metadata?.plan && user.user_metadata.plan !== 'basic' && (
-                        <Badge className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
-                          user.user_metadata.plan === 'premium'
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                            : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-                        }`}>
+                        <Badge
+                          className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+                            user.user_metadata.plan === 'premium'
+                              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                              : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+                          }`}
+                        >
                           {user.user_metadata.plan === 'premium' ? '👑 Premium' : '🏢 Entreprise'}
                         </Badge>
                       )}
@@ -602,7 +597,6 @@ export default function Navbar() {
                         {t('navbar.edit_profile')}
                       </Link>
 
-                      {/* ✅ Ajout : Voir profil public */}
                       {isUser && user.user_metadata?.username && (
                         <Link
                           href={`/${locale}/${user.user_metadata.username}`}
@@ -649,31 +643,27 @@ export default function Navbar() {
           initial={false}
           animate={mobileMenuOpen ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className={`
-            md:hidden absolute top-20 left-1/2 transform -translate-x-1/2
-            w-11/12 max-w-md glass-border rounded-2xl overflow-hidden
-            ${mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}
-          `}
+          className={`md:hidden absolute top-20 left-1/2 transform -translate-x-1/2 w-11/12 max-w-md glass-border rounded-2xl overflow-hidden ${
+            mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
+          }`}
         >
           <div className="p-4 flex flex-col space-y-3">
-            {!isAdmin && navLinks.map((link) => (
-              <Link 
-                key={link.href} 
-                href={link.href} 
-                className="text-base font-medium text-gray-200 hover:text-cyan-200 transition-colors py-2.5 px-4 rounded-xl hover:bg-white/5" 
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {!isAdmin &&
+              navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-base font-medium text-gray-200 hover:text-cyan-200 transition-colors py-2.5 px-4 rounded-xl hover:bg-white/5"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
 
             {isAdmin && (
               <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
                 <div className="flex items-center justify-center">
-                  <Button
-                    variant="default"
-                    className="w-full px-4 py-2 rounded-xl font-bold text-white shadow-md overflow-hidden"
-                  >
+                  <Button variant="default" className="w-full px-4 py-2 rounded-xl font-bold text-white shadow-md overflow-hidden">
                     <span className="flex items-center gap-1">
                       <Shield className="h-4 w-4" />
                       TABLEAU DE BORD ADMIN
@@ -687,10 +677,7 @@ export default function Navbar() {
             {isUser && (
               <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                 <div className="flex items-center justify-center">
-                  <Button
-                    variant="default"
-                    className="w-full px-4 py-2 rounded-xl font-bold text-white shadow-md overflow-hidden"
-                  >
+                  <Button variant="default" className="w-full px-4 py-2 rounded-xl font-bold text-white shadow-md overflow-hidden">
                     <span className="flex items-center gap-1">
                       <UserIcon className="h-4 w-4" />
                       TABLEAU DE BORD UTILISATEUR
@@ -710,10 +697,9 @@ export default function Navbar() {
                       <button
                         key={lang}
                         onClick={() => changeLanguage(lang)}
-                        className={`
-                          flex items-center justify-center w-8 h-8 rounded-xl text-xs
-                          ${locale === lang ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-gray-300'}
-                        `}
+                        className={`flex items-center justify-center w-8 h-8 rounded-xl text-xs ${
+                          locale === lang ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30' : 'bg-white/5 text-gray-300'
+                        }`}
                       >
                         {languages[lang].flag}
                       </button>
@@ -726,39 +712,38 @@ export default function Navbar() {
             <div className="flex flex-col space-y-2 pt-3">
               {user ? (
                 <>
-                  {/* 🔹 Ligne profil dans menu mobile */}
                   <div className="flex items-center p-3 rounded-xl bg-white/5 border border-white/10">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-white font-bold text-sm">
-                      {user.user_metadata?.avatar_url ? (
+                      {profile?.avatar_url ? (
                         <img
-                          src={user.user_metadata.avatar_url}
+                          src={profile.avatar_url}
                           alt=""
                           className="w-10 h-10 rounded-full object-cover"
                           referrerPolicy="no-referrer"
                         />
-                      ) : user.user_metadata?.full_name ? (
-                        user.user_metadata.full_name
+                      ) : profile?.full_name ? (
+                        profile.full_name
                           .split(' ')
                           .map((n: string) => n[0])
                           .join('')
                           .toUpperCase()
                           .slice(0, 2)
-                      ) : user.email ? (
+                      ) : user?.email ? (
                         user.email.charAt(0).toUpperCase()
                       ) : (
                         <UserIcon className="w-5 h-5" />
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-white">
-                        {user.user_metadata?.full_name || user.email}
-                      </p>
+                      <p className="text-sm font-medium text-white">{user.user_metadata?.full_name || user.email}</p>
                       {user.user_metadata?.plan && user.user_metadata.plan !== 'basic' && (
-                        <Badge className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
-                          user.user_metadata.plan === 'premium'
-                            ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                            : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-                        }`}>
+                        <Badge
+                          className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+                            user.user_metadata.plan === 'premium'
+                              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                              : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+                          }`}
+                        >
                           {user.user_metadata.plan === 'premium' ? '👑 Premium' : '🏢 Entreprise'}
                         </Badge>
                       )}
@@ -771,7 +756,6 @@ export default function Navbar() {
                     </Button>
                   </Link>
 
-                  {/* ✅ Mobile : Voir profil */}
                   {isUser && user.user_metadata?.username && (
                     <Link
                       href={`/${locale}/${user.user_metadata.username}`}
@@ -797,14 +781,11 @@ export default function Navbar() {
                   </Button>
                 </>
               ) : (
-                <>
-                  <Link href="/auth/sign-in" onClick={() => setMobileMenuOpen(false)}>
-                    <Button variant="ghost" className="w-full h-10 text-sm rounded-xl">
-                      {t('navbar.sign_in')}
-                    </Button>
-                  </Link>
-  
-                </>
+                <Link href="/auth/sign-in" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="ghost" className="w-full h-10 text-sm rounded-xl">
+                    {t('navbar.sign_in')}
+                  </Button>
+                </Link>
               )}
             </div>
           </div>
