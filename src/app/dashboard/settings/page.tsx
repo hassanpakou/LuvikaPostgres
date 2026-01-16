@@ -9,7 +9,7 @@ import {
   Upload, Save, Image as ImageIcon, ExternalLink, Eye, Mail, Phone,
   Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings,
   AlertTriangle, CheckCircle, X, RotateCcw, Cake, Tag, Link as LinkIcon,
-  Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff
+  Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 
@@ -85,6 +85,14 @@ type Profile = {
 const isSectionLockedForFree = (section: string, plan: string): boolean => {
   const lockedSections = ['portfolio', 'certificates'];
   return lockedSections.includes(section) && plan === 'basic';
+};
+
+// 🔹 Désactive les sections premium pour les comptes basic
+const getLockedSectionsForBasic = (plan: string): string[] => {
+  if (plan === 'basic') {
+    return ['avatar', 'cover', 'skills', 'links', 'certificates', 'portfolio'];
+  }
+  return [];
 };
 
 const getLockMessage = (section: string, t: any) => {
@@ -409,62 +417,79 @@ setMessage({ type: 'success', text: t('save_success') });
       </AnimatePresence>
 
       {/* 🔹 Photo & Couverture */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="text-cyan-400" /> {t('photo.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Avatar */}
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-xl font-bold text-white border-4 border-white/30 shadow-xl">
-                {avatarPreview ? (
-                  <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
-                ) : profile.full_name ? (
-                  profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-                ) : (
-                  '?'
-                )}
-              </div>
-              <Button size="sm" variant="outline" className="absolute -bottom-2 -right-2 w-8 h-8 p-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
-                <RotateCcw className="w-3 h-3" />
-              </Button>
-            </div>
-            <div className="flex-1">
-              <Label className="text-gray-300">{t('photo.avatar')}</Label>
-              <div className="mt-2 flex gap-2">
-                <Input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
-                <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="flex-1">
-                  <Upload className="w-4 h-4 mr-2" /> {t('photo.upload_avatar')}
-                </Button>
-                {profile.avatar_url && (
-                  <Button variant="ghost" size="sm" onClick={() => { setAvatarPreview(null); setProfile({ ...profile, avatar_url: null }); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Couverture */}
-          <div className="space-y-2">
-            <Label className="text-gray-300">{t('photo.cover')}</Label>
-            <div
-              className="w-full h-32 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-white/5 transition-colors"
-              onClick={() => coverInputRef.current?.click()}
-            >
-              {coverPreview ? (
-                <img src={coverPreview} alt="Cover" className="w-full h-32 rounded-lg object-cover" />
+<Card className="glass-border">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <ImageIcon className="text-cyan-400" /> {t('photo.title')}
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-6">
+    {profile.plan === 'basic' ? (
+      <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
+        <div className="flex items-center gap-2 text-yellow-400">
+          <Lock className="w-4 h-4" />
+          <span className="font-medium">Fonctionnalité Premium</span>
+        </div>
+        <p className="text-gray-400 text-sm mt-1">
+          Débloquez les photos de profil et de couverture avec un abonnement Premium.
+        </p>
+        <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
+          Passer à Premium
+        </Button>
+      </div>
+    ) : (
+      <>
+        {/* Avatar */}
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-xl font-bold text-white border-4 border-white/30 shadow-xl">
+              {avatarPreview ? (
+                <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
+              ) : profile.full_name ? (
+                profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
               ) : (
-                <span className="text-gray-400">{t('photo.upload_cover')}</span>
+                '?'
               )}
             </div>
-            <Input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
+            <Button size="sm" variant="outline" className="absolute -bottom-2 -right-2 w-8 h-8 p-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
+              <RotateCcw className="w-3 h-3" />
+            </Button>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex-1">
+            <Label className="text-gray-300">{t('photo.avatar')}</Label>
+            <div className="mt-2 flex gap-2">
+              <Input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
+              <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="flex-1">
+                <Upload className="w-4 h-4 mr-2" /> {t('photo.upload_avatar')}
+              </Button>
+              {profile.avatar_url && (
+                <Button variant="ghost" size="sm" onClick={() => { setAvatarPreview(null); setProfile({ ...profile, avatar_url: null }); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Couverture */}
+        <div className="space-y-2">
+          <Label className="text-gray-300">{t('photo.cover')}</Label>
+          <div
+            className="w-full h-32 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-white/5 transition-colors"
+            onClick={() => coverInputRef.current?.click()}
+          >
+            {coverPreview ? (
+              <img src={coverPreview} alt="Cover" className="w-full h-32 rounded-lg object-cover" />
+            ) : (
+              <span className="text-gray-400">{t('photo.upload_cover')}</span>
+            )}
+          </div>
+          <Input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
+        </div>
+      </>
+    )}
+  </CardContent>
+</Card>
 
       {/* 🔹 Identité personnelle */}
       <Card className="glass-border">
@@ -599,40 +624,55 @@ setMessage({ type: 'success', text: t('save_success') });
       </Card>
 
       {/* 🔹 Compétences */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Tag className="text-purple-400" /> Compétences
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <Label className="text-gray-300">Ajouter des compétences (5-10 max)</Label>
-            <div className="flex gap-2">
-              <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="ex: React, Firebase..." onKeyDown={e => e.key === 'Enter' && addSkill()} className="flex-1" />
-              <Button size="sm" onClick={addSkill} disabled={!newSkill.trim()}>
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            {profile.skills && profile.skills.length > 0 && (
-  <div className="flex flex-wrap gap-2 mt-3">
-    {profile.skills.map((skill, i) => (
-      <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
-        {skill}
-        <button
-          onClick={() => removeSkill(i)}
-          className="ml-1 hover:text-white"
-          aria-label="Supprimer cette compétence"
-          title="Supprimer cette compétence"
-        >
-          <X className="w-3 h-3" />
-        </button>
-      </Badge>
-    ))}
-  </div>
-)}        </div>
-        </CardContent>
-      </Card>
+<Card className="glass-border">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <Tag className="text-purple-400" /> Compétences
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    {profile.plan === 'basic' ? (
+      <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
+        <div className="flex items-center gap-2 text-yellow-400">
+          <Lock className="w-4 h-4" />
+          <span className="font-medium">Compétences Premium</span>
+        </div>
+        <p className="text-gray-400 text-sm mt-1">
+          Ajoutez jusqu’à 10 compétences avec un abonnement Premium.
+        </p>
+        <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
+          Passer à Premium
+        </Button>
+      </div>
+    ) : (
+      <div className="space-y-2">
+        <Label className="text-gray-300">Ajouter des compétences (5-10 max)</Label>
+        <div className="flex gap-2">
+          <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="ex: React, Firebase..." onKeyDown={e => e.key === 'Enter' && addSkill()} className="flex-1" />
+          <Button size="sm" onClick={addSkill} disabled={!newSkill.trim()}>
+            <Plus className="w-4 h-4" />
+          </Button>
+        </div>
+        {profile.skills && profile.skills.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3">
+            {profile.skills.map((skill, i) => (
+              <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
+                {skill}
+                <button
+                  onClick={() => removeSkill(i)}
+                  className="ml-1 hover:text-white"
+                  aria-label="Supprimer cette compétence"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+  </CardContent>
+</Card>
 
       {/* 🔹 Réseaux sociaux étendus */}
       <Card className="glass-border">
@@ -673,34 +713,51 @@ setMessage({ type: 'success', text: t('save_success') });
       </Card>
 
       {/* 🔹 Liens professionnels */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <LinkIcon className="text-blue-400" /> Liens professionnels
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            { key: 'portfolio_url', label: 'Portfolio', icon: FolderIcon, placeholder: 'https://...' },
-            { key: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/...' },
-            { key: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/...' },
-            { key: 'calendly', label: 'Calendly', icon: Calendar, placeholder: 'https://calendly.com/...' },
-            { key: 'cv_url', label: 'CV PDF', icon: FileText, placeholder: 'URL de votre CV' },
-          ].map(({ key, label, icon: Icon, placeholder }) => (
-            <div key={key} className="space-y-1">
-              <Label className="text-gray-300 flex items-center gap-1">
-                <Icon className="w-4 h-4 text-blue-400" />
-                {label}
-              </Label>
-              <Input
-                value={profile[key as keyof Profile]?.toString() || ''}
-                onChange={e => setProfile({ ...profile, [key]: e.target.value || null })}
-                placeholder={placeholder}
-              />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
+<Card className="glass-border">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <LinkIcon className="text-blue-400" /> Liens professionnels
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    {profile.plan === 'basic' ? (
+      <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
+        <div className="flex items-center gap-2 text-yellow-400">
+          <Lock className="w-4 h-4" />
+          <span className="font-medium">Liens Premium</span>
+        </div>
+        <p className="text-gray-400 text-sm mt-1">
+          Ajoutez vos liens GitHub, LinkedIn, portfolio, etc. avec Premium.
+        </p>
+        <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
+          Passer à Premium
+        </Button>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          { key: 'portfolio_url', label: 'Portfolio', icon: FolderIcon, placeholder: 'https://...' },
+          { key: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/...' },
+          { key: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/...' },
+          { key: 'calendly', label: 'Calendly', icon: Calendar, placeholder: 'https://calendly.com/...' },
+          { key: 'cv_url', label: 'CV PDF', icon: FileText, placeholder: 'URL de votre CV' },
+        ].map(({ key, label, icon: Icon, placeholder }) => (
+          <div key={key} className="space-y-1">
+            <Label className="text-gray-300 flex items-center gap-1">
+              <Icon className="w-4 h-4 text-blue-400" />
+              {label}
+            </Label>
+            <Input
+              value={profile[key as keyof Profile]?.toString() || ''}
+              onChange={e => setProfile({ ...profile, [key]: e.target.value || null })}
+              placeholder={placeholder}
+            />
+          </div>
+        ))}
+      </div>
+    )}
+  </CardContent>
+</Card>
 
       {/* 🔹 Localisation & disponibilité */}
       <Card className="glass-border">
@@ -785,22 +842,26 @@ setMessage({ type: 'success', text: t('save_success') });
           <p className="text-gray-400 text-sm">{t('visibility.description')}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {(['bio', 'contact', 'social', 'portfolio', 'certificates', 'identity', 'professional', 'skills', 'links', 'location'] as const).map(section => {
-              const isLocked = isSectionLockedForFree(section, profile.plan);
-              const isVisible = profile.sections_visibility?.[section] !== false;
-              return (
-                <div key={section} className={`flex items-center justify-between p-3 rounded-lg ${isLocked ? 'bg-gray-800/50 cursor-not-allowed' : 'bg-white/5 hover:bg-white/10'} transition-colors`}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-300 capitalize">{section}</span>
-                    {isLocked && <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">🔒 Premium</Badge>}
-                  </div>
-                  <Switch
-                    checked={isVisible}
-                    onCheckedChange={checked => setProfile({ ...profile, sections_visibility: { ...profile.sections_visibility, [section]: checked } })}
-                    disabled={isLocked}
-                  />
-                </div>
-              );
-            })}
+  const isLocked = isSectionLockedForFree(section, profile.plan);
+  const isVisible = profile.sections_visibility?.[section] !== false;
+
+  // 🔒 Verrouille aussi avatar/cover si basic
+  const isAvatarCoverLocked = profile.plan === 'basic' && (section === 'portfolio' || section === 'certificates' || section === 'skills' || section === 'links');
+
+  return (
+    <div key={section} className={`flex items-center justify-between p-3 rounded-lg ${isLocked || isAvatarCoverLocked ? 'bg-gray-800/50 cursor-not-allowed' : 'bg-white/5 hover:bg-white/10'} transition-colors`}>
+      <div className="flex items-center gap-2">
+        <span className="text-gray-300 capitalize">{section}</span>
+        {(isLocked || isAvatarCoverLocked) && <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">🔒 Premium</Badge>}
+      </div>
+      <Switch
+        checked={isVisible}
+        onCheckedChange={checked => setProfile({ ...profile, sections_visibility: { ...profile.sections_visibility, [section]: checked } })}
+        disabled={isLocked || isAvatarCoverLocked}
+      />
+    </div>
+  );
+})}
           </div>
         </CardContent>
       </Card>
@@ -843,46 +904,83 @@ setMessage({ type: 'success', text: t('save_success') });
       </Card>
 
       {/* 🔹 🔐 Confidentialité */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <EyeOff className="text-red-400" /> Confidentialité
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-gray-300">Masquer l'année de naissance</Label>
-              <p className="text-xs text-gray-400">Affiche seulement jour/mois</p>
-            </div>
-            <Switch checked={profile.hide_birth_year || false} onCheckedChange={checked => setProfile({ ...profile, hide_birth_year: checked })} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-gray-300">Désactiver l'icône anniversaire</Label>
-              <p className="text-xs text-gray-400">Masque 🎂 le jour de l'anniversaire</p>
-            </div>
-            <Switch checked={profile.disable_birthday_icon || false} onCheckedChange={checked => setProfile({ ...profile, disable_birthday_icon: checked })} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-gray-300">Badge de vérification</Label>
-              <p className="text-xs text-gray-400">Affiche à côté de votre nom<img 
-      src="/badge.png" 
-      alt="✅ Vérifié" 
-      className="w-4 h-4 rounded-full"
-      title="Profil vérifié"
-    /></p>
-            </div>
-            <Switch
-              checked={profile.verified || false}
-              onCheckedChange={checked => profile.plan === 'entreprise' && setProfile({ ...profile, verified: checked })}
-              disabled={profile.plan !== 'entreprise'}
+<Card className="glass-border">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <EyeOff className="text-red-400" /> {t('privacy.title')}
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-5">
+    {/* Masquer l'année de naissance */}
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+      <div>
+        <Label className="text-gray-300 flex items-center gap-2">
+          <Calendar className="w-4 h-4 text-cyan-400" />
+          {t('privacy.hide_birth_year')}
+        </Label>
+        <p className="text-xs text-gray-400 mt-1">{t('privacy.hide_birth_year_desc')}</p>
+      </div>
+      <Switch 
+        checked={profile.hide_birth_year || false} 
+        onCheckedChange={checked => setProfile({ ...profile, hide_birth_year: checked })} 
+      />
+    </div>
+
+    {/* Désactiver l'icône anniversaire */}
+    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
+      <div>
+        <Label className="text-gray-300 flex items-center gap-2">
+          <Cake className="w-4 h-4 text-amber-400" />
+          {t('privacy.disable_birthday_icon')}
+        </Label>
+        <p className="text-xs text-gray-400 mt-1">{t('privacy.disable_birthday_icon_desc')}</p>
+      </div>
+      <Switch 
+        checked={profile.disable_birthday_icon || false} 
+        onCheckedChange={checked => setProfile({ ...profile, disable_birthday_icon: checked })} 
+      />
+    </div>
+
+    {/* Badge de vérification — RÉSERVÉ AUX ENTREPRISES */}
+    <div className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
+      profile.plan === 'entreprise' 
+        ? 'bg-white/5 hover:bg-white/10' 
+        : 'bg-gray-800/50 cursor-not-allowed'
+    }`}>
+      <div>
+        <Label className="text-gray-300 flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          {t('privacy.verified_badge')}
+        </Label>
+        <div className="flex items-center gap-2 mt-1">
+          <p className="text-xs text-gray-400">{t('privacy.verified_badge_desc')}</p>
+          {profile.verified && (
+            <img 
+              src="/badge.png" 
+              alt="✅ Vérifié" 
+              className="w-5 h-5 rounded-full border border-emerald-400/30"
+              title={t('privacy.verified_tooltip')}
             />
-            {profile.plan !== 'entreprise' && <Badge variant="secondary" className="ml-2 bg-yellow-500/10 text-yellow-400">Entreprise</Badge>}
-          </div>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+      </div>
+      
+      {profile.plan === 'entreprise' ? (
+        <Switch 
+          checked={profile.verified || false}
+          onCheckedChange={checked => setProfile({ ...profile, verified: checked })}
+        />
+      ) : (
+        <div className="flex items-center gap-2">
+          <Lock className="w-4 h-4 text-yellow-400" />
+          <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">
+            {t('privacy.enterprise_only')}
+          </Badge>
+        </div>
+      )}
+    </div>
+  </CardContent>
+</Card>
     </div>
   );
 }

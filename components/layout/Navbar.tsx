@@ -570,7 +570,7 @@ export default function Navbar() {
                             ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
                             : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
                         }`}>
-                          {user.user_metadata.plan === 'premium' ? '⭐ Premium' : '🏢 Entreprise'}
+                          {user.user_metadata.plan === 'premium' ? '👑 Premium' : '🏢 Entreprise'}
                         </Badge>
                       )}
                     </div>
@@ -759,7 +759,7 @@ export default function Navbar() {
                             ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
                             : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
                         }`}>
-                          {user.user_metadata.plan === 'premium' ? '⭐ Premium' : '🏢 Entreprise'}
+                          {user.user_metadata.plan === 'premium' ? '👑 Premium' : '🏢 Entreprise'}
                         </Badge>
                       )}
                     </div>

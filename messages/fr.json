@@ -6,7 +6,7 @@
     "discover": "Découvrir"
   },
   "system": {
-    "connection_lost": "LUVIKA — Echec de connexion. Vérifieé votre internet.",
+    "connection_lost": "LUVIKA — Echec de connexion. Vérifiez votre internet.",
     "connection_back": "Connexion rétablie.",
     "server_error": "Serveur indisponible. Réessayez plus tard.",
     "action_error": "Une erreur est survenue. Réessayez."
@@ -225,6 +225,18 @@
         "contact_requests": "Messages publics",
         "contact_requests_desc": "Autoriser les visiteurs à vous écrire",
         "profile_url": "URL de profil"
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "hide_birth_year": "Masquer l'année de naissance",
+        "hide_birth_year_desc": "Affiche seulement jour/mois",
+        "disable_birthday_icon": "Désactiver l'icône anniversaire",
+        "disable_birthday_icon_desc": "Masque 🎂 le jour de l'anniversaire",
+        "verified_badge": "Badge de vérification",
+        "verified_badge_desc": "Affiche à côté de votre nom",
+        "verified_tooltip": "Profil vérifié",
+              "enterprise_only": "Réservé aux entreprises"
+
       }
     }
   },
@@ -609,7 +621,7 @@
       "freemium": {
         "title": "Freemium",
         "desc": "Pour commencer",
-        "popular": "Le plus populaire",
+        "Popular": "Le plus populaire",
         "features": {
           "nfc": "1 carte NFC",
           "users": "1 utilisateur",
@@ -623,7 +635,7 @@
       "premium": {
         "title": "Premium",
         "desc": "Pour les pros ambitieux",
-        "popular": "Le plus populaire",
+        "Popular": "Le plus populaire",
         "features": {
           "nfc": "Cartes NFC illimitées",
           "users": "Jusqu’à 5 utilisateurs",
@@ -637,7 +649,7 @@
       "entreprise": {
         "title": "Entreprise",
         "desc": "Pour équipes & entreprises",
-        "popular": "",
+        "Popular": "",
         "features": {
           "nfc": "Cartes NFC illimitées + custom",
           "users": "Utilisateurs illimités",
@@ -674,25 +686,23 @@
         "desc": "Vue d’ensemble en temps réel de votre activité"
       },
       "product": {
-    "add_to_cart": "Ajouter au panier",
-    "added_to_cart": "✅ Ajouté au panier !",
-    "cart_error": "❌ Impossible d’ajouter au panier",
-    "favorite_error": "❌ Erreur favori",
-    "add_to_favorites": "Ajouter aux favoris",
-    "remove_from_favorites": "Retirer des favoris",
-    "quantity": "Quantité",
-    "order_now": "Commander maintenant",
-    "whatsapp_order": "Commander sur WhatsApp",
-  "seller_not_found": "Vendeur introuvable",
-    "no_whatsapp": "Ce vendeur n’est pas joignable par WhatsApp",
-    "quantity_exceeds_stock": "La quantité demandée dépasse le stock disponible",
-    "in_stock": "{count} en stock",
-    "add_favorite": "Ajouter aux favoris",
-    "remove_favorite": "Retirer des favoris",
-    "no_description": "Aucune description"
-}
-
-,
+        "add_to_cart": "Ajouter au panier",
+        "added_to_cart": "✅ Ajouté au panier !",
+        "cart_error": "❌ Impossible d’ajouter au panier",
+        "favorite_error": "❌ Erreur favori",
+        "add_to_favorites": "Ajouter aux favoris",
+        "remove_from_favorites": "Retirer des favoris",
+        "quantity": "Quantité",
+        "order_now": "Commander maintenant",
+        "whatsapp_order": "Commander sur WhatsApp",
+        "seller_not_found": "Vendeur introuvable",
+        "no_whatsapp": "Ce vendeur n’est pas joignable par WhatsApp",
+        "quantity_exceeds_stock": "La quantité demandée dépasse le stock disponible",
+        "in_stock": "{count} en stock",
+        "add_favorite": "Ajouter aux favoris",
+        "remove_favorite": "Retirer des favoris",
+        "no_description": "Aucune description"
+      },
       "shop": {
         "title": "Boutique & Produits",
         "desc": "Catalogue public, stock, promotions",
@@ -753,30 +763,30 @@
         "recent_orders": "Commandes récentes"
       },
       "employees": {
-  "title": "Employés",
-  "desc": "Gestion RH légère et rôles",
-  "add_employee": "Ajouter un employé",
-  "full_name": "Nom complet",
-  "full_name_placeholder": "ex: Nestor P.",
-  "email": "Email",
-  "email_placeholder": "phaku@entreprise.com",
-  "phone": "Téléphone",
-  "phone_placeholder": "+243 890 177 601",
-  "position": "Poste",
-  "position_placeholder": "Développeur, RH, etc.",
-  "role": "Rôle",
-  "select_role": "Choisir un rôle",
-  "roles": {
-    "employee": "Employé",
-    "manager": "Manager",
-    "admin": "Administrateur"
-  },
-  "cancel": "Annuler",
-  "confirm_add": "Ajouter l'employé",
-  "adding": "Ajout en cours...",
-  "add_success": "✅ Employé ajouté avec succès !",
-  "add_error": "❌ Échec de l'ajout. Réessayez."
-},
+        "title": "Employés",
+        "desc": "Gestion RH légère et rôles",
+        "add_employee": "Ajouter un employé",
+        "full_name": "Nom complet",
+        "full_name_placeholder": "ex: Nestor P.",
+        "email": "Email",
+        "email_placeholder": "phaku@entreprise.com",
+        "phone": "Téléphone",
+        "phone_placeholder": "+243 890 177 601",
+        "position": "Poste",
+        "position_placeholder": "Développeur, RH, etc.",
+        "role": "Rôle",
+        "select_role": "Choisir un rôle",
+        "roles": {
+          "employee": "Employé",
+          "manager": "Manager",
+          "admin": "Administrateur"
+        },
+        "cancel": "Annuler",
+        "confirm_add": "Ajouter l'employé",
+        "adding": "Ajout en cours...",
+        "add_success": "✅ Employé ajouté avec succès !",
+        "add_error": "❌ Échec de l'ajout. Réessayez."
+      },
       "cards": {
         "title": "Cartes Pro",
         "desc": "Cartes NFC illimitées pour toute l’équipe"
@@ -819,5 +829,6 @@
       "title": "Votre entreprise, unifiée et vivante",
       "desc": "Luvika n’est pas un profil — c’est votre outil métier quotidien, conçu pour l’Afrique et scalable à l’international."
     }
-  }
+  },
+  "enterprise_only": "Entreprise"
 }
