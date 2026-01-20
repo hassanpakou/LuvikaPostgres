@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { HomePageContent } from '@/src/components/home/HomePageContent';
-import Footer from '@/src/components/layout/Footer';
 import { getTranslations } from 'next-intl/server';
 
 export default async function HomePage() {
@@ -40,22 +39,7 @@ export default async function HomePage() {
   return (
     <>
       <HomePageContent />
-      <Footer 
-        product={t('product')}
-        features={t('features')}
-        pricing={t('pricing')}
-        download={t('download')}
-        company={t('company')}
-        about={t('about')}
-        contact={t('contact')}
-        blog={t('blog')}
-        legal={t('legal')}
-        privacy={t('privacy')}
-        terms={t('terms')}
-        cookies={t('cookies')}
-        tagline={t('tagline')}
-        copyright={t('copyright')}
-      />
+      
     </>
   );
 }

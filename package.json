@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "validate:locales": "ts-node scripts/validate-locales.ts"
+    "validate:locales": "ts-node scripts/validate-locales.ts",
+    "check:footer": "node scripts/check-footer-duplicates.mjs"
   },
   "dependencies": {
     "@formatjs/intl-localematcher": "^0.7.2",
@@ -66,6 +67,7 @@
     "@types/uuid": "^10.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",
+    "glob": "^13.0.0",
     "supabase": "^2.67.3",
     "tailwindcss": "^4.1.18",
     "tailwindcss-animate": "^1.0.7",

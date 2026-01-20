@@ -16,6 +16,8 @@ import {
   User as UserIcon,
   X as XIcon,
   Eye,
+  ShieldAlert,
+  Snowflake,
 } from 'lucide-react';
 import { createClient } from '@/src/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -253,96 +255,118 @@ function SignOutConfirmSheet({
   };
 
   return (
-    <>
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop très léger */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-gradient-to-b from-black/3 to-black/8 z-[100]"
-              onClick={handleBackdropClick}
-            >
-              <IceBubbles />
-            </motion.div>
+  <>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[100]"
+            onClick={handleBackdropClick}
+          >
+            <IceBubbles />
+          </motion.div>
 
-            {/* Popup flottant — transparent */}
-            <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{
-                y: isDragging ? dragOffset : 0,
-                opacity: 1,
-                transition: isDragging ? { type: 'tween' } : { type: 'spring', damping: 28, stiffness: 300 },
-              }}
-              exit={{ y: '100%', opacity: 0 }}
-              className="fixed bottom-0 left-0 right-0 z-[101]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="mx-4 sm:mx-6 md:mx-8 lg:mx-12 xl:mx-24">
-                <div className="relative backdrop-blur-2xl bg-transparent rounded-t-[32px] border border-white/10 dark:border-white/5 shadow-[0_-6px_28px_rgba(0,0,0,0.06)] overflow-hidden">
-                  <IceBubbles />
+          {/* Bottom Sheet */}
+          <motion.div
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{
+              y: isDragging ? dragOffset : 0,
+              opacity: 1,
+              transition: isDragging
+                ? { type: 'tween' }
+                : { type: 'spring', damping: 26, stiffness: 280 },
+            }}
+            exit={{ y: '100%', opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 z-[101]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-4 sm:mx-6 md:mx-10 lg:mx-16 xl:mx-28">
+              <div className="relative rounded-t-[36px] border border-white/15 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.35)] overflow-hidden">
 
-                  {/* Handle */}
-                  <div
-                    className="flex justify-center pt-4 pb-2 touch-none cursor-grab active:cursor-grabbing"
-                    onMouseDown={(e) => handleStart(e.clientY)}
-                    onTouchStart={(e) => handleStart(e.touches[0].clientY)}
-                  >
-                    <div className="w-14 h-1.5 bg-white/25 dark:bg-gray-300/25 rounded-full transition-transform active:scale-95" />
-                  </div>
+                <IceBubbles />
 
-                  {/* Contenu */}
-                  <div className="px-6 py-6 text-center relative z-10">
-                    <div className="w-14 h-14 mx-auto mb-5 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                      <LogOut className="h-7 w-7 text-red-400 drop-shadow-sm" />
-                    </div>
-                    <h3 className="text-xl font-bold text-white mb-2 drop-shadow">
-                      {t('navbar.sign_out_confirm_title')}
-                    </h3>
-                    <p className="text-gray-200 text-base mb-8 drop-shadow-sm">
-                      {t('navbar.sign_out_confirm_message')}
-                    </p>
-
-                    <div className="space-y-4">
-                      <Button
-                        variant="destructive"
-                        size="lg"
-                        onClick={handleConfirm}
-                        className="w-full h-14 text-base font-semibold rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 backdrop-blur-sm shadow-md hover:shadow-lg"
-                      >
-                        <LogOut className="mr-2 h-5 w-5" />
-                        {t('navbar.sign_out_confirm_yes')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={onClose}
-                        className="w-full h-14 text-white border-white/20 hover:bg-white/5 backdrop-blur-sm"
-                      >
-                        {t('navbar.sign_out_confirm_no')}
-                      </Button>
-                    </div>
-
-                    <p className="mt-6 text-xs text-gray-300 drop-shadow-sm">
-                      <span className="inline-block px-3 py-1 rounded-full bg-white/5 border border-white/10">
-                        ❄️ *Luyenga na yo* — Votre paix est scellée.
-                      </span>
-                    </p>
-                  </div>
+                {/* Handle */}
+                <div
+                  className="flex justify-center pt-4 pb-3 touch-none cursor-grab active:cursor-grabbing"
+                  onMouseDown={(e) => handleStart(e.clientY)}
+                  onTouchStart={(e) => handleStart(e.touches[0].clientY)}
+                >
+                  <div className="w-16 h-1.5 rounded-full bg-white/30" />
                 </div>
+
+                {/* Header */}
+                <div className="text-center px-6 pt-2">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center shadow-inner">
+                    <ShieldAlert className="w-8 h-8 text-red-400" />
+                  </div>
+
+                  <h3 className="text-xl font-bold text-white tracking-wide">
+                    {t('navbar.sign_out_confirm_title')}
+                  </h3>
+
+                  <p className="text-gray-200 text-sm mt-2 max-w-xs mx-auto">
+                    {t('navbar.sign_out_confirm_message')}
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="px-6 pt-6 pb-8 space-y-4 relative z-10">
+
+                  <Button
+                    variant="destructive"
+                    size="lg"
+                    onClick={handleConfirm}
+                    className="w-full h-14 rounded-xl font-semibold text-base 
+                               bg-gradient-to-r from-red-500/80 to-red-600/80 
+                               hover:from-red-500 hover:to-red-600 
+                               border border-red-400/40 shadow-lg shadow-red-500/30"
+                  >
+                    <LogOut className="mr-2 h-5 w-5" />
+                    {t('navbar.sign_out_confirm_yes')}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onClose}
+                    className="w-full h-14 rounded-xl text-white border-white/20 
+                               hover:bg-white/10 backdrop-blur-md"
+                  >
+                    <X className="mr-2 h-5 w-5" />
+                    {t('navbar.sign_out_confirm_no')}
+                  </Button>
+
+                </div>
+
+                {/* Footer signature */}
+                <div className="pb-6 text-center">
+                  <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full 
+                                   bg-white/5 border border-white/10 text-xs text-gray-300">
+                    <Snowflake className="w-3 h-3 text-cyan-300" />
+                    Luyenga na yo — Votre paix est scellée
+                  </span>
+                </div>
+
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
 
-      <FarewellModal isOpen={showFarewell} onClose={() => setShowFarewell(false)} t={t} />
-    </>
-  );
+    <FarewellModal
+      isOpen={showFarewell}
+      onClose={() => setShowFarewell(false)}
+      t={t}
+    />
+  </>
+);
+
 }
-
 // 🔹 Navbar principal — SEUL EXPORT
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

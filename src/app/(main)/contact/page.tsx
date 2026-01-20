@@ -2,7 +2,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import ContactContent from '@/src/components/contact/ContactContent';
-import Footer from '@/src/components/layout/Footer';
 
 export default async function ContactPage({
   params,
@@ -31,7 +30,6 @@ export default async function ContactPage({
         message_placeholder={t('contact.message_placeholder')}
         send={t('contact.send')}
       />
-      <Footer product={''} features={''} pricing={''} download={''} company={''} about={''} contact={''} blog={''} legal={''} privacy={''} terms={''} cookies={''} tagline={''} copyright={''} {...tFooter} />
     </>
   );
 }

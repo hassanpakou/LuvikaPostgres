@@ -2,7 +2,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import DownloadContent from '@/src/components/download/DownloadContent';
-import Footer from '@/src/components/layout/Footer';
 
 export default async function DownloadPage({
   params,
@@ -31,7 +30,6 @@ export default async function DownloadPage({
         cta_desc={t('download.cta_desc')}
         download_now={t('download.download_now')}
       />
-      <Footer product={''} features={''} pricing={''} download={''} company={''} about={''} contact={''} blog={''} legal={''} privacy={''} terms={''} cookies={''} tagline={''} copyright={''} {...tFooter} />
     </>
   );
 }

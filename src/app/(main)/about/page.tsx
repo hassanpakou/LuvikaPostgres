@@ -2,7 +2,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import AboutContent from '@/src/components/about/AboutContent';
-import Footer from '@/src/components/layout/Footer';
 
 export default async function AboutPage({
   params,
@@ -33,7 +32,6 @@ export default async function AboutPage({
         team_content={t('about.team.content')}
         team_cta={t('about.team.cta')}
       />
-      <Footer product={''} features={''} pricing={''} download={''} company={''} about={''} contact={''} blog={''} legal={''} privacy={''} terms={''} cookies={''} tagline={''} copyright={''} {...tFooter} />
     </>
   );
 }

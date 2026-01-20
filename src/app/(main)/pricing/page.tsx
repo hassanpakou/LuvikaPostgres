@@ -2,7 +2,6 @@
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import PricingPlans from '@/src/components/pricing/PricingPlans'; // ✅ Chemin corrigé
-import Footer from '@/src/components/layout/Footer';
 
 export async function generateMetadata({ params }: { params: { locale: string } }) {
   const t = await getTranslations({ locale: params.locale, namespace: 'pricing' });
@@ -93,7 +92,6 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         contactUs={t('footer.contact_us')}
         plans={plans}
       />
-      <Footer product={''} features={''} pricing={''} download={''} company={''} about={''} contact={''} blog={''} legal={''} privacy={''} terms={''} cookies={''} tagline={''} copyright={''} {...tFooter} />
     </>
   );
 }
