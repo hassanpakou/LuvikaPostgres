@@ -4,6 +4,8 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+// 🔹 Importe le client component
+import { CardManager } from '@/components/nfc/CardManager';
 
 export default async function AddNFCPage() {
   const cookieStore = await cookies();
@@ -13,78 +15,44 @@ export default async function AddNFCPage() {
     { cookies: { get: (name) => cookieStore.get(name)?.value } }
   );
 
-  const { data : { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/sign-in');
 
-  // ✅ Récupère le plan actuel
-  const { data } = await supabase
+  // 🔑 Récupère le plan + username
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('subscription(plan)')
+    .select('plan, id, username') // ✅ username inclus
     .eq('id', user.id)
     .single();
 
-  const currentPlan = data?.subscription?.[0]?.plan || 'freemium';
-  const isPremium = currentPlan === 'premium' || currentPlan === 'entreprise';
+  if (profileError || !profile) redirect('/dashboard');
 
-  if (!isPremium) {
+  const currentPlan = profile.plan || 'basic';
+
+  // 🔢 Compte les cartes
+  const { count: cardCount } = await supabase
+    .from('nfc_cards')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', user.id)
+    .not('status', 'in', '("blocked")');
+
+  const actualCardCount = cardCount ?? 0;
+
+  let maxCards = 1;
+  if (currentPlan === 'premium') maxCards = 5;
+  if (currentPlan === 'entreprise') maxCards = Infinity;
+
+  const canCreate = actualCardCount < maxCards;
+
+  if (!canCreate && currentPlan !== 'entreprise') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br text-white px-4">
-        <div className="text-center max-w-md w-full p-6 glass-border rounded-2xl border border-white/10">
-          <div className="w-16 h-16 mx-auto bg-yellow-500/10 rounded-full flex items-center justify-center mb-5">
-            <span className="text-3xl">💳</span>
-          </div>
-          
-          <h1 className="text-2xl font-bold mb-3">✨ Débloquez les cartes NFC</h1>
-          
-          <p className="text-gray-300 mb-6">
-            Le plan <span className="font-semibold text-cyan-300">Freemium</span> permet 1 seule carte.  
-            Passez à <span className="font-semibold text-cyan-400">Premium</span> ou <span className="font-semibold text-purple-400">Entreprise</span> pour :
-          </p>
-
-          <ul className="text-left space-y-2 mb-8 max-w-xs mx-auto text-sm text-gray-400">
-            <li className="flex items-start gap-2">
-              <span className="text-green-400 mt-0.5">✅</span>
-              <span>Cartes NFC illimitées</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-400 mt-0.5">✅</span>
-              <span>Statistiques avancées</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-green-400 mt-0.5">✅</span>
-              <span>Support prioritaire</span>
-            </li>
-          </ul>
-
-          <div className="space-y-4">
-            <Link href="/pricing" className="block">
-              <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-500 py-3 text-base">
-                💰 Voir les plans & tarifs
-              </Button>
-            </Link>
-
-            {/* ✅ Option : upgrade direct via API (sans nouveau compte) */}
-            <form 
-              action="/api/upgrade-checkout"
-              method="POST"
-              className="w-full"
-            >
-              <input type="hidden" name="user_id" value={user.id} />
-              <input type="hidden" name="target_plan" value="premium" />
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-full py-3 border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
-              >
-                🔑 Passer à Premium (12 €/mois)
-              </Button>
-            </form>
-          </div>
-
-          <p className="text-xs text-gray-500 mt-6">
-            Aucun nouveau compte requis — mise à niveau instantanée de votre compte actuel.
-          </p>
-        </div>
+        {/* ... message d'upgrade ... */}
+        <Link href="/pricing" className="block">
+          <Button className="w-full bg-gradient-to-r from-cyan-600 to-blue-500 py-3 text-base">
+            💰 Voir les plans & tarifs
+          </Button>
+        </Link>
       </div>
     );
   }
@@ -103,7 +71,7 @@ export default async function AddNFCPage() {
           </div>
           <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">Ajouter une carte NFC</h1>
           <p className="text-gray-400">
-            Associez une nouvelle carte à votre profil intelligent.
+            Chaque carte aura un matricule unique de 9 caractères (ex: NFC123456).
           </p>
         </div>
 
@@ -117,15 +85,11 @@ export default async function AddNFCPage() {
             2. Approchez la carte vierge<br />
             3. Confirmez l’écriture
           </p>
-          <Button 
-            className="w-full py-4 text-lg bg-gradient-to-r from-blue-600 to-cyan-500"
-            onClick={() => {
-              // ✅ À remplacer par useNFC() quand prêt
-              alert('✨ Fonctionnalité NFC en développement — bientôt disponible !');
-            }}
-          >
-            ➕ Ajouter une nouvelle carte
-          </Button>
+          {/* ✅ Appel correct */}
+          <CardManager 
+            profileId={profile.id} 
+            username={profile.username} 
+          />
         </div>
 
         <div className="mt-8 text-center text-gray-500 text-sm">

@@ -1,71 +1,55 @@
 // src/app/api/follow/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+    {
+      cookies: {
+        get(name) { return cookieStore.get(name)?.value; },
+        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
+        remove(name, options) { cookieStore.delete({ name, ...options }); },
+      },
+    }
   );
 
-  const { data : { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const { data : { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Non connecté' }, { status: 401 });
+  }
+
+  const { action, targetId } = await request.json();
+
+  if (!targetId || !['follow', 'unfollow'].includes(action)) {
+    return NextResponse.json({ error: 'Données invalides' }, { status: 400 });
+  }
 
   try {
-    const body = await request.json();
-    // 🔹 ✅ Sécurité : extraction avec fallback + nettoyage
-    let { action, targetId } = body;
-    
-    // 🔹 Normalisation
-    action = typeof action === 'string' ? action.toLowerCase().trim() : '';
-    targetId = typeof targetId === 'string' ? targetId.trim() : '';
-
-    console.log('🔍 /api/follow payload parsed:', { action, targetId }); // ✅ Log de debug
-
-    if (!['follow', 'unfollow'].includes(action)) {
-      return NextResponse.json({ error: `Invalid action: "${action}"` }, { status: 400 });
-    }
-    if (!targetId || targetId.length !== 36) {
-      return NextResponse.json({ error: `Invalid targetId: "${targetId}"` }, { status: 400 });
-    }
-    if (user.id === targetId) {
-      return NextResponse.json({ error: 'Cannot follow yourself' }, { status: 400 });
-    }
-
     if (action === 'follow') {
-      const { error } = await supabase
+      await supabase
         .from('follows')
-        .insert({ follower_id: user.id, followed_id: targetId });
-      
-      if (error && error.code !== '23505') throw error; // duplicate OK
+        .insert({ follower_id: session.user.id, followed_id: targetId });
     } else {
-      const { error } = await supabase
+      await supabase
         .from('follows')
         .delete()
-        .match({ follower_id: user.id, followed_id: targetId });
-      
-      if (error) throw error;
+        .eq('follower_id', session.user.id)
+        .eq('followed_id', targetId);
     }
 
-    const [
-      { count: followers },
-      { count: following }
-    ] = await Promise.all([
+    // 🔁 Retourne les nouveaux compteurs
+    const [{ count: followers }, { count: following }] = await Promise.all([
       supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', targetId),
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', user.id),
+      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', session.user.id),
     ]);
 
-    return NextResponse.json({ 
-      success: true, 
-      isFollowing: action === 'follow',
-      followers: followers || 0,
-      following: following || 0,
-    });
-  } catch (error: any) {
-    console.error('💥 /api/follow error:', error);
-    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ success: true, followers: followers ?? 0, following: following ?? 0 });
+  } catch (err) {
+    console.error('Erreur follow:', err);
+    return NextResponse.json({ error: 'Échec de l’action' }, { status: 500 });
   }
 }

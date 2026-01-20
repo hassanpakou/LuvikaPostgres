@@ -1,36 +1,24 @@
-// src/app/[locale]/[username]/layout.tsx
-import { getTranslations } from 'next-intl/server';
-import type { ReactNode } from 'react';
+// src/app/(main)/[locale]/[username]/layout.tsx
+import { Toaster } from 'sonner';
+import { NetworkWatcher } from '@/src/components/system/NetworkWatcher';
 
-export const metadata = {
-  // Optionnel : override ici si besoin
-};
-
-export default async function PublicProfileLayout({
+export default function ProfileLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
-  // 🔹 ✅ Aucun Navbar, aucun Footer → pure landing page
-  // 🔹 ✅ Fond animé minimal (optionnel)
-
-  const t = await getTranslations('footer'); // si tu veux le "Powered by" discret
-
   return (
-    <>
-      {children}
-      
-      {/* 🔹 ✅ Optionnel : branding discret */}
-      <div className="fixed bottom-4 right-4 z-10">
-        <a 
-          href="/" 
-          className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by <span className="font-medium text-cyan-400">LUVIKA</span>
-        </a>
+    <div className="min-h-screen">
+      {/* Fond animé spécifique au profil */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 via-blue-900/20 to-indigo-900/10"></div>
       </div>
-    </>
+
+      <main className="w-full">
+        {children}
+        <Toaster richColors position="top-right" />
+        <NetworkWatcher />
+      </main>
+    </div>
   );
 }

@@ -1,4 +1,3 @@
-// src/components/profile/PublicProfileClientWrapper.tsx
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -35,6 +34,27 @@ export default function PublicProfileClientWrapper({
     setIsFollowing((isFollowingCount || 0) > 0);
   };
 
+  // 🔹 Notification système ou toast
+  const showFollowNotification = (follower: any) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(`${follower.full_name || follower.username} vous suit !`, {
+        body: 'Cliquez pour voir son profil',
+        icon: '/favicon.ico',
+      }).onclick = () => {
+        window.open(`/${follower.username}`, '_blank');
+      };
+    } else if (typeof window !== 'undefined') {
+      alert(`${follower.full_name || follower.username} vous suit maintenant !`);
+    }
+  };
+
+  // 🔹 Demander la permission au montage
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
   // 🔹 Configuration Realtime
   const setupRealtime = useCallback((profileId: string, supabase: any, userId: string | null) => {
     // 🔸 Canal : mises à jour du profil
@@ -63,7 +83,31 @@ export default function PublicProfileClientWrapper({
       })
       .subscribe();
 
-    realtimeChannels.current = [profileChannel, followChannel];
+    // 🔸 Canal : notifications de follow (✅ CORRIGÉ)
+    const notificationChannel = supabase
+      .channel(`follow-notifications-${profileId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'follows',
+        filter: `followed_id=eq.${profileId}`,
+      }, async (payload: any) => {
+        const followerId = payload.new.follower_id;
+        if (followerId === userId) return; // Ne pas s'auto-notifier
+
+        const {  follower } = await supabase
+          .from('profiles')
+          .select('full_name, username')
+          .eq('id', followerId)
+          .single();
+
+        if (follower) {
+          showFollowNotification(follower);
+        }
+      })
+      .subscribe();
+
+    realtimeChannels.current = [profileChannel, followChannel, notificationChannel];
   }, []);
 
   useEffect(() => {
@@ -75,16 +119,16 @@ export default function PublicProfileClientWrapper({
       const decodedUsername = decodeURIComponent(username).toLowerCase();
       const supabase = createClient();
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data : { session } } = await supabase.auth.getSession();
       const user = session?.user || null;
       setCurrentUser(user);
 
       // 🔹 Chargement initial du profil
-      const { data: profile, error } = await supabase
+      const { data : profile, error } = await supabase
         .from('profiles')
         .select(`
           *,
-            created_at,
+          created_at,
           avatar_url,
           cover_url,
           plan,
@@ -110,7 +154,7 @@ export default function PublicProfileClientWrapper({
       await fetchStats(supabase, profile.id, user?.id || null);
       setLoading(false);
 
-      // 🔹 🔁 Démarrage Realtime
+      // 🔹 🔁 Démarrage Realtime (✅ après le chargement du profil)
       setupRealtime(profile.id, supabase, user?.id || null);
     };
 
@@ -125,12 +169,22 @@ export default function PublicProfileClientWrapper({
     };
   }, [params, router, setupRealtime]);
 
+  // ✅ Loader élégant
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-white">
+      <div className="max-w-6xl mx-auto py-12 px-4">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p>Chargement du profil…</p>
+          <div className="relative inline-block mb-6">
+            <div className="w-16 h-16 rounded-full border-4 border-cyan-500/30 animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <h3 className="text-xl font-medium text-white mb-2">Chargement du profil...</h3>
+          <p className="text-gray-400">Récupération des données depuis la base sécurisée</p>
+          <div className="mt-6 max-w-md mx-auto w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse w-1/3"></div>
+          </div>
         </div>
       </div>
     );

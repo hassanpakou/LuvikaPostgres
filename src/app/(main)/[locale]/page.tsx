@@ -1,4 +1,4 @@
-// src/app/[locale]/page.tsx
+// src/app/(main)/[locale]/page.tsx
 // ✅ Page d'accueil animée — Server Component + Client Components
 
 import { HomePageContent } from '@/src/components/home/HomePageContent';

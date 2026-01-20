@@ -1,3 +1,4 @@
+// components/layout/Navbar.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -34,9 +35,10 @@ const languages: Record<Locale, { name: string; flag: string }> = {
 };
 
 // 🔹 Calcule la complétion du profil (0–100%)
-const getProfileCompletion = (metadata: any): number => {
-  if (!metadata) return 0;
-  const requiredFields = [
+const getProfileCompletion = (profile: any): number => {
+  if (!profile) return 0;
+
+  const simpleFields = [
     'full_name',
     'username',
     'job_title',
@@ -46,11 +48,23 @@ const getProfileCompletion = (metadata: any): number => {
     'address',
     'website',
     'instagram',
+    'avatar_url',
+    'nickname',
+    'pronouns',
+    'birth_day',
+    'city'
   ];
-  const filled = requiredFields.filter(
-    (field) => metadata[field] && metadata[field].toString().trim().length > 0
+
+  const filledSimple = simpleFields.filter(field =>
+    profile[field] != null && 
+    profile[field].toString().trim().length > 0
   ).length;
-  return Math.min(100, Math.round((filled / requiredFields.length) * 100));
+
+  const hasSkills = Array.isArray(profile.skills) && profile.skills.length > 0;
+  const totalFields = simpleFields.length + 1;
+  const filled = filledSimple + (hasSkills ? 1 : 0);
+
+  return Math.min(100, Math.round((filled / totalFields) * 100));
 };
 
 // ✨ Styles : bulles, transparence totale, animations douces
@@ -347,6 +361,16 @@ export default function Navbar() {
   const t = useTranslations();
   const router = useRouter();
 
+  // 🔹 Détecte si on est sur une page de profil public
+  const isPublicProfilePage = /^\/[a-z]{2}\/[^/]+$/.test(pathname) || 
+                            /^\/[^/]+$/.test(pathname) && 
+                            !['/', '/auth', '/pricing', '/about', '/contact', '/privacy', '/terms', '/cookies', '/download'].some(p => pathname.startsWith(p));
+
+  // 🔹 Ne pas afficher le header sur les profils publics
+  if (isPublicProfilePage) {
+    return null;
+  }
+
   // 🔥 Charger user + profile au montage
   useEffect(() => {
     const fetchUserAndProfile = async () => {
@@ -570,23 +594,22 @@ export default function Navbar() {
                       )}
                     </div>
 
-                    {user.user_metadata && (
+                    {profile && (
                       <div className="px-4 py-3">
                         <div className="flex justify-between text-xs text-gray-300 mb-1">
                           <span>{t('navbar.profile_completion')}</span>
-                          <span>{Math.round(getProfileCompletion(user.user_metadata))}%</span>
+                          <span>{getProfileCompletion(profile)}%</span>
                         </div>
                         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${getProfileCompletion(user.user_metadata)}%` }}
+                            animate={{ width: `${getProfileCompletion(profile)}%` }}
                             transition={{ duration: 0.8, ease: 'easeOut' }}
                             className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"
                           />
                         </div>
                       </div>
                     )}
-
                     <div className="py-1">
                       <Link
                         href="/dashboard/settings"

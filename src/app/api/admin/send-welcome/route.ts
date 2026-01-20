@@ -5,6 +5,7 @@ import { createServerClient } from '@supabase/ssr';
 
 export async function POST(req: NextRequest) {
   try {
+    // 🔐 Vérifie admin
     const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,47 +26,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
+    // 📥 Récupère l'email
     const { email } = await req.json();
     if (!email) {
       return NextResponse.json({ error: 'Email requis' }, { status: 400 });
     }
 
-    // ✅ Correction : 'data', pas 'profile'
-    const {  data } = await supabase
+    // 🔍 Vérifie que l'utilisateur existe
+    const { data : profile, error: profileError } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, email')
       .eq('email', email)
       .single();
 
-    if (!data) {
+    if (profileError || !profile) {
       return NextResponse.json({ error: 'Utilisateur introuvable' }, { status: 404 });
     }
 
-    const profile = data;
+    // ✉️ Envoie l'email via Supabase Auth (invite = email de bienvenue)
+    const { error: sendError } = await supabase.auth.admin.inviteUserByEmail(email, {
+      data: { invited_by: session.user.id },
+    });
 
-    // 📨 Appelle la Edge Function
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-welcome-email`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        },
-        body: JSON.stringify({ user_id: profile.id }),
-      }
-    );
-
-    if (!res.ok) {
-      const err = await res.json();
-      console.error('Erreur Edge Function:', err);
-      return NextResponse.json({ error: err.error || 'Échec envoi email' }, { status: 500 });
+    if (sendError) {
+      console.error('❌ Erreur envoi email:', sendError);
+      return NextResponse.json({ error: 'Échec envoi email' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
 
   } catch (err: any) {
-    console.error('Erreur API send-welcome:', err);
+    console.error('💥 Erreur API:', err);
     return NextResponse.json({ error: err.message || 'Erreur inconnue' }, { status: 500 });
   }
 }

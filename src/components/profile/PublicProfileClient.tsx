@@ -28,6 +28,8 @@ import FollowButton from './FollowButton';
 import ActionItem from './ActionItem';
 import ProfileActions from './ProfileActions';
 import { createClient } from '@/src/lib/supabase/client';
+import FollowersList from './FollowersList';
+import FollowingList from './FollowersList';
 
 // 🔹 Types
 type Profile = {
@@ -399,6 +401,33 @@ export default function PublicProfileClient({
     >
       <QrCode className="w-5 h-5 text-white" />
     </motion.button>
+
+    {/* 🔹 ✅ Bouton Partager — en haut à droite */}
+    <motion.button
+      initial={{ opacity: 0, x: 10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.6 }}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={() => {
+        const url = window.location.href;
+        if (navigator.share) {
+          navigator.share({
+            title: `Profil de ${profile.full_name}`,
+            text: `Découvrez le profil de ${profile.full_name} sur LUVIKA`,
+            url,
+          }).catch(console.warn);
+        } else {
+          navigator.clipboard.writeText(url)
+            .then(() => alert('Lien copié !'))
+            .catch(console.warn);
+        }
+      }}
+      className="absolute -top-2 -right-14 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-md hover:bg-white/20 transition-all"
+      aria-label="Partager ce profil"
+    >
+      <ShareIcon className="w-5 h-5 text-red-300" />
+    </motion.button>
   </div>
 
   <motion.div 
@@ -498,6 +527,22 @@ export default function PublicProfileClient({
             </motion.div>
           </StatBox>
         </motion.div>
+
+{/* 🔹 Section Followers */}
+{!isOwner && (
+  <FollowersList 
+    profileId={profile.id} 
+    plan={profile.plan || 'basic'} 
+  />
+)}
+
+{/* 🔹 Section Following */}
+{!isOwner && initialFollowing > 0 && (
+  <FollowingList 
+    profileId={profile.id} 
+    plan={profile.plan || 'basic'} 
+  />
+)}
 
         {!isOwner && currentUserId && (
           <motion.div
@@ -600,36 +645,6 @@ export default function PublicProfileClient({
           )}
         </motion.div>
 
-        {/* 🔹 Bouton Partager — visible par tous */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4 }}
-          className="mt-6 flex justify-center"
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              const url = window.location.href;
-              if (navigator.share) {
-                navigator.share({
-                  title: `Profil de ${profile.full_name}`,
-                  text: `Découvrez le profil de ${profile.full_name} sur LUVIKA`,
-                  url,
-                }).catch(console.warn);
-              } else {
-                navigator.clipboard.writeText(url)
-                  .then(() => alert('Lien copié !'))
-                  .catch(console.warn);
-              }
-            }}
-            className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border-white/20 text-gray-300"
-          >
-            <ShareIcon className="w-4 h-4" />
-            Partager ce profil
-          </Button>
-        </motion.div>
 
         {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
           <motion.div

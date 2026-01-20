@@ -377,7 +377,7 @@ setMessage({ type: 'success', text: t('save_success') });
               <span className="text-sm text-gray-400">{getCompletion()}%</span>
             </div>
             <Badge variant="outline" className="text-xs">
-              {profile.plan === 'premium' ? '⭐ Premium' : profile.plan === 'entreprise' ? '🏢 Entreprise' : '🆓 Basique'}
+              {profile.plan === 'premium' ? '👑 Premium' : profile.plan === 'entreprise' ? '🏢 Entreprise' : '🆓 Basique'}
             </Badge>
           </div>
         </div>

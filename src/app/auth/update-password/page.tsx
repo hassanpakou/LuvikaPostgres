@@ -1,10 +1,9 @@
-// src/app/auth/update-password/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/src/lib/supabase/client'; // ✅ Correct import
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,44 +19,53 @@ export default function UpdatePasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
- useEffect(() => {
-  const verifySession = async () => {
-    const tokenHash = searchParams.get('token_hash');
-    const type = searchParams.get('type');
-    const nextParam = searchParams.get('next');
-    const next = nextParam && nextParam.startsWith('/') ? nextParam : '/';
+  useEffect(() => {
+    const verifySession = async () => {
+      const tokenHash = searchParams.get('token_hash');
+      const type = searchParams.get('type');
+      const nextParam = searchParams.get('next');
+      const next = nextParam && nextParam.startsWith('/') ? nextParam : '/';
 
-    if (tokenHash && type === 'recovery') {
-      // ✅ next est garanti string
-      router.replace(next, { scroll: false });
+      if (!tokenHash || type !== 'recovery') {
+        setError(t('auth.reset.invalid_link'));
+        setLoading(false);
+        return;
+      }
 
       try {
+        const supabase = createClient();
+        
+        // 🔑 Vérifier le token AVANT redirection
         const { error } = await supabase.auth.verifyOtp({
           token_hash: tokenHash,
           type: 'recovery',
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Erreur OTP:', error);
+          throw new Error(t('auth.reset.invalid_link'));
+        }
+
+        // ✅ Token valide → on peut rediriger après
+        router.replace(next, { scroll: false });
         setLoading(false);
       } catch (err: any) {
-        setError(t('auth.reset.invalid_link'));
+        setError(err.message || t('auth.reset.invalid_link'));
         setLoading(false);
       }
-    } else {
-      setError(t('auth.reset.invalid_link'));
-      setLoading(false);
-    }
-  };
+    };
 
-  verifySession();
-}, [searchParams, router, t]);
+    verifySession();
+  }, [searchParams, router, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password) return;
 
     try {
+      const supabase = createClient();
       const { error } = await supabase.auth.updateUser({ password });
+      
       if (error) throw error;
 
       setSuccess(true);

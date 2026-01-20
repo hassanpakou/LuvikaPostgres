@@ -377,7 +377,7 @@ export default function SignUpPage() {
                                 <h3 className="font-bold text-white">{plan.title}</h3>
                                 {plan.id === 'premium' && (
                                   <span className="bg-cyan-500 text-xs px-2 py-0.5 rounded-full text-white">
-                                    {t('pricing.plans.premium.popular')}
+                                    {t('pricing.plans.freemium.popular')}
                                   </span>
                                 )}
                               </div>

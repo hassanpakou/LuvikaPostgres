@@ -5,6 +5,10 @@
     "create": "Créer mon profil",
     "discover": "Découvrir"
   },
+  "profile": {
+    "edit": "Modifier le profil",
+    "view_public": "Voir profil public"
+  },
   "system": {
     "connection_lost": "LUVIKA — Echec de connexion. Vérifiez votre internet.",
     "connection_back": "Connexion rétablie.",
@@ -240,7 +244,8 @@
       }
     }
   },
-  "auth": {
+  "auth": {    "signout": "Déconnexion"
+,
     "welcome": {
       "title": "Bienvenue !",
       "message": "Content de vous revoir sur LUVIKA. Prêt à créer ? 🌟"
@@ -475,7 +480,8 @@
       },
       "email_success": "✅ Email envoyé avec succès !",
       "email_error": "❌ Erreur lors de l’envoi.",
-      "error_generic": "Une erreur est survenue. Veuillez réessayer."
+      "error_generic": "Une erreur est survenue. Veuillez réessayer.",
+      "sending": "Envoi en cours..."
     },
     "modules": {
       "subscriptions": {
@@ -621,7 +627,7 @@
       "freemium": {
         "title": "Freemium",
         "desc": "Pour commencer",
-        "Popular": "Le plus populaire",
+        "popular": "Le plus populaire",
         "features": {
           "nfc": "1 carte NFC",
           "users": "1 utilisateur",
@@ -635,7 +641,7 @@
       "premium": {
         "title": "Premium",
         "desc": "Pour les pros ambitieux",
-        "Popular": "Le plus populaire",
+        "popular": "Le plus populaire",
         "features": {
           "nfc": "Cartes NFC illimitées",
           "users": "Jusqu’à 5 utilisateurs",
@@ -649,7 +655,7 @@
       "entreprise": {
         "title": "Entreprise",
         "desc": "Pour équipes & entreprises",
-        "Popular": "",
+        "popular": "",
         "features": {
           "nfc": "Cartes NFC illimitées + custom",
           "users": "Utilisateurs illimités",

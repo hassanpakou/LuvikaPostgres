@@ -1,5 +1,6 @@
 // src/components/dashboard/DashboardContent.tsx
 'use client';
+
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
@@ -23,7 +24,7 @@ import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
 import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 import PortfolioModal from '@/src/components/dashboard/PortfolioModal';
-import CertificatesModal from '@/src/components/dashboard/CertificatesModal'; // ✅ Ajouté
+import CertificatesModal from '@/src/components/dashboard/CertificatesModal';
 import EventFormModal from './EventFormModal';
 import { createClient } from '@/src/lib/supabase/client';
 
@@ -63,6 +64,7 @@ const SuccessModal = ({
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+
   return (
     <>
       <motion.div
@@ -144,7 +146,6 @@ const VisibilityModal = ({
 }) => {
   const [localSections, setLocalSections] = useState(sectionsVisibility);
   const t = useTranslations('dashboard.visibility');
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -534,7 +535,6 @@ const UpgradeModal = ({
   );
 };
 
-
 // 🔹 ✅ Modal : QR Code
 const QRModal = ({
   isOpen,
@@ -561,7 +561,6 @@ const QRModal = ({
     link.href = canvas.toDataURL('image/png');
     link.click();
   };
-
   useEffect(() => {
     if (isOpen) {
       import('qrcode').then(QRCode => {
@@ -573,7 +572,6 @@ const QRModal = ({
       });
     }
   }, [isOpen, profileUrl]);
-
   if (!isOpen) return null;
   return (
     <AnimatePresence>
@@ -806,7 +804,6 @@ type Profile = {
   plan?: string | null;
   likes_count?: number;
 };
-
 type Action = {
   id: string;
   label: string;
@@ -814,21 +811,19 @@ type Action = {
   color: string;
   disabled?: boolean;
 };
-
 type Card = {
+  matricule: string;
   id: string;
   card_id: string;
   status: 'active' | 'lost' | 'blocked' | 'inactive';
   created_at: string;
 };
-
 type Scan = {
   id: string;
   scan_type: string;
   created_at: string;
   profiles?: { full_name?: string; username?: string };
 };
-
 type Props = {
   user: { id: string };
   profile: Profile;
@@ -866,9 +861,8 @@ export default function DashboardContent({
   const [showEventForm, setShowEventForm] = useState(false);
   const [scansCount, setScansCount] = useState(0);
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
-  const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false); // ✅ Nouveau
+  const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
-
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -888,49 +882,43 @@ export default function DashboardContent({
   const [customMessage, setCustomMessage] = useState<string>('');
   const [activeModal, setActiveModal] = useState<string | null>(null);
   const closeModal = () => setActiveModal(null);
-
   const subscription = useMemo(() => {
     const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
     return { plan, active: plan === 'premium' || plan === 'entreprise', expires_at: undefined };
   }, [profile.plan]);
-
   const handleCreateEvent = async (data: EventData) => {
-  try {
-    const res = await fetch('/api/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data), // ✅ Envoie les données
-    });
-    if (res.ok) {
-      setShowEventForm(false);
-      // Optionnel: refresh la liste
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        setShowEventForm(false);
+      }
+    } catch (err) {
+      console.error('❌ Création échouée:', err);
     }
-  } catch (err) {
-    console.error('❌ Création échouée:', err);
-  }
-};
-
+  };
   const handleLike = () => setHasLiked(!hasLiked);
-
-const handleQuickAction = (actionId: string) => {
-  if (actionId === 'event') {
-    setIsEventModalOpen(true);
-  } else if (actionId === 'event-create') { // ✅ ajout manquant
-    setIsEventFormOpen(true);
-  } else if (actionId === 'portfolio') {
-    setIsPortfolioModalOpen(true);
-  } else if (actionId === 'certificates') {
-    setIsCertificatesModalOpen(true);
-  } else {
-    setActiveModal(actionId);
-  }
-};
+  const handleQuickAction = (actionId: string) => {
+    if (actionId === 'event') {
+      setIsEventModalOpen(true);
+    } else if (actionId === 'event-create') {
+      setIsEventFormOpen(true);
+    } else if (actionId === 'portfolio') {
+      setIsPortfolioModalOpen(true);
+    } else if (actionId === 'certificates') {
+      setIsCertificatesModalOpen(true);
+    } else {
+      setActiveModal(actionId);
+    }
+  };
   const updateVisibility = (section: string, checked: boolean) => {
     const newVisibility = { ...sectionsVisibility, [section]: checked };
     setSectionsVisibility(newVisibility);
     saveSectionsVisibility(newVisibility);
   };
-
   const handleExport = async () => {
     try {
       const res = await fetch('/api/scans/export', {
@@ -950,45 +938,41 @@ const handleQuickAction = (actionId: string) => {
       alert('❌ Échec de l’export');
     }
   };
-
-const handleUpgradeRequest = async () => {
-  if (!user || !profile) return;
-  setIsSubmitting(true);
-  try {
-    let targetPlan = 'premium';
-    if (profile.plan === 'premium') {
-      targetPlan = 'entreprise';
+  const handleUpgradeRequest = async () => {
+    if (!user || !profile) return;
+    setIsSubmitting(true);
+    try {
+      let targetPlan = 'premium';
+      if (profile.plan === 'premium') {
+        targetPlan = 'entreprise';
+      }
+      const res = await fetch('/api/upgrade-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id,
+          profile_id: profile.id,
+          target_plan: targetPlan
+        }),
+      });
+      if (res.ok) {
+        closeModal();
+        alert(
+          targetPlan === 'entreprise'
+            ? '✅ Demande de conversion en Entreprise envoyée.'
+            : '✅ Demande de passage à Premium envoyée.'
+        );
+        window.location.reload();
+      } else {
+        throw new Error();
+      }
+    } catch {
+      alert('❌ Échec. Veuillez réessayer.');
+    } finally {
+      setIsSubmitting(false);
     }
-
-    const res = await fetch('/api/upgrade-request', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: user.id,
-        profile_id: profile.id,
-        target_plan: targetPlan
-      }),
-    });
-
-    if (res.ok) {
-      closeModal();
-      alert(
-        targetPlan === 'entreprise'
-          ? '✅ Demande de conversion en Entreprise envoyée.'
-          : '✅ Demande de passage à Premium envoyée.'
-      );
-      window.location.reload(); // ⚠️ Essentiel pour rafraîchir le plan et hasCompany
-    } else {
-      throw new Error();
-    }
-  } catch {
-    alert('❌ Échec. Veuillez réessayer.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
-const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
+  };
+  const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) => {
     try {
       const res = await fetch('/api/profile/sections-visibility', {
         method: 'POST',
@@ -1000,7 +984,6 @@ const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) =>
       console.error('❌ Sauvegarde sections échouée:', err);
     }
   };
-
   const toggleContactRequests = async () => {
     try {
       const res = await fetch('/api/profile/contact-toggle', {
@@ -1017,7 +1000,6 @@ const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) =>
       alert('❌ Échec. Veuillez réessayer.');
     }
   };
-
   const handleReportCard = async () => {
     if (!reportReason) return;
     const reason = reportReason === 'other' ? customReason : reportReason;
@@ -1037,7 +1019,6 @@ const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) =>
       alert('❌ Échec.');
     }
   };
-
   const handleSendCustomMessage = async () => {
     if (!customMessage.trim()) return;
     try {
@@ -1057,47 +1038,40 @@ const saveSectionsVisibility = async (newVisibility: Record<string, boolean>) =>
       alert('❌ Échec.');
     }
   };
-
-
-const [hasCompany, setHasCompany] = useState(false);
-
-useEffect(() => {
-  const checkCompany = async () => {
-    if (user?.id && subscription.plan === 'entreprise') {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('companies')
-        .select('id')
-        .eq('owner_id', user.id)
-        .single();
-      setHasCompany(!!data);
-    }
-  };
-  checkCompany();
-}, [user?.id, subscription.plan]);
-
+  const [hasCompany, setHasCompany] = useState(false);
   useEffect(() => {
-  const fetchScans = async () => {
-    try {
-      const res = await fetch(`/api/analytics?profile_id=${profile.id}&range=all`);
-      const { total } = await res.json();
-      setScansCount(total || 0);
-    } catch (err) {
-      console.warn('⚠️ Failed to load scans count');
-    }
-  };
-  fetchScans();
-}, [profile.id]);
-
+    const checkCompany = async () => {
+      if (user?.id && subscription.plan === 'entreprise') {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from('companies')
+          .select('id')
+          .eq('owner_id', user.id)
+          .single();
+        setHasCompany(!!data);
+      }
+    };
+    checkCompany();
+  }, [user?.id, subscription.plan]);
+  useEffect(() => {
+    const fetchScans = async () => {
+      try {
+        const res = await fetch(`/api/analytics?profile_id=${profile.id}&range=all`);
+        const { total } = await res.json();
+        setScansCount(total || 0);
+      } catch (err) {
+        console.warn('⚠️ Failed to load scans count');
+      }
+    };
+    fetchScans();
+  }, [profile.id]);
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('open') === 'upgrade') {
       setActiveModal('upgrade');
-      // Nettoie l’URL
       window.history.replaceState(null, '', window.location.pathname);
     }
   }, []);
-
   // 🔹 ✅ quickActions — dans le scope, après les hooks
   const quickActions: Action[] = [
     { id: 'visibility', label: 'Visibilité', icon: <Eye size={18} />, color: 'from-purple-500 to-indigo-500' },
@@ -1110,12 +1084,11 @@ useEffect(() => {
     { id: 'followers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
     { id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
     { id: 'event', label: 'Voir événements', icon: <Calendar size={14} />, color: 'from-indigo-500 to-violet-500', disabled: profile.plan === 'freemium' || profile.plan === 'basic',},
-    { id: 'event-create', label: 'Créer événement', icon: <Plus />, color: 'from-green-500 to-emerald-500' }, // ✅ ajouté
+    { id: 'event-create', label: 'Créer événement', icon: <Plus />, color: 'from-green-500 to-emerald-500' },
     { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-cyan-500 to-blue-500' },
     { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
     { id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
   ];
-
   useEffect(() => {
     const generateQR = async () => {
       try {
@@ -1128,7 +1101,6 @@ useEffect(() => {
     };
     if (profileUrl) generateQR();
   }, [profileUrl]);
-
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -1141,115 +1113,106 @@ useEffect(() => {
   }, []);
 
   return (
-<div className="space-y-8 pb-28">
-  {/* En-tête */}
-  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-    <div className="flex flex-col gap-2">
-      <h1 className="text-2xl sm:text-3xl font-bold text-white">
-        {(() => {
-          const hour = new Date().getHours();
-          if (hour >= 5 && hour < 12) return t('greeting_morning', { name: profile.full_name });
-          if (hour >= 12 && hour < 17) return t('greeting_afternoon', { name: profile.full_name });
-          if (hour >= 17 && hour < 22) return t('greeting_evening', { name: profile.full_name });
-          return t('greeting_night', { name: profile.full_name });
-        })()}
-      </h1>
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-wrap">
-        <p className="text-gray-400 text-sm sm:text-base">{t('subtitle')}</p>
-        <button
-          onClick={handleLike}
-          className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
-        >
-          <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
-          <span className="text-sm">{profile.likes_count ?? 0}</span>
-        </button>
+    <div className="space-y-8 pb-28">
+      {/* En-tête */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+            {(() => {
+              const hour = new Date().getHours();
+              if (hour >= 5 && hour < 12) return t('greeting_morning', { name: profile.full_name });
+              if (hour >= 12 && hour < 17) return t('greeting_afternoon', { name: profile.full_name });
+              if (hour >= 17 && hour < 22) return t('greeting_evening', { name: profile.full_name });
+              return t('greeting_night', { name: profile.full_name });
+            })()}
+          </h1>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-wrap">
+            <p className="text-gray-400 text-sm sm:text-base">{t('subtitle')}</p>
+            <button
+              onClick={handleLike}
+              className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
+            >
+              <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
+              <span className="text-sm">{profile.likes_count ?? 0}</span>
+            </button>
+          </div>
+        </div>
+        {/* Wrapper des boutons */}
+        <div className="flex flex-wrap gap-3 w-full">
+          {/* Voir profil public */}
+          <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 py-2 px-4 sm:px-6 transition"
+            >
+              {t('view_public')}
+            </Button>
+          </Link>
+          {/* Export CSV */}
+          <Button
+            onClick={handleExport}
+            className="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:from-blue-500 hover:to-cyan-400 transition transform hover:-translate-y-0.5 hover:scale-105"
+          >
+            <Download className="h-5 w-5" />
+            <span className="font-medium">{t('export_csv')}</span>
+          </Button>
+          {/* Gestion des commandes */}
+          <Button
+            onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
+            className="w-full sm:w-auto py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-900 to-blue-900 text-white font-medium shadow-md hover:from-blue-800 hover:to-blue-800 transition transform hover:-translate-y-0.5 hover:scale-105"
+          >
+            {t('orders.manage')}
+          </Button>
+          {/* Voir vos événements */}
+          <Button
+            onClick={() => setIsEventModalOpen(true)}
+            className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
+              <Calendar className="h-5 w-5" />
+            </span>
+            <span className="font-medium">Voir vos événements</span>
+          </Button>
+          {/* Bouton Espace Entreprise (DISTINGUÉ) */}
+          {subscription.plan === 'entreprise' && hasCompany && (
+            <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
+              <Button
+                className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
+              >
+                <Building className="h-5 w-5" />
+                <span>Espace Entreprise</span>
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
-    </div>
 
-{/* Wrapper des boutons */}
-<div className="flex flex-wrap gap-3 w-full">
+      <AnimatePresence>
+        {showEventForm && (
+          <motion.div
+            key="event-form-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
+            onClick={() => setShowEventForm(false)}
+          >
+            <div
+              className="w-full max-w-4xl"
+              onClick={e => e.stopPropagation()}
+            >
+              <EventFormModal
+                isOpen={isEventFormOpen}
+                onClose={() => setIsEventFormOpen(false)}
+                onEventCreated={(eventId) => {
+                  setIsEventModalOpen(true);
+                }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-  {/* Voir profil public */}
-  <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
-    <Button
-      variant="outline"
-      className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 py-2 px-4 sm:px-6 transition"
-    >
-      {t('view_public')}
-    </Button>
-  </Link>
-
-  {/* Export CSV */}
-  <Button
-    onClick={handleExport}
-    className="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:from-blue-500 hover:to-cyan-400 transition transform hover:-translate-y-0.5 hover:scale-105"
-  >
-    <Download className="h-5 w-5" />
-    <span className="font-medium">{t('export_csv')}</span>
-  </Button>
-
-  {/* Gestion des commandes */}
-  <Button
-    onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
-    className="w-full sm:w-auto py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-900 to-blue-900 text-white font-medium shadow-md hover:from-blue-800 hover:to-blue-800 transition transform hover:-translate-y-0.5 hover:scale-105"
-  >
-    {t('orders.manage')}
-  </Button>
-
-  {/* Voir vos événements */}
-  <Button
-    onClick={() => setIsEventModalOpen(true)}
-    className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
-  >
-    <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
-      <Calendar className="h-5 w-5" />
-    </span>
-    <span className="font-medium">Voir vos événements</span>
-  </Button>
-
-  {/* Bouton Espace Entreprise (DISTINGUÉ) */}
-  {subscription.plan === 'entreprise' && hasCompany && (
-    <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
-      <Button
-        className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
-      >
-        <Building className="h-5 w-5" />
-        <span>Espace Entreprise</span>
-      </Button>
-    </Link>
-  )}
-
-</div>
-
-  </div>
-
-<AnimatePresence>
-  {showEventForm && (
-    <motion.div
-      key="event-form-modal" // ✅ Obligatoire
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
-      onClick={() => setShowEventForm(false)}
-    >
-      <div
-        className="w-full max-w-4xl"
-        onClick={e => e.stopPropagation()}
-      >
-        <EventFormModal 
-  isOpen={isEventFormOpen} 
-  onClose={() => setIsEventFormOpen(false)}
-  onEventCreated={(eventId) => {
-    // 🔹 Optionnel : recharge la liste ou ouvre le modal événements
-    setIsEventModalOpen(true);
-  }}
-/>
-      </div>
-    </motion.div>
-  )}
-  
-</AnimatePresence>
       {/* 🔹 ✅ Bouton Messages reçus */}
       {profile.accepts_contact_requests && (
         <div className="col-span-1 md:col-span-2">
@@ -1265,6 +1228,7 @@ useEffect(() => {
       )}
 
       {/* Commandes */}
+     
       {(subscription.plan === 'premium' || subscription.plan === 'entreprise') && (
         <Card className="glass-border">
           <CardHeader><CardTitle>{t('orders.title')}</CardTitle></CardHeader>
@@ -1350,13 +1314,14 @@ useEffect(() => {
             ) : (
               <ul className="space-y-3">
                 {cards.map(card => (
-                  <li key={card.id} className="flex justify-between items-center p-3 glass-border">
-                    <div>
-                      <span className="font-mono text-sm text-blue-300">{card.card_id}</span>
-                      <div className="text-xs text-gray-400">
-                        {formatDistance(card.created_at, t)} {t('nfc.ago')}
-                      </div>
-                    </div>
+  <li key={card.id} className="flex justify-between items-center p-3 glass-border">
+    <div>
+      {/* ✅ Affiche le matricule */}
+      <span className="font-mono text-sm text-blue-300">{card.matricule || card.card_id}</span>
+      <div className="text-xs text-gray-400">
+        {formatDistance(card.created_at, t)} {t('nfc.ago')}
+      </div>
+    </div>
                     <Badge className={
                       card.status === 'active' ? 'bg-green-500' :
                       card.status === 'lost' ? 'bg-yellow-500' :

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/src/lib/supabase/client';
+import { SiFacebook, SiInstagram, SiSnapchat, SiTelegram, SiTiktok, SiWhatsapp } from 'react-icons/si';
 
 type FooterProps = {
   product: string;
@@ -41,20 +42,6 @@ export default function Footer({
   tagline,
   copyright,
 }: FooterProps) {
-  const [isDisabled, setIsDisabled] = useState(false);
-  const pathname = usePathname();
-  const isAuthPage = pathname?.startsWith('/auth');
-
-  // ✅ Utilisation sécurisée de getUser()
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      setIsDisabled(!!user && !isAuthPage);
-    };
-    checkAuth();
-  }, [isAuthPage]);
 
   const links = [
     {
@@ -114,20 +101,13 @@ export default function Footer({
                 <ul className="space-y-2">
                   {section.items.map((item) => (
                     <li key={item.label}>
-                      {isDisabled ? (
-                        <span className="text-gray-600 flex items-center gap-1 cursor-not-allowed">
-                          <span className="w-1 h-1 rounded-full bg-gray-700 mr-2 mt-1.5" />
-                          {item.label}
-                        </span>
-                      ) : (
-                        <Link
-                          href={item.href}
-                          className="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
-                        >
-                          <span className="w-1 h-1 rounded-full bg-cyan-400/50 mr-2 mt-1.5" />
-                          {item.label}
-                        </Link>
-                      )}
+                      <Link
+                        href={item.href}
+                        className="text-gray-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+                      >
+                        <span className="w-1 h-1 rounded-full bg-cyan-400/50 mr-2 mt-1.5" />
+                        {item.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -143,9 +123,15 @@ export default function Footer({
 
               <div className="flex space-x-4 mt-4 md:mt-0">
                 {[
+                  { Icon: SiSnapchat, href: 'https://www.snapchat.com/add/nes.pha', label: 'Snapchat' },
+                  { Icon: SiTelegram, href: 'https://t.me/nes_pha', label: 'Telegram' },
+                  { Icon: SiFacebook, href: 'https://www.facebook.com/nes.pha', label: 'Facebook' },
+                  { Icon: SiTiktok, href: 'https://www.tiktok.com/@h_asa5an', label: 'Tiktok' },
+                  { Icon: SiWhatsapp, href: 'https://wa.me/243890177601', label: 'Whatsapp' },
+                  { Icon: SiInstagram, href: 'https://www.instagram.com/nes.pha', label: 'Instagram' },
                   { Icon: Github, href: 'https://github.com/hassanpakou', label: 'GitHub' },
                   { Icon: Twitter, href: 'https://twitter.com/luvika', label: 'Twitter' },
-                  { Icon: Linkedin, href: 'https://linkedin.com/in/nestor-phaku-137b53217,', label: 'LinkedIn' },
+                  { Icon: Linkedin, href: 'https://linkedin.com/in/nestor-phaku-137b53217', label: 'LinkedIn' },
                 ].map(({ Icon, href, label }) => (
                   <motion.a
                     key={label}
@@ -167,7 +153,7 @@ export default function Footer({
               <span>Kinshasa, RDC</span>
               <span className="mx-2">•</span>
               <Mail className="w-4 h-4" />
-              <span>contact@luvika.dev</span>
+              <span><a href="mailto:luvika@gmail.com">luvika@gmail.com</a></span>
             </div>
           </div>
         </div>

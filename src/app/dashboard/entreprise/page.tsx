@@ -228,18 +228,26 @@ export default function EnterpriseDashboard() {
     };
   }, []);
 
+  // ✅ Loader élégant
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="max-w-6xl mx-auto py-12 px-4">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-xl text-white font-medium">Chargement de votre espace entreprise...</p>
-          <p className="text-gray-400 mt-2">Préparation de vos données en temps réel</p>
+          <div className="relative inline-block mb-6">
+            <div className="w-16 h-16 rounded-full border-4 border-cyan-500/30 animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse"></div>
+            </div>
+          </div>
+          <h3 className="text-xl font-medium text-white mb-2">Chargement de votre espace entreprise...</h3>
+          <p className="text-gray-400">Préparation de vos données en temps réel</p>
+          <div className="mt-6 max-w-md mx-auto w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse w-1/3"></div>
+          </div>
         </div>
       </div>
     );
   }
-
   return (
     <div className="space-y-8">
       {/* 🔝 En-tête élégant */}

@@ -75,27 +75,34 @@ export default function AdminActions() {
 
     fetchStats();
   }, []);
-
-  // 🔹 Envoi email de bienvenue
+console.log('📧 Utilisateur sélectionné:', selectedUser);
   const handleSendWelcomeEmail = async () => {
-    if (!selectedUser) return;
+  if (!selectedUser?.email) {
+    setToast({ type: 'error', message: t('admin.actions.email_error') });
+    return;
+  }
 
-    setIsSending(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.functions.invoke('send-welcome-email', {
-        body: { user_id: selectedUser.id },
-      });
+  setIsSending(true);
+  try {
+    const res = await fetch('/api/admin/send-welcome', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: selectedUser.email }),
+    });
 
-      if (error) throw error;
+    if (res.ok) {
       setToast({ type: 'success', message: t('admin.actions.email_success') });
-    } catch (err: any) {
-      console.error('📧 Erreur email:', err);
-      setToast({ type: 'error', message: t('admin.actions.email_error') });
-    } finally {
-      setIsSending(false);
+    } else {
+      const err = await res.json();
+      throw new Error(err.error || 'Échec envoi');
     }
-  };
+  } catch (err: any) {
+    console.error('📧 Erreur email:', err);
+    setToast({ type: 'error', message: t('admin.actions.email_error') });
+  } finally {
+    setIsSending(false);
+  }
+};
 
   // 🔹 Modules admin
   const modules = [

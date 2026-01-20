@@ -1,4 +1,4 @@
-// src/app/events/[id]/page.tsx
+// src/app/(main)/events/[id]/page.tsx
 
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';

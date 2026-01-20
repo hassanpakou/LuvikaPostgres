@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { UserCheck, UserX, Loader2 } from 'lucide-react';
@@ -7,9 +6,11 @@ import { UserCheck, UserX, Loader2 } from 'lucide-react';
 export default function FollowButton({
   targetId,
   isInitiallyFollowing,
+  onFollowChange,
 }: {
   targetId: string;
   isInitiallyFollowing: boolean;
+  onFollowChange: (isNowFollowing: boolean, newFollowers: number) => void;
 }) {
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +34,10 @@ export default function FollowButton({
       });
 
       if (res.ok) {
-        setIsFollowing(!isFollowing);
+        const { followers } = await res.json();
+        const newIsFollowing = !isFollowing;
+        setIsFollowing(newIsFollowing);
+        onFollowChange(newIsFollowing, followers);
       } else {
         const { error } = await res.json();
         alert(error || 'Action échouée');

@@ -1,57 +1,25 @@
-// src/app/auth/forgot-password/page.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, X, Check } from 'lucide-react';
+import { Mail, Lock, ArrowLeft, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/lib/supabase';
-
-type Step = 'email' | 'otp' | 'reset';
+import { createClient } from '@/src/lib/supabase/client'; // ✅ Correct import
 
 export default function ForgotPasswordPage() {
   const t = useTranslations();
   const router = useRouter();
-  const [step, setStep] = useState<Step>('email');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-
   const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const otpInputRef = useRef<HTMLInputElement>(null);
-  const passwordInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (step === 'otp' && otpInputRef.current) {
-      otpInputRef.current.focus();
-    } else if (step === 'reset' && passwordInputRef.current) {
-      passwordInputRef.current.focus();
-    }
-  }, [step]);
-
-  // Validation mot de passe
-  const passwordRules = {
-    length: password.length >= 8,
-    uppercase: /[A-Z]/.test(password),
-    lowercase: /[a-z]/.test(password),
-    number: /[0-9]/.test(password),
-    special: /[^A-Za-z0-9]/.test(password),
-    match: password === passwordConfirm && passwordConfirm.length > 0,
-  };
-  const allPasswordRulesMet = Object.values(passwordRules).every(Boolean);
-
-  // Étape 1 : Envoi lien de réinitialisation (Supabase)
+  // ✅ Envoi du lien de réinitialisation
   const handleSendReset = async () => {
     if (!email) return;
 
@@ -59,6 +27,7 @@ export default function ForgotPasswordPage() {
     setError(null);
 
     try {
+      const supabase = createClient();
       const { error: sendError } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
@@ -66,22 +35,17 @@ export default function ForgotPasswordPage() {
       if (sendError) throw sendError;
 
       setSuccess(t('auth.forgot_password.email_sent'));
-      // ✅ Supabase envoie un lien magique → pas besoin d'OTP ici
-      // On redirige directement vers reset après ouverture du lien
       setTimeout(() => router.push('/auth/sign-in'), 3000);
     } catch (err: any) {
       console.error('Erreur reset:', err);
-      setError(t('auth.forgot_password.error'));
+      setError(err.message || t('auth.forgot_password.error'));
     } finally {
       setLoading(false);
     }
   };
 
-  // Étape 2 & 3 : Gérées par Supabase via le lien magique
-  // → Tu peux créer `/auth/reset-password/page.tsx` si tu veux un formulaire OTP
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 ">
+    <div className="min-h-screen flex items-center justify-center p-4">
       <Link 
         href="/auth/sign-in" 
         className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition"
@@ -107,7 +71,6 @@ export default function ForgotPasswordPage() {
           {t('auth.forgot_password.subtitle')}
         </p>
 
-        {/* ✅ Plus de AnimatePresence — simple div */}
         <div className="space-y-5">
           {error && (
             <div className="bg-red-900/30 text-red-200 p-3 rounded-lg flex items-center gap-2">
@@ -122,7 +85,6 @@ export default function ForgotPasswordPage() {
             </div>
           )}
 
-          {/* Étape email (seule étape nécessaire avec lien magique) */}
           <div className="relative">
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-400" />
             <Label htmlFor="email" className="sr-only">

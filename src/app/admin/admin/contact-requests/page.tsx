@@ -7,7 +7,8 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Mail, Phone, MessageSquare, Eye, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+// 🔹 Importe le client component
+import { MarkAsReadButton } from '@/src/components/admin/MarkAsReadButton';
 
 type ContactRequest = {
   id: string;
@@ -36,7 +37,7 @@ export default async function ContactRequestsPage() {
     redirect('/auth/sign-in');
   }
 
-  const { data : requests, error } = await supabase
+  const {  data, error } = await supabase
     .from('contact_requests')
     .select(`
       *,
@@ -46,14 +47,9 @@ export default async function ContactRequestsPage() {
 
   if (error) throw error;
 
-  const t = await getTranslations();
+  const requests = data || []; // ✅ jamais undefined
 
-  const markAsRead = async (id: string) => {
-    const res = await fetch(`/api/admin/contact-requests/${id}/read`, {
-      method: 'POST',
-    });
-    if (res.ok) location.reload();
-  };
+  const t = await getTranslations();
 
   return (
     <div className="max-w-6xl mx-auto py-8 px-4">
@@ -101,17 +97,8 @@ export default async function ContactRequestsPage() {
                     Pour {req.profiles?.full_name} (@{req.profiles?.username})
                   </p>
                 </div>
-                {!req.is_read && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/10"
-                    onClick={() => markAsRead(req.id)}
-                  >
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Marquer lu
-                  </Button>
-                )}
+                {/* 🔹 Utilise le client component */}
+                {!req.is_read && <MarkAsReadButton requestId={req.id} />}
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2 mb-3">
