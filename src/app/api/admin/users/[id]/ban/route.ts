@@ -5,8 +5,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // ✅ Promise<{ id: string }>
 ) {
+  const { id: userIdToBan } = await params; // ✅ await params
+
   const cookieStore = await cookies();
   
   // 🔐 Vérifier admin
@@ -28,7 +30,6 @@ export async function POST(
   }
 
   const adminId = session.user.id;
-  const userIdToBan = params.id;
 
   if (userIdToBan === adminId) {
     return NextResponse.json({ error: 'Auto-bannissement interdit' }, { status: 400 });
