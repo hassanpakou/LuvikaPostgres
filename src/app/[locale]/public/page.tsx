@@ -1,28 +1,29 @@
-// src/app/(main)/page.tsx
+// src/app/[locale]/public/page.tsx
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { HomePageContent } from '@/src/components/home/HomePageContent';
-import { getTranslations } from 'next-intl/server';
 
-export default async function HomePage() {
-  // 🔹 1. Initialisation Supabase SSR
+export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+
+  // 🔹 Validation locale
+  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
+  if (!supported.includes(locale as any)) {
+    redirect('/'); // ou notFound()
+  }
+
+  // 🔹 Auth check
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-      },
-    }
+    { cookies: { get: (name) => cookieStore.get(name)?.value } }
   );
 
-  // 🔹 2. Redirection si connecté
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
-    const { data: profile } = await supabase
+    const { data : profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
@@ -32,14 +33,5 @@ export default async function HomePage() {
     redirect(role === 'admin' ? '/admin' : '/dashboard');
   }
 
-  // 🔹 3. Récupère les traductions pour le footer
-  const t = await getTranslations('footer');
-
-  // 🔹 4. Affichage landing pour public
-  return (
-    <>
-      <HomePageContent />
-      
-    </>
-  );
+  return <HomePageContent />;
 }

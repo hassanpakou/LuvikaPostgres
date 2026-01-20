@@ -22,27 +22,6 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
 
-  // Auth (optionnel, sans impact sur le rendu)
-  let user = null;
-  try {
-    const { createServerClient } = await import('@supabase/ssr');
-    const { cookies } = await import('next/headers');
-    
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { get: (name) => cookieStore.get(name)?.value } }
-    );
-
-    const { data : { user: authUser }, error } = await supabase.auth.getUser();
-    if (!error && authUser) {
-      user = authUser;
-    }
-  } catch (err) {
-    console.debug('ℹ️ No active session in layout (normal for public pages)');
-  }
-
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white`} suppressHydrationWarning>

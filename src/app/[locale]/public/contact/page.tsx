@@ -1,4 +1,4 @@
-// src/app/(main)/contact/page.tsx
+// src/app/[locale]/public/contact/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import ContactContent from '@/src/components/contact/ContactContent';

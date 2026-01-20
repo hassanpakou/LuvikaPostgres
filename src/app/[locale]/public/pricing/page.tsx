@@ -1,4 +1,4 @@
-// src/app/(main)/pricing/page.tsx
+// src/app/[locale]/public/pricing/page.tsx
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import PricingPlans from '@/src/components/pricing/PricingPlans'; // ✅ Chemin corrigé
