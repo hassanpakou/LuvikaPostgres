@@ -2,10 +2,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '../../../../../src/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import { Clock, UserCheck } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../../../components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale'; // ✅ CORRECT POUR date-fns v2/v3
 import { useTranslations } from 'next-intl';

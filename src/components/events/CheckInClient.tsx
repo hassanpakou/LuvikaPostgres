@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 import { CheckCircle, Loader2, X as XIcon } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card } from '../../../components/ui/card';
 
 type Props = {
   eventId: string;

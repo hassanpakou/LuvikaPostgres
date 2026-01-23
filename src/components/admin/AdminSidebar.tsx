@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, X, Sparkle 
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useAdminLayout } from '@/src/contexts/AdminLayoutContext';
+import { useAdminLayout } from '../../../src/contexts/AdminLayoutContext';
 
 const menu = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },

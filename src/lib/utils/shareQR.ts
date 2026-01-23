@@ -1,5 +1,5 @@
 // src/lib/utils/shareQR.ts
-import { generateQRBase64 } from '@/lib/qr';
+import { generateQRBase64 } from '../../../lib/qr';
 
 // 🔹 Raccourcit UUID → 6 caractères (ex: dcfbb1)
 const shortId = (id: string) => id.substring(0, 6).replace(/[+/]/g, 'x').toLowerCase();

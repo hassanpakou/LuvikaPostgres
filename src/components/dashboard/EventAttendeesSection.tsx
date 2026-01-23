@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, User, Clock, MapPin, QrCode } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { createClient } from '@/src/lib/supabase/client';
-import QRModal from '@/src/components/profile/QRModal'; // ✅ Assure-toi que ce composant existe
+import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { createClient } from '../../../src/lib/supabase/client';
+import QRModal from '../../../src/components/profile/QRModal'; // ✅ Assure-toi que ce composant existe
 
 type Event = {
   id: string;

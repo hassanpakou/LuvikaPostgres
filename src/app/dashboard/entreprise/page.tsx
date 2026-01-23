@@ -8,11 +8,11 @@ import {
   LayoutDashboard, Store, Package, Users, IdCard, Clock, Megaphone, Settings,
   TrendingUp, Building, ShoppingCart, UserCheck, QrCode, MessageSquare, FileText
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { createClient } from '@/src/lib/supabase/client';
-import AnalyticsChart from '@/src/components/dashboard/AnalyticsChart';
-import { useSoundNotification } from '@/src/hooks/useSoundNotification';
+import { Button } from '../../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { createClient } from '../../../../src/lib/supabase/client';
+import AnalyticsChart from '../../../components/dashboard/AnalyticsChart';
+import { useSoundNotification } from '../../../../src/hooks/useSoundNotification';
 
 type Module = {
   id: string;

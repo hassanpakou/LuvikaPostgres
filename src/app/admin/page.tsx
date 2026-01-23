@@ -1,15 +1,15 @@
-// src/app/(admin)/page.tsx
+// src/app/admin/admin/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { 
   Building, Users, Package, TrendingUp, BarChart3, Wallet 
 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { createClient } from '@/src/lib/supabase/client';
-import AdminActions from '@/components/admin/AdminActions';
-import { AdminSidebar } from '@/src/components/admin/AdminSidebar';
-import { useAdminLayout } from '@/src/contexts/AdminLayoutContext';
+import { Card } from '../../../components/ui/card';
+import { createClient } from '../../../src/lib/supabase/client';
+import AdminActions from '../../../components/admin/AdminActions';
+import { AdminSidebar } from '../../../src/components/admin/AdminSidebar';
+import { useAdminLayout } from '../../../src/contexts/AdminLayoutContext';
 
 type AdminStats = {
   totalEnterprises: number;

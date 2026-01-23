@@ -5,6 +5,10 @@
     "create": "Kobeta lukama na ngai",
     "discover": "Tanga"
   },
+  "profile": {
+    "edit": "Kosenga lukama",
+    "view_public": "Tanga lukama public"
+  },
   "system": {
     "connection_lost": "LUVIKA — Kobetela ekoki te. Yanda internet na yo.",
     "connection_back": "Kobetela ekotaka.",
@@ -225,10 +229,22 @@
         "contact_requests": "Messages publics",
         "contact_requests_desc": "Autoriser les visiteurs à vous écrire",
         "profile_url": "URL de profil"
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "hide_birth_year": "Masquer l'année de naissance",
+        "hide_birth_year_desc": "Affiche seulement jour/mois",
+        "disable_birthday_icon": "Désactiver l'icône anniversaire",
+        "disable_birthday_icon_desc": "Masque 🎂 le jour de l'anniversaire",
+        "verified_badge": "Badge de vérification",
+        "verified_badge_desc": "Affiche à côté de votre nom",
+        "verified_tooltip": "Profil vérifié",
+        "enterprise_only": "Réservé aux entreprises"
       }
     }
   },
   "auth": {
+    "signout": "Kosala déconnexion",
     "welcome": {
       "title": "Bienvenue !",
       "message": "Content de vous revoir sur LUVIKA. Prêt à créer ? 🌟"
@@ -463,7 +479,8 @@
       },
       "email_success": "✅ Email envoyé avec succès !",
       "email_error": "❌ Erreur lors de l’envoi.",
-      "error_generic": "Une erreur est survenue. Veuillez réessayer."
+      "error_generic": "Une erreur est survenue. Veuillez réessayer.",
+      "sending": "Envoi..."
     },
     "modules": {
       "subscriptions": {
@@ -609,7 +626,7 @@
       "freemium": {
         "title": "Freemium",
         "desc": "Pour commencer",
-        "popular": "Le plus populaire",
+        "Popular": "Le plus populaire",
         "features": {
           "nfc": "1 carte NFC",
           "users": "1 utilisateur",
@@ -623,7 +640,7 @@
       "premium": {
         "title": "Premium",
         "desc": "Pour les pros ambitieux",
-        "popular": "Le plus populaire",
+        "Popular": "Le plus populaire",
         "features": {
           "nfc": "Cartes NFC illimitées",
           "users": "Jusqu’à 5 utilisateurs",
@@ -637,7 +654,7 @@
       "entreprise": {
         "title": "Entreprise",
         "desc": "Pour équipes & entreprises",
-        "popular": "",
+        "Popular": "",
         "features": {
           "nfc": "Cartes NFC illimitées + custom",
           "users": "Utilisateurs illimités",
@@ -817,5 +834,6 @@
       "title": "Votre entreprise, unifiée et vivante",
       "desc": "Luvika n’est pas un profil — c’est votre outil métier quotidien, conçu pour l’Afrique et scalable à l’international."
     }
-  }
+  },
+  "enterprise_only": "Entreprise"
 }

@@ -1,7 +1,7 @@
 // src/app/[locale]/public/about/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import AboutContent from '@/src/components/about/AboutContent';
+import AboutContent from '../../../../components/about/AboutContent';
 
 export default async function AboutPage({
   params,

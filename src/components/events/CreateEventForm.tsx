@@ -19,11 +19,11 @@ import {
   Loader2,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { Input } from '../../../components/ui/input';
+import { Textarea } from '../../../components/ui/textarea';
+import { Card } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
 
 // Helper pour formater les dates
 const formatDateForInput = (dateStr: string): string => {

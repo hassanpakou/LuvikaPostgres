@@ -4,9 +4,9 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import { ArrowLeft, QrCode, Calendar, MapPin, Eye } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../../../components/ui/badge';
 
 type Event = {
   id: string;

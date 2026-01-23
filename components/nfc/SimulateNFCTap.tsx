@@ -2,7 +2,7 @@
 
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import { Scan } from 'lucide-react';
 
 export default function SimulateNFCTap({ profileId }: { profileId: string }) {

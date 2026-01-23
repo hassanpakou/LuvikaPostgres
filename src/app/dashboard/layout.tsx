@@ -1,3 +1,5 @@
+  // src/app/dashboard/layout.tsx
+
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';

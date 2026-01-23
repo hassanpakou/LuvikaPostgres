@@ -4,7 +4,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../../components/ui/button';
 import { AlertCircle, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 

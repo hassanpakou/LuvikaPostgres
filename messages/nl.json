@@ -1,12 +1,16 @@
 {
   "LUVIKA": "LUVIKA",
-  "tagline": "Onthul wie je bent — Digitale professionele identiteit · NFC · QR-code · Abonnementen · Online verkoop · Evenementen",
+  "tagline": "Laat zien wie je bent — Digitale professionele identiteit · NFC · QR-code · Abonnementen · Online verkoop · Evenementen",
   "cta": {
     "create": "Mijn profiel aanmaken",
     "discover": "Ontdekken"
   },
+  "profile": {
+    "edit": "Profiel bewerken",
+    "view_public": "Openbaar profiel bekijken"
+  },
   "system": {
-    "connection_lost": "LUVIKA — Verbinding mislukt. Controleer uw internet.",
+    "connection_lost": "LUVIKA — Verbinding mislukt. Controleer je internet.",
     "connection_back": "Verbinding hersteld.",
     "server_error": "Server niet beschikbaar. Probeer het later opnieuw.",
     "action_error": "Er is een fout opgetreden. Probeer het opnieuw."
@@ -15,40 +19,40 @@
     "title": "Waarom LUVIKA?",
     "nfc": {
       "title": "NFC & QR-code",
-      "desc": "Deel uw profiel met één tik of scan"
+      "desc": "Deel je profiel met een tik of scan"
     },
     "stats": {
       "title": "Statistieken",
-      "desc": "Scans, bezoeken, aanwezigheden — alles wordt bijgehouden"
+      "desc": "Scans, bezoeken, aanwezigheid — alles bijgehouden"
     },
     "multi": {
       "title": "Meerdere kaarten",
-      "desc": "Professioneel? Beheer meerdere NFC-kaarten"
+      "desc": "Professional? Beheer meerdere NFC-kaarten"
     },
     "events": {
-      "title": "Evenementen en QR-codes",
+      "title": "Evenementen & QR-codes",
       "create": {
         "title": "Evenementen aanmaken",
-        "desc": "Organiseer beurzen, conferenties of webinars en centraliseer alle informatie."
+        "desc": "Organiseer expos, conferenties of webinars en centraliseer alle informatie."
       },
       "qr": {
-        "title": "QR-code genereren",
-        "desc": "Snel delen van kaarten, profielen of evenementen via aangepaste QR-codes."
+        "title": "QR-codes genereren",
+        "desc": "Deel snel kaarten, profielen of evenementen via aangepaste QR-codes."
       },
       "analytics": {
         "title": "Geavanceerde analyses",
-        "desc": "Volg weergaven, interacties en prestaties van uw kaarten en evenementen."
+        "desc": "Volg weergaven, interacties en prestaties van je kaarten en evenementen."
       }
     },
     "superpro": {
-      "title": "Super Pro-accounts en online verkoop",
-      "desc": "Super Pro-accounts laten bedrijven producten en diensten rechtstreeks vanaf hun digitale kaart verkopen. Beheer meerdere kaarten, volg uw verkoop en deel aanbiedingen via QR-codes om klanten overal te bereiken."
+      "title": "Super Pro-accounts & online verkoop",
+      "desc": "Super Pro-accounts stellen bedrijven in staat om producten en diensten rechtstreeks vanaf hun digitale kaart te verkopen. Beheer meerdere kaarten, volg je verkopen en interacties, en deel aanbiedingen via QR-codes om klanten overal te bereiken."
     }
   },
   "event": {
     "checkin": {
       "success": "✅ Aanwezigheid bevestigd!",
-      "thanks": "Bedankt voor uw deelname aan {title}.",
+      "thanks": "Bedankt voor je deelname aan {title}.",
       "view_participants": "Deelnemers bekijken"
     }
   },
@@ -57,11 +61,11 @@
     "greeting_afternoon": "Goedemiddag, {name} ☀️",
     "greeting_evening": "Goedenavond, {name} 🌙",
     "greeting_night": "Hoi, {name} 🌃",
-    "subtitle": "Beheer uw slimme digitale identiteit",
-    "view_public": "Mijn openbaar profiel bekijken",
+    "subtitle": "Beheer je slimme digitale identiteit",
+    "view_public": "Mijn openbare profiel bekijken",
     "export_csv": "Exporteren (.csv)",
     "visibility": {
-      "title": "Zichtbaarheid van secties",
+      "title": "Zichtbaarheid secties",
       "description": "Kies wat bezoekers kunnen zien."
     },
     "quick_menu": {
@@ -76,9 +80,9 @@
     },
     "contact_requests": {
       "title": "Berichten van bezoekers",
-      "description": "Sta toe dat mensen die uw openbare profiel bekijken een bericht achterlaten.",
+      "description": "Sta mensen die je openbare profiel bekijken toe om je een bericht achter te laten.",
       "label": "Berichten ontvangen",
-      "enabled": "Ingeschakeld – bezoekers kunnen contact opnemen",
+      "enabled": "Ingeschakeld – bezoekers kunnen contact met je opnemen",
       "disabled": "Uitgeschakeld – formulier verborgen",
       "enable": "Inschakelen",
       "disable": "Uitschakelen"
@@ -95,7 +99,7 @@
     },
     "orders": {
       "title": "Kaartbestellingen",
-      "description": "Beheer uw lopende NFC-bestellingen.",
+      "description": "Beheer je huidige NFC-kaartbestellingen.",
       "manage": "Bestellingen beheren"
     },
     "subscription": {
@@ -104,27 +108,27 @@
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
-        "entreprise": "Onderneming"
+        "entreprise": "Enterprise"
       },
       "active": "✅ Actief",
       "inactive": "⚠️ Inactief",
-      "active_until": "Uw abonnement is actief tot {date}.",
-      "upgrade_prompt": "Uw account is in Freemium-modus. Neem contact op met de beheerder om een abonnement te activeren.",
+      "active_until": "Je abonnement is actief tot {date}.",
+      "upgrade_prompt": "Je account staat op Freemium-modus. Neem contact op met een beheerder om een betaald abonnement te activeren.",
       "request_upgrade": "Upgrade aanvragen",
       "success_title": "✅ Succes!",
-      "success_message": "Een beheerder neemt binnen 24 uur contact met u op.",
-      "upgrade_to_premium": "Naar Premium",
-      "request_enterprise": "Converteren naar Ondernemingsaccount"
+      "success_message": "Een beheerder neemt binnen 24 uur contact met je op.",
+      "upgrade_to_premium": "Upgraden naar Premium",
+      "request_enterprise": "Converteren naar Enterprise-account"
     },
     "qr": {
       "title": "Profiel-QR-code",
       "alt": "QR-code voor {username}",
-      "instructions": "Scan om toegang te krijgen tot uw profiel",
+      "instructions": "Scan om toegang te krijgen tot je profiel",
       "open_link": "Link openen"
     },
     "nfc": {
       "title": "NFC-kaarten ({count})",
-      "empty": "Geen NFC-kaarten gekoppeld.",
+      "empty": "Geen NFC-kaart gekoppeld.",
       "ago": "geleden",
       "status": {
         "active": "Actief",
@@ -150,8 +154,8 @@
     },
     "other_features": {
       "title": "Overige functies",
-      "description": "Beheer uw NFC-kaart of deel een persoonlijk bericht.",
-      "report_card": "Kaart rapporteren",
+      "description": "Beheer je NFC-kaart of deel een aangepast bericht.",
+      "report_card": "Je kaart rapporteren",
       "reasons": {
         "lost": "Kaart verloren",
         "stolen": "Kaart gestolen",
@@ -159,11 +163,11 @@
         "no_longer_needed": "Kaart niet meer nodig",
         "other": "Anders (specificeer)"
       },
-      "custom_reason": "Geef de reden op",
-      "custom_reason_placeholder": "Bijv.: kaart gebroken, printfout...",
+      "custom_reason": "Reden specificeren",
+      "custom_reason_placeholder": "bijv.: Kaart kapot, printfout...",
       "submit_report": "Kaart rapporteren",
-      "custom_message": "Persoonlijk bericht",
-      "custom_message_placeholder": "Bijv.: Ik verander van functie, werk mijn profiel alstublieft bij...",
+      "custom_message": "Aangepast bericht",
+      "custom_message_placeholder": "bijv.: Ik verander van rol, werk mijn profiel alstublieft bij...",
       "send_message": "Bericht verzenden"
     },
     "settings": {
@@ -172,7 +176,7 @@
       "save": "Opslaan",
       "save_success": "✅ Profiel bijgewerkt",
       "save_error": "❌ Opslaan mislukt",
-      "load_error": "❌ Kan profiel niet laden",
+      "load_error": "❌ Profiel laden mislukt",
       "avatar_uploaded": "✅ Profielfoto bijgewerkt",
       "avatar_error": "❌ Upload mislukt",
       "avatar_invalid": "⚠️ Ongeldig formaat (alleen JPG/PNG)",
@@ -181,26 +185,26 @@
       "cover_invalid": "⚠️ Ongeldig formaat (alleen JPG/PNG)",
       "url_copied": "✅ Link gekopieerd",
       "photo": {
-        "title": "Foto & Omslag",
+        "title": "Foto & omslag",
         "avatar": "Profielfoto",
         "cover": "Omslagfoto",
         "upload_avatar": "Foto wijzigen",
-        "upload_cover": "Klik om omslag te uploaden"
+        "upload_cover": "Klik om een omslag te uploaden"
       },
       "personal": {
         "title": "Persoonlijke gegevens",
         "full_name": "Volledige naam",
         "full_name_placeholder": "bijv.: Hassan M.",
         "username": "Gebruikersnaam",
-        "username_placeholder": "uw_naam",
+        "username_placeholder": "jouw_naam",
         "job_title": "Functie",
-        "job_title_placeholder": "Full-Stack Ontwikkelaar",
+        "job_title_placeholder": "Full-Stack Developer",
         "company": "Bedrijf",
         "company_placeholder": "LUVIKA",
         "bio_short": "Korte bio",
         "bio_short_placeholder": "Één krachtige zin",
         "bio_long": "Volledige bio",
-        "bio_long_placeholder": "Uw traject, passies, waarden..."
+        "bio_long_placeholder": "Je traject, passies, waarden..."
       },
       "contact": {
         "title": "Contactgegevens",
@@ -214,52 +218,64 @@
       },
       "visibility": {
         "title": "Zichtbaarheid",
-        "description": "Kies wat op uw openbare profiel verschijnt",
-        "portfolio_locked": "Ontgrendel portfolio met Premium-abonnement",
-        "certificates_locked": "Certificaten zijn voorbehouden aan Premium/Onderneming"
+        "description": "Kies wat er op je openbare profiel verschijnt",
+        "portfolio_locked": "Portfolio ontgrendelen met een Premium-abonnement",
+        "certificates_locked": "Certificaten zijn voorbehouden aan Premium/Enterprise-accounts"
       },
       "advanced": {
         "title": "Geavanceerde opties",
         "public_profile": "Openbaar profiel",
         "public_profile_desc": "Zichtbaar zonder inloggen",
         "contact_requests": "Openbare berichten",
-        "contact_requests_desc": "Bezoekers mogen u berichten sturen",
+        "contact_requests_desc": "Sta bezoekers toe om je berichten te sturen",
         "profile_url": "Profiel-URL"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "hide_birth_year": "Geboortejaar verbergen",
+        "hide_birth_year_desc": "Alleen dag/maand tonen",
+        "disable_birthday_icon": "Verjaardagspictogram uitschakelen",
+        "disable_birthday_icon_desc": "🎂 verbergen op verjaardag",
+        "verified_badge": "Verificatiebadge",
+        "verified_badge_desc": "Wordt naast je naam weergegeven",
+        "verified_tooltip": "Geverifieerd profiel",
+        "enterprise_only": "Voorbehouden aan bedrijven"
       }
     }
   },
   "auth": {
+    "signout": "Uitloggen",
     "welcome": {
-      "title": "Welkom!",
-      "message": "Fijn dat u terug bent op LUVIKA. Klaar om te creëren? 🌟"
+      "title": "Welkom terug!",
+      "message": "Fijn om je weer te zien op LUVIKA. Klaar om te creëren? 🌟"
     },
     "complete": {
-      "title": "Vul uw profiel aan",
-      "description": "Enkele gegevens om uw account te personaliseren",
+      "title": "Vul je profiel aan",
+      "description": "Een paar gegevens om je account te personaliseren",
       "full_name": "Volledige naam",
       "full_name_placeholder": "Nestor Kipampe",
       "username": "Gebruikersnaam",
       "username_placeholder": "nestor",
-      "username_hint": "Alleen kleine letters, cijfers, streepjes en underscores (3-20 tekens)",
+      "username_hint": "Alleen kleine letters, cijfers, streepjes en underscores (3–20 tekens)",
       "username_available": "Deze gebruikersnaam is beschikbaar!",
       "username_taken": "Deze gebruikersnaam is al in gebruik",
       "username_checking": "Controleren...",
       "submit": "Account afronden",
       "saving": "Opslaan...",
       "success": "Profiel succesvol aangemaakt!",
-      "redirecting": "Doorsturen naar uw dashboard...",
-      "error_full_name_required": "Voer uw volledige naam in",
-      "error_username_too_short": "Gebruikersnaam moet minstens 3 tekens bevatten",
+      "redirecting": "Doorsturen naar je dashboard...",
+      "error_full_name_required": "Voer je volledige naam in",
+      "error_username_too_short": "Gebruikersnaam moet minimaal 3 tekens bevatten",
       "error_generic": "Er is een fout opgetreden. Probeer het opnieuw.",
       "step_identity": "Identiteit",
       "step_contact": "Contact",
       "step_bio": "Bio",
-      "title_identity": "1. Wie bent u?",
-      "desc_identity": "Volledige naam en gebruikersnaam (URL van uw profiel)",
-      "title_contact": "2. Hoe kunt u worden bereikt?",
+      "title_identity": "1. Wie ben je?",
+      "desc_identity": "Volledige naam en gebruikersnaam (URL van je profiel)",
+      "title_contact": "2. Hoe kun je worden bereikt?",
       "desc_contact": "Telefoon, WhatsApp — standaard privé",
-      "title_bio": "3. Vertel over uzelf",
-      "desc_bio": "Functie, bedrijf, korte bio — personaliseer uw kaart",
+      "title_bio": "3. Vertel ons over jezelf",
+      "desc_bio": "Functie, bedrijf, korte bio — personaliseer je kaart",
       "phone": "Telefoon",
       "whatsapp": "WhatsApp",
       "job_title": "Functie",
@@ -278,26 +294,26 @@
       "full_name": "Volledige naam",
       "full_name_placeholder": "bijv.: Nestor PHAKU",
       "username": "Gebruikersnaam (URL)",
-      "username_hint": "Uw profiel wordt: {url}",
+      "username_hint": "Je profiel wordt bereikbaar via: {url}",
       "email": "E-mail",
       "password": "Wachtwoord",
       "password_hint": "Minimaal 6 tekens",
-      "submit": "Registreren",
+      "submit": "Aanmelden",
       "creating": "Aanmaken...",
-      "success": "✅ Account succesvol aangemaakt! U kunt nu inloggen.",
+      "success": "✅ Account succesvol aangemaakt! Je kunt nu inloggen.",
       "error_generic": "Er is een fout opgetreden. Probeer het opnieuw of neem contact op met ondersteuning.",
-      "error_email": "Ongeldig of reeds gebruikte e-mail.",
+      "error_email": "Ongeldig of al gebruikte e-mail.",
       "error_password": "Wachtwoord te kort (min. 6 tekens).",
       "error_username": "Ongeldige gebruikersnaam (letters, cijfers, _ of -).",
       "already_have_account": "Al lid?",
-      "sign_in": "Log in",
-      "privacy": "Door verder te gaan, gaat u akkoord met onze",
+      "sign_in": "Inloggen",
+      "privacy": "Door verder te gaan, ga je akkoord met onze",
       "terms": "Gebruiksvoorwaarden",
-      "identity_desc": "Begin door ons te vertellen wie u bent.",
-      "email_desc": "We sturen u een bevestigingslink",
+      "identity_desc": "Begin door ons te vertellen wie je bent.",
+      "email_desc": "We sturen je een bevestigingslink",
       "security_desc": "Kies een sterk wachtwoord. 2FA is standaard ingeschakeld.",
-      "code_sent": "✅ Code verzonden! Controleer uw e-mail (ook spam).",
-      "invalid_code": "Code ongeldig of verlopen.",
+      "code_sent": "✅ Code verzonden! Controleer je inbox (ook spam).",
+      "invalid_code": "Ongeldige of verlopen code.",
       "sending": "Verzenden...",
       "send_code": "Code verzenden",
       "verify_code": "Code verifiëren",
@@ -309,16 +325,16 @@
       "password_confirm": "Wachtwoord bevestigen",
       "password_special": "Een speciaal teken",
       "password_match": "Wachtwoorden komen overeen",
-      "2fa_enabled": "🔒 Tweefactorauthenticatie (2FA) is standaard ingeschakeld voor uw veiligheid.",
+      "2fa_enabled": "🔒 Tweefactorauthenticatie (2FA) is standaard ingeschakeld voor je veiligheid.",
       "back": "Terug",
       "next": "Volgende",
       "create_account": "Mijn account aanmaken",
-      "error_name": "Naam moet minstens 2 tekens bevatten.",
+      "error_name": "Naam moet minimaal 2 tekens bevatten.",
       "error_email_format": "Ongeldig e-mailadres.",
-      "username_hint_plain": "Uw profiel: luvika.me/{username}",
-      "email_exists": "📧 U heeft al een account met dit e-mailadres. Log in of gebruik een ander e-mailadres.",
-      "check_email": "✅ Controleer uw e-mail — een bevestigingslink is verzonden.",
-      "choose_plan": "Kies uw abonnement",
+      "username_hint_plain": "Je profiel: luvika.me/{username}",
+      "email_exists": "📧 Je hebt al een account met dit e-mailadres. Log in of gebruik een ander e-mailadres.",
+      "check_email": "✅ Controleer je e-mail — een bevestigingslink is verzonden.",
+      "choose_plan": "Kies je abonnement",
       "plan_desc": "Begin gratis, upgrade naar Premium voor meer functies"
     },
     "reset": {
@@ -327,10 +343,10 @@
       "new_password": "Nieuw wachtwoord",
       "submit": "Bijwerken",
       "verifying": "Link verifiëren...",
-      "invalid_link": "Link ongeldig of verlopen.",
+      "invalid_link": "Ongeldige of verlopen link.",
       "error_update": "Bijwerken mislukt.",
       "success_title": "Wachtwoord bijgewerkt!",
-      "success_message": "Uw wachtwoord is succesvol gewijzigd."
+      "success_message": "Je wachtwoord is succesvol gewijzigd."
     },
     "signin": {
       "title": "Inloggen",
@@ -340,29 +356,29 @@
       "submit": "Inloggen",
       "connecting": "Verbinden...",
       "error_generic": "Onbekende fout. Probeer het later opnieuw.",
-      "error_credentials": "E-mail of wachtwoord onjuist.",
+      "error_credentials": "Onjuiste e-mail of wachtwoord.",
       "error_email": "Ongeldig e-mailadres.",
-      "error_password": "Wachtwoord vereist.",
+      "error_password": "Wachtwoord is vereist.",
       "no_account": "Nog geen account?",
       "sign_up": "Account aanmaken",
-      "subtitle": "Log in op uw LUVIKA-account.",
-      "profile_missing": "Uw profiel is onvolledig. Neem contact op met ondersteuning."
+      "subtitle": "Log in op je LUVIKA-account.",
+      "profile_missing": "Je profiel is onvolledig. Neem contact op met ondersteuning."
     },
     "forgot_password": {
       "title": "Wachtwoord vergeten",
-      "subtitle": "Voer uw e-mail in om een herstel-link te ontvangen.",
-      "otp_subtitle": "Een code is per e-mail verzonden.",
+      "subtitle": "Voer je e-mailadres in om een herstel-link te ontvangen.",
+      "otp_subtitle": "Er is een code naar je e-mail gestuurd.",
       "reset_subtitle": "Kies een nieuw veilig wachtwoord.",
       "email": "E-mail",
       "otp": "Verificatiecode",
       "new_password": "Nieuw wachtwoord",
-      "confirm_password": "Bevestig wachtwoord",
+      "confirm_password": "Wachtwoord bevestigen",
       "submit": "Link verzenden",
       "verify": "Code verifiëren",
       "reset": "Herstellen",
       "sending": "Verzenden...",
-      "email_sent": "✅ Link verzonden! Controleer uw e-mail.",
-      "back_to_login": "Terug naar login",
+      "email_sent": "✅ Link verzonden! Controleer je inbox.",
+      "back_to_login": "Terug naar inloggen",
       "error": "E-mailadres niet gevonden.",
       "error_generic": "Onbekende fout.",
       "success": "✅ Wachtwoord bijgewerkt!",
@@ -375,7 +391,7 @@
     }
   },
   "admin": {
-    "title": "💼 Beheerdersomgeving",
+    "title": "💼 Beheerdersruimte",
     "subtitle": "Beheer gebruikers, abonnementen en NFC-kaarten",
     "stats": {
       "total_users": "Gebruikers",
@@ -403,11 +419,11 @@
       "edit": "Bewerken",
       "change_plan": "Abonnement wijzigen",
       "select_plan": "Kies een abonnement",
-      "expires_help": "Laat leeg voor levenslang abonnement",
+      "expires_help": "Laat leeg voor een levenslang abonnement",
       "updated_success": "Abonnement succesvol bijgewerkt",
       "update_error": "Bijwerken mislukt",
-      "upgrade_to_premium": "Naar Premium",
-      "request_enterprise": "Converteren naar Ondernemingsaccount"
+      "upgrade_to_premium": "Upgraden naar Premium",
+      "request_enterprise": "Converteren naar Enterprise-account"
     },
     "nfc": {
       "status": "Status",
@@ -427,7 +443,7 @@
       "actions": "Acties",
       "activate": "Activeren",
       "block": "Blokkeren",
-      "unassign": "Loskoppelen"
+      "unassign": "Toewijzing ongedaan maken"
     },
     "users": {
       "name": "Naam",
@@ -450,7 +466,7 @@
     "plans": {
       "basic": "Basis",
       "premium": "Premium",
-      "entreprise": "Onderneming",
+      "entreprise": "Enterprise",
       "undefined": "Niet gedefinieerd"
     },
     "actions": {
@@ -463,18 +479,19 @@
       },
       "email_success": "✅ E-mail succesvol verzonden!",
       "email_error": "❌ Fout bij verzenden.",
-      "error_generic": "Er is een fout opgetreden. Probeer het opnieuw."
+      "error_generic": "Er is een fout opgetreden. Probeer het opnieuw.",
+      "sending": "Bezig met verzenden..."
     },
     "modules": {
       "subscriptions": {
-        "no_active": "Geen actieve abonnementen.",
+        "no_active": "Nog geen actieve abonnementen.",
         "title": "Abonnementsbeheer",
         "description": "Activeer of wijzig het abonnement van een gebruiker.",
         "action": "Abonnementen beheren"
       },
       "orders": {
         "title": "NFC-bestellingen",
-        "description": "Beheer NFC-kaartbestellingen: validatie, verzending, tracking.",
+        "description": "Beheer fysieke kaartbestellingen: validatie, verzending, tracking.",
         "action": "Bestellingen bekijken"
       },
       "nfc": {
@@ -484,19 +501,19 @@
       },
       "users": {
         "title": "Gebruikers",
-        "description": "Modereer profielen en verliesmeldingen.",
+        "description": "Beheer profielen en verliesmeldingen.",
         "action": "Gebruikers beheren"
       },
       "analytics": {
         "title": "Algemene statistieken",
         "description": "Analyseer trends en prestaties.",
-        "action": "Analytics bekijken"
+        "action": "Analyses bekijken"
       }
     },
     "orders": {
       "title": "Kaartbestellingen",
-      "subtitle": "Volg en valideer aanvragen voor fysieke kaarten.",
-      "no_orders": "Geen bestellingen."
+      "subtitle": "Volg en valideer fysieke kaartaanvragen.",
+      "no_orders": "Nog geen bestellingen."
     }
   },
   "navbar": {
@@ -507,71 +524,71 @@
     "contact": "Contact",
     "download": "Downloaden",
     "sign_in": "Inloggen",
-    "sign_up": "Registreren",
+    "sign_up": "Aanmelden",
     "language": "Taal",
     "sign_out": "Uitloggen",
     "sign_out_confirm_title": "Uitloggen",
-    "sign_out_confirm_message": "Weet u zeker dat u wilt uitloggen?",
+    "sign_out_confirm_message": "Weet je zeker dat je wilt uitloggen?",
     "sign_out_confirm_yes": "Ja, uitloggen",
     "sign_out_confirm_no": "Annuleren",
     "farewell_title": "Tot ziens!",
-    "farewell_message": "Bedankt voor het gebruik van LUVIKA. We zullen u missen… 😢",
-    "profile_completion": "Profiel voltooiing",
+    "farewell_message": "Bedankt voor het gebruik van LUVIKA. We zullen je missen… 😢",
+    "profile_completion": "Profielvoltooiing",
     "edit_profile": "Profiel bewerken",
     "completed": "voltooid",
-    "view_public_profile": "Mijn openbaar profiel bekijken"
+    "view_public_profile": "Mijn openbare profiel bekijken"
   },
   "about": {
     "title": "Over",
-    "subtitle": "LUVIKA is ontstaan uit een eenvoudige visie: netwerken op professioneel niveau opnieuw betekenis geven, met elegantie, veiligheid en Afrikaanse trots.",
+    "subtitle": "LUVIKA is ontstaan uit een eenvoudige visie: betekenis terugbrengen in professioneel netwerken, met elegantie, veiligheid en Afrikaanse trots.",
     "mission": {
       "title": "Onze missie",
-      "content": "Het fysieke visitekaartje transformeren naar een slimme, beheersbare, veilige en toegankelijke digitale identiteit — vooral voor ondernemers, ontwikkelaars en leiders in Afrika."
+      "content": "Transformeer het fysieke visitekaartje in een slimme, beheersbare, veilige en toegankelijke digitale identiteit — vooral voor Afrikaanse ondernemers, ontwikkelaars en leiders."
     },
     "values": {
       "security": "Veiligheid",
-      "security_desc": "Uw gegevens blijven onder uw controle. Niets wordt gedeeld zonder uw toestemming.",
+      "security_desc": "Je gegevens blijven onder jouw controle. Niets wordt gedeeld zonder jouw toestemming.",
       "accessibility": "Toegankelijkheid",
-      "accessibility_desc": "Eenvoudige, meertalige interface (Frans, Lingala, Engels), ontworpen voor iedereen.",
+      "accessibility_desc": "Een eenvoudige, meertalige interface (Frans, Lingala, Engels) ontworpen voor iedereen.",
       "african_pride": "Afrikaanse trots",
-      "african_pride_desc": "Een oplossing bedacht in Kinshasa, voor Afrika en de wereld."
+      "african_pride_desc": "Een oplossing ontworpen in Kinshasa, voor Afrika en de wereld."
     },
     "team": {
       "title": "Ons team",
       "content": "Een gepassioneerd team van ontwikkelaars, designers en ondernemers gevestigd in Kinshasa, DRC.",
-      "cta": "Sluit je bij ons aan"
+      "cta": "Sluit je aan bij ons"
     }
   },
   "contact": {
     "title": "Contact",
-    "subtitle": "Een vraag, idee of samenwerking? We horen graag van u.",
+    "subtitle": "Een vraag, idee of samenwerking? We houden van uitwisseling.",
     "address": "Adres",
     "email": "E-mail",
     "phone": "Telefoon",
     "form_title": "Stuur ons een bericht",
     "name": "Naam",
-    "name_placeholder": "Uw naam",
+    "name_placeholder": "Jouw naam",
     "message": "Bericht",
     "message_placeholder": "Hallo, ik wil graag...",
     "send": "Verzenden"
   },
   "download": {
     "title": "Downloaden",
-    "subtitle": "LUVIKA is gratis, open voor iedereen en werkt zonder installatie.",
+    "subtitle": "LUVIKA is gratis, open voor iedereen en vereist geen installatie.",
     "step1": {
-      "title": "1. Maak uw profiel aan",
-      "desc": "In 2 minuten vult u uw gegevens in en personaliseert u uw identiteit."
+      "title": "1. Maak je profiel aan",
+      "desc": "In 2 minuten vul je je gegevens in en personaliseer je identiteit."
     },
     "step2": {
-      "title": "2. Genereer uw QR-code",
+      "title": "2. Genereer je QR-code",
       "desc": "Of koppel een NFC-kaart (Premium-optie)."
     },
     "step3": {
       "title": "3. Deel!",
-      "desc": "Scan → contact opgeslagen → verbinding gemaakt."
+      "desc": "Scan → contact opslaan → verbinding gemaakt."
     },
-    "cta_title": "Klaar om te onthullen wie u bent?",
-    "cta_desc": "Begin gratis — geen creditcard nodig.",
+    "cta_title": "Klaar om te laten zien wie je bent?",
+    "cta_desc": "Begin gratis — geen creditcard vereist.",
     "download_now": "Nu beginnen"
   },
   "footer": {
@@ -587,11 +604,11 @@
     "privacy": "Privacy",
     "terms": "Gebruiksvoorwaarden",
     "cookies": "Cookiebeheer",
-    "tagline": "LUVIKA — Onthul wie je bent. Een slimme, Afrikaanse en veilige digitale identiteit.",
+    "tagline": "LUVIKA — Laat zien wie je bent. Een slimme, Afrikaanse en veilige digitale identiteit.",
     "copyright": "Alle rechten voorbehouden. Ontworpen in Kinshasa met ❤️."
   },
   "pricing": {
-    "title": "Abonnementen & Prijzen",
+    "title": "Abonnementen & prijzen",
     "billing": {
       "monthly": "Maandelijks",
       "yearly": "Jaarlijks",
@@ -609,7 +626,7 @@
       "freemium": {
         "title": "Freemium",
         "desc": "Om te beginnen",
-        "popular": "Het populairst",
+        "Popular": "Meest populair",
         "features": {
           "nfc": "1 NFC-kaart",
           "users": "1 gebruiker",
@@ -623,27 +640,27 @@
       "premium": {
         "title": "Premium",
         "desc": "Voor ambitieuze professionals",
-        "popular": "Het populairst",
+        "Popular": "Meest populair",
         "features": {
           "nfc": "Onbeperkte NFC-kaarten",
           "users": "Tot 5 gebruikers",
           "events": "Basis evenementen",
-          "presence": "Uitgelicht",
-          "stats": "Geavanceerde statistieken",
+          "presence": "Uitgelichte aanwezigheid",
+          "stats": "Geavanceerde analyses",
           "roles": "Teamrollen",
           "dashboard": "Geavanceerd dashboard"
         }
       },
       "entreprise": {
-        "title": "Onderneming",
+        "title": "Enterprise",
         "desc": "Voor teams en bedrijven",
-        "popular": "",
+        "Popular": "",
         "features": {
           "nfc": "Onbeperkte + aangepaste NFC-kaarten",
-          "users": "Onbeperkte gebruikers",
+          "users": "Onbeperkt aantal gebruikers",
           "events": "Geavanceerde evenementen",
           "presence": "Prioritaire zichtbaarheid",
-          "stats": "Consolideerde analytics",
+          "stats": "Gecombineerde analyses",
           "roles": "Geavanceerde rollen + audit",
           "dashboard": "Globaal dashboard + API"
         }
@@ -652,9 +669,9 @@
   },
   "validate_button": "Valideren",
   "cancel_button": "Annuleren",
-  "confirm_cancel": "Weet u zeker dat u deze bestelling wilt annuleren? Deze actie is onomkeerbaar.",
+  "confirm_cancel": "Weet je zeker dat je deze bestelling wilt annuleren? Deze actie is onomkeerbaar.",
   "action_success": {
-    "validate": "✅ Bestelling gevalideerd!",
+    "validate": "✅ Bestelling bevestigd!",
     "cancel": "✅ Bestelling geannuleerd."
   },
   "action_error": {
@@ -666,18 +683,18 @@
     "saving": "Opslaan..."
   },
   "enterprise": {
-    "title": "🏢 Ondernemingsomgeving",
-    "subtitle": "Beheer uw winkel, medewerkers, kaarten en aanwezigheid — in real-time.",
+    "title": "🏢 Enterprise-ruimte",
+    "subtitle": "Beheer je winkel, medewerkers, kaarten en aanwezigheid — in real-time.",
     "modules": {
       "dashboard": {
         "title": "Dashboard",
-        "desc": "Realtime overzicht van uw activiteiten"
+        "desc": "Realtime overzicht van je activiteiten"
       },
       "product": {
         "add_to_cart": "Toevoegen aan winkelwagen",
         "added_to_cart": "✅ Toegevoegd aan winkelwagen!",
-        "cart_error": "❌ Kan niet aan winkelwagen toevoegen",
-        "favorite_error": "❌ Favorietfout",
+        "cart_error": "❌ Kon niet aan winkelwagen worden toegevoegd",
+        "favorite_error": "❌ Favoriet-fout",
         "add_to_favorites": "Toevoegen aan favorieten",
         "remove_from_favorites": "Verwijderen uit favorieten",
         "quantity": "Hoeveelheid",
@@ -685,14 +702,14 @@
         "whatsapp_order": "Bestellen via WhatsApp",
         "seller_not_found": "Verkoper niet gevonden",
         "no_whatsapp": "Deze verkoper is niet bereikbaar via WhatsApp",
-        "quantity_exceeds_stock": "De gevraagde hoeveelheid overschrijdt de voorraad",
+        "quantity_exceeds_stock": "Aangevraagde hoeveelheid overschrijdt beschikbare voorraad",
         "in_stock": "{count} op voorraad",
         "add_favorite": "Toevoegen aan favorieten",
         "remove_favorite": "Verwijderen uit favorieten",
         "no_description": "Geen beschrijving"
       },
       "shop": {
-        "title": "Winkel & Producten",
+        "title": "Winkel & producten",
         "desc": "Openbare catalogus, voorraad, promoties",
         "edit_title": "Product bewerken",
         "product_info": "Productinformatie",
@@ -701,13 +718,13 @@
         "name": "Productnaam",
         "name_placeholder": "bijv.: LUVIKA T-shirt",
         "slug": "Aangepaste URL",
-        "slug_placeholder": "tshirt-luvika",
+        "slug_placeholder": "luvika-tshirt",
         "description": "Beschrijving",
-        "description_placeholder": "Beschrijf uw product...",
+        "description_placeholder": "Beschrijf je product...",
         "price": "Prijs",
         "promo_price": "Promotieprijs",
         "stock": "Voorraad",
-        "sku": "Referentie (SKU)",
+        "sku": "Artikelnummer (SKU)",
         "sku_placeholder": "LUVIKA-TSHIRT-001",
         "sku_help": "Unieke code voor voorraadbeheer",
         "optional": "Optioneel",
@@ -717,22 +734,22 @@
         "delete": "Verwijderen",
         "save_success": "✅ Product bijgewerkt",
         "save_error": "❌ Opslaan mislukt",
-        "load_error": "❌ Kan product niet laden",
+        "load_error": "❌ Product laden mislukt",
         "upload_error": "❌ Upload mislukt",
         "invalid_image": "⚠️ Ongeldig formaat (alleen JPG/PNG)",
-        "image_too_large": "⚠️ Afbeelding te groot (max 5MB)",
-        "missing_fields": "⚠️ Vul alle verplichte velden in",
-        "delete_confirm": "Weet u zeker dat u dit product wilt verwijderen? Deze actie is onomkeerbaar.",
+        "image_too_large": "⚠️ Afbeelding te groot (max. 5MB)",
+        "missing_fields": "⚠️ Vul alle vereiste velden in",
+        "delete_confirm": "Weet je zeker dat je dit product wilt verwijderen? Deze actie is onomkeerbaar.",
         "delete_success": "✅ Product verwijderd",
         "delete_error": "❌ Verwijderen mislukt",
         "new_product": "Nieuw product",
         "images": "Productafbeeldingen",
-        "image_help_multi": "Tot 5 afbeeldingen (JPG/PNG, max 5MB)",
+        "image_help_multi": "Tot 5 afbeeldingen (JPG/PNG, max. 5MB)",
         "max_5_images": "⚠️ Maximaal 5 afbeeldingen",
         "create_product": "Product aanmaken",
         "create_success": "✅ Product aangemaakt",
         "create_error": "❌ Aanmaken mislukt",
-        "uploading": "Uploaden...",
+        "uploading": "Bezig met uploaden...",
         "no_products": "Geen producten geregistreerd",
         "add_product": "Product toevoegen",
         "edit_product": "Product bewerken",
@@ -747,7 +764,7 @@
         "desc": "Verkoop- en verzendingstracking",
         "total_revenue": "Totale omzet",
         "pending_orders": "Lopende bestellingen",
-        "completed_orders": "Afgeleverde bestellingen",
+        "completed_orders": "Geleverde bestellingen",
         "recent_orders": "Recente bestellingen"
       },
       "employees": {
@@ -757,11 +774,11 @@
         "full_name": "Volledige naam",
         "full_name_placeholder": "bijv.: Nestor P.",
         "email": "E-mail",
-        "email_placeholder": "phaku@bedrijf.com",
+        "email_placeholder": "phaku@entreprise.com",
         "phone": "Telefoon",
         "phone_placeholder": "+243 890 177 601",
         "position": "Functie",
-        "position_placeholder": "Ontwikkelaar, HR, etc.",
+        "position_placeholder": "Developer, HR, etc.",
         "role": "Rol",
         "select_role": "Kies een rol",
         "roles": {
@@ -773,29 +790,29 @@
         "confirm_add": "Medewerker toevoegen",
         "adding": "Toevoegen...",
         "add_success": "✅ Medewerker succesvol toegevoegd!",
-        "add_error": "❌ Toevoegen mislukt. Probeer opnieuw."
+        "add_error": "❌ Toevoegen mislukt. Probeer het opnieuw."
       },
       "cards": {
-        "title": "Professionele kaarten",
-        "desc": "Onbeperkte NFC-kaarten voor het hele team"
+        "title": "Pro-kaarten",
+        "desc": "Onbeperkte NFC-kaarten voor je hele team"
       },
       "attendance": {
         "title": "Aanwezigheid",
-        "desc": "Realtime aanwezigheidsregistratie via QR-code",
-        "recent_logs": "Recente aanwezigheden"
+        "desc": "Realtime QR-code aanwezigheidsregistratie",
+        "recent_logs": "Recente aanwezigheidslogs"
       },
       "communication": {
         "title": "Communicatie",
         "desc": "Interne berichten en aankondigingen",
         "broadcast_title": "Algemeen bericht",
         "broadcast_desc": "Stuur een bericht naar alle medewerkers",
-        "message_placeholder": "Typ uw bericht hier...",
+        "message_placeholder": "Schrijf je bericht hier...",
         "send_broadcast": "Verzenden",
-        "sending": "Verzenden..."
+        "sending": "Bezig met verzenden..."
       },
       "settings": {
         "title": "Instellingen",
-        "desc": "Configuratie van uw bedrijf",
+        "desc": "Configureer je bedrijf",
         "company_info": "Bedrijfsinformatie",
         "name": "Naam",
         "email": "E-mail",
@@ -814,8 +831,9 @@
       }
     },
     "value_prop": {
-      "title": "Uw bedrijf, verenigd en levend",
-      "desc": "Luvika is geen profiel — het is uw dagelijkse zakelijke tool, ontworpen voor Afrika en wereldwijd schaalbaar."
+      "title": "Jouw bedrijf, verenigd en levend",
+      "desc": "Luvika is niet zomaar een profiel — het is jouw dagelijkse zakelijke tool, ontworpen voor Afrika en wereldwijd schaalbaar."
     }
-  }
+  },
+  "enterprise_only": "Enterprise"
 }

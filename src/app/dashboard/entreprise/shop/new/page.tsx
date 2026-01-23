@@ -3,12 +3,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/src/lib/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '../../../../../../src/lib/supabase/client';
+import { Button } from '../../../../../../components/ui/button';
+import { Input } from '../../../../../../components/ui/input';
+import { Textarea } from '../../../../../../components/ui/textarea';
+import { Label } from '../../../../../../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../../components/ui/card';
 import { Plus, X, Image as ImageIcon } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';

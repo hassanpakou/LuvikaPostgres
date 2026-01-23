@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import { Download, QrCode, Scan } from 'lucide-react';
 import NFCIcon from '../../components/icons/NFCIcon';
-import ProfileCard3D from '@/components/cards/ProfileCard3D';
+import ProfileCard3D from '../../../components/cards/ProfileCard3D';
 
 export default function DownloadContent({
   title,

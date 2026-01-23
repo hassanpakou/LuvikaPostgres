@@ -1,11 +1,11 @@
-// src/app/(admin)/layout.tsx
+// src/app/admin/admin/layout.tsx
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Toaster } from 'sonner';
-import { AdminHeader } from '@/src/components/admin/AdminHeader';
-import { AdminLayoutProvider } from '@/src/contexts/AdminLayoutContext';
-import { NetworkWatcher } from '@/src/components/system/NetworkWatcher';
+import { AdminHeader } from '../../components/admin/AdminHeader';
+import { AdminLayoutProvider } from '../../contexts/AdminLayoutContext';
+import { NetworkWatcher } from '../../components/system/NetworkWatcher';
 
 export default async function AdminLayout({
   children,

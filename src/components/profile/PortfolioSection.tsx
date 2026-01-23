@@ -1,5 +1,5 @@
 // src/components/profile/PortfolioSection.tsx
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { ExternalLink, Github, Eye } from 'lucide-react';
 import Image from 'next/image';
 

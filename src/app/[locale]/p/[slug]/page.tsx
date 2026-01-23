@@ -2,12 +2,12 @@
 import { notFound } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '../../../../../components/ui/button';
+import { Card, CardContent } from '../../../../../components/ui/card';
 import { Heart, ShoppingCart, MapPin, Store } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../../../components/ui/badge';
 import Link from 'next/link';
-import ProductActions from '@/src/components/product/ProductActions';
+import ProductActions from '../../../../components/product/ProductActions';
 
 export default async function ProductPublicPage({
   params,

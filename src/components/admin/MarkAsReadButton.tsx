@@ -1,7 +1,7 @@
 // src/components/admin/MarkAsReadButton.tsx
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 import { CheckCircle } from 'lucide-react';
 
 export function MarkAsReadButton({ requestId }: { requestId: string }) {

@@ -1,7 +1,7 @@
 // src/app/[locale]/public/download/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import DownloadContent from '@/src/components/download/DownloadContent';
+import DownloadContent from '../../../../components/download/DownloadContent';
 
 export default async function DownloadPage({
   params,

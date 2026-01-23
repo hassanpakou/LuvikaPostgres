@@ -3,9 +3,9 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Package, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge'; // ✅ IMPORT AJOUTÉ
+import { Button } from '../../../../components/ui/button';
+import { Card } from '../../../../components/ui/card';
+import { Badge } from '../../../../components/ui/badge'; // ✅ IMPORT AJOUTÉ
 
 export default function OrdersModal({
   isOpen,

@@ -2,11 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { createClient } from '../../../../../src/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../../components/ui/card';
 import { Megaphone, MessageSquare, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '../../../../../components/ui/button';
+import { Textarea } from '../../../../../components/ui/textarea';
 import { useTranslations } from 'next-intl';
 
 export default function CommunicationPage() {

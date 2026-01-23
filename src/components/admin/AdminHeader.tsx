@@ -3,14 +3,14 @@
 
 import Link from 'next/link';
 import { LogOut, Settings, Globe, User, Eye } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { createClient } from '@/src/lib/supabase/client';
+} from '../../../components/ui/dropdown-menu';
+import { createClient } from '../../../src/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState } from 'react';

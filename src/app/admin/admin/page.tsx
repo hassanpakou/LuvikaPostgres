@@ -5,10 +5,10 @@ import { useState, useEffect } from 'react';
 import { 
   Building, Users, Package, TrendingUp, BarChart3, Wallet 
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { createClient } from '@/src/lib/supabase/client';
-import AdminActions from '@/components/admin/AdminActions';
-import { createNotifier } from '@/src/lib/notify';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { createClient } from '../../../../src/lib/supabase/client';
+import AdminActions from '../../../../components/admin/AdminActions';
+import { createNotifier } from '../../../../src/lib/notify';
 import error from 'next/error';
 import { useTranslations } from 'next-intl';
 

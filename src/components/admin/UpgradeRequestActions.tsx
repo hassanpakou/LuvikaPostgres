@@ -11,9 +11,9 @@ import {
   Building2,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
+import { Textarea } from '../../../components/ui/textarea';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -22,8 +22,8 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogCancel,
-} from '@/components/ui/alert-dialog';
-import { useToast } from '@/components/ui/use-toast';
+} from '../../../components/ui/alert-dialog';
+import { useToast } from '../../../components/ui/use-toast';
 
 // 🔹 Props rendues partiellement optionnelles
 type Props = {

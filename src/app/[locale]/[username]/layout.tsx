@@ -1,6 +1,6 @@
-// src/app/(main)/[locale]/[username]/layout.tsx
+// src/app/[locale]/[username]/layout.tsx
 import { Toaster } from 'sonner';
-import { NetworkWatcher } from '@/src/components/system/NetworkWatcher';
+import { NetworkWatcher } from '../../../components/system/NetworkWatcher';
 
 export default function ProfileLayout({
   children,

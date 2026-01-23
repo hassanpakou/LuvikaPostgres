@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import {
   Menu,
   X,
@@ -19,8 +19,8 @@ import {
   ShieldAlert,
   Snowflake,
 } from 'lucide-react';
-import { createClient } from '@/src/lib/supabase/client';
-import { Badge } from '@/components/ui/badge';
+import { createClient } from '../../src/lib/supabase/client';
+import { Badge } from '../../components/ui/badge';
 
 type Locale = 'ar' | 'en' | 'es' | 'fr' | 'kg' | 'ln' | 'nl' | 'pt' | 'sw';
 

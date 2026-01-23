@@ -2,10 +2,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '../../../../../src/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import { IdCard } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../../../components/ui/badge';
 import { useTranslations } from 'next-intl';
 
 export default function CardsPage() {

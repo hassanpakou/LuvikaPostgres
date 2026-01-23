@@ -2,10 +2,10 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../../../components/ui/button';
 import Link from 'next/link';
 // 🔹 Importe le client component
-import { CardManager } from '@/components/nfc/CardManager';
+import { CardManager } from '../../../../../components/nfc/CardManager';
 
 export default async function AddNFCPage() {
   const cookieStore = await cookies();

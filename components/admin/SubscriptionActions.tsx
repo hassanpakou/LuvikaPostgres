@@ -1,7 +1,7 @@
 // src/components/admin/SubscriptionActions.tsx
 'use client';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import { CheckCircle, XCircle } from 'lucide-react';
 
 export function SubscriptionActions({ id }: { id: string }) {

@@ -2,7 +2,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { generateQRBase64 } from '@/lib/qr';
+import { generateQRBase64 } from '../../../../lib/qr';
 
 const shortenId = (id: string) => id.substring(0, 6).replace(/[+/]/g, 'x').toLowerCase();
 

@@ -2,11 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '@/src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
+import { createClient } from '../../../../../src/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
+import { Input } from '../../../../../components/ui/input';
+import { Label } from '../../../../../components/ui/label';
+import { Button } from '../../../../../components/ui/button';
 import { Settings, MapPin, Globe, LinkIcon, Building2, Mail, Phone, FileText } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';

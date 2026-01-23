@@ -10,8 +10,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '../../components/ui/alert-dialog';
+import { Button } from '../../components/ui/button';
 import { ShieldX } from 'lucide-react';
 
 export function ConfirmBanModal({

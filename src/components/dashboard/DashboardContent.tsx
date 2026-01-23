@@ -11,22 +11,22 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
-import SimulateNFCTap from '@/components/nfc/SimulateNFCTap';
-import { generateQRBase64 } from '@/lib/qr';
-import SearchModal from '@/src/components/dashboard/SearchModal';
-import FollowersModal from '@/src/components/dashboard/FollowersModal';
-import ContactRequestsSection from '@/src/components/dashboard/ContactRequestsSection';
-import AnalyticsTrends from '@/src/components/dashboard/AnalyticsTrends';
-import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
-import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
-import PortfolioModal from '@/src/components/dashboard/PortfolioModal';
-import CertificatesModal from '@/src/components/dashboard/CertificatesModal';
+import { Button } from '../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
+import { Badge } from '../../../components/ui/badge';
+import { Textarea } from '../../../components/ui/textarea';
+import SimulateNFCTap from '../../../components/nfc/SimulateNFCTap';
+import { generateQRBase64 } from '../../../lib/qr';
+import SearchModal from '../../../src/components/dashboard/SearchModal';
+import FollowersModal from '../../../src/components/dashboard/FollowersModal';
+import ContactRequestsSection from '../../../src/components/dashboard/ContactRequestsSection';
+import AnalyticsTrends from '../../../src/components/dashboard/AnalyticsTrends';
+import EventAttendeesSection from '../../../src/components/dashboard/EventAttendeesSection';
+import DashboardQuickMenu from '../../../src/components/dashboard/DashboardQuickMenu';
+import PortfolioModal from '../../../src/components/dashboard/PortfolioModal';
+import CertificatesModal from '../../../src/components/dashboard/CertificatesModal';
 import EventFormModal from './EventFormModal';
-import { createClient } from '@/src/lib/supabase/client';
+import { createClient } from '../../../src/lib/supabase/client';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);

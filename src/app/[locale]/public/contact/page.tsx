@@ -1,7 +1,7 @@
 // src/app/[locale]/public/contact/page.tsx
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import ContactContent from '@/src/components/contact/ContactContent';
+import ContactContent from '../../../../components/contact/ContactContent';
 
 export default async function ContactPage({
   params,

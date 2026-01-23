@@ -3,9 +3,9 @@
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import CheckInClient from '@/src/components/events/CheckInClient'; // ✅ chemin court
+import CheckInClient from '../../../components/events/CheckInClient'; // ✅ chemin court
 import { X, Lock, Clock } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card } from '../../../../components/ui/card';
 
 export default async function EventCheckInPage({ 
   params 

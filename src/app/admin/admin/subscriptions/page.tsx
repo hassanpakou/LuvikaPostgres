@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '../../../../../src/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import {
   ArrowLeft,
   CreditCard,
@@ -14,7 +14,7 @@ import {
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ToggleGroup, ToggleGroupItem } from '../../../../../components/ui/toggle-group';
 
 type Subscription = {
   id: string;

@@ -2,7 +2,7 @@
 'use client';
 
 import { useTranslations } from "next-intl";
-import { useNetworkStatus } from "@/src/hooks/useNetworkStatus";
+import { useNetworkStatus } from "../../../src/hooks/useNetworkStatus";
 import { toast } from 'sonner';
 import { useEffect, useRef } from "react";
 

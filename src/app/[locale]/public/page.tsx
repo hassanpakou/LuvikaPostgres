@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { HomePageContent } from '@/src/components/home/HomePageContent';
+import { HomePageContent } from '../../../components/home/HomePageContent';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -10,9 +10,8 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   // 🔹 Validation locale
   const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
   if (!supported.includes(locale as any)) {
-    redirect('/'); // ou notFound()
-  }
-
+  redirect('/fr');
+}
   // 🔹 Auth check
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -30,7 +29,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       .single();
 
     const role = profile?.role || user.user_metadata?.role || 'user';
-    redirect(role === 'admin' ? '/admin' : '/dashboard');
+    redirect(role === 'admin' ? '/admin' : '/${locale}/dashboard');
   }
 
   return <HomePageContent />;

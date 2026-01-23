@@ -3,12 +3,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { createClient } from '@/src/lib/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '../../../../../../../src/lib/supabase/client';
+import { Button } from '../../../../../../../components/ui/button';
+import { Input } from '../../../../../../../components/ui/input';
+import { Textarea } from '../../../../../../../components/ui/textarea';
+import { Label } from '../../../../../../../components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../../../components/ui/card';
 import { useTranslations } from 'next-intl';
 import { 
   Save, X, Image as ImageIcon, Tag, Package, DollarSign, RotateCcw 

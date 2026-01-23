@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
-import { createClientForPage } from '@/src/lib/supabase/server';
-import EventAttendeesSection from '@/src/components/dashboard/EventAttendeesSection';
+import { createClientForPage } from '../../../../src/lib/supabase/server';
+import EventAttendeesSection from '../../../../src/components/dashboard/EventAttendeesSection';
 
 export default async function EventsPage() {
   const supabase = await createClientForPage();

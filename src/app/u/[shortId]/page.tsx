@@ -1,6 +1,6 @@
 // src/app/u/[shortId]/page.tsx
 import { redirect } from 'next/navigation';
-import { createClientForPage } from '@/src/lib/supabase/server'; // ✅ Corrigé
+import { createClientForPage } from '../../../../src/lib/supabase/server'; // ✅ Corrigé
 
 export default async function ShortRedirect({
   params,

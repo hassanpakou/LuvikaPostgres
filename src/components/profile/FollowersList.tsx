@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '../../../components/ui/card';
+import { Button } from '../../../components/ui/button';
 import { User, Users } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../components/ui/badge';
 
 type Following = {
   followed_id: string;

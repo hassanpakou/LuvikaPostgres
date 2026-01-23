@@ -4,7 +4,7 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import ProfileCard3D from '@/components/cards/ProfileCard3D';
+import ProfileCard3D from '../../../components/cards/ProfileCard3D';
 import { ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3, Layers, QrCode } from 'lucide-react';
 
 // 🔑 Fonction déterministe pour le pattern QR

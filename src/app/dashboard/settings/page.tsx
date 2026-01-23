@@ -13,16 +13,16 @@ import {
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { createClient } from '@/src/lib/supabase/client';
-import { supabase } from '@/lib/supabase';
+import { Button } from '../../../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
+import { Label } from '../../../../components/ui/label';
+import { Input } from '../../../../components/ui/input';
+import { Textarea } from '../../../../components/ui/textarea';
+import { Switch } from '../../../../components/ui/switch';
+import { Badge } from '../../../../components/ui/badge';
+import { Progress } from '../../../../components/ui/progress';
+import { createClient } from '../../../../src/lib/supabase/client';
+import { supabase } from '../../../../lib/supabase';
 
 // 🔹 Types (mis à jour — ton version finale)
 type Profile = {

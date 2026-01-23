@@ -1,5 +1,5 @@
 // src/components/profile/CertificatesSection.tsx
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Award, ExternalLink } from 'lucide-react';
 
 type Certificate = {

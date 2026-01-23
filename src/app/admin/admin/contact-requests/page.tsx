@@ -4,11 +4,11 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import { ArrowLeft, Mail, Phone, MessageSquare, Eye, CheckCircle } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '../../../../../components/ui/badge';
 // 🔹 Importe le client component
-import { MarkAsReadButton } from '@/src/components/admin/MarkAsReadButton';
+import { MarkAsReadButton } from '../../../../../src/components/admin/MarkAsReadButton';
 
 type ContactRequest = {
   id: string;

@@ -4,14 +4,14 @@
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { 
   Users, CreditCard, Scan, Package, Shield, BarChart3, 
   Send, Eye, MessageCircle, QrCode, AlertTriangle, FileText 
 } from 'lucide-react';
-import UserSelector from '@/src/app/admin/UserSelector';
-import { createClient } from '@/src/lib/supabase/client';
+import UserSelector from '../../src/app/admin/UserSelector';
+import { createClient } from '../../src/lib/supabase/client';
 
 type Stats = {
   total_users: number;

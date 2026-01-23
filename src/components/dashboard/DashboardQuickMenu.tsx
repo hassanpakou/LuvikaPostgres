@@ -7,7 +7,7 @@ import {
   Eye, Bell, QrCode, Contact, AlertTriangle,
   MessageSquare, User, Search, Package, Calendar, ArrowUp, Plus, Users,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 
 type Action = {
   id: string;

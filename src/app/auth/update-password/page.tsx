@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { createClient } from '@/src/lib/supabase/client'; // ✅ Correct import
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '../../../../src/lib/supabase/client'; // ✅ Correct import
+import { Button } from '../../../../components/ui/button';
+import { Input } from '../../../../components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { Lock, CheckCircle } from 'lucide-react';
 
 export default function UpdatePasswordPage() {

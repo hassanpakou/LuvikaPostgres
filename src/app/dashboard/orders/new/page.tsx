@@ -4,12 +4,12 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
+import { Label } from '../../../../../components/ui/label';
+import { Input } from '../../../../../components/ui/input';
+import { Textarea } from '../../../../../components/ui/textarea';
+import { Button } from '../../../../../components/ui/button';
+import { Badge } from '../../../../../components/ui/badge';
 import { Loader2, Package, MapPin, QrCode } from 'lucide-react';
 
 export default function NewOrderPage() {

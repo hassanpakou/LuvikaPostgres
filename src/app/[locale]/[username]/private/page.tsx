@@ -1,4 +1,4 @@
-// src/app/(main)/[locale]/[username]/private/page.tsx
+// src/app/[locale]/[username]/private/page.tsx
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
@@ -11,10 +11,13 @@ export default async function PrivateProfilePage({
 }) {
   const { locale, username } = await params;
 
-  const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
-  if (!supported.includes(locale as any)) notFound();
+  // 🔹 Validation de la locale → REDIRECTION, pas notFound()
+  const supported = ['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as const;
+  if (!supported.includes(locale as any)) {
+    redirect('/fr'); // ou '/en' selon votre préférence
+  }
 
-  const decodedUsername = decodeURIComponent(username).toLowerCase();
+  const decodedUsername = decodeURIComponent(username).toLowerCase().trim();
   const cookieStore = await cookies();
 
   const supabase = createServerClient(
@@ -30,45 +33,36 @@ export default async function PrivateProfilePage({
   );
 
   /**
-   * 🔹 Étape 1 — Lecture MINIMALE (doit être autorisée par RLS)
-   * Sert uniquement à :
-   * - savoir si le profil existe
-   * - savoir s’il est public ou privé
-   * - connaître l’id du propriétaire
+   * 🔹 Étape 1 — Lecture minimale (autorisée par RLS)
    */
   const { data: visibility } = await supabase
     .from('profiles')
     .select('id, is_public, full_name, username')
-    .ilike('username', decodedUsername.trim())
+    .ilike('username', decodedUsername)
     .maybeSingle();
 
   if (!visibility) {
-    // profil inexistant
+    // Profil inexistant → 404 légitime
     notFound();
   }
 
   /**
-   * 🔹 Étape 2 — Auth
+   * 🔹 Étape 2 — Authentification
    */
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   const currentUser = user as User | null;
   const isOwner = currentUser?.id === visibility.id;
   const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
   /**
-   * 🔹 Étape 3 — Sécurité logique
-   * Si le profil est public OU si l’utilisateur est autorisé,
-   * cette page ne doit PAS être visible
+   * 🔹 Étape 3 — Sécurité : si public ou autorisé, redirige vers le profil normal
    */
   if (visibility.is_public || isOwner || isAdmin) {
     return redirect(`/${locale}/${decodedUsername}`);
   }
 
   /**
-   * 🔹 Étape 4 — Rendu page privée
+   * 🔹 Étape 4 — Rendu de la page privée
    */
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-900/20 flex flex-col items-center justify-center p-4 text-center">

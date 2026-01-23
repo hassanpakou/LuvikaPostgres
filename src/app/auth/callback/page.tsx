@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../../components/ui/button';
 import { CheckCircle, Sparkles } from 'lucide-react';
 
 export default async function CallbackPage({

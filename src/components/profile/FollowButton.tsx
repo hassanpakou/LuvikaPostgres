@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 import { UserCheck, UserX, Loader2 } from 'lucide-react';
 
 export default function FollowButton({

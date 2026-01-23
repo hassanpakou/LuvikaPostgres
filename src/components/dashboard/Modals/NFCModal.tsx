@@ -3,9 +3,9 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '../../../../components/ui/button';
+import { Card } from '../../../../components/ui/card';
+import { Badge } from '../../../../components/ui/badge';
 
 type NFC_Card = {
   id: string;

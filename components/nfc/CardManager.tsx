@@ -3,7 +3,7 @@
 
 import { useRouter } from 'next/navigation'; // ✅ Bon import
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import { QrCode, Phone } from 'lucide-react';
 import { toast } from 'sonner';
 

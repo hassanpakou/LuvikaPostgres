@@ -4,9 +4,9 @@
 import { useState, useEffect } from 'react';
 import { Bar, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
 import { ArrowUp, TrendingUp } from 'lucide-react';
-import { Button } from '@/components/ui/button'; // ✅ Import séparé
+import { Button } from '../../../components/ui/button'; // ✅ Import séparé
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 

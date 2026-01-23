@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { createClient } from '@/src/lib/supabase/client';
+import { createClient } from '../../../src/lib/supabase/client';
 import { SiFacebook, SiInstagram, SiSnapchat, SiTelegram, SiTiktok, SiWhatsapp } from 'react-icons/si';
 
 type FooterProps = {

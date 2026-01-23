@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion'; // ✅ plus besoin de AnimatePresence ici
-import { Button } from '@/components/ui/button';
+import { Button } from '../../../components/ui/button';
 import { ExternalLink, QrCode, Copy } from 'lucide-react';
 import QRCode from 'qrcode';
 

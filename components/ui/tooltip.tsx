@@ -1,4 +1,4 @@
-// src/src/components/ui/tooltip.tsx
+// src/components/ui/tooltip.tsx
 'use client';
 
 import { useState, useEffect, ReactNode } from 'react';

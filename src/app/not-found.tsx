@@ -1,5 +1,5 @@
 // src/app/not-found.tsx
-import { Button } from '@/components/ui/button';
+import { Button } from '../../components/ui/button';
 import Link from 'next/link';
 import { Home } from 'lucide-react';
 

@@ -3,9 +3,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/src/lib/supabase/client';
-import DashboardContent from '@/src/components/dashboard/DashboardContent';
-import { generateQRBase64 } from '@/lib/qr';
+import { createClient } from '../../../src/lib/supabase/client';
+import DashboardContent from '../../../src/components/dashboard/DashboardContent';
+import { generateQRBase64 } from '../../../lib/qr';
 
 type Scan = {
   id: string;

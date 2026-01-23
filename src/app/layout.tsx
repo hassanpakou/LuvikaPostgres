@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
-import { ClientProviders } from "@/src/components/system/ClientProviders";
+import { ClientProviders } from "../../src/components/system/ClientProviders";
 
 const inter = Inter({ subsets: ['latin'] });
 
