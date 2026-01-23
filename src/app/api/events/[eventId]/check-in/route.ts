@@ -30,7 +30,7 @@ export async function POST(
     }
   );
 
-  // Vérifier que l’événement existe et est public
+  // Vérifier l’événement
   const { data: event } = await supabase
     .from('events')
     .select('id, starts_at, ends_at, is_public')
@@ -48,7 +48,7 @@ export async function POST(
   if (now < startsAt) return NextResponse.json({ error: 'Trop tôt' }, { status: 400 });
   if (now > endsAt) return NextResponse.json({ error: 'Événement terminé' }, { status: 400 });
 
-  // 🔐 Vérifier le token dans event_participants
+  // 🔐 Vérifier le token
   const { data: participant } = await supabase
     .from('event_participants')
     .select('id, name, email, is_checked_in')
@@ -57,7 +57,7 @@ export async function POST(
     .single();
 
   if (!participant) {
-    return NextResponse.json({ error: 'QR code invalide' }, { status: 404 });
+    return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
   }
 
   if (participant.is_checked_in) {
@@ -78,7 +78,7 @@ export async function POST(
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 
-  // 🔄 Optionnel : synchroniser avec event_attendees (pour compatibilité)
+  // 🔄 Optionnel : compatibilité avec ancienne table
   await supabase.from('event_attendees').insert({
     event_id: eventId,
     name: participant.name,
@@ -86,7 +86,6 @@ export async function POST(
     scanned_at: now.toISOString(),
   });
 
-  // Rafraîchir les données du dashboard
   revalidatePath('/dashboard');
   revalidatePath(`/events/${eventId}`);
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, User, Clock, MapPin, QrCode } from 'lucide-react';
+import { Calendar, User, Clock, MapPin, QrCode, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ type Participant = {
   email: string | null;
   checked_in_at: string | null;
   is_checked_in: boolean;
+  qr_token: string;
 };
 
 export default function EventAttendeesSection({ plan }: { plan: string | null }) {
@@ -64,7 +65,6 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
     try {
       const supabase = createClient();
 
-      // Charger les participants (même non checkés)
       const { data: parts, error: fetchError } = await supabase
         .from('event_participants')
         .select('*')
@@ -74,7 +74,6 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
       if (fetchError) throw fetchError;
       setParticipants(parts || []);
 
-      // 🔔 Realtime sur les check-ins
       const channel = supabase
         .channel(`event-${event.id}-participants`)
         .on('postgres_changes', {
@@ -87,7 +86,6 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
           setParticipants(prev =>
             prev.map(p => p.id === updated.id ? updated : p)
           );
-          // Mettre à jour le compteur
           setEvents(prev =>
             prev.map(e =>
               e.id === event.id
@@ -107,6 +105,11 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
     } catch (err) {
       console.error('❌ Failed to load participants', err);
     }
+  };
+
+  const handleExportCSV = () => {
+    if (!selectedEvent) return;
+    window.open(`/api/events/${selectedEvent.id}/participants.csv`, '_blank');
   };
 
   const now = new Date();
@@ -259,11 +262,22 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
             </div>
 
             {selectedEvent && (
-              <div className="mt-6 pt-4 border-t border-white/10">
-                <h3 className="font-medium text-white mb-3 flex items-center gap-2">
-                  <User className="text-cyan-400" />
-                  Participants à « {selectedEvent.name} »
-                </h3>
+              <>
+                <div className="mt-6 pt-4 border-t border-white/10 flex justify-between items-center">
+                  <h3 className="font-medium text-white flex items-center gap-2">
+                    <User className="text-cyan-400" />
+                    Participants à « {selectedEvent.name} »
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex items-center gap-1"
+                    onClick={handleExportCSV}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    Exporter CSV
+                  </Button>
+                </div>
                 {participants.length === 0 ? (
                   <p className="text-gray-400 text-sm">Aucun participant inscrit</p>
                 ) : (
@@ -277,26 +291,54 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
                           <p className="font-medium text-white">{p.name}</p>
                           {p.email && <p className="text-sm text-gray-400">{p.email}</p>}
                         </div>
-                        <div className="text-right">
+                        <div className="flex gap-2">
                           {p.is_checked_in ? (
-                            <>
-                              <p className="text-xs text-emerald-400">✅ Présent</p>
-                              <p className="text-xs text-gray-500">
-                                {new Date(p.checked_in_at!).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </p>
-                            </>
+                            <span className="text-xs text-emerald-400">✅ Présent</span>
                           ) : (
-                            <p className="text-xs text-gray-400">⏳ Non scanné</p>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const url = `${window.location.origin}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
+                                navigator.clipboard.writeText(url);
+                                alert('Lien QR copié ! Partagez-le.');
+                              }}
+                              title="Copier lien QR"
+                            >
+                              <QrCode className="w-4 h-4" />
+                            </Button>
                           )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (
+                                !confirm(
+                                  'Archiver cet événement ? Il sera masqué du dashboard.'
+                                )
+                              )
+                                return;
+                              const res = await fetch(`/api/events/${selectedEvent.id}/archive`, {
+                                method: 'PATCH',
+                              });
+                              if (res.ok) {
+                                setEvents((prev) => prev.filter((e) => e.id !== selectedEvent.id));
+                                setSelectedEvent(null);
+                              }
+                            }}
+                          >
+                            🗃️ Archiver
+                          </Button>
                         </div>
                       </li>
                     ))}
                   </ul>
                 )}
-              </div>
+              </>
             )}
           </div>
         )}
