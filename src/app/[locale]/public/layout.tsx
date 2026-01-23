@@ -1,4 +1,4 @@
-// src/app/[locale]/[username]/layout.tsx
+// src/app/[locale]/public/layout.tsx
 import Link from "next/link";
 import { Toaster } from "sonner";
 import { NetworkWatcher } from "../../../components/system/NetworkWatcher";
@@ -25,7 +25,7 @@ export default function ProfileLayout({
       <footer className="w-full py-4 text-center text-sm text-gray-400 border-t border-gray-700 mt-auto">
         <Link href="/">
           <span className="hover:text-white cursor-pointer">
-            © {new Date().getFullYear()} Luvika — Fait à Kinshasa avec <span className="text-red-500"> ♥</span>
+            © {new Date().getFullYear()} Luvika — avec <span className="text-red-500"> ♥</span>
           </span>
         </Link>
       </footer>
