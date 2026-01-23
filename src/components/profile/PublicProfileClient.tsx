@@ -475,81 +475,131 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   </motion.div>
 </motion.header>
 
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.1 } }
-          }}
-          className="mt-6 flex flex-wrap justify-center gap-4"
-        >
-          <StatBox label="J’aime">
-            <GlacialLikeButton profileId={localProfile.id} initialLikes={localProfile.likes_count || 0} />
-          </StatBox>
-          <StatBox label="Followers">{followersCount}</StatBox>
-          {initialFollowing > 0 && <StatBox label="Suivi(e)s">{initialFollowing}</StatBox>}
-          <StatBox label="Carte NFC">
-            <motion.div
-              animate={{ 
-                boxShadow: hasLostCard 
-                  ? '0 0 0px rgb(250,204,21,0)' 
-                  : '0 0 12px rgb(16,185,129,0.35)'
-              }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: 'mirror' }}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${
-                hasLostCard
-                  ? 'border-yellow-400/40 text-yellow-400 bg-yellow-400/10'
-                  : 'border-emerald-400/40 text-emerald-400 bg-emerald-400/10'
-              }`}
-            >
-              <CheckCircle className="w-4 h-4" />
-              {hasLostCard ? 'Perdue' : 'Active'}
-            </motion.div>
-          </StatBox>
-        </motion.div>
+        {/* ================= STATS SECTION ================= */}
+<motion.div
+  initial="hidden"
+  animate="visible"
+  variants={{
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.12 } }
+  }}
+  className="mt-4 flex justify-center gap-5 text-center"
+>
 
-        {!isOwner && (
-          <FollowersList 
-            profileId={localProfile.id} 
-            plan={localProfile.plan || 'basic'} 
-          />
+  {/* Likes */}
+<motion.div 
+  whileHover={{ scale: 1.03 }} 
+  className="flex flex-col items-center"
+>
+  <span className="text-[10px] uppercase tracking-wide text-gray-500">
+    J’aime
+  </span>
+
+  <div className="mt-0.5 scale-75 origin-top">
+    <GlacialLikeButton 
+      profileId={localProfile.id}
+      initialLikes={localProfile.likes_count || 0}
+    />
+  </div>
+</motion.div>
+{/* Followers */}
+<motion.div 
+  whileHover={{ scale: 1.03 }} 
+  className="flex flex-col items-center"
+>
+  <span className="text-[10px] uppercase tracking-wide text-gray-500">
+    Followers
+  </span>
+  <span className="text-sm font-semibold text-white leading-none mt-0.5">
+    {followersCount}
+  </span>
+</motion.div>
+
+{/* Following */}
+{initialFollowing > 0 && (
+  <motion.div 
+    whileHover={{ scale: 1.03 }} 
+    className="flex flex-col items-center"
+  >
+    <span className="text-[10px] uppercase tracking-wide text-gray-500">
+      Suivi(e)s
+    </span>
+    <span className="text-sm font-semibold text-white leading-none mt-0.5">
+      {initialFollowing}
+    </span>
+  </motion.div>
+)}
+
+  {/* NFC */}
+  <motion.div whileHover={{ scale: 1.05 }} className="flex flex-col items-center">
+    <span className="text-[11px] uppercase text-gray-400">Carte NFC</span>
+
+    <motion.div
+      animate={{
+        boxShadow: hasLostCard
+          ? "0 0 0px rgba(250,204,21,0)"
+          : "0 0 10px rgba(16,185,129,0.35)"
+      }}
+      transition={{ duration: 2, repeat: Infinity, repeatType: "mirror" }}
+      className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+        hasLostCard
+          ? "border-yellow-400/50 text-yellow-400"
+          : "border-emerald-400/50 text-emerald-400"
+      }`}
+    >
+      <CheckCircle className="w-3 h-3" />
+      {hasLostCard ? "Perdue" : "Active"}
+    </motion.div>
+  </motion.div>
+
+</motion.div>
+
+        {localProfile.bio_short && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed"
+          >
+            {localProfile.bio_short}
+          </motion.p>
         )}
 
-        {!isOwner && initialFollowing > 0 && (
-          <FollowingList 
-            profileId={localProfile.id} 
-            plan={localProfile.plan || 'basic'} 
-          />
-        )}
-
-        {!isOwner && currentUserId && (
+        {(localProfile.birth_day || localProfile.city || localProfile.country || localProfile.availability) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
-            className="mt-6 flex justify-center"
+            transition={{ delay: 0.9 }}
+            className="mt-6 flex flex-wrap justify-center gap-4 text-gray-400 text-sm"
           >
-            <Button
-              size="sm"
-              variant={isFollowing ? "default" : "outline"}
-              className={`flex items-center gap-2 ${
-                isFollowing 
-                  ? 'bg-red-600 hover:bg-red-500' 
-                  : 'border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10'
-              }`}
-              onClick={handleFollowToggle}
-            >
-              {isFollowing ? (
-                <>
-                  <UserCheck className="w-4 h-4" /> Déjà abonné
-                </>
-              ) : (
-                <>
-                  <UserCheck className="w-4 h-4" /> Suivre
-                </>
-              )}
-            </Button>
+            {localProfile.birth_day && localProfile.birth_month && (
+              <div className="flex items-center gap-1">
+                <Cake className="w-4 h-4" />
+                <span>
+                  {localProfile.birth_day} {getMonthName(localProfile.birth_month)}
+                  {!localProfile.hide_birth_year && localProfile.birth_year && ` ${localProfile.birth_year}`}
+                </span>
+              </div>
+            )}
+            {(localProfile.city || localProfile.country) && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4" />
+                <span>{[localProfile.city, localProfile.country].filter(Boolean).join(', ')}</span>
+              </div>
+            )}
+            {localProfile.availability && (
+              <div className="flex items-center gap-1">
+                <CheckCircle className={`w-4 h-4 ${
+                  localProfile.availability === 'available' ? 'text-emerald-400' :
+                  localProfile.availability === 'unavailable' ? 'text-red-400' : 'text-cyan-400'
+                }`} />
+                <span>
+                  {localProfile.availability === 'available' && 'Disponible'}
+                  {localProfile.availability === 'unavailable' && 'Indisponible'}
+                  {localProfile.availability === 'by_appointment' && 'Sur RDV'}
+                </span>
+              </div>
+            )}
           </motion.div>
         )}
 <motion.div
@@ -603,6 +653,9 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
             </div>
           </div>
         </motion.div>
+
+
+
       {/* 🔹 Boutons Portfolio, Certificats & Compétences */}
 <motion.div
   initial={{ opacity: 0, y: 10 }}
@@ -647,55 +700,6 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
     </Button>
   )}
 </motion.div>
-
-        {localProfile.bio_short && (
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed"
-          >
-            {localProfile.bio_short}
-          </motion.p>
-        )}
-
-        {(localProfile.birth_day || localProfile.city || localProfile.country || localProfile.availability) && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
-            className="mt-6 flex flex-wrap justify-center gap-4 text-gray-400 text-sm"
-          >
-            {localProfile.birth_day && localProfile.birth_month && (
-              <div className="flex items-center gap-1">
-                <Cake className="w-4 h-4" />
-                <span>
-                  {localProfile.birth_day} {getMonthName(localProfile.birth_month)}
-                  {!localProfile.hide_birth_year && localProfile.birth_year && ` ${localProfile.birth_year}`}
-                </span>
-              </div>
-            )}
-            {(localProfile.city || localProfile.country) && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span>{[localProfile.city, localProfile.country].filter(Boolean).join(', ')}</span>
-              </div>
-            )}
-            {localProfile.availability && (
-              <div className="flex items-center gap-1">
-                <CheckCircle className={`w-4 h-4 ${
-                  localProfile.availability === 'available' ? 'text-emerald-400' :
-                  localProfile.availability === 'unavailable' ? 'text-red-400' : 'text-cyan-400'
-                }`} />
-                <span>
-                  {localProfile.availability === 'available' && 'Disponible'}
-                  {localProfile.availability === 'unavailable' && 'Indisponible'}
-                  {localProfile.availability === 'by_appointment' && 'Sur RDV'}
-                </span>
-              </div>
-            )}
-          </motion.div>
-        )}
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
