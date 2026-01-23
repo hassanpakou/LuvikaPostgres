@@ -272,6 +272,7 @@ const removeSkill = (index: number) => {
     setSaving(true);
     setMessage(null);
 router.refresh(); // 👈 Force Next.js à recharger les données serveur/client
+    setTimeout(() => setMessage(null), 3000);
 
 const { data: updatedProfile } = await supabase
   .from('profiles')

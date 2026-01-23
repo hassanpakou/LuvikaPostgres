@@ -773,60 +773,61 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.4 }}
-          className="w-full px-4 mt-6"
-        >
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-gray-200 font-semibold mb-2 text-center">Liens professionnels</h3>
-            <div className="flex flex-wrap justify-center gap-4 py-4">
-              {isSectionVisible('social', profile) && (
-                <>
-                  <ActionItem
-                    icon={<Download className="w-5 h-5 text-purple-400" />}
-                    label="vCard"
-                    onClick={() => {
-                      const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
-                      const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = `${profile.username}.vcf`;
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }}
-                    className="bg-gradient-to-tr from-purple-800/20 to-purple-400/20 hover:from-purple-800/40 hover:to-purple-400/40"
-                  />
-                  {profile.cv_url && (
-                    <ActionItem
-                      icon={<FileText className="w-5 h-5 text-gray-400" />}
-                      label="CV"
-                      href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
-                      className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
-                    />
-                  )}
-                  {profile.calendly && (
-                    <ActionItem
-                      icon={<Calendar className="w-5 h-5 text-cyan-400" />}
-                      label="RDV"
-                      href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
-                      className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
-                    />
-                  )}
-                  {profile.portfolio_url && (
-                    <ActionItem
-                      icon={<Folder className="w-5 h-5 text-cyan-400" />}
-                      label="Portfolio"
-                      href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
-                      className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </motion.div>
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 1.4 }}
+  className="w-full px-4 mt-6"
+>
+  <div className="max-w-4xl mx-auto">
+    <h3 className="text-gray-200 font-semibold mb-2 text-center">Liens professionnels</h3>
+    <div className="flex flex-wrap justify-center gap-4 py-4">
+      {/* 🔹 Utilisez 'links' au lieu de 'social' */}
+      {isSectionVisible('links', profile) && (
+        <>
+          <ActionItem
+            icon={<Download className="w-5 h-5 text-purple-400" />}
+            label="vCard"
+            onClick={() => {
+              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
+              const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `${profile.username}.vcf`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="bg-gradient-to-tr from-purple-800/20 to-purple-400/20 hover:from-purple-800/40 hover:to-purple-400/40"
+          />
+          {profile.cv_url && (
+            <ActionItem
+              icon={<FileText className="w-5 h-5 text-gray-400" />}
+              label="CV"
+              href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
+              className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
+            />
+          )}
+          {profile.calendly && (
+            <ActionItem
+              icon={<Calendar className="w-5 h-5 text-cyan-400" />}
+              label="RDV"
+              href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
+              className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
+            />
+          )}
+          {profile.portfolio_url && (
+            <ActionItem
+              icon={<Folder className="w-5 h-5 text-cyan-400" />}
+              label="Portfolio"
+              href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
+              className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
+            />
+          )}
+        </>
+      )}
+    </div>
+  </div>
+</motion.div>
 
         <ScanTracker profileId={profile.id} />
 

@@ -11,5 +11,18 @@ export type PublicProfile = {
   website: string | null;
   city: string | null;
   country: string | null;
+  sections_visibility: Record<
+    | 'bio'
+    | 'contact'
+    | 'social'
+    | 'portfolio'
+    | 'certificates'
+    | 'identity'
+    | 'professional'
+    | 'skills'
+    | 'links' // 👈 Ajouté
+    | 'location',
+    boolean
+  >;
   // ... ajoutez les autres champs si besoin
 };
