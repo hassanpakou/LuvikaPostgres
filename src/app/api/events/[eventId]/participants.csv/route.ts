@@ -4,9 +4,9 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ eventId: string }> } // ✅ eventId, pas id
 ) {
-  const { id: eventId } = await params;
+  const { eventId } = await params; // ✅ déstructure eventId
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -33,7 +33,7 @@ export async function GET(
   const { data: event } = await supabase
     .from('events')
     .select('profile_id, title')
-    .eq('id', eventId)
+    .eq('id', eventId) // ✅ utilise eventId ici
     .single();
 
   if (!event || event.profile_id !== user.id) {
@@ -44,7 +44,7 @@ export async function GET(
   const { data: parts } = await supabase
     .from('event_participants')
     .select('name, email, is_checked_in, checked_in_at, created_at')
-    .eq('event_id', eventId);
+    .eq('event_id', eventId); // ✅ eventId
 
   if (!parts || parts.length === 0) {
     return new NextResponse('Aucun participant', { status: 200 });
