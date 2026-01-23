@@ -4,9 +4,10 @@ import { NextResponse } from 'next/server';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ eventId: string }> } // ✅ eventId, pas id
 ) {
-  const { id } = await params;
+  const { eventId } = await params; // ✅ déstructure eventId
+
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,10 +28,10 @@ export async function PATCH(
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
   // Vérifier que l’événement appartient à l’utilisateur
-  const { data : event } = await supabase
+  const { data: event } = await supabase
     .from('events')
     .select('profile_id')
-    .eq('id', id)
+    .eq('id', eventId) // ✅ utilise eventId ici
     .single();
 
   if (!event || event.profile_id !== user.id) {
@@ -40,7 +41,7 @@ export async function PATCH(
   const { error } = await supabase
     .from('events')
     .update({ status: 'archived' })
-    .eq('id', id);
+    .eq('id', eventId); // ✅ eventId
 
   if (error) return NextResponse.json({ error: 'Échec' }, { status: 500 });
 
