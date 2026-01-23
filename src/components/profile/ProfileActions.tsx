@@ -1,102 +1,122 @@
-// src/components/profile/ProfileActions.tsx
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Download, Mail, Phone, MapPin, MessageCircle, ExternalLink } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Download, QrCode, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type Profile = {
-  email?: string | null;
-  phone?: string | null;
-  whatsapp?: string | null;
-  address?: string | null;
   full_name?: string;
   username?: string;
-  company?: string | null;
-  job_title?: string | null;
-  website?: string | null;
 };
 
-export default function ProfileActions({ profile }: { profile: Profile }) {
-  const getWhatsAppLink = (phone: string, name: string) => {
-    const clean = phone.replace(/\D/g, '');
-    return `https://wa.me/${clean}?text=Bonjour%20${encodeURIComponent(name)},%20je%20vous%20contacte%20via%20LUVIKA.`;
-  };
+export default function FloatingButtons({
+  profile,
+  setShowQRModal,
+}: {
+  profile: Profile;
+  setShowQRModal: (val: boolean) => void;
+}) {
+  const [showFloating, setShowFloating] = useState(true);
 
+  // Hide on scroll
+  useEffect(() => {
+    let lastScroll = window.scrollY;
+    const onScroll = () => {
+      const currentScroll = window.scrollY;
+      setShowFloating(!(currentScroll > lastScroll && currentScroll > 80));
+      lastScroll = currentScroll;
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Télécharger vCard
   const downloadVCard = () => {
     const vCard = `BEGIN:VCARD
 VERSION:3.0
-FN:${profile.full_name}
-ORG:${profile.company || ''}
-TITLE:${profile.job_title || ''}
-TEL;TYPE=WORK,VOICE:${profile.phone || ''}
-TEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}
-EMAIL:${profile.email || ''}
-ADR;TYPE=WORK:;;${profile.address || ''};;;;
-URL:${profile.website || ''}
-NOTE:Contact via LUVIKA — luvika.me/${profile.username}
-END:VCARD`.trim().replace(/\n/g, '\r\n');
+FN:${profile.full_name || ''}
+NOTE:Contact via LUVIKA — luvika.me/${profile.username || ''}
+END:VCARD`
+      .trim()
+      .replace(/\n/g, '\r\n');
 
     const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${profile.username}.vcf`;
+    a.download = `${profile.username || 'contact'}.vcf`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
-  return (
-    <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {profile.email && (
-          <a href={`mailto:${profile.email}`} className="block">
-            <Button variant="outline" className="w-full justify-start border-white/10 hover:bg-white/5">
-              <Mail className="mr-2 h-4 w-4" /> {profile.email}
-            </Button>
-          </a>
-        )}
-        {profile.phone && (
-          <a href={`tel:${profile.phone}`} className="block">
-            <Button variant="outline" className="w-full justify-start border-white/10 hover:bg-white/5">
-              <Phone className="mr-2 h-4 w-4" /> Appeler
-            </Button>
-          </a>
-        )}
-        {profile.whatsapp && (
-          <a 
-            href={getWhatsAppLink(profile.whatsapp, profile.full_name || '')} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <Button variant="outline" className="w-full justify-start border-white/10 hover:bg-white/5">
-              <MessageCircle className="mr-2 h-4 w-4 text-green-400" /> WhatsApp
-            </Button>
-          </a>
-        )}
-        {profile.address && (
-          <a 
-            href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <Button variant="outline" className="w-full justify-start border-white/10 hover:bg-white/5">
-              <MapPin className="mr-2 h-4 w-4" /> Localiser
-            </Button>
-          </a>
-        )}
-      </div>
+  // Partager profil
+  const shareProfile = () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator
+        .share({
+          title: `Profil de ${profile.full_name}`,
+          text: `Découvrez le profil de ${profile.full_name} sur LUVIKA`,
+          url,
+        })
+        .catch(console.warn);
+    } else {
+      navigator.clipboard.writeText(url).then(() => alert('Lien copié !'));
+    }
+  };
 
-      <Button
-        className="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
-        onClick={downloadVCard}
-      >
-        <Download className="mr-2 h-4 w-4" /> Sauvegarder le contact (.vcf)
-      </Button>
-     
-    </>
+  const buttons = [
+    {
+      label: 'Ajouter au contact',
+      icon: <Download className="w-5 h-5 text-cyan-200" />,
+      onClick: downloadVCard,
+      color: '0cf',
+    },
+    {
+      label: 'QR Code',
+      icon: <QrCode className="w-5 h-5 text-white" />,
+      onClick: () => setShowQRModal(true), // ici on utilise ton vrai code QR
+      color: '08f',
+    },
+    {
+      label: 'Partager',
+      icon: <Share2 className="w-5 h-5 text-red-300" />,
+      onClick: shareProfile,
+      color: 'f06',
+    },
+  ];
+
+  return (
+<div className="fixed inset-x-0 bottom-20 z-50 flex justify-center items-center gap-3">
+      {buttons.map((btn, idx) => (
+        <motion.button
+          key={idx}
+          onClick={btn.onClick}
+          className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white font-medium shadow-lg"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{
+            opacity: showFloating ? 1 : 0,
+            y: showFloating ? [0, -2, 0] : 20,
+          }}
+          transition={{
+            opacity: { duration: 0.25 },
+            y: {
+              duration: showFloating ? 3 : 0.25,
+              repeat: showFloating ? Infinity : 0,
+              ease: 'easeInOut',
+            },
+          }}
+          whileHover={{
+            scale: 1.1,
+            textShadow: `0 0 6px #${btn.color}, 0 0 12px #${btn.color}, 0 0 18px #${btn.color}`,
+            boxShadow: `0 0 12px #${btn.color}, 0 0 24px #${btn.color}, 0 0 36px #${btn.color}`,
+          }}
+          whileTap={{ scale: 0.95 }}
+        >
+          {btn.icon}
+          <span className="text-sm font-semibold">{btn.label}</span>
+        </motion.button>
+      ))}
+    </div>
   );
 }

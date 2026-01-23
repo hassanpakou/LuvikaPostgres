@@ -11,15 +11,15 @@ import {
   Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText, Share as ShareIcon
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
 import GlacialLikeButton from './GlacialLikeButton';
 import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
-import { Card } from '@/components/ui/card';
+import { Card } from '../../../components/ui/card';
 import ContactModal from './ContactModal';
-import BadgeLevel from '@/src/components/ui/BadgeLevel';
-import { getBadgeInfo } from '@/src/lib/utils/badgeLevel';
+import BadgeLevel from '../../../src/components/ui/BadgeLevel';
+import { getBadgeInfo } from '../../../src/lib/utils/badgeLevel';
 import PortfolioSection from './PortfolioSection';
 import CertificatesSection from './CertificatesSection';
 import CollapsibleSection from './CollapsibleSection';
@@ -27,7 +27,7 @@ import { Folder, Award } from 'lucide-react';
 import FollowButton from './FollowButton';
 import ActionItem from './ActionItem';
 import ProfileActions from './ProfileActions';
-import { createClient } from '@/src/lib/supabase/client';
+import { createClient } from '../../../src/lib/supabase/client';
 import FollowersList from './FollowersList';
 import FollowingList from './FollowersList';
 
@@ -291,6 +291,10 @@ export default function PublicProfileClient({
     setBubbles(generated);
   }, []);
 
+  function downloadVCard(profile: Profile): void {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 -z-10">
@@ -388,46 +392,7 @@ export default function PublicProfileClient({
       </motion.div>
     )}
 
-    {/* Bouton QR Code */}
-    <motion.button
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 0.5 }}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={() => setShowQRModal(true)}
-      className="absolute -bottom-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-600 to-blue-600 flex items-center justify-center shadow-lg border border-white/20"
-      aria-label="Afficher QR Code"
-    >
-      <QrCode className="w-5 h-5 text-white" />
-    </motion.button>
-
-    {/* 🔹 ✅ Bouton Partager — en haut à droite */}
-    <motion.button
-      initial={{ opacity: 0, x: 10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: 0.6 }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={() => {
-        const url = window.location.href;
-        if (navigator.share) {
-          navigator.share({
-            title: `Profil de ${profile.full_name}`,
-            text: `Découvrez le profil de ${profile.full_name} sur LUVIKA`,
-            url,
-          }).catch(console.warn);
-        } else {
-          navigator.clipboard.writeText(url)
-            .then(() => alert('Lien copié !'))
-            .catch(console.warn);
-        }
-      }}
-      className="absolute -top-2 -right-14 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-md hover:bg-white/20 transition-all"
-      aria-label="Partager ce profil"
-    >
-      <ShareIcon className="w-5 h-5 text-red-300" />
-    </motion.button>
+    
   </div>
 
   <motion.div 
@@ -493,6 +458,8 @@ export default function PublicProfileClient({
     )}
   </motion.div>
 </motion.header>
+
+
 
         <motion.div
           initial="hidden"
@@ -645,118 +612,183 @@ export default function PublicProfileClient({
           )}
         </motion.div>
 
-
-        {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-            className="mt-6"
-          >
-            <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills.map((skill, i) => (
-                  <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
-                    {skill}
-                  </Badge>
-                ))}
-              </div>
-            </Section>
-          </motion.div>
-        )}
-
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1 }}
           className="mt-6"
         >
-          <Section title="Contact rapide" icon={<Send className="text-cyan-400 w-5 h-5" />}>
-            <ProfileActions profile={profile} />
-          </Section>
+            <ProfileActions 
+  profile={profile} 
+  setShowQRModal={setShowQRModal} 
+/>
+
         </motion.div>
 
-        {/* 🔹 Liens de contact et réseaux sociaux — conditionnés à la section "social" */}
+{/* 🔹 Liens de contact */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 1 }}
+  className="w-full px-4 mt-8"
+>
+  <div className="max-w-4xl mx-auto">
+    <h3 className="text-gray-200 font-semibold mb-2 text-center">Contact</h3>
+    <div className="flex flex-wrap justify-center gap-4 py-4">
+      {isSectionVisible('contact', profile) && profile.email && (
+        <ActionItem
+          icon={<Mail className="w-5 h-5 text-cyan-400" />}
+          label="Email"
+          href={`mailto:${profile.email}`}
+          className="bg-gradient-to-tr from-cyan-800/20 to-cyan-500/20 hover:from-cyan-800/40 hover:to-cyan-500/40"
+        />
+      )}
+      {isSectionVisible('contact', profile) && profile.phone && (
+        <ActionItem
+          icon={<Phone className="w-5 h-5 text-green-400" />}
+          label="Appeler"
+          href={`tel:${profile.phone}`}
+          className="bg-gradient-to-tr from-green-800/20 to-green-400/20 hover:from-green-800/40 hover:to-green-400/40"
+        />
+      )}
+      {isSectionVisible('contact', profile) && profile.whatsapp && (
+        <ActionItem
+          icon={<MessageCircle className="w-5 h-5 text-emerald-400" />}
+          label="WhatsApp"
+          href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
+          className="bg-gradient-to-tr from-emerald-800/20 to-emerald-400/20 hover:from-emerald-800/40 hover:to-emerald-400/40"
+        />
+      )}
+      {profile.address && (
+        <ActionItem
+          icon={<MapPin className="w-5 h-5 text-amber-400" />}
+          label="Carte"
+          href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`}
+          className="bg-gradient-to-tr from-amber-800/20 to-amber-400/20 hover:from-amber-800/40 hover:to-amber-400/40"
+        />
+      )}
+      {profile.website && (
+        <ActionItem
+          icon={<Globe className="w-5 h-5 text-blue-400" />}
+          label="Site"
+          href={profile.website}
+          className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
+        />
+      )}
+    </div>
+  </div>
+</motion.div>
+
+{/* 🔹 Réseaux sociaux */}
 <motion.div
   initial={{ opacity: 0, y: 10 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ delay: 1.2 }}
-  className="w-full px-2 mt-8"
+  className="w-full px-4 mt-6"
 >
-  <div className="max-w-5xl mx-auto">
-    <div className="flex flex-wrap justify-center gap-3 py-3">
-      {/* 🔸 Contact (toujours visible si section "contact" activée) */}
-      {isSectionVisible('contact', profile) && profile.email && (
-        <ActionItem icon={<Mail className="w-5 h-5 text-cyan-400" />} label="Email" href={`mailto:${profile.email}`} />
+  <div className="max-w-4xl mx-auto">
+    <h3 className="text-gray-200 font-semibold mb-2 text-center">Réseaux sociaux</h3>
+    <div className="flex flex-wrap justify-center gap-4 py-4">
+      {isSectionVisible('social', profile) && profile.instagram && (
+        <ActionItem
+          icon={<Instagram className="w-5 h-5 text-pink-400" />}
+          label="IG"
+          href={`https://instagram.com/${profile.instagram.trim()}`}
+          className="bg-gradient-to-tr from-pink-800/20 to-pink-400/20 hover:from-pink-800/40 hover:to-pink-400/40"
+        />
       )}
-      {isSectionVisible('contact', profile) && profile.phone && (
-        <ActionItem icon={<Phone className="w-5 h-5 text-green-400" />} label="Appeler" href={`tel:${profile.phone}`} />
+      {profile.linkedin && (
+        <ActionItem
+          icon={<Linkedin className="w-5 h-5 text-blue-500" />}
+          label="LinkedIn"
+          href={`https://linkedin.com/in/${profile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`}
+          className="bg-gradient-to-tr from-blue-800/20 to-blue-500/20 hover:from-blue-800/40 hover:to-blue-500/40"
+        />
       )}
-      {isSectionVisible('contact', profile) && profile.whatsapp && (
-        <ActionItem icon={<MessageCircle className="w-5 h-5 text-emerald-400" />} label="WhatsApp" href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`} />
+      {profile.github && (
+        <ActionItem
+          icon={<Github className="w-5 h-5 text-gray-400" />}
+          label="GitHub"
+          href={`https://github.com/${profile.github.replace(/^https?:\/\//, '')}`}
+          className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
+        />
       )}
-      {profile.address && (
-        <ActionItem icon={<MapPin className="w-5 h-5 text-amber-400" />} label="Carte" href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`} />
+      {profile.gitlab && (
+        <ActionItem
+          icon={<Gitlab className="w-5 h-5 text-orange-500" />}
+          label="GitLab"
+          href={`https://gitlab.com/${profile.gitlab.replace(/^https?:\/\//, '')}`}
+          className="bg-gradient-to-tr from-orange-800/20 to-orange-500/20 hover:from-orange-800/40 hover:to-orange-500/40"
+        />
       )}
-      {profile.website && (
-        <ActionItem icon={<Globe className="w-5 h-5 text-blue-400" />} label="Site" href={profile.website} />
+      {profile.tiktok && (
+        <ActionItem
+          icon={<SiTiktok className="w-5 h-5 text-black" />}
+          label="TikTok"
+          href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`}
+          className="bg-gradient-to-tr from-black/20 to-gray-600/20 hover:from-black/40 hover:to-gray-600/40"
+        />
       )}
+      {profile.snapchat && (
+        <ActionItem
+          icon={<SnapchatIcon className="w-5 h-5 text-yellow-400" />}
+          label="Snapchat"
+          href={`https://snapchat.com/add/${profile.snapchat.replace(/^@/, '')}`}
+          className="bg-gradient-to-tr from-yellow-800/20 to-yellow-400/20 hover:from-yellow-800/40 hover:to-yellow-400/40"
+        />
+      )}
+      {profile.telegram && (
+        <ActionItem
+          icon={<TelegramIcon className="w-5 h-5 text-blue-400" />}
+          label="Telegram"
+          href={`https://t.me/${profile.telegram.replace(/^@/, '')}`}
+          className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
+        />
+      )}
+      {profile.behance && (
+        <ActionItem
+          icon={<BehanceIcon className="w-5 h-5 text-blue-400" />}
+          label="Behance"
+          href={`https://${profile.behance.replace(/^https?:\/\//, '')}`}
+          className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
+        />
+      )}
+      {profile.dribbble && (
+        <ActionItem
+          icon={<DribbbleIcon className="w-5 h-5 text-pink-400" />}
+          label="Dribbble"
+          href={`https://${profile.dribbble.replace(/^https?:\/\//, '')}`}
+          className="bg-gradient-to-tr from-pink-800/20 to-pink-400/20 hover:from-pink-800/40 hover:to-pink-400/40"
+        />
+      )}
+    </div>
+  </div>
+</motion.div>
 
-      {/* 🔸 Réseaux sociaux — SEULEMENT si "social" est activé */}
-      {isSectionVisible('social', profile) && (
-        <>
-          {profile.instagram && (
-            <ActionItem icon={<Instagram className="w-5 h-5 text-pink-400" />} label="IG" href={`https://instagram.com/${profile.instagram.trim()}`} />
-          )}
-          {profile.linkedin && (
-            <ActionItem icon={<Linkedin className="w-5 h-5 text-blue-500" />} label="LinkedIn" href={`https://linkedin.com/in/${profile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`} />
-          )}
-          {profile.github && (
-            <ActionItem icon={<Github className="w-5 h-5 text-gray-400" />} label="GitHub" href={`https://github.com/${profile.github.replace(/^https?:\/\//, '')}`} />
-          )}
-          {profile.gitlab && (
-            <ActionItem icon={<Gitlab className="w-5 h-5 text-orange-500" />} label="GitLab" href={`https://gitlab.com/${profile.gitlab.replace(/^https?:\/\//, '')}`} />
-          )}
-          {profile.tiktok && (
-            <ActionItem icon={<SiTiktok className="w-5 h-5 text-black" />} label="TikTok" href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`} />
-          )}
-          {profile.snapchat && (
-            <ActionItem icon={<SnapchatIcon className="w-5 h-5 text-yellow-400" />} label="Snapchat" href={`https://snapchat.com/add/${profile.snapchat.replace(/^@/, '')}`} />
-          )}
-          {profile.telegram && (
-            <ActionItem icon={<TelegramIcon className="w-5 h-5 text-blue-400" />} label="Telegram" href={`https://t.me/${profile.telegram.replace(/^@/, '')}`} />
-          )}
-          {profile.behance && (
-            <ActionItem icon={<BehanceIcon className="w-5 h-5 text-blue-400" />} label="Behance" href={`https://${profile.behance.replace(/^https?:\/\//, '')}`} />
-          )}
-          {profile.dribbble && (
-            <ActionItem icon={<DribbbleIcon className="w-5 h-5 text-pink-400" />} label="Dribbble" href={`https://${profile.dribbble.replace(/^https?:\/\//, '')}`} />
-          )}
-        </>
-      )}
-
-      {/* 🔸 Liens professionnels — aussi liés à "social" */}
+{/* 🔹 Liens professionnels */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 1.4 }}
+  className="w-full px-4 mt-6"
+>
+  <div className="max-w-4xl mx-auto">
+    <h3 className="text-gray-200 font-semibold mb-2 text-center">Liens professionnels</h3>
+    <div className="flex flex-wrap justify-center gap-4 py-4">
       {isSectionVisible('social', profile) && (
         <>
           <ActionItem
             icon={<Download className="w-5 h-5 text-purple-400" />}
             label="vCard"
-            onClick={() => {
-              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
-              const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `${profile.username}.vcf`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
+            onClick={() => downloadVCard(profile)}
+            className="bg-gradient-to-tr from-purple-800/20 to-purple-400/20 hover:from-purple-800/40 hover:to-purple-400/40"
           />
           {profile.cv_url && (
             <ActionItem
               icon={<FileText className="w-5 h-5 text-gray-400" />}
               label="CV"
               href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
+              className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
             />
           )}
           {profile.calendly && (
@@ -764,6 +796,7 @@ export default function PublicProfileClient({
               icon={<Calendar className="w-5 h-5 text-cyan-400" />}
               label="RDV"
               href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
+              className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
             />
           )}
           {profile.portfolio_url && (
@@ -771,6 +804,7 @@ export default function PublicProfileClient({
               icon={<Folder className="w-5 h-5 text-cyan-400" />}
               label="Portfolio"
               href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
+              className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
             />
           )}
         </>
@@ -778,54 +812,28 @@ export default function PublicProfileClient({
     </div>
   </div>
 </motion.div>
-
-        <div className="h-8"></div>
-
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.15 } }
-          }}
-          className="space-y-6"
-        >
-          {profile.bio_long && isSectionVisible('bio', profile) && (
-            <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-              <Section title="À propos" icon={<UserCheck className="text-cyan-400 w-5 h-5" />}>
-                <BioToggle bio={profile.bio_long} />
-              </Section>
-            </motion.div>
-          )}
-          {/* 🔹 Projets — rendu conditionnel */}
-{isSectionVisible('portfolio', profile) && (
-  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-    <CollapsibleSection
-      title="Projets"
-      icon={<Folder className="text-cyan-400 w-5 h-5" />}
-      itemCount={portfolios.length}
-      defaultOpen={false}
-    >
-      <PortfolioSection items={portfolios} />
-    </CollapsibleSection>
+{profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 1.0 }}
+    className="mt-6 px-4"
+  >
+    <Section title="Compétences" icon={<Tag className="text-purple-400 w-5 h-5" />}>
+      <div className="flex flex-wrap justify-center gap-3 py-2">
+        {profile.skills.map((skill, i) => (
+          <Badge
+            key={i}
+            variant="secondary"
+            className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm font-medium"
+          >
+            {skill}
+          </Badge>
+        ))}
+      </div>
+    </Section>
   </motion.div>
 )}
-
-{/* 🔹 Certifications — rendu conditionnel */}
-{isSectionVisible('certificates', profile) && (
-  <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-    <CollapsibleSection
-      title="Certifications"
-      icon={<Award className="text-yellow-400 w-5 h-5" />}
-      itemCount={certificates.length}
-      defaultOpen={false}
-    >
-      <CertificatesSection items={certificates} />
-    </CollapsibleSection>
-  </motion.div>
-)}        </motion.div>
-
-
 
         <ScanTracker profileId={profile.id} />
 

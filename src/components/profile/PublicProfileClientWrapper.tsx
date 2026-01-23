@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter, notFound } from 'next/navigation';
-import { createClient } from '@/src/lib/supabase/client';
+import { createClient } from '../../../src/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import PublicProfileClient from '@/src/components/profile/PublicProfileClient';
+import PublicProfileClient from '../../../src/components/profile/PublicProfileClient';
 
 export default function PublicProfileClientWrapper({
   params,
