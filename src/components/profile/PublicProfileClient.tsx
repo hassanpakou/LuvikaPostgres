@@ -30,6 +30,7 @@ import ContactForm from './ContactForm';
 import { createClient } from '../../lib/supabase/client';
 import FollowersList from './FollowersList';
 import FollowingList from './FollowersList';
+import { PublicProfile } from '../../types/profile';
 
 // 🔹 Types
 type Profile = {

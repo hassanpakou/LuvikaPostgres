@@ -4,10 +4,12 @@
 import { useState, useEffect } from 'react';
 import { Book, Download, PlusCircle, QrCode, Share2, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { PublicProfile } from '../../types/profile';
 
-type Profile = {
-  full_name?: string;
-  username?: string;
+type Props = {
+  profile: PublicProfile;
+  setShowQRModal: (val: boolean) => void;
+  onContactClick?: () => void;
 };
 
 export default function FloatingButtons({
@@ -15,7 +17,7 @@ export default function FloatingButtons({
   setShowQRModal,
   onContactClick, // 👈 Nouvelle prop
 }: {
-  profile: Profile;
+  profile: PublicProfile;
   setShowQRModal: (val: boolean) => void;
   onContactClick?: () => void; // 👈 Optionnel
 }) {
