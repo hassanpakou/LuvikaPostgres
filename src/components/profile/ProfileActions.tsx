@@ -1,7 +1,8 @@
+// src/components/profile/FloatingButtons.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, QrCode, Share2 } from 'lucide-react';
+import { Book, Download, PlusCircle, QrCode, Share2, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type Profile = {
@@ -12,13 +13,14 @@ type Profile = {
 export default function FloatingButtons({
   profile,
   setShowQRModal,
+  onContactClick, // 👈 Nouvelle prop
 }: {
   profile: Profile;
   setShowQRModal: (val: boolean) => void;
+  onContactClick?: () => void; // 👈 Optionnel
 }) {
   const [showFloating, setShowFloating] = useState(true);
 
-  // Cache les boutons desktop au scroll
   useEffect(() => {
     let lastScroll = window.scrollY;
     const onScroll = () => {
@@ -63,11 +65,15 @@ END:VCARD`
     }
   };
 
-  // Boutons communs
   const buttons = [
-    { label: 'Contact', icon: <Download className="w-5 h-5" />, onClick: downloadVCard },
-    { label: 'QR', icon: <QrCode className="w-5 h-5" />, onClick: () => setShowQRModal(true) },
-    { label: 'Partager', icon: <Share2 className="w-5 h-5" />, onClick: shareProfile },
+    { label: 'Ajouter moi', icon: <PlusCircle className="w-5 h-5" />, onClick: downloadVCard },
+    { label: '', icon: <QrCode className="w-5 h-5" />, onClick: () => setShowQRModal(true) },
+    { label: '', icon: <Share2 className="w-5 h-5" />, onClick: shareProfile },
+    { 
+      label: 'Écris-moi', 
+      icon: <Mail className="w-5 h-5" />, // ✅ Icône email plus claire
+      onClick: onContactClick || (() => {}) // 👈 Appel de la fonction
+    },
   ];
 
   return (

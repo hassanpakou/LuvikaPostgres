@@ -286,7 +286,7 @@ export default function PublicProfileClient({
     setBubbles(generated);
   }, []);
 
-  // Dans PublicProfileClient.tsx
+const [showContactModal, setShowContactModal] = useState(false);
 const [showPortfolioModal, setShowPortfolioModal] = useState(false);
 const [showCertificatesModal, setShowCertificatesModal] = useState(false);
 const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez celle-ci aussi
@@ -627,8 +627,11 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           transition={{ delay: 1.1 }}
           className="mt-6"
         >
-          <FloatingButtons profile={profile} setShowQRModal={setShowQRModal} />
-        </motion.div>
+<FloatingButtons 
+  profile={profile} 
+  setShowQRModal={setShowQRModal}
+  onContactClick={() => setShowContactModal(true)} // 👈 Ici
+/>        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -869,8 +872,15 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         onClose={() => setShowSkillsModal(false)}
         title="Compétences"
         skills={profile.skills || []} children={undefined}>
-  {/* Vous pouvez laisser children vide ou ajouter un message */}
 </ProfileModal>
+
+{/* 🔹 Modal de contact — UTILISER ContactModal */}
+<ContactModal
+  key="contact-modal-float"
+  isOpen={showContactModal}
+  onClose={() => setShowContactModal(false)}
+  profileId={profile.id}
+/>
     </div>
 
     

@@ -14,6 +14,8 @@ interface ProfileModalProps {
   children: React.ReactNode;
   // 🔹 Nouvelle prop pour les compétences
   skills?: string[];
+profileId?: string; // 👈 Ajoutez cette ligne
+
 }
 
 export default function ProfileModal({ 

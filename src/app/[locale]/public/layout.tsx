@@ -1,13 +1,17 @@
 // src/app/[locale]/public/layout.tsx
 import Link from "next/link";
 import { Toaster } from "sonner";
-import { NetworkWatcher } from "../../../components/system/NetworkWatcher";
+import Footer from "../../../components/layout/Footer"; // 👈 Import
+import { getTranslations } from "next-intl/server"; // 👈 Pour les traductions
 
-export default function ProfileLayout({
+export default async function ProfileLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // 👇 Récupère les traductions du footer
+  const t = await getTranslations("footer");
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Fond animé spécifique au profil */}
@@ -18,17 +22,25 @@ export default function ProfileLayout({
       <main className="w-full flex-1">
         {children}
         <Toaster richColors position="top-right" />
-        <NetworkWatcher />
       </main>
 
-      {/* Footer fixe */}
-      <footer className="w-full py-4 text-center text-sm text-gray-400 border-t border-gray-700 mt-auto">
-        <Link href="/">
-          <span className="hover:text-white cursor-pointer">
-            © {new Date().getFullYear()} Luvika — avec <span className="text-red-500"> ♥</span>
-          </span>
-        </Link>
-      </footer>
+      {/* 🔹 Footer complet avec traductions */}
+      <Footer
+        product={t('product')}
+        features={t('features')}
+        pricing={t('pricing')}
+        download={t('download')}
+        company={t('company')}
+        about={t('about')}
+        contact={t('contact')}
+        blog={t('blog')}
+        legal={t('legal')}
+        privacy={t('privacy')}
+        terms={t('terms')}
+        cookies={t('cookies')}
+        tagline={t('tagline')}
+        copyright={t('copyright')}
+      />
     </div>
   );
 }
