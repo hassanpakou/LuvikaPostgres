@@ -106,6 +106,8 @@ const BioToggle = ({ bio }: { bio: string }) => {
     ? words.slice(0, 30).join(' ') + '…' 
     : bio;
 
+
+    
   useEffect(() => {
     if (!contentRef.current || !truncatedRef.current) return;
     const fullHeight = contentRef.current.scrollHeight;
@@ -199,7 +201,7 @@ export default function PublicProfileClient({
   const [certificates, setCertificates] = useState<any[]>([]);
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
   const [followersCount, setFollowersCount] = useState(initialFollowers);
-
+  const [localProfile, setLocalProfile] = useState<Profile>(profile);
   useEffect(() => {
     setIsFollowing(isInitiallyFollowing);
     setFollowersCount(initialFollowers);
@@ -287,6 +289,29 @@ export default function PublicProfileClient({
     setBubbles(generated);
   }, []);
 
+  // 🔹 Realtime updates
+useEffect(() => {
+  const supabase = createClient();
+  const channel = supabase
+    .channel(`profile-${profile.id}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${profile.id}`
+      },
+      (payload) => {
+        setLocalProfile(prev => ({ ...prev, ...payload.new }));
+      }
+    )
+    .subscribe();
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [profile.id]);
 const [showContactModal, setShowContactModal] = useState(false);
 const [showPortfolioModal, setShowPortfolioModal] = useState(false);
 const [showCertificatesModal, setShowCertificatesModal] = useState(false);
