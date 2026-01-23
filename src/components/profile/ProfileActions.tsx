@@ -32,23 +32,54 @@ export default function FloatingButtons({
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const downloadVCard = () => {
-    const vCard = `BEGIN:VCARD
-VERSION:3.0
-FN:${profile.full_name || ''}
-NOTE:Contact via LUVIKA — luvika.me/${profile.username || ''}
-END:VCARD`
-      .trim()
-      .replace(/\n/g, '\r\n');
+const downloadVCard = () => {
+  const {
+    full_name = '',
+    job_title = '',
+    company = '',
+    email = '',
+    phone = '',
+    whatsapp = '',
+    address = '',
+    website = '',
+    city = '',
+    country = '',
+    username = ''
+  } = profile;
 
-    const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${profile.username || 'contact'}.vcf`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // Construit l'adresse complète
+  const fullAddress = [address, city, country].filter(Boolean).join(';');
+
+  // URL du profil LUVIKA
+  const profileUrl = `https://luvika.me/${username}`;
+
+  // Génère le contenu vCard
+  const vCardContent = [
+    'BEGIN:VCARD',
+    'VERSION:3.0',
+    `FN:${full_name}`,
+    job_title ? `TITLE:${job_title}` : '',
+    company ? `ORG:${company}` : '',
+    email ? `EMAIL:${email}` : '',
+    phone ? `TEL;TYPE=WORK,VOICE:${phone}` : '',
+    whatsapp ? `TEL;TYPE=CELL,VOICE:${whatsapp}` : '',
+    fullAddress ? `ADR;TYPE=WORK:;;${fullAddress}` : '',
+    website ? `URL:${website}` : '',
+    `NOTE:Profil LUVIKA — ${profileUrl}`,
+    'END:VCARD'
+  ]
+    .filter(Boolean) // Supprime les lignes vides
+    .join('\r\n');
+
+  // Crée le fichier
+  const blob = new Blob([vCardContent], { type: 'text/vcard;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${username || 'contact'}.vcf`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
   const shareProfile = () => {
     const url = window.location.href;
