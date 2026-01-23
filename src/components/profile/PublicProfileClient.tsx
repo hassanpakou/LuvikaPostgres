@@ -168,14 +168,14 @@ const BioToggle = ({ bio }: { bio: string }) => {
   );
 };
 
-const isSectionVisible = (section: string, profile: Profile): boolean => {
-  return profile.sections_visibility?.[section] !== false;
+const isSectionVisible = (section: string, localProfile: Profile): boolean => {
+  return localProfile.sections_visibility?.[section] !== false;
 };
 
-const isBirthdayToday = (profile: Profile) => {
-  if (!profile.birth_day || !profile.birth_month || profile.disable_birthday_icon) return false;
+const isBirthdayToday = (localProfile: Profile) => {
+  if (!localProfile.birth_day || !localProfile.birth_month || localProfile.disable_birthday_icon) return false;
   const today = new Date();
-  return today.getDate() === profile.birth_day && today.getMonth() + 1 === profile.birth_month;
+  return today.getDate() === localProfile.birth_day && today.getMonth() + 1 === localProfile.birth_month;
 };
 
 const getMonthName = (month: number): string => {
@@ -217,12 +217,12 @@ export default function PublicProfileClient({
         .from('follows')
         .delete()
         .eq('follower_id', currentUserId)
-        .eq('followed_id', profile.id);
+        .eq('followed_id', localProfile.id);
       onFollowChange?.(followersCount - 1, false);
     } else {
       await supabase
         .from('follows')
-        .insert({ follower_id: currentUserId, followed_id: profile.id });
+        .insert({ follower_id: currentUserId, followed_id: localProfile.id });
       onFollowChange?.(followersCount + 1, true);
     }
 
@@ -232,23 +232,23 @@ export default function PublicProfileClient({
 
   useEffect(() => {
     const fetchPortfolio = async () => {
-      const res = await fetch(`/api/portfolio?profile_id=${profile.id}`);
+      const res = await fetch(`/api/portfolio?profile_id=${localProfile.id}`);
       const { portfolios, certificates } = await res.json();
       setPortfolios(portfolios);
       setCertificates(certificates);
     };
     fetchPortfolio();
-  }, [profile.id]);
+  }, [localProfile.id]);
 
   useEffect(() => {
-    fetch(`/api/analytics?profile_id=${profile.id}&range=all`)
+    fetch(`/api/analytics?profile_id=${localProfile.id}&range=all`)
       .then(res => res.json())
       .then(data => setScansCount(data.total || 0))
       .catch(console.warn);
-  }, [profile.id]);
+  }, [localProfile.id]);
 
   useEffect(() => {
-    const activeOrLostCards = (profile.nfc_cards || []).filter(
+    const activeOrLostCards = (localProfile.nfc_cards || []).filter(
       card => card.status === 'active' || card.status === 'lost'
     );
     setHasLostCard(activeOrLostCards.some(card => card.status === 'lost'));
@@ -256,18 +256,18 @@ export default function PublicProfileClient({
     fetch('/api/scans', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ profile_id: profile.id, scan_type: 'qr_profile' }),
+      body: JSON.stringify({ profile_id: localProfile.id, scan_type: 'qr_profile' }),
     }).catch(console.warn);
-  }, [profile.id]);
+  }, [localProfile.id]);
 
   const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app')
     .replace(/\s+$/, '')
     .replace(/\/+$/, '');
   const profileUrl = `${baseUrl}/${profile.username}`;
-  const shortId = profile.id.substring(0, 6).replace(/[+/]/g, 'x').toLowerCase();
+  const shortId = localProfile.id.substring(0, 6).replace(/[+/]/g, 'x').toLowerCase();
   const shortUrl = `https://luvika.me/u/${shortId}`;
 
-  const cleanCoverUrl = (profile.cover_url || '')
+  const cleanCoverUrl = (localProfile.cover_url || '')
     .replace(/\u00A0/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -293,7 +293,7 @@ export default function PublicProfileClient({
 useEffect(() => {
   const supabase = createClient();
   const channel = supabase
-    .channel(`profile-${profile.id}`)
+    .channel(`profile-${localProfile.id}`)
     .on(
       'postgres_changes',
       {
@@ -311,7 +311,7 @@ useEffect(() => {
   return () => {
     supabase.removeChannel(channel);
   };
-}, [profile.id]);
+}, [localProfile.id]);
 const [showContactModal, setShowContactModal] = useState(false);
 const [showPortfolioModal, setShowPortfolioModal] = useState(false);
 const [showCertificatesModal, setShowCertificatesModal] = useState(false);
@@ -355,10 +355,10 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   className="text-center mb-8 relative"
 >
   {/* Bannière de couverture */}
-  {profile.cover_url && (
+  {localProfile.cover_url && (
     <div className="absolute inset-x-0 top-0 h-48 overflow-hidden rounded-t-2xl">
       <img
-        src={profile.cover_url}
+        src={localProfile.cover_url}
         alt="Cover"
         className="w-full h-full object-cover"
         onError={(e) => {
@@ -370,13 +370,13 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   )}
 
   <div className="relative inline-block mt-24">
-    {profile.avatar_url ? (
+    {localProfile.avatar_url ? (
       <motion.img
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        src={profile.avatar_url}
-        alt={`${profile.full_name} avatar`}
+        src={localProfile.avatar_url}
+        alt={`${localProfile.full_name} avatar`}
         className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/30 shadow-xl mx-auto"
         onError={(e) => {
           (e.target as HTMLImageElement).src = '/default-avatar.png';
@@ -389,11 +389,11 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
         className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto"
       >
-        {profile.full_name?.charAt(0).toUpperCase() || '?'}
+        {localProfile.full_name?.charAt(0).toUpperCase() || '?'}
       </motion.div>
     )}
 
-    {profile.plan && profile.plan !== 'basic' && (
+    {localProfile.plan && localProfile.plan !== 'basic' && (
       <motion.div
         initial={{ scale: 0, opacity: 0, rotate: -15 }}
         animate={{ scale: 1, opacity: 1, rotate: 0 }}
@@ -401,11 +401,11 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         className="absolute -top-2 -right-2"
       >
         <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
-          profile.plan === 'premium'
+          localProfile.plan === 'premium'
             ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
             : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
         }`}>
-          {profile.plan === 'premium' ? '⭐ Premium' : '🚀 Entreprise'}
+          {localProfile.plan === 'premium' ? '⭐ Premium' : '🚀 Entreprise'}
         </Badge>
       </motion.div>
     )}
@@ -418,8 +418,8 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
     transition={{ delay: 0.4 }}
   >
     <p className="text-cyan-300 font-mono text-sm flex items-center justify-center gap-1">
-      @{profile.username}
-      {profile.verified && (
+      @{localProfile.username}
+      {localProfile.verified && (
         <img 
           src="/badge.png" 
           alt="✅ Vérifié" 
@@ -430,8 +430,8 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
     </p>
     
     <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
-      {profile.full_name}
-      {isBirthdayToday(profile) && (
+      {localProfile.full_name}
+      {isBirthdayToday(localProfile) && (
         <motion.div
           animate={{ scale: [1, 1.2, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -443,20 +443,20 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
     </h1>
     
     <div className="mt-2 flex flex-wrap justify-center gap-2 text-gray-400 text-sm">
-      {profile.nickname && <span className="font-medium">{profile.nickname}</span>}
-      {profile.pronouns && <span className="px-2 py-0.5 bg-white/5 rounded">{profile.pronouns}</span>}
-      {profile.job_title && (
+      {localProfile.nickname && <span className="font-medium">{localProfile.nickname}</span>}
+      {localProfile.pronouns && <span className="px-2 py-0.5 bg-white/5 rounded">{localProfile.pronouns}</span>}
+      {localProfile.job_title && (
         <span>
-          {profile.job_title}{profile.company && ` · ${profile.company}`}
+          {localProfile.job_title}{localProfile.company && ` · ${localProfile.company}`}
         </span>
       )}
-      {profile.professional_status && (
+      {localProfile.professional_status && (
         <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
-          {profile.professional_status === 'student' && 'Étudiant'}
-          {profile.professional_status === 'employed' && 'En poste'}
-          {profile.professional_status === 'freelance' && 'Freelance'}
-          {profile.professional_status === 'open_to_work' && 'Ouvert'}
-          {profile.professional_status === 'other' && 'Autre'}
+          {localProfile.professional_status === 'student' && 'Étudiant'}
+          {localProfile.professional_status === 'employed' && 'En poste'}
+          {localProfile.professional_status === 'freelance' && 'Freelance'}
+          {localProfile.professional_status === 'open_to_work' && 'Ouvert'}
+          {localProfile.professional_status === 'other' && 'Autre'}
         </span>
       )}
     </div>
@@ -485,7 +485,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           className="mt-6 flex flex-wrap justify-center gap-4"
         >
           <StatBox label="J’aime">
-            <GlacialLikeButton profileId={profile.id} initialLikes={profile.likes_count || 0} />
+            <GlacialLikeButton profileId={localProfile.id} initialLikes={localProfile.likes_count || 0} />
           </StatBox>
           <StatBox label="Followers">{followersCount}</StatBox>
           {initialFollowing > 0 && <StatBox label="Suivi(e)s">{initialFollowing}</StatBox>}
@@ -511,15 +511,15 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
 
         {!isOwner && (
           <FollowersList 
-            profileId={profile.id} 
-            plan={profile.plan || 'basic'} 
+            profileId={localProfile.id} 
+            plan={localProfile.plan || 'basic'} 
           />
         )}
 
         {!isOwner && initialFollowing > 0 && (
           <FollowingList 
-            profileId={profile.id} 
-            plan={profile.plan || 'basic'} 
+            profileId={localProfile.id} 
+            plan={localProfile.plan || 'basic'} 
           />
         )}
 
@@ -552,7 +552,57 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
             </Button>
           </motion.div>
         )}
-
+<motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1 }}
+          className="w-full px-4 mt-8"
+        >
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-4 py-4">
+              {isSectionVisible('contact', localProfile) && localProfile.email && (
+                <ActionItem
+                  icon={<Mail className="w-5 h-5 text-cyan-400" />}
+                  label="Email"
+                  href={`mailto:${localProfile.email}`}
+                  className="bg-gradient-to-tr from-cyan-800/20 to-cyan-500/20 hover:from-cyan-800/40 hover:to-cyan-500/40"
+                />
+              )}
+              {isSectionVisible('contact', localProfile) && localProfile.phone && (
+                <ActionItem
+                  icon={<Phone className="w-5 h-5 text-green-400" />}
+                  label="Appeler"
+                  href={`tel:${localProfile.phone}`}
+                  className="bg-gradient-to-tr from-green-800/20 to-green-400/20 hover:from-green-800/40 hover:to-green-400/40"
+                />
+              )}
+              {isSectionVisible('contact', localProfile) && localProfile.whatsapp && (
+                <ActionItem
+                  icon={<MessageCircle className="w-5 h-5 text-emerald-400" />}
+                  label="WhatsApp"
+                  href={`https://wa.me/${localProfile.whatsapp.replace(/\D/g, '')}`}
+                  className="bg-gradient-to-tr from-emerald-800/20 to-emerald-400/20 hover:from-emerald-800/40 hover:to-emerald-400/40"
+                />
+              )}
+              {isSectionVisible('contact', localProfile) && localProfile.address && (
+                <ActionItem
+                  icon={<MapPin className="w-5 h-5 text-amber-400" />}
+                  label="Carte"
+                  href={`https://maps.google.com/?q=${encodeURIComponent(localProfile.address)}`}
+                  className="bg-gradient-to-tr from-amber-800/20 to-amber-400/20 hover:from-amber-800/40 hover:to-amber-400/40"
+                />
+              )}
+              {isSectionVisible('contact', localProfile) && localProfile.website && (
+                <ActionItem
+                  icon={<Globe className="w-5 h-5 text-blue-400" />}
+                  label="Site"
+                  href={localProfile.website}
+                  className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
+                />
+              )}
+            </div>
+          </div>
+        </motion.div>
       {/* 🔹 Boutons Portfolio, Certificats & Compétences */}
 <motion.div
   initial={{ opacity: 0, y: 10 }}
@@ -560,7 +610,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   transition={{ delay: 1.7 }}
   className="mt-6 flex flex-wrap justify-center gap-3"
 >
-  {isSectionVisible('portfolio', profile) && portfolios.length > 0 && (
+  {isSectionVisible('portfolio', localProfile) && portfolios.length > 0 && (
     <Button
       variant="outline"
       size="sm"
@@ -572,7 +622,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
     </Button>
   )}
 
-  {isSectionVisible('certificates', profile) && certificates.length > 0 && (
+  {isSectionVisible('certificates', localProfile) && certificates.length > 0 && (
     <Button
       variant="outline"
       size="sm"
@@ -585,7 +635,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   )}
 
   {/* 🔹 Bouton Compétences */}
-  {profile.skills && profile.skills.length > 0 && isSectionVisible('skills', profile) && (
+  {localProfile.skills && localProfile.skills.length > 0 && isSectionVisible('skills', localProfile) && (
     <Button
       variant="outline"
       size="sm"
@@ -593,54 +643,54 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
       className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
     >
       <Tag className="w-4 h-4 mr-1.5" />
-      Voir compétences ({profile.skills.length})
+      Voir compétences ({localProfile.skills.length})
     </Button>
   )}
 </motion.div>
 
-        {profile.bio_short && (
+        {localProfile.bio_short && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
             className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed"
           >
-            {profile.bio_short}
+            {localProfile.bio_short}
           </motion.p>
         )}
 
-        {(profile.birth_day || profile.city || profile.country || profile.availability) && (
+        {(localProfile.birth_day || localProfile.city || localProfile.country || localProfile.availability) && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
             className="mt-6 flex flex-wrap justify-center gap-4 text-gray-400 text-sm"
           >
-            {profile.birth_day && profile.birth_month && (
+            {localProfile.birth_day && localProfile.birth_month && (
               <div className="flex items-center gap-1">
                 <Cake className="w-4 h-4" />
                 <span>
-                  {profile.birth_day} {getMonthName(profile.birth_month)}
-                  {!profile.hide_birth_year && profile.birth_year && ` ${profile.birth_year}`}
+                  {localProfile.birth_day} {getMonthName(localProfile.birth_month)}
+                  {!localProfile.hide_birth_year && localProfile.birth_year && ` ${localProfile.birth_year}`}
                 </span>
               </div>
             )}
-            {(profile.city || profile.country) && (
+            {(localProfile.city || localProfile.country) && (
               <div className="flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
-                <span>{[profile.city, profile.country].filter(Boolean).join(', ')}</span>
+                <span>{[localProfile.city, localProfile.country].filter(Boolean).join(', ')}</span>
               </div>
             )}
-            {profile.availability && (
+            {localProfile.availability && (
               <div className="flex items-center gap-1">
                 <CheckCircle className={`w-4 h-4 ${
-                  profile.availability === 'available' ? 'text-emerald-400' :
-                  profile.availability === 'unavailable' ? 'text-red-400' : 'text-cyan-400'
+                  localProfile.availability === 'available' ? 'text-emerald-400' :
+                  localProfile.availability === 'unavailable' ? 'text-red-400' : 'text-cyan-400'
                 }`} />
                 <span>
-                  {profile.availability === 'available' && 'Disponible'}
-                  {profile.availability === 'unavailable' && 'Indisponible'}
-                  {profile.availability === 'by_appointment' && 'Sur RDV'}
+                  {localProfile.availability === 'available' && 'Disponible'}
+                  {localProfile.availability === 'unavailable' && 'Indisponible'}
+                  {localProfile.availability === 'by_appointment' && 'Sur RDV'}
                 </span>
               </div>
             )}
@@ -654,63 +704,12 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           className="mt-6"
         >
 <FloatingButtons 
-  profile={profile} 
+  profile={localProfile} 
   setShowQRModal={setShowQRModal}
   onContactClick={() => setShowContactModal(true)} // 👈 Ici
 />        </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-          className="w-full px-4 mt-8"
-        >
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-gray-200 font-semibold mb-2 text-center">Contact</h3>
-            <div className="flex flex-wrap justify-center gap-4 py-4">
-              {isSectionVisible('contact', profile) && profile.email && (
-                <ActionItem
-                  icon={<Mail className="w-5 h-5 text-cyan-400" />}
-                  label="Email"
-                  href={`mailto:${profile.email}`}
-                  className="bg-gradient-to-tr from-cyan-800/20 to-cyan-500/20 hover:from-cyan-800/40 hover:to-cyan-500/40"
-                />
-              )}
-              {isSectionVisible('contact', profile) && profile.phone && (
-                <ActionItem
-                  icon={<Phone className="w-5 h-5 text-green-400" />}
-                  label="Appeler"
-                  href={`tel:${profile.phone}`}
-                  className="bg-gradient-to-tr from-green-800/20 to-green-400/20 hover:from-green-800/40 hover:to-green-400/40"
-                />
-              )}
-              {isSectionVisible('contact', profile) && profile.whatsapp && (
-                <ActionItem
-                  icon={<MessageCircle className="w-5 h-5 text-emerald-400" />}
-                  label="WhatsApp"
-                  href={`https://wa.me/${profile.whatsapp.replace(/\D/g, '')}`}
-                  className="bg-gradient-to-tr from-emerald-800/20 to-emerald-400/20 hover:from-emerald-800/40 hover:to-emerald-400/40"
-                />
-              )}
-              {isSectionVisible('contact', profile) && profile.address && (
-                <ActionItem
-                  icon={<MapPin className="w-5 h-5 text-amber-400" />}
-                  label="Carte"
-                  href={`https://maps.google.com/?q=${encodeURIComponent(profile.address)}`}
-                  className="bg-gradient-to-tr from-amber-800/20 to-amber-400/20 hover:from-amber-800/40 hover:to-amber-400/40"
-                />
-              )}
-              {isSectionVisible('contact', profile) && profile.website && (
-                <ActionItem
-                  icon={<Globe className="w-5 h-5 text-blue-400" />}
-                  label="Site"
-                  href={profile.website}
-                  className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
-                />
-              )}
-            </div>
-          </div>
-        </motion.div>
+        
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -719,77 +718,76 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           className="w-full px-4 mt-6"
         >
           <div className="max-w-4xl mx-auto">
-            <h3 className="text-gray-200 font-semibold mb-2 text-center">Réseaux sociaux</h3>
             <div className="flex flex-wrap justify-center gap-4 py-4">
-              {isSectionVisible('social', profile) && profile.instagram && (
+              {isSectionVisible('social', localProfile) && localProfile.instagram && (
                 <ActionItem
                   icon={<Instagram className="w-5 h-5 text-pink-400" />}
                   label="IG"
-                  href={`https://instagram.com/${profile.instagram.trim()}`}
+                  href={`https://instagram.com/${localProfile.instagram.trim()}`}
                   className="bg-gradient-to-tr from-pink-800/20 to-pink-400/20 hover:from-pink-800/40 hover:to-pink-400/40"
                 />
               )}
-              {profile.linkedin && (
+              {isSectionVisible('social', localProfile) && localProfile.linkedin && (
                 <ActionItem
                   icon={<Linkedin className="w-5 h-5 text-blue-500" />}
                   label="LinkedIn"
-                  href={`https://linkedin.com/in/${profile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`}
+                  href={`https://linkedin.com/in/${localProfile.linkedin.replace(/^https?:\/\//, '').replace(/\/$/, '')}`}
                   className="bg-gradient-to-tr from-blue-800/20 to-blue-500/20 hover:from-blue-800/40 hover:to-blue-500/40"
                 />
               )}
-              {profile.github && (
+              {isSectionVisible('social', localProfile) && localProfile.github && (
                 <ActionItem
                   icon={<Github className="w-5 h-5 text-gray-400" />}
                   label="GitHub"
-                  href={`https://github.com/${profile.github.replace(/^https?:\/\//, '')}`}
+                  href={`https://github.com/${localProfile.github.replace(/^https?:\/\//, '')}`}
                   className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
                 />
               )}
-              {profile.gitlab && (
+              {isSectionVisible('social', localProfile) && localProfile.gitlab && (
                 <ActionItem
                   icon={<Gitlab className="w-5 h-5 text-orange-500" />}
                   label="GitLab"
-                  href={`https://gitlab.com/${profile.gitlab.replace(/^https?:\/\//, '')}`}
+                  href={`https://gitlab.com/${localProfile.gitlab.replace(/^https?:\/\//, '')}`}
                   className="bg-gradient-to-tr from-orange-800/20 to-orange-500/20 hover:from-orange-800/40 hover:to-orange-500/40"
                 />
               )}
-              {profile.tiktok && (
+              {isSectionVisible('social', localProfile) && localProfile.tiktok && (
                 <ActionItem
                   icon={<SiTiktok className="w-5 h-5 text-black" />}
                   label="TikTok"
-                  href={`https://tiktok.com/@${profile.tiktok.replace(/^@/, '')}`}
+                  href={`https://tiktok.com/@${localProfile.tiktok.replace(/^@/, '')}`}
                   className="bg-gradient-to-tr from-black/20 to-gray-600/20 hover:from-black/40 hover:to-gray-600/40"
                 />
               )}
-              {profile.snapchat && (
+              {isSectionVisible('social', localProfile) && localProfile.snapchat && (
                 <ActionItem
                   icon={<SnapchatIcon className="w-5 h-5 text-yellow-400" />}
                   label="Snapchat"
-                  href={`https://snapchat.com/add/${profile.snapchat.replace(/^@/, '')}`}
+                  href={`https://snapchat.com/add/${localProfile.snapchat.replace(/^@/, '')}`}
                   className="bg-gradient-to-tr from-yellow-800/20 to-yellow-400/20 hover:from-yellow-800/40 hover:to-yellow-400/40"
                 />
               )}
-              {profile.telegram && (
+              {isSectionVisible('social', localProfile) && localProfile.telegram && (
                 <ActionItem
                   icon={<TelegramIcon className="w-5 h-5 text-blue-400" />}
                   label="Telegram"
-                  href={`https://t.me/${profile.telegram.replace(/^@/, '')}`}
+                  href={`https://t.me/${localProfile.telegram.replace(/^@/, '')}`}
                   className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
                 />
               )}
-              {profile.behance && (
+              {isSectionVisible('social', localProfile) && localProfile.behance && (
                 <ActionItem
                   icon={<BehanceIcon className="w-5 h-5 text-blue-400" />}
                   label="Behance"
-                  href={`https://${profile.behance.replace(/^https?:\/\//, '')}`}
+                  href={`https://${localProfile.behance.replace(/^https?:\/\//, '')}`}
                   className="bg-gradient-to-tr from-blue-800/20 to-blue-400/20 hover:from-blue-800/40 hover:to-blue-400/40"
                 />
               )}
-              {profile.dribbble && (
+              {isSectionVisible('social', localProfile) && localProfile.dribbble && (
                 <ActionItem
                   icon={<DribbbleIcon className="w-5 h-5 text-pink-400" />}
                   label="Dribbble"
-                  href={`https://${profile.dribbble.replace(/^https?:\/\//, '')}`}
+                  href={`https://${localProfile.dribbble.replace(/^https?:\/\//, '')}`}
                   className="bg-gradient-to-tr from-pink-800/20 to-pink-400/20 hover:from-pink-800/40 hover:to-pink-400/40"
                 />
               )}
@@ -804,47 +802,46 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   className="w-full px-4 mt-6"
 >
   <div className="max-w-4xl mx-auto">
-    <h3 className="text-gray-200 font-semibold mb-2 text-center">Liens professionnels</h3>
     <div className="flex flex-wrap justify-center gap-4 py-4">
       {/* 🔹 Utilisez 'links' au lieu de 'social' */}
-      {isSectionVisible('links', profile) && (
+      {isSectionVisible('links', localProfile) && (
         <>
           <ActionItem
             icon={<Download className="w-5 h-5 text-purple-400" />}
             label="vCard"
             onClick={() => {
-              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${profile.full_name}\r\nORG:${profile.company || ''}\r\nTITLE:${profile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${profile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${profile.whatsapp || ''}\r\nEMAIL:${profile.email || ''}\r\nADR;TYPE=WORK:;;${profile.address || ''};;;;\r\nURL:${profile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
+              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${localProfile.full_name}\r\nORG:${localProfile.company || ''}\r\nTITLE:${localProfile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${localProfile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${localProfile.whatsapp || ''}\r\nEMAIL:${localProfile.email || ''}\r\nADR;TYPE=WORK:;;${localProfile.address || ''};;;;\r\nURL:${localProfile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
               const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `${profile.username}.vcf`;
+              a.download = `${localProfile.username}.vcf`;
               a.click();
               URL.revokeObjectURL(url);
             }}
             className="bg-gradient-to-tr from-purple-800/20 to-purple-400/20 hover:from-purple-800/40 hover:to-purple-400/40"
           />
-          {profile.cv_url && (
+          {localProfile.cv_url && (
             <ActionItem
               icon={<FileText className="w-5 h-5 text-gray-400" />}
               label="CV"
-              href={profile.cv_url.startsWith('http') ? profile.cv_url : `https://${profile.cv_url}`}
+              href={localProfile.cv_url.startsWith('http') ? localProfile.cv_url : `https://${localProfile.cv_url}`}
               className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
             />
           )}
-          {profile.calendly && (
+          {localProfile.calendly && (
             <ActionItem
               icon={<Calendar className="w-5 h-5 text-cyan-400" />}
               label="RDV"
-              href={profile.calendly.startsWith('http') ? profile.calendly : `https://${profile.calendly}`}
+              href={localProfile.calendly.startsWith('http') ? localProfile.calendly : `https://${localProfile.calendly}`}
               className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
             />
           )}
-          {profile.portfolio_url && (
+          {localProfile.portfolio_url && (
             <ActionItem
               icon={<Folder className="w-5 h-5 text-cyan-400" />}
               label="Portfolio"
-              href={profile.portfolio_url.startsWith('http') ? profile.portfolio_url : `https://${profile.portfolio_url}`}
+              href={localProfile.portfolio_url.startsWith('http') ? localProfile.portfolio_url : `https://${localProfile.portfolio_url}`}
               className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
             />
           )}
@@ -854,7 +851,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   </div>
 </motion.div>
 
-        <ScanTracker profileId={profile.id} />
+        <ScanTracker profileId={localProfile.id} />
 
         <AnimatePresence>
           {showQRModal && (
@@ -863,7 +860,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
               isOpen={showQRModal}
               onClose={() => setShowQRModal(false)}
               profileUrl={profileUrl}
-              username={profile.username}
+              username={localProfile.username}
               shortUrl={shortUrl}
             />
           )}
@@ -872,7 +869,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
               key="contact-modal"
               isOpen={isContactModalOpen}
               onClose={() => setIsContactModalOpen(false)}
-              profileId={profile.id}
+              profileId={localProfile.id}
             />
           )}
         </AnimatePresence>
@@ -898,7 +895,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         isOpen={showSkillsModal}
         onClose={() => setShowSkillsModal(false)}
         title="Compétences"
-        skills={profile.skills || []} children={undefined}>
+        skills={localProfile.skills || []} children={undefined}>
 </ProfileModal>
 
 {/* 🔹 Modal de contact — UTILISER ContactModal */}
@@ -906,7 +903,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
   key="contact-modal-float"
   isOpen={showContactModal}
   onClose={() => setShowContactModal(false)}
-  profileId={profile.id}
+  profileId={localProfile.id}
 />
     </div>
 
