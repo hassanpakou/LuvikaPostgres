@@ -1,18 +1,20 @@
-// src/app/events/[id]/page.tsx
-
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import CheckInClient from '../../../components/events/CheckInClient'; // ✅ chemin court
+import CheckInClient from '../../../components/events/CheckInClient';
 import { X, Lock, Clock } from 'lucide-react';
-import { Card } from '../../../../components/ui/card';
+import { Card } from '@/components/ui/card';
 
-export default async function EventCheckInPage({ 
-  params 
-}: { 
-  params: { id: string }; 
+// ⚠️ Ajoute `searchParams` aux props
+export default async function EventCheckInPage({
+  params,
+  searchParams
+}: {
+  params: { id: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const eventId = params.id;
+  const token = typeof searchParams.token === 'string' ? searchParams.token : null;
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -30,8 +32,7 @@ export default async function EventCheckInPage({
     }
   );
 
-  // 🔹 ✅ Sélection complète — inclut qr_code_url
-  const { data : event } = await supabase
+  const { data: event } = await supabase
     .from('events')
     .select('id, title, starts_at, ends_at, is_public, qr_code_url')
     .eq('id', eventId)
@@ -43,6 +44,7 @@ export default async function EventCheckInPage({
   const startsAt = new Date(event.starts_at);
   const endsAt = new Date(event.ends_at);
 
+  // Vérifications de statut
   if (!event.is_public) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -63,7 +65,8 @@ export default async function EventCheckInPage({
           <Clock className="w-12 h-12 mx-auto text-blue-400 mb-4 animate-pulse" />
           <h2 className="text-xl font-bold mb-2">⏳ Bientôt !</h2>
           <p className="text-gray-300">
-            L’événement « {event.title} » commence dans <span className="text-cyan-300 font-bold">{diff} min</span>.
+            L’événement « {event.title} » commence dans{' '}
+            <span className="text-cyan-300 font-bold">{diff} min</span>.
           </p>
         </Card>
       </div>
@@ -82,10 +85,13 @@ export default async function EventCheckInPage({
     );
   }
 
-  // ✅ OK → on rend le client avec eventTitle
-  return <CheckInClient 
-    eventId={eventId} 
-    isOrganizer={false} 
-    eventTitle={event.title} 
-  />;
+  // ✅ Transmettre eventId, eventTitle, ET token
+  return (
+    <CheckInClient
+      eventId={eventId}
+      eventTitle={event.title}
+      token={token} // ✅ crucial
+      isOrganizer={false}
+    />
+  );
 }

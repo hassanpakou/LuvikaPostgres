@@ -1,100 +1,108 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '../../../components/ui/button';
-import { CheckCircle, Loader2, X as XIcon } from 'lucide-react';
-import { Card } from '../../../components/ui/card';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, QrCode, User } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-type Props = {
+export default function CheckInClient({
+  eventId,
+  eventTitle,
+  token,
+  isOrganizer
+}: {
   eventId: string;
+  eventTitle: string;
+  token: string | null;
   isOrganizer: boolean;
-  eventTitle?: string; // ✅ optionnel
-};
+}) {
+  const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
+  const [message, setMessage] = useState('');
 
-export default function CheckInClient({ eventId, isOrganizer, eventTitle }: Props) {
-  const t = useTranslations();
-  const router = useRouter();
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-
-  useEffect(() => {
-    const recordAttendance = async () => {
-      setStatus('loading');
-      try {
-        const res = await fetch(`/api/events/${eventId}/attendees`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: 'Visiteur', email: null }),
-        });
-
-        if (!res.ok) throw new Error('Échec');
-        setStatus('success');
-      } catch (err) {
-        console.error('❌ Check-in échoué:', err);
-        setStatus('error');
-      }
-    };
-
-    recordAttendance();
-  }, [eventId]);
-
-  useEffect(() => {
-    if (status === 'success') {
-      const timer = setTimeout(() => {
-        router.push(isOrganizer ? '/dashboard' : '/');
-      }, 3000);
-      return () => clearTimeout(timer);
+  const handleCheckIn = async () => {
+    if (!token) {
+      setMessage('QR code invalide. Veuillez scanner un QR valide.');
+      setStatus('error');
+      return;
     }
-  }, [status, isOrganizer, router]);
+
+    setStatus('checking');
+    try {
+      const res = await fetch(`/api/events/${eventId}/check-in`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token }), // ✅ envoie le token
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setStatus('success');
+        setMessage(`✅ Bienvenue, ${data.name || 'participant'} !`);
+      } else {
+        setStatus('error');
+        setMessage(data.error || 'Erreur lors du check-in.');
+      }
+    } catch (err) {
+      setStatus('error');
+      setMessage('Erreur réseau.');
+    }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <div className="w-24 h-24 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
+            <User className="w-12 h-12 text-emerald-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">Présence enregistrée !</h1>
+          <p className="text-gray-300">{message}</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br">
-      <Card className="glass-border w-full max-w-md p-6 border border-white/10 bg-white/5 backdrop-blur-xl">
-        <div className="mb-5 flex flex-col items-center">
-          {status === 'loading' && (
-            <div className="w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center mb-4">
-              <Loader2 className="w-7 h-7 text-cyan-400 animate-spin" />
-            </div>
-          )}
-          {status === 'success' && (
-            <div className="w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
-              <CheckCircle className="w-7 h-7 text-emerald-400" />
-            </div>
-          )}
+    <div className="min-h-screen flex items-center justify-center bg-black p-4">
+      <Card className="glass-border w-full max-w-md">
+        <CardHeader className="text-center">
+          <QrCode className="w-12 h-12 mx-auto text-cyan-400 mb-3" />
+          <CardTitle className="text-white">{eventTitle}</CardTitle>
+        </CardHeader>
+        <CardContent>
           {status === 'error' && (
-            <div className="w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
-              <XIcon className="w-7 h-7 text-red-400" />
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
+              {message}
             </div>
           )}
-        </div>
 
-        <h1 className="text-2xl font-bold text-white text-center mb-2">
-          {status === 'loading' && 'Enregistrement…'}
-          {status === 'success' && '✅ Présence confirmée !'}
-          {status === 'error' && '❌ Échec'}
-        </h1>
-
-        <p className="text-gray-300 text-center mb-5">
-          {status === 'loading' && 'Un instant…'}
-          {status === 'success' && `Merci d’avoir rejoint « ${eventTitle || 'l’événement'} »`}
-          {status === 'error' && 'Réessayez ou contactez l’organisateur.'}
-        </p>
-
-        {status === 'success' && !isOrganizer && (
-          <p className="text-cyan-300 text-sm text-center">Redirection dans 3s…</p>
-        )}
-
-        {status === 'error' && (
           <Button
-            variant="outline"
-            className="w-full border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
-            onClick={() => router.refresh()}
+            onClick={handleCheckIn}
+            disabled={status === 'checking'}
+            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
           >
-            🔄 Réessayer
+            {status === 'checking' ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Vérification...
+              </>
+            ) : (
+              'Enregistrer ma présence'
+            )}
           </Button>
-        )}
+
+          {!token && (
+            <p className="text-xs text-gray-400 mt-4 text-center">
+              ❗ Ce QR code n’est pas valide. Assurez-vous de scanner le bon lien.
+            </p>
+          )}
+        </CardContent>
       </Card>
     </div>
   );
