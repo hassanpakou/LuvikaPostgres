@@ -692,7 +692,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
                   className="bg-gradient-to-tr from-emerald-800/20 to-emerald-400/20 hover:from-emerald-800/40 hover:to-emerald-400/40"
                 />
               )}
-              {profile.address && (
+              {isSectionVisible('contact', profile) && profile.address && (
                 <ActionItem
                   icon={<MapPin className="w-5 h-5 text-amber-400" />}
                   label="Carte"
@@ -700,7 +700,7 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
                   className="bg-gradient-to-tr from-amber-800/20 to-amber-400/20 hover:from-amber-800/40 hover:to-amber-400/40"
                 />
               )}
-              {profile.website && (
+              {isSectionVisible('contact', profile) && profile.website && (
                 <ActionItem
                   icon={<Globe className="w-5 h-5 text-blue-400" />}
                   label="Site"
