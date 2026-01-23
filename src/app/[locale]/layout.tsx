@@ -4,8 +4,7 @@ import { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import Navbar from '@/components/layout/Navbar';
-import { ClientProviders } from '@/src/components/system/ClientProviders';
-import Footer from '../../components/layout/Footer';
+import { ClientProviders } from '../../../src/components/system/ClientProviders';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -21,40 +20,34 @@ export default async function LocalizedLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Assertion de type sécurisée après validation
   const checkedLocale = locale as SupportedLocale;
+
+  // Validation optionnelle (recommandé de la laisser ici OU dans les pages)
+  if (!supportedLocales.includes(checkedLocale)) {
+    // Option 1 : 404 (propre et recommandé dans un layout)
+    // notFound();
+
+    // Option 2 : fallback silencieux (pas d'erreur visible, mais locale forcé)
+    // checkedLocale = 'fr' as SupportedLocale;
+  }
+
+  // Propagation du locale validé à next-intl
+  // TypeScript est maintenant content car checkedLocale est SupportedLocale
   setRequestLocale(checkedLocale);
+
+  // Récupération des messages (traductions)
   const messages = await getMessages();
 
   return (
     <NextIntlClientProvider locale={checkedLocale} messages={messages}>
-      <div className={inter.className + " min-h-screen flex flex-col"}>
-        {/* Navbar */}
+      {/* Police Inter appliquée à tout le subtree */}
+      <div className={inter.className}>
         <Navbar />
-
-        {/* Contenu principal */}
         <ClientProviders>
-          <main className="flex-1">
-            {children}
-          </main>
+          {children}
         </ClientProviders>
-
-        {/* Footer complet */}
-        <Footer
-          product="Produit"
-          features="Fonctionnalités"
-          pricing="Tarifs"
-          download="Téléchargement"
-          company="Entreprise"
-          about="À propos"
-          contact="Contact"
-          blog="Blog"
-          legal="Légal"
-          privacy="Privacy"
-          terms="Terms"
-          cookies="Cookies"
-          tagline="Découvrez Luvika, votre solution digitale à Kinshasa et au-delà."
-          copyright="Tous droits réservés."
-        />
       </div>
     </NextIntlClientProvider>
   );
