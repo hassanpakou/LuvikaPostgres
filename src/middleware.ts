@@ -30,10 +30,9 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     if (!session) {
       await supabase.auth.signOut()
-      response.headers.set('Location', new URL('/auth/sign-in', request.url).toString())
-      return response
-      }
-  
+      const  redirectUrl = new URL('/fr/auth/sign-in', request.url)
+      return NextResponse.redirect(redirectUrl,{headers: response.headers})
+    }
   }
 
   return response
