@@ -57,7 +57,7 @@ export default function Footer({
       items: [
         { label: about, href: '/about' },
         { label: contact, href: '/contact' },
-        { label: blog, href: '#' },
+        { label: blog, href: '/blog' },
       ],
     },
     {
@@ -153,7 +153,7 @@ export default function Footer({
               <span>Kinshasa, RDC</span>
               <span className="mx-2">•</span>
               <Mail className="w-4 h-4" />
-              <span><a href="mailto:luvika@gmail.com">luvika@gmail.com</a></span>
+              <span><a href="mailto:luvika@gmail.com">phakunestor@gmail.com</a></span>
             </div>
           </div>
         </div>

@@ -10,6 +10,8 @@ import { Button } from '../../components/ui/button';
 import {
   Menu,
   X,
+  Crown,
+  Briefcase,
   Globe,
   LogOut,
   Shield,
@@ -608,14 +610,22 @@ export default function Navbar() {
                       <p className="text-sm font-medium text-white">{user.user_metadata?.full_name || user.email}</p>
                       {user.user_metadata?.plan && user.user_metadata.plan !== 'basic' && (
                         <Badge
-                          className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
-                            user.user_metadata.plan === 'premium'
-                              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                              : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-                          }`}
-                        >
-                          {user.user_metadata.plan === 'premium' ? '👑 Premium' : '🏢 Entreprise'}
-                        </Badge>
+  className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+    user.user_metadata.plan === 'premium'
+      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+      : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+  }`}
+>
+  {user.user_metadata.plan === 'premium' ? (
+    <>
+      <Crown className="w-3 h-3 inline mr-1" /> Premium
+    </>
+  ) : (
+    <>
+      <Briefcase className="w-3 h-3 inline mr-1" /> Entreprise
+    </>
+  )}
+</Badge>
                       )}
                     </div>
 
@@ -786,14 +796,22 @@ export default function Navbar() {
                       <p className="text-sm font-medium text-white">{user.user_metadata?.full_name || user.email}</p>
                       {user.user_metadata?.plan && user.user_metadata.plan !== 'basic' && (
                         <Badge
-                          className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
-                            user.user_metadata.plan === 'premium'
-                              ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                              : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-                          }`}
-                        >
-                          {user.user_metadata.plan === 'premium' ? '👑 Premium' : '🏢 Entreprise'}
-                        </Badge>
+  className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${
+    user.user_metadata.plan === 'premium'
+      ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+      : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+  }`}
+>
+  {user.user_metadata.plan === 'premium' ? (
+    <>
+      <Crown className="w-3 h-3 inline mr-1" /> Premium
+    </>
+  ) : (
+    <>
+      <Briefcase className="w-3 h-3 inline mr-1" /> Entreprise
+    </>
+  )}
+</Badge>
                       )}
                     </div>
                   </div>

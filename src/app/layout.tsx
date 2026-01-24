@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import { ClientProviders } from "../../src/components/system/ClientProviders";
+import CookieBanner from '../components/layout/CookieBanner';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,6 +29,7 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>
             {children}
+            <CookieBanner />
           </ClientProviders>
         </NextIntlClientProvider>
       </body>

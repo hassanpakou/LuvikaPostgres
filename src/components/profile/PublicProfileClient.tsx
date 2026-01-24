@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
-  Instagram, Globe, Download, QrCode, ExternalLink,
+  Instagram, Globe, Download, QrCode, ExternalLink, Crown,
   CheckCircle, UserCheck, ArrowUp, ChevronDown, Send, Link as LinkIcon,
   Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText, Share as ShareIcon
 } from 'lucide-react';
@@ -401,12 +401,13 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         className="absolute -top-2 -right-2"
       >
         <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
-          localProfile.plan === 'premium'
-            ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-            : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-        }`}>
-          {localProfile.plan === 'premium' ? '⭐ Premium' : '🚀 Entreprise'}
-        </Badge>
+  localProfile.plan === 'premium'
+    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+    : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+}`}>
+  {localProfile.plan === 'premium' ? <Crown className="w-4 h-4 inline mr-1" /> : <Briefcase className="w-4 h-4 inline mr-1" /> } 
+  {localProfile.plan === 'premium' ? 'Premium' : 'Entreprise'}
+</Badge>
       </motion.div>
     )}
   </div>

@@ -71,7 +71,6 @@ export default function PricingPlans({
         className="text-center mb-10"
       >
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-4 py-2 rounded-full border border-cyan-500/20 mb-4">
-          <Globe className="w-5 h-5 text-cyan-400" />
           <span className="text-cyan-300 font-medium">🌍 LUVIKA</span>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">

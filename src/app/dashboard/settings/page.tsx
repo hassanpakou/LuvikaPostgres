@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Upload, Save, Image as ImageIcon, ExternalLink, Eye, Mail, Phone,
-  Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings,
+  Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings,Crown,
   AlertTriangle, CheckCircle, X, RotateCcw, Cake, Tag, Link as LinkIcon,
   Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck
 } from 'lucide-react';
@@ -377,9 +377,21 @@ setMessage({ type: 'success', text: t('save_success') });
               <Progress value={getCompletion()} className="w-32 h-2" />
               <span className="text-sm text-gray-400">{getCompletion()}%</span>
             </div>
-            <Badge variant="outline" className="text-xs">
-              {profile.plan === 'premium' ? '👑 Premium' : profile.plan === 'entreprise' ? '🏢 Entreprise' : '🆓 Basique'}
-            </Badge>
+            <Badge variant="outline" className="text-xs flex items-center gap-1">
+  {profile.plan === 'premium' ? (
+    <>
+      <Crown className="w-3 h-3" /> Premium
+    </>
+  ) : profile.plan === 'entreprise' ? (
+    <>
+      <Briefcase className="w-3 h-3" /> Entreprise
+    </>
+  ) : (
+    <>
+      <User className="w-3 h-3" /> Basique
+    </>
+  )}
+</Badge>
           </div>
         </div>
         <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-blue-600 to-cyan-500">
