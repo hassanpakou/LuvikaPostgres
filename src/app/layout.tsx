@@ -1,4 +1,3 @@
-// src/app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -16,24 +15,6 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.ico' },
 };
 
-// ✅ Liste des routes publiques (sans auth)
-const PUBLIC_ROUTES = [
-  '/auth',
-  '/privacy',
-  '/terms',
-  '/cookies',
-  '/blog',
-  '/fr', // Page d'accueil
-  '/en',
-  '/ln',
-  '/kg',
-  '/sw',
-  '/pt',
-  '/nl',
-  '/es',
-  '/ar',
-];
-
 export default async function RootLayout({
   children,
 }: {
@@ -42,20 +23,14 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = await getMessages();
 
-  // ✅ Vérifie si la route est publique
-  const isPublicRoute = PUBLIC_ROUTES.some(route => 
-    typeof window !== 'undefined' ? 
-      window.location.pathname.startsWith(route) : 
-      true // Par défaut, considère comme protégé côté serveur
-  );
-
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-slate-950 text-white`} suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen bg-slate-950 text-white`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>
-            {/* ✅ N'applique SessionGuard QUE sur les routes protégées */}
-            {isPublicRoute ? children : <SessionGuard>{children}</SessionGuard>}
+            <SessionGuard>
+              {children}
+            </SessionGuard>
             <CookieBanner />
           </ClientProviders>
         </NextIntlClientProvider>
