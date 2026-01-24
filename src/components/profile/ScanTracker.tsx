@@ -5,6 +5,11 @@ import { useEffect } from 'react';
 
 export default function ScanTracker({ profileId }: { profileId: string }) {
   useEffect(() => {
+    // 🔹 Vérifie le consentement
+    if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
+      return; // ❌ Bloque si refusé
+    }
+
     if (!profileId) return;
     fetch('/api/scans', {
       method: 'POST',

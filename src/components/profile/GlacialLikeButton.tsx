@@ -16,6 +16,13 @@ export default function GlacialLikeButton({
   const [hasLiked, setHasLiked] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+useEffect(() => {
+  if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
+    return;
+  }
+  // Charger ou enregistrer les présences
+}, []);
+
   // 💾 Persistance locale
   useEffect(() => {
     const liked = localStorage.getItem(`luvika_liked_${profileId}`) === 'true';

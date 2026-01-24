@@ -37,6 +37,13 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
   const [showQRModal, setShowQRModal] = useState(false);
   const cleanupRef = useRef<(() => void) | null>(null);
 
+useEffect(() => {
+  if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
+    return;
+  }
+  // Charger ou enregistrer les présences
+}, []);
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {

@@ -15,6 +15,13 @@ export default function FollowButton({
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
   const [isLoading, setIsLoading] = useState(false);
 
+useEffect(() => {
+  if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
+    return;
+  }
+  // Charger ou enregistrer les présences
+}, []);
+
   useEffect(() => {
     setIsFollowing(isInitiallyFollowing);
   }, [isInitiallyFollowing]);

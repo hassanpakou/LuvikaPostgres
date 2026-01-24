@@ -8,6 +8,7 @@ import { Copy, QrCode, X } from 'lucide-react'; // ✅ Import de X
 import QRCode from 'qrcode';
 
 export default function QRModal({
+
   isOpen,
   onClose,
   profileUrl,
