@@ -2,26 +2,25 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '../../../../../src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
+import { createClient } from '@/src/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ArrowLeft,
   CreditCard,
   Search,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { ToggleGroup, ToggleGroupItem } from '../../../../../components/ui/toggle-group';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 type Subscription = {
   id: string;
   plan: 'basic' | 'premium' | 'entreprise';
-  active: boolean;
+  status: 'active' | 'canceled' | 'expired' | 'pending';
   activated_at: string | null;
   expires_at: string | null;
+  created_at: string;
   profiles: {
     full_name: string;
     username: string;
@@ -45,13 +44,13 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     const fetchSubscriptions = async () => {
       const supabase = createClient();
-      const { data : { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.user_metadata?.role !== 'admin') {
         router.push('/auth/sign-in');
         return;
       }
 
-      const {  data } = await supabase
+      const { data } = await supabase
         .from('subscriptions')
         .select(`
           *,
@@ -74,7 +73,7 @@ export default function SubscriptionsPage() {
       
       // 🔹 Filtre par statut
       if (statusFilter !== 'all') {
-        const isActive = sub.active;
+        const isActive = sub.status === 'active';
         if (statusFilter === 'active' && !isActive) return false;
         if (statusFilter === 'inactive' && isActive) return false;
       }
@@ -126,15 +125,6 @@ export default function SubscriptionsPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [planFilter, statusFilter, search]);
-
-  const handleSort = (key: string) => {
-    setSortConfig(prev => {
-      if (prev?.key === key) {
-        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
-      }
-      return { key, direction: 'asc' };
-    });
-  };
 
   const getPageNumbers = () => {
     const pages = [];
@@ -250,11 +240,13 @@ export default function SubscriptionsPage() {
                     <p className="text-gray-400 text-sm">{sub.profiles?.email}</p>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    sub.active 
-                      ? 'bg-green-500/20 text-green-300' 
+                    sub.status === 'active'
+                      ? 'bg-green-500/20 text-green-300'
                       : 'bg-red-500/20 text-red-300'
                   }`}>
-                    {sub.active ? t('admin.subscription.active') : t('admin.subscription.inactive')}
+                    {sub.status === 'active' 
+                      ? t('admin.subscription.active') 
+                      : t('admin.subscription.inactive')}
                   </span>
                 </CardHeader>
                 <CardContent>
@@ -281,7 +273,7 @@ export default function SubscriptionsPage() {
 
                   {/* ✅ Actions client */}
                   <div className="flex gap-2">
-                    {!sub.active && (
+                    {sub.status !== 'active' && (
                       <button
                         onClick={async () => {
                           const res = await fetch(`/api/admin/subscriptions/${sub.id}/activate`, {
@@ -299,7 +291,7 @@ export default function SubscriptionsPage() {
                         Activer
                       </button>
                     )}
-                    {sub.active && (
+                    {sub.status === 'active' && (
                       <button
                         onClick={async () => {
                           if (confirm('Désactiver cet abonnement ?')) {

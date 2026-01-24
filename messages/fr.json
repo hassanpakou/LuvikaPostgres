@@ -400,7 +400,12 @@
       "total_scans": "Scans totaux",
       "orders": "Commandes",
       "nfc_cards": "Cartes NFC"
-    },
+    },"subscriptions": {
+        "no_active": "Aucun abonnement actif pour le moment.",
+        "title": "Gestion des abonnements",
+        "description": "Activez ou changez le plan d’un utilisateur.",
+        "action": "Gérer les abonnements"
+      },
     "nav": {
       "orders": "Commandes",
       "back_to_dashboard": "Retour au tableau de bord"
@@ -424,8 +429,7 @@
       "updated_success": "Plan mis à jour avec succès",
       "update_error": "Échec de la mise à jour",
       "upgrade_to_premium": "Passer à Premium",
-      "request_enterprise": "Convertir en compte Entreprise"
-    },
+      "request_enterprise": "Convertir en compte Entreprise"    },
     "nfc": {
       "status": "Statut",
       "created": "Créée le",

@@ -65,7 +65,7 @@ if (!supported.includes(locale as any)) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('*, plan, accepts_contact_requests, cover_url')
+    .select('*, plan, accepts_contact_requests, cover_url, theme')
     .ilike('username', decodedUsername)
     .maybeSingle();
 
