@@ -35,31 +35,28 @@ export default function UsersPage() {
   const router = useRouter();
   const t = useTranslations();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const supabase = createClient(); // ANON key
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user || user.user_metadata?.role !== 'admin') {
-        router.push('/auth/sign-in');
-        return;
-      }
-      setCurrentUserId(user.id);
+  // Dans UsersPage.tsx
+useEffect(() => {
+  const fetchUsers = async () => {
+    const res = await fetch('/api/admin/users');
+    if (res.status === 403) {
+      router.push('/auth/sign-in');
+      return;
+    }
+    const data = await res.json();
+    
+    // Mappe banned_until → isBanned
+    const usersWithStatus = data.map((u: any) => ({
+      ...u,
+      isBanned: u.banned_until === 'infinity',
+    }));
 
-      // 🔹 Profiles (ANON)
-      const { data: profiles } = await supabase.from('profiles').select('*');
+    setUsers(usersWithStatus);
+    setLoading(false);
+  };
 
-      // 🔑 Auth.users (SERVICE_ROLE)
-      const supabaseAdmin = createClient(process.env.SUPABASE_SERVICE_ROLE_KEY!); // ✅
-      const { data: authData } = await supabaseAdmin.from('auth.users').select('id, banned_until');
-
-      setUsers(profiles || []);
-      setAuthUsers(authData || []);
-      setLoading(false);
-    };
-
-    fetchUsers();
-  }, []);
-
+  fetchUsers();
+}, []);
   const bannedMap = new Map(authUsers.map(u => [u.id, u.banned_until === 'infinity']));
 
   // 🔍 Filtrer + trier
