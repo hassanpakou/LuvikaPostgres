@@ -321,7 +321,7 @@ if (sortConfig) {
                     <div className="flex gap-2">
                       <button
                         onClick={async () => {
-                          const res = await fetch(`/api/admin/upgrade-requests/${req.id}/approve`, {
+                          const res = await fetch(`/api/admin/upgrade-requests/${req.id}/approved`, {
                             method: 'POST',
                           });
                           if (res.ok) {
@@ -337,7 +337,7 @@ if (sortConfig) {
                       </button>
                       <button
                         onClick={async () => {
-                          const res = await fetch(`/api/admin/upgrade-requests/${req.id}/reject`, {
+                          const res = await fetch(`/api/admin/upgrade-requests/${req.id}/rejected`, {
                             method: 'POST',
                           });
                           if (res.ok) {
