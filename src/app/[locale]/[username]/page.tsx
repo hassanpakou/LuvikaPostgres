@@ -31,7 +31,11 @@ if (!supported.includes(locale as any)) {
     'auth',
     'complete-profile',
     'api',
-    'private'
+    'private',
+    'terms',
+    'cookies',
+    'blog',
+    'privacy'
   ];
 
   if (RESERVED_ROUTES.includes(decodedUsername)) {
