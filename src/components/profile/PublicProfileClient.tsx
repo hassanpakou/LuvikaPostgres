@@ -388,8 +388,9 @@ export default function PublicProfileClient({
         </div>
       </div>
 
-<div className="absolute left-0 right-0 top-0 w-screen h-screen overflow-hidden">
-        <motion.header
+<div className="relative w-full overflow-hidden">
+
+          <motion.header
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -410,7 +411,7 @@ export default function PublicProfileClient({
             </div>
           )}
 
-<div className="relative inline-block mt-32">
+          <div className="relative inline-block mt-24">
             {localProfile.avatar_url ? (
               <motion.img
                 initial={{ opacity: 0, scale: 0.8 }}
