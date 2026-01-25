@@ -106,8 +106,6 @@ const BioToggle = ({ bio }: { bio: string }) => {
     ? words.slice(0, 30).join(' ') + '…' 
     : bio;
 
-
-    
   useEffect(() => {
     if (!contentRef.current || !truncatedRef.current) return;
     const fullHeight = contentRef.current.scrollHeight;
@@ -202,6 +200,15 @@ export default function PublicProfileClient({
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
   const [followersCount, setFollowersCount] = useState(initialFollowers);
   const [localProfile, setLocalProfile] = useState<Profile>(profile);
+
+  // 🔹 Applique le thème dynamiquement
+  useEffect(() => {
+    const root = document.documentElement;
+    const { primary = '#2563eb', background = '#0f172a' } = localProfile.theme || {};
+    root.style.setProperty('--profile-primary', primary);
+    root.style.setProperty('--profile-background', background);
+  }, [localProfile.theme]);
+
   useEffect(() => {
     setIsFollowing(isInitiallyFollowing);
     setFollowersCount(initialFollowers);
@@ -290,34 +297,68 @@ export default function PublicProfileClient({
   }, []);
 
   // 🔹 Realtime updates
-useEffect(() => {
-  const supabase = createClient();
-  const channel = supabase
-    .channel(`profile-${localProfile.id}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'profiles',
-        filter: `id=eq.${profile.id}`
-      },
-      (payload) => {
-        setLocalProfile(prev => ({ ...prev, ...payload.new }));
-      }
-    )
-    .subscribe();
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`profile-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${profile.id}`
+        },
+        (payload) => {
+          setLocalProfile(prev => ({ ...prev, ...payload.new }));
+        }
+      )
+      .subscribe();
 
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [localProfile.id]);
-const [showContactModal, setShowContactModal] = useState(false);
-const [showPortfolioModal, setShowPortfolioModal] = useState(false);
-const [showCertificatesModal, setShowCertificatesModal] = useState(false);
-const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez celle-ci aussi
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [localProfile.id]);
+
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [showCertificatesModal, setShowCertificatesModal] = useState(false);
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
+
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen dynamic-bg">
+      {/* Styles dynamiques */}
+      <style jsx global>{`
+        :root {
+          --profile-primary: #2563eb;
+          --profile-background: ;
+        }
+        .dynamic-bg {
+  background-color: transparent !important;
+}
+
+        .dynamic-border {
+          border-color: var(--profile-primary) !important;
+        }
+        .dynamic-text {
+          color: var(--profile-primary) !important;
+        }
+        .dynamic-gradient {
+          background: linear-gradient(90deg, var(--profile-primary), #0ea5e9) !important;
+        }
+        .dynamic-button {
+          background-color: var(--profile-primary) !important;
+          border-color: var(--profile-primary) !important;
+        }
+        .dynamic-button:hover {
+          opacity: 0.9;
+        }
+        .dynamic-badge {
+          background-color: var(--profile-primary) !important;
+          color: white !important;
+        }
+      `}</style>
+
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-blue-900/10 to-indigo-900/5"></div>
         <div className="absolute inset-0 overflow-hidden">
@@ -347,213 +388,209 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pb-12 max-w-3xl relative z-10">
-<motion.header
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.6, ease: "easeOut" }}
-  className="text-center mb-8 relative"
->
-  {/* Bannière de couverture */}
-  {localProfile.cover_url && (
-    <div className="absolute inset-x-0 top-0 h-48 overflow-hidden rounded-t-2xl">
-      <img
-        src={localProfile.cover_url}
-        alt="Cover"
-        className="w-full h-full object-cover"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = 'none';
-        }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-cyan-900/80 via-blue-900/40 to-transparent"></div>
-    </div>
-  )}
-
-  <div className="relative inline-block mt-24">
-    {localProfile.avatar_url ? (
-      <motion.img
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        src={localProfile.avatar_url}
-        alt={`${localProfile.full_name} avatar`}
-        className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/30 shadow-xl mx-auto"
-        onError={(e) => {
-          (e.target as HTMLImageElement).src = '/default-avatar.png';
-        }}
-      />
-    ) : (
-      <motion.div
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto"
-      >
-        {localProfile.full_name?.charAt(0).toUpperCase() || '?'}
-      </motion.div>
-    )}
-
-    {localProfile.plan && localProfile.plan !== 'basic' && (
-      <motion.div
-        initial={{ scale: 0, opacity: 0, rotate: -15 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-        className="absolute -top-2 -right-2"
-      >
-        <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
-  localProfile.plan === 'premium'
-    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-    : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-}`}>
-  {localProfile.plan === 'premium' ? <Crown className="w-4 h-4 inline mr-1" /> : <Briefcase className="w-4 h-4 inline mr-1" /> } 
-  {localProfile.plan === 'premium' ? 'Premium' : 'Entreprise'}
-</Badge>
-      </motion.div>
-    )}
-  </div>
-
-  <motion.div 
-    className="mt-6"
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.4 }}
-  >
-    <p className="text-cyan-300 font-mono text-sm flex items-center justify-center gap-1">
-      @{localProfile.username}
-      {localProfile.verified && (
-        <img 
-          src="/badge.png" 
-          alt="✅ Vérifié" 
-          className="w-4 h-4 rounded-full"
-          title="Profil vérifié"
-        />
-      )}
-    </p>
-    
-    <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
-      {localProfile.full_name}
-      {isBirthdayToday(localProfile) && (
-        <motion.div
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          title="Joyeux anniversaire ! 🎉"
+<div className="absolute left-0 right-0 top-0 w-screen h-screen overflow-hidden">
+        <motion.header
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-8 relative"
         >
-          <Cake className="w-6 h-6 text-pink-400" />
-        </motion.div>
-      )}
-    </h1>
-    
-    <div className="mt-2 flex flex-wrap justify-center gap-2 text-gray-400 text-sm">
-      {localProfile.nickname && <span className="font-medium">{localProfile.nickname}</span>}
-      {localProfile.pronouns && <span className="px-2 py-0.5 bg-white/5 rounded">{localProfile.pronouns}</span>}
-      {localProfile.job_title && (
-        <span>
-          {localProfile.job_title}{localProfile.company && ` · ${localProfile.company}`}
-        </span>
-      )}
-      {localProfile.professional_status && (
-        <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
-          {localProfile.professional_status === 'student' && 'Étudiant'}
-          {localProfile.professional_status === 'employed' && 'En poste'}
-          {localProfile.professional_status === 'freelance' && 'Freelance'}
-          {localProfile.professional_status === 'open_to_work' && 'Ouvert'}
-          {localProfile.professional_status === 'other' && 'Autre'}
-        </span>
-      )}
-    </div>
+          {/* Bannière de couverture */}
+          {localProfile.cover_url && (
+            <div className="absolute inset-x-0 top-0 h-48 overflow-hidden rounded-t-2xl">
+              <img
+                src={localProfile.cover_url}
+                alt="Cover"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+<div className="absolute inset-0 bg-gradient-to-t from-cyan-900/80 via-blue-900/40 to-transparent"></div>
+            </div>
+          )}
 
-    {scansCount > 0 && (
-      <motion.div
-        initial={{ opacity: 0, y: 5 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-3 flex items-center justify-center gap-2"
-      >
-        <BadgeLevel info={getBadgeInfo(scansCount)} />
-        <span className="text-gray-400 text-sm">{scansCount} scan{scansCount > 1 ? 's' : ''}</span>
-      </motion.div>
-    )}
-  </motion.div>
-</motion.header>
+<div className="relative inline-block mt-32">
+            {localProfile.avatar_url ? (
+              <motion.img
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                src={localProfile.avatar_url}
+                alt={`${localProfile.full_name} avatar`}
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/30 shadow-xl mx-auto"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/default-avatar.png';
+                }}
+              />
+            ) : (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto"
+              >
+                {localProfile.full_name?.charAt(0).toUpperCase() || '?'}
+              </motion.div>
+            )}
+
+            {localProfile.plan && localProfile.plan !== 'basic' && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0, rotate: -15 }}
+                animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+                className="absolute -top-2 -right-2"
+              >
+                <Badge className={`px-2 py-0.5 text-xs font-medium rounded-full border border-white/20 shadow ${
+                  localProfile.plan === 'premium'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+                    : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+                }`}>
+                  {localProfile.plan === 'premium' ? <Crown className="w-4 h-4 inline mr-1" /> : <Briefcase className="w-4 h-4 inline mr-1" />} 
+                  {localProfile.plan === 'premium' ? 'Premium' : 'Entreprise'}
+                </Badge>
+              </motion.div>
+            )}
+          </div>
+
+          <motion.div 
+            className="mt-6"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <p className="text-cyan-300 font-mono text-sm flex items-center justify-center gap-1">
+              @{localProfile.username}
+              {localProfile.verified && (
+                <img 
+                  src="/badge.png" 
+                  alt="✅ Vérifié" 
+                  className="w-4 h-4 rounded-full"
+                  title="Profil vérifié"
+                />
+              )}
+            </p>
+            
+            <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
+              {localProfile.full_name}
+              {isBirthdayToday(localProfile) && (
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  title="Joyeux anniversaire ! 🎉"
+                >
+                  <Cake className="w-6 h-6 text-pink-400" />
+                </motion.div>
+              )}
+            </h1>
+            
+            <div className="mt-2 flex flex-wrap justify-center gap-2 text-gray-400 text-sm">
+              {localProfile.nickname && <span className="font-medium">{localProfile.nickname}</span>}
+              {localProfile.pronouns && <span className="px-2 py-0.5 bg-white/5 rounded">{localProfile.pronouns}</span>}
+              {localProfile.job_title && (
+                <span>
+                  {localProfile.job_title}{localProfile.company && ` · ${localProfile.company}`}
+                </span>
+              )}
+              {localProfile.professional_status && (
+                <span className="inline-block px-3 py-1 text-sm font-medium bg-cyan-500/20 text-cyan-400 rounded-full">
+                  {localProfile.professional_status === 'student' && 'Étudiant'}
+                  {localProfile.professional_status === 'employed' && 'En poste'}
+                  {localProfile.professional_status === 'freelance' && 'Freelance'}
+                  {localProfile.professional_status === 'open_to_work' && 'Ouvert'}
+                  {localProfile.professional_status === 'other' && 'Autre'}
+                </span>
+              )}
+            </div>
+
+            {scansCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-3 flex items-center justify-center gap-2"
+              >
+                <BadgeLevel info={getBadgeInfo(scansCount)} />
+                <span className="text-gray-400 text-sm">{scansCount} scan{scansCount > 1 ? 's' : ''}</span>
+              </motion.div>
+            )}
+          </motion.div>
+        </motion.header>
 
         {/* ================= STATS SECTION ================= */}
-<motion.div
-  initial="hidden"
-  animate="visible"
-  variants={{
-    hidden: {},
-    visible: { transition: { staggerChildren: 0.12 } }
-  }}
-  className="mt-4 flex justify-center gap-5 text-center"
->
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: {},
+            visible: { transition: { staggerChildren: 0.12 } }
+          }}
+          className="mt-4 flex justify-center gap-5 text-center"
+        >
+          {/* Likes */}
+          <motion.div 
+            whileHover={{ scale: 1.03 }} 
+            className="flex flex-col items-center"
+          >
+            <span className="text-[10px] uppercase tracking-wide text-gray-500">
+              J’aime
+            </span>
+            <div className="mt-0.5 scale-75 origin-top">
+              <GlacialLikeButton 
+                profileId={localProfile.id}
+                initialLikes={localProfile.likes_count || 0}
+              />
+            </div>
+          </motion.div>
+          {/* Followers */}
+          <motion.div 
+            whileHover={{ scale: 1.03 }} 
+            className="flex flex-col items-center"
+          >
+            <span className="text-[10px] uppercase tracking-wide text-gray-500">
+              Followers
+            </span>
+            <span className="text-sm font-semibold text-white leading-none mt-0.5">
+              {followersCount}
+            </span>
+          </motion.div>
 
-  {/* Likes */}
-<motion.div 
-  whileHover={{ scale: 1.03 }} 
-  className="flex flex-col items-center"
->
-  <span className="text-[10px] uppercase tracking-wide text-gray-500">
-    J’aime
-  </span>
+          {/* Following */}
+          {initialFollowing > 0 && (
+            <motion.div 
+              whileHover={{ scale: 1.03 }} 
+              className="flex flex-col items-center"
+            >
+              <span className="text-[10px] uppercase tracking-wide text-gray-500">
+                Suivi(e)s
+              </span>
+              <span className="text-sm font-semibold text-white leading-none mt-0.5">
+                {initialFollowing}
+              </span>
+            </motion.div>
+          )}
 
-  <div className="mt-0.5 scale-75 origin-top">
-    <GlacialLikeButton 
-      profileId={localProfile.id}
-      initialLikes={localProfile.likes_count || 0}
-    />
-  </div>
-</motion.div>
-{/* Followers */}
-<motion.div 
-  whileHover={{ scale: 1.03 }} 
-  className="flex flex-col items-center"
->
-  <span className="text-[10px] uppercase tracking-wide text-gray-500">
-    Followers
-  </span>
-  <span className="text-sm font-semibold text-white leading-none mt-0.5">
-    {followersCount}
-  </span>
-</motion.div>
-
-{/* Following */}
-{initialFollowing > 0 && (
-  <motion.div 
-    whileHover={{ scale: 1.03 }} 
-    className="flex flex-col items-center"
-  >
-    <span className="text-[10px] uppercase tracking-wide text-gray-500">
-      Suivi(e)s
-    </span>
-    <span className="text-sm font-semibold text-white leading-none mt-0.5">
-      {initialFollowing}
-    </span>
-  </motion.div>
-)}
-
-  {/* NFC */}
-  <motion.div whileHover={{ scale: 1.05 }} className="flex flex-col items-center">
-    <span className="text-[11px] uppercase text-gray-400">Carte NFC</span>
-
-    <motion.div
-      animate={{
-        boxShadow: hasLostCard
-          ? "0 0 0px rgba(250,204,21,0)"
-          : "0 0 10px rgba(16,185,129,0.35)"
-      }}
-      transition={{ duration: 2, repeat: Infinity, repeatType: "mirror" }}
-      className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
-        hasLostCard
-          ? "border-yellow-400/50 text-yellow-400"
-          : "border-emerald-400/50 text-emerald-400"
-      }`}
-    >
-      <CheckCircle className="w-3 h-3" />
-      {hasLostCard ? "Perdue" : "Active"}
-    </motion.div>
-  </motion.div>
-
-</motion.div>
+          {/* NFC */}
+          <motion.div whileHover={{ scale: 1.05 }} className="flex flex-col items-center">
+            <span className="text-[11px] uppercase text-gray-400">Carte NFC</span>
+            <motion.div
+              animate={{
+                boxShadow: hasLostCard
+                  ? "0 0 0px rgba(250,204,21,0)"
+                  : "0 0 10px rgba(16,185,129,0.35)"
+              }}
+              transition={{ duration: 2, repeat: Infinity, repeatType: "mirror" }}
+              className={`mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border ${
+                hasLostCard
+                  ? "border-yellow-400/50 text-yellow-400"
+                  : "border-emerald-400/50 text-emerald-400"
+              }`}
+            >
+              <CheckCircle className="w-3 h-3" />
+              {hasLostCard ? "Perdue" : "Active"}
+            </motion.div>
+          </motion.div>
+        </motion.div>
 
         {localProfile.bio_short && (
           <motion.p
@@ -603,7 +640,8 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
             )}
           </motion.div>
         )}
-<motion.div
+
+        <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
@@ -655,52 +693,50 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           </div>
         </motion.div>
 
+        {/* 🔹 Boutons Portfolio, Certificats & Compétences */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.7 }}
+          className="mt-6 flex flex-wrap justify-center gap-3"
+        >
+          {isSectionVisible('portfolio', localProfile) && portfolios.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPortfolioModal(true)}
+              className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
+            >
+              <Folder className="w-4 h-4 mr-1.5" />
+              Voir portfolio ({portfolios.length})
+            </Button>
+          )}
 
+          {isSectionVisible('certificates', localProfile) && certificates.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCertificatesModal(true)}
+              className="border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/10"
+            >
+              <Award className="w-4 h-4 mr-1.5" />
+              Voir certifications ({certificates.length})
+            </Button>
+          )}
 
-      {/* 🔹 Boutons Portfolio, Certificats & Compétences */}
-<motion.div
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 1.7 }}
-  className="mt-6 flex flex-wrap justify-center gap-3"
->
-  {isSectionVisible('portfolio', localProfile) && portfolios.length > 0 && (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => setShowPortfolioModal(true)}
-      className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10"
-    >
-      <Folder className="w-4 h-4 mr-1.5" />
-      Voir portfolio ({portfolios.length})
-    </Button>
-  )}
-
-  {isSectionVisible('certificates', localProfile) && certificates.length > 0 && (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => setShowCertificatesModal(true)}
-      className="border-yellow-500/30 text-yellow-300 hover:bg-yellow-500/10"
-    >
-      <Award className="w-4 h-4 mr-1.5" />
-      Voir certifications ({certificates.length})
-    </Button>
-  )}
-
-  {/* 🔹 Bouton Compétences */}
-  {localProfile.skills && localProfile.skills.length > 0 && isSectionVisible('skills', localProfile) && (
-    <Button
-      variant="outline"
-      size="sm"
-      onClick={() => setShowSkillsModal(true)}
-      className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
-    >
-      <Tag className="w-4 h-4 mr-1.5" />
-      Voir compétences ({localProfile.skills.length})
-    </Button>
-  )}
-</motion.div>
+          {/* 🔹 Bouton Compétences */}
+          {localProfile.skills && localProfile.skills.length > 0 && isSectionVisible('skills', localProfile) && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSkillsModal(true)}
+              className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10"
+            >
+              <Tag className="w-4 h-4 mr-1.5" />
+              Voir compétences ({localProfile.skills.length})
+            </Button>
+          )}
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -708,13 +744,12 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           transition={{ delay: 1.1 }}
           className="mt-6"
         >
-<FloatingButtons 
-  profile={localProfile} 
-  setShowQRModal={setShowQRModal}
-  onContactClick={() => setShowContactModal(true)} // 👈 Ici
-/>        </motion.div>
-
-        
+          <FloatingButtons 
+            profile={localProfile} 
+            setShowQRModal={setShowQRModal}
+            onContactClick={() => setShowContactModal(true)}
+          />
+        </motion.div>
 
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -801,60 +836,60 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
         </motion.div>
 
         <motion.div
-  initial={{ opacity: 0, y: 10 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 1.4 }}
-  className="w-full px-4 mt-6"
->
-  <div className="max-w-4xl mx-auto">
-    <div className="flex flex-wrap justify-center gap-4 py-4">
-      {/* 🔹 Utilisez 'links' au lieu de 'social' */}
-      {isSectionVisible('links', localProfile) && (
-        <>
-          <ActionItem
-            icon={<Download className="w-5 h-5 text-purple-400" />}
-            label="vCard"
-            onClick={() => {
-              const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${localProfile.full_name}\r\nORG:${localProfile.company || ''}\r\nTITLE:${localProfile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${localProfile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${localProfile.whatsapp || ''}\r\nEMAIL:${localProfile.email || ''}\r\nADR;TYPE=WORK:;;${localProfile.address || ''};;;;\r\nURL:${localProfile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
-              const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `${localProfile.username}.vcf`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-            className="bg-gradient-to-tr from-purple-800/20 to-purple-400/20 hover:from-purple-800/40 hover:to-purple-400/40"
-          />
-          {localProfile.cv_url && (
-            <ActionItem
-              icon={<FileText className="w-5 h-5 text-gray-400" />}
-              label="CV"
-              href={localProfile.cv_url.startsWith('http') ? localProfile.cv_url : `https://${localProfile.cv_url}`}
-              className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
-            />
-          )}
-          {localProfile.calendly && (
-            <ActionItem
-              icon={<Calendar className="w-5 h-5 text-cyan-400" />}
-              label="RDV"
-              href={localProfile.calendly.startsWith('http') ? localProfile.calendly : `https://${localProfile.calendly}`}
-              className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
-            />
-          )}
-          {localProfile.portfolio_url && (
-            <ActionItem
-              icon={<Folder className="w-5 h-5 text-cyan-400" />}
-              label="Portfolio"
-              href={localProfile.portfolio_url.startsWith('http') ? localProfile.portfolio_url : `https://${localProfile.portfolio_url}`}
-              className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
-            />
-          )}
-        </>
-      )}
-    </div>
-  </div>
-</motion.div>
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.4 }}
+          className="w-full px-4 mt-6"
+        >
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-4 py-4">
+              {/* 🔹 Utilisez 'links' au lieu de 'social' */}
+              {isSectionVisible('links', localProfile) && (
+                <>
+                  <ActionItem
+                    icon={<Download className="w-5 h-5 text-purple-400" />}
+                    label="vCard"
+                    onClick={() => {
+                      const vCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${localProfile.full_name}\r\nORG:${localProfile.company || ''}\r\nTITLE:${localProfile.job_title || ''}\r\nTEL;TYPE=WORK,VOICE:${localProfile.phone || ''}\r\nTEL;TYPE=CELL,VOICE:${localProfile.whatsapp || ''}\r\nEMAIL:${localProfile.email || ''}\r\nADR;TYPE=WORK:;;${localProfile.address || ''};;;;\r\nURL:${localProfile.website || ''}\r\nNOTE:Contact via LUVIKA — ${shortUrl}\r\nEND:VCARD`;
+                      const blob = new Blob([vCard], { type: 'text/vcard;charset=utf-8' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${localProfile.username}.vcf`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="bg-gradient-to-tr from-purple-800/20 to-purple-400/20 hover:from-purple-800/40 hover:to-purple-400/40"
+                  />
+                  {localProfile.cv_url && (
+                    <ActionItem
+                      icon={<FileText className="w-5 h-5 text-gray-400" />}
+                      label="CV"
+                      href={localProfile.cv_url.startsWith('http') ? localProfile.cv_url : `https://${localProfile.cv_url}`}
+                      className="bg-gradient-to-tr from-gray-800/20 to-gray-400/20 hover:from-gray-800/40 hover:to-gray-400/40"
+                    />
+                  )}
+                  {localProfile.calendly && (
+                    <ActionItem
+                      icon={<Calendar className="w-5 h-5 text-cyan-400" />}
+                      label="RDV"
+                      href={localProfile.calendly.startsWith('http') ? localProfile.calendly : `https://${localProfile.calendly}`}
+                      className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
+                    />
+                  )}
+                  {localProfile.portfolio_url && (
+                    <ActionItem
+                      icon={<Folder className="w-5 h-5 text-cyan-400" />}
+                      label="Portfolio"
+                      href={localProfile.portfolio_url.startsWith('http') ? localProfile.portfolio_url : `https://${localProfile.portfolio_url}`}
+                      className="bg-gradient-to-tr from-cyan-800/20 to-cyan-400/20 hover:from-cyan-800/40 hover:to-cyan-400/40"
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </motion.div>
 
         <ScanTracker profileId={localProfile.id} />
 
@@ -879,40 +914,39 @@ const [showSkillsModal, setShowSkillsModal] = useState(false); // 👈 Ajoutez c
           )}
         </AnimatePresence>
       </div>
-    {/* Modals */}
-<ProfileModal
-  isOpen={showPortfolioModal}
-  onClose={() => setShowPortfolioModal(false)}
-  title="Portfolio"
->
-  <PortfolioSection items={portfolios} />
-</ProfileModal>
 
-<ProfileModal
-  isOpen={showCertificatesModal}
-  onClose={() => setShowCertificatesModal(false)}
-  title="Certifications"
->
-  <CertificatesSection items={certificates} />
-</ProfileModal>
+      {/* Modals */}
+      <ProfileModal
+        isOpen={showPortfolioModal}
+        onClose={() => setShowPortfolioModal(false)}
+        title="Portfolio"
+      >
+        <PortfolioSection items={portfolios} />
+      </ProfileModal>
 
-<ProfileModal
+      <ProfileModal
+        isOpen={showCertificatesModal}
+        onClose={() => setShowCertificatesModal(false)}
+        title="Certifications"
+      >
+        <CertificatesSection items={certificates} />
+      </ProfileModal>
+
+      <ProfileModal
         isOpen={showSkillsModal}
         onClose={() => setShowSkillsModal(false)}
         title="Compétences"
-        skills={localProfile.skills || []} children={undefined}>
-</ProfileModal>
+        skills={localProfile.skills || []} children={undefined}      >
+      </ProfileModal>
 
-{/* 🔹 Modal de contact — UTILISER ContactModal */}
-<ContactModal
-  key="contact-modal-float"
-  isOpen={showContactModal}
-  onClose={() => setShowContactModal(false)}
-  profileId={localProfile.id}
-/>
+      {/* 🔹 Modal de contact — UTILISER ContactModal */}
+      <ContactModal
+        key="contact-modal-float"
+        isOpen={showContactModal}
+        onClose={() => setShowContactModal(false)}
+        profileId={localProfile.id}
+      />
     </div>
-
-    
   );
 }
 

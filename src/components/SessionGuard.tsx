@@ -31,14 +31,18 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
       }
 
       const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-
-      // 👉 Session expirée ou inexistante
-      if (!session) {
-        await supabase.auth.signOut()
-        router.replace('/auth/sign-in')
-        return
-      }
+  // Dans SessionGuard.tsx
+const { data: { user }, error } = await supabase.auth.getUser();
+if (error || !user) {
+  // Nettoie les cookies
+  document.cookie.split(';').forEach(cookie => {
+    const name = cookie.trim().split('=')[0];
+    if (name.startsWith('sb-')) {
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+    }
+  });
+  router.replace('/auth/sign-in');
+}
 
       setChecking(false)
     }
