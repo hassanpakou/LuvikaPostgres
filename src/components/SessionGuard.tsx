@@ -1,57 +1,31 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { createClient } from '@/src/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 
 const PUBLIC_ROUTES = [
-  '/auth',
-  '/about',
-  "/contact",
-  "/pricing",
-  "/download",
-  '/privacy',
-  '/terms',
-  '/cookies',
-  '/blog',
-  '/', '/fr', '/en', '/ln', '/kg', '/sw', '/pt', '/nl', '/es', '/ar'
+  '/', '/auth', '/about', '/contact', '/pricing', '/download',
+  '/privacy', '/terms', '/cookies', '/blog',
+  '/fr', '/en', '/ln', '/kg', '/sw', '/pt', '/nl', '/es', '/ar'
 ]
 
 export default function SessionGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
   const pathname = usePathname()
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    const check = async () => {
-      // 👉 Ne pas protéger les routes publiques
-      if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
-        setChecking(false)
-        return
-      }
-
-      const supabase = createClient()
-  // Dans SessionGuard.tsx
-const { data: { user }, error } = await supabase.auth.getUser();
-if (error || !user) {
-  // Nettoie les cookies
-  document.cookie.split(';').forEach(cookie => {
-    const name = cookie.trim().split('=')[0];
-    if (name.startsWith('sb-')) {
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-    }
-  });
-  router.replace('/auth/sign-in');
-}
-
+    // Routes publiques : on ne bloque rien
+    if (PUBLIC_ROUTES.includes(pathname)) {
       setChecking(false)
+      return
     }
 
-    check()
-  }, [pathname, router])
+    // Pour les routes protégées, on affiche juste le loader
+    setChecking(false)
+  }, [pathname])
 
   if (checking) {
-   return (
+    return (
       <div className="max-w-6xl mx-auto py-12 px-4">
         <div className="text-center">
           <div className="relative inline-block mb-6">
@@ -67,8 +41,7 @@ if (error || !user) {
           </div>
         </div>
       </div>
-    );
-    
+    )
   }
 
   return <>{children}</>
