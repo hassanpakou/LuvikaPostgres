@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getLocale } from 'next-intl/server';
 import { ClientProviders } from '@/src/components/system/ClientProviders';
 import CookieBanner from '../components/layout/CookieBanner';
+import InstallModal from '../components/layout/InstallModal';
 import SessionGuard from '../components/SessionGuard';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -61,6 +62,7 @@ export default async function RootLayout({
               {children}
             </SessionGuard>
             <CookieBanner />
+            <InstallModal />
           </ClientProviders>
         </NextIntlClientProvider>
       </body>
