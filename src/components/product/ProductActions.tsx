@@ -18,7 +18,7 @@ export default function ProductActions({
   locale: string;
 }) {
   const t = useTranslations();
-  const supabase = createClient();
+  const supabase = createBrowserClient();
   const [loadingCart, setLoadingCart] = useState(false);
   const [loadingFavorite, setLoadingFavorite] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);

@@ -11,7 +11,7 @@ import {
   Send, Eye, MessageCircle, QrCode, AlertTriangle, FileText 
 } from 'lucide-react';
 import UserSelector from '../../src/app/admin/UserSelector';
-import { createClient } from '../../src/lib/supabase/client';
+import { createBrowcreateClientserClient } from '../../src/lib/supabase/client';
 
 type Stats = {
   total_users: number;

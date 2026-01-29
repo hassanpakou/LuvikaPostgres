@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/src/lib/supabase/client'
 
 const PUBLIC_ROUTES = [
   '/', '/auth', '/about', '/contact', '/pricing', '/download',
@@ -11,19 +12,51 @@ const PUBLIC_ROUTES = [
 
 export default function SessionGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [checking, setChecking] = useState(true)
+  const [isAuthorized, setIsAuthorized] = useState(false)
 
   useEffect(() => {
-    // Routes publiques : on ne bloque rien
-    if (PUBLIC_ROUTES.includes(pathname)) {
-      setChecking(false)
-      return
+    const checkAuth = async () => {
+      // 🔹 Accepte tous les chemins localisés publics : /fr, /en, /fr/about, etc.
+      const isPublicPath = 
+        PUBLIC_ROUTES.includes(pathname) ||
+        /^\/[a-z]{2}(\/[^\/]*)?$/.test(pathname) || // /fr, /fr/anything
+        /^\/[a-z]{2}\/about/.test(pathname) ||
+        /^\/[a-z]{2}\/contact/.test(pathname) ||
+        /^\/[a-z]{2}\/pricing/.test(pathname);
+
+      if (isPublicPath) {
+        setChecking(false)
+        setIsAuthorized(true)
+        return
+      }
+
+      // 🔹 Routes protégées : vérifier la session
+      try {
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+
+        if (session?.user) {
+          // ✅ User connecté
+          setIsAuthorized(true)
+        } else {
+          // ❌ Pas de session
+          setIsAuthorized(false)
+          // ⚠️ NE PAS rediriger ici — le middleware s'en charge
+        }
+      } catch (error) {
+        console.error('❌ Session check failed:', error)
+        setIsAuthorized(false)
+      } finally {
+        setChecking(false)
+      }
     }
 
-    // Pour les routes protégées, on affiche juste le loader
-    setChecking(false)
+    checkAuth()
   }, [pathname])
 
+  // 🔹 Loader pendant la vérification
   if (checking) {
     return (
       <div className="max-w-6xl mx-auto py-12 px-4">
@@ -36,13 +69,11 @@ export default function SessionGuard({ children }: { children: React.ReactNode }
           </div>
           <h3 className="text-xl font-medium text-white mb-2">Chargement du profil...</h3>
           <p className="text-gray-400">Récupération des données depuis la base sécurisée</p>
-          <div className="mt-6 max-w-md mx-auto w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse w-1/3"></div>
-          </div>
         </div>
       </div>
     )
   }
 
+  // ✅ Autorisé ou public → affiche le contenu
   return <>{children}</>
 }
