@@ -1,23 +1,13 @@
-// src/app/(admin)/page.tsx
-'use client'; // ✅ ← AJOUTE CETTE LIGNE
+'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Building, Users, Package, TrendingUp, BarChart3, Wallet 
-} from 'lucide-react';
+import { Building, Users, Package, TrendingUp, BarChart3, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 import { createClient } from '../../../../src/lib/supabase/client';
 import AdminActions from '../../../../components/admin/AdminActions';
 import { createNotifier } from '../../../../src/lib/notify';
-import error from 'next/error';
 import { useTranslations } from 'next-intl';
 
-const t = useTranslations();
-const notify = createNotifier(t);
-
-if (error) {
-  notify.ServerError();
-}
 type AdminStats = {
   totalEnterprises: number;
   totalEmployees: number;
@@ -27,6 +17,9 @@ type AdminStats = {
 };
 
 export default function AdminDashboard() {
+  const t = useTranslations(); // ✅ À L'INTÉRIEUR
+  const notify = createNotifier(t); // ✅ À L'INTÉRIEUR
+  
   const [stats, setStats] = useState<AdminStats>({
     totalEnterprises: 0,
     totalEmployees: 0,
@@ -63,13 +56,14 @@ export default function AdminDashboard() {
         });
       } catch (err) {
         console.error('❌ Erreur chargement stats admin:', err);
+        notify.ServerError();
       } finally {
         setLoading(false);
       }
     };
 
     fetchAdminStats();
-  }, []);
+  }, [supabase]);
 
   return (
     <div className="space-y-8">

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '../../../../../src/lib/supabase/client';
+import { createClient } from '../../../../../src/lib/supabase/client';
 import { Badge } from '../../../../../components/ui/badge';
 import { UserActions } from '../../../../../components/admin/UserActions';
 import { ToggleGroup, ToggleGroupItem } from '../../../../../components/ui/toggle-group';
