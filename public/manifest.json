@@ -1,0 +1,22 @@
+{
+  "name": "Luvika",
+  "short_name": "Luvika",
+  "description": "Carte de visite intelligente NFC · QR Code · Abonnements · Événements",
+
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#06b6d4",
+  "icons": [
+    {
+      "src": "/icons/lo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/icons/lo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
