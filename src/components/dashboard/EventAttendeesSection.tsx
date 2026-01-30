@@ -80,6 +80,13 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
     };
   }, [isFreePlan, locale]); // 🔹 Ajouter 'locale' aux dépendances
 
+  const handleCopyEventLink = (eventId: string, token: string) => {
+  // 🔹 Construire l'URL absolue
+  const absoluteUrl = `${window.location.origin}/${locale}/events/${eventId}/check-in?token=${token}`;
+  navigator.clipboard.writeText(absoluteUrl);
+  alert('Lien QR copié ! Partagez-le.');
+};
+
   const loadParticipants = async (event: Event) => {
     setSelectedEvent(event);
     try {
@@ -316,20 +323,20 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
                             <span className="text-xs text-emerald-400">✅ Présent</span>
                           ) : (
                             <Button
-                              size="sm"
-                              variant="ghost"
-                              className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // 🔹 Construire l'URL du token dynamiquement aussi
-                                const url = `/${locale}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
-                                navigator.clipboard.writeText(url);
-                                alert('Lien QR copié ! Partagez-le.');
-                              }}
-                              title="Copier lien QR"
-                            >
-                              <QrCode className="w-4 h-4" />
-                            </Button>
+  size="sm"
+  variant="ghost"
+  className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
+  onClick={(e) => {
+    e.stopPropagation();
+    handleCopyEventLink(selectedEvent.id, p.qr_token); // Utiliser la fonction
+    // Remplacer la ligne suivante :
+    // const url = `/${locale}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
+    // navigator.clipboard.writeText(url);
+  }}
+  title="Copier lien QR"
+>
+  <QrCode className="w-4 h-4" />
+</Button>
                           )}
                           <Button
                             size="sm"
@@ -365,13 +372,14 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         )}
       </CardContent>
 
-      {selectedEvent && (
+       {selectedEvent && (
         <QRModal
           isOpen={showQRModal}
           onClose={() => setShowQRModal(false)}
-          // 🔹 Passer l'URL locale reconstruite au QRModal
-          profileUrl={selectedEvent.qr_code_url || ''} // Doit être l'URL locale
+          profileUrl={selectedEvent.qr_code_url || ''} // URL locale affichée/copiée
           username={selectedEvent.name || 'Événement'}
+          // 🔹 Calculer et passer l'URL absolue pour le QR Code
+          qrCodeUrl={`${process.env.NEXT_PUBLIC_SITE_URL}${selectedEvent.qr_code_url}`}
         />
       )}
     </Card>

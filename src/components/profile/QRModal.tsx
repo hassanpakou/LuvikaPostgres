@@ -7,34 +7,41 @@ import { Button } from '../../../components/ui/button';
 import { Copy, QrCode, X } from 'lucide-react'; // ✅ Import de X
 import QRCode from 'qrcode';
 
-// 🔹 Mettre à jour le type QRModalProps pour inclure avatarUrl
+// 🔹 Mettre à jour le type QRModalProps pour inclure avatarUrl et qrCodeUrl
+type QRModalProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  profileUrl: string; // L'URL du profil principale, affichée/copiée
+  username: string;
+  shortUrl?: string;
+  avatarUrl?: string | null;
+  // 🔹 Nouvelle prop optionnelle pour l'URL du QR Code (sinon, on utilise profileUrl)
+  qrCodeUrl?: string;
+};
+
 export default function QRModal({
   isOpen,
   onClose,
   profileUrl,
   username,
   shortUrl,
-  avatarUrl, // 👈 AJOUTÉ ICI AUSSI
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  profileUrl: string;
-  username: string;
-  shortUrl?: string;
-  // 🔹 Ajouter avatarUrl comme prop optionnelle
-  avatarUrl?: string | null;
-}) {
+  avatarUrl,
+  qrCodeUrl, // 👈 AJOUTÉ ICI AUSSI
+}: QRModalProps) { // Utilise le type mis à jour
 
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
+  // 🔹 Utiliser qrCodeUrl pour le QR Code, sinon profileUrl
+  const urlForQR = qrCodeUrl || profileUrl;
   const displayUrl = shortUrl || profileUrl;
 
   useEffect(() => {
     if (isOpen) {
       setQrDataUrl(null);
       setQrError(null);
-      QRCode.toDataURL(profileUrl, {
+      // 🔹 Utiliser urlForQR pour générer le QR Code
+      QRCode.toDataURL(urlForQR, {
         width: 240,
         margin: 2,
         color: { dark: '#1e40af', light: '#ffffff' },
@@ -46,10 +53,11 @@ export default function QRModal({
           setQrError('Impossible de générer le QR');
         });
     }
-  }, [isOpen, profileUrl]);
+  }, [isOpen, urlForQR]); // <--- Dépend de urlForQR maintenant
 
   const copyLink = () => {
-    navigator.clipboard.writeText(profileUrl);
+    // 🔹 Toujours copier l'URL affichée (displayUrl)
+    navigator.clipboard.writeText(displayUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -143,7 +151,7 @@ export default function QRModal({
                   </div>
                 ) : qrDataUrl ? (
                   <motion.img
-                    key={profileUrl}
+                    key={urlForQR} // <--- Clé basée sur l'URL du QR pour forcer le rafraichissement si elle change
                     src={qrDataUrl}
                     alt={`QR Code pour ${username}`}
                     className="w-48 h-48 rounded-2xl border-2 border-white/30 bg-white shadow-md"
@@ -161,7 +169,7 @@ export default function QRModal({
               <p className="text-gray-300 text-sm mb-5">
                 ✅ Le QR redirige vers :<br />
                 <span className="font-mono text-cyan-200 text-xs break-all">
-                  {profileUrl}
+                  {urlForQR} {/* <--- Afficher l'URL utilisée pour le QR */}
                 </span>
               </p>
 
@@ -175,10 +183,10 @@ export default function QRModal({
                   {copied ? '✅ Copié !' : '📋 Copier le lien'}
                 </Button>
                 <Button
-                  onClick={() => window.open(profileUrl, '_blank')}
+                  onClick={() => window.open(displayUrl, '_blank')} // <--- Ouvre l'URL affichée
                   className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600"
                 >
-                  🌐 Ouvrir le profil
+                  🌐 Ouvrir le lien
                 </Button>
               </div>
             </div>
