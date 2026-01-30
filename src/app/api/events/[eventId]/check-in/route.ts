@@ -1,3 +1,5 @@
+// src/app/api/events/[eventId]/check-in/route.ts
+
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';

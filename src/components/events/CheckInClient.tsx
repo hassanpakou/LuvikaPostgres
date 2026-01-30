@@ -1,9 +1,9 @@
+// src/components/events/CheckInClient.tsx
 'use client';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, QrCode, User } from 'lucide-react';
+import { Loader2, QrCode, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CheckInClient({
@@ -20,6 +20,16 @@ export default function CheckInClient({
   const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
+  // Vérifie la validité du token immédiatement au chargement
+  useEffect(() => {
+    if (!token) {
+      setMessage('QR code invalide. Aucun jeton fourni.');
+      setStatus('error');
+    } else {
+      setStatus('idle'); // Réinitialise si un token est fourni
+    }
+  }, [token]);
+
   const handleCheckIn = async () => {
     if (!token) {
       setMessage('QR code invalide. Veuillez scanner un QR valide.');
@@ -32,9 +42,8 @@ export default function CheckInClient({
       const res = await fetch(`/api/events/${eventId}/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }), // ✅ envoie le token
+        body: JSON.stringify({ token }),
       });
-
       const data = await res.json();
 
       if (res.ok) {
@@ -45,14 +54,15 @@ export default function CheckInClient({
         setMessage(data.error || 'Erreur lors du check-in.');
       }
     } catch (err) {
+      console.error("Erreur réseau:", err);
       setStatus('error');
-      setMessage('Erreur réseau.');
+      setMessage('Erreur réseau. Impossible de joindre le serveur.');
     }
   };
 
   if (status === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="min-h-screen flex items-center justify-center bg-black p-4">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -78,13 +88,15 @@ export default function CheckInClient({
         <CardContent>
           {status === 'error' && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
-              {message}
+              <div className="flex items-start gap-2">
+                 <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                 <span>{message}</span>
+              </div>
             </div>
           )}
-
           <Button
             onClick={handleCheckIn}
-            disabled={status === 'checking'}
+            disabled={status === 'checking' || !token} // Désactiver si checking ou token manquant
             className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
           >
             {status === 'checking' ? (
@@ -96,7 +108,6 @@ export default function CheckInClient({
               'Enregistrer ma présence'
             )}
           </Button>
-
           {!token && (
             <p className="text-xs text-gray-400 mt-4 text-center">
               ❗ Ce QR code n’est pas valide. Assurez-vous de scanner le bon lien.

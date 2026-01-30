@@ -1,19 +1,25 @@
+// src/app/[locale]/events/[id]/check-in/page.tsx
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
-import CheckInClient from '../../../../../components/events/CheckInClient';
-import { Card } from '@/components/ui/card';
+import CheckInClient from '../../../../../components/events/CheckInClient'; // Ajuster le chemin relatif
 import { X, Lock, Clock } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 export default async function LocalizedEventCheckInPage({
-  params,
-  searchParams,
+  params, // params est un Promise
+  searchParams, // searchParams est aussi un Promise
 }: {
-  params: { locale: string; id: string };
-  searchParams: { [key: string]: string | string[] | undefined };
+  params: Promise<{ locale: string; id: string }>; // Typage du Promise pour params
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // Typage du Promise pour searchParams
 }) {
-  const eventId = params.id;
-  const token = typeof searchParams.token === 'string' ? searchParams.token : null;
+  // 🔹 Attendre la résolution des Promises params et searchParams
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+
+  const eventId = resolvedParams.id; // Accéder à l'ID après avoir résolu le Promise
+  // 🔹 Accéder au token après avoir résolu searchParams
+  const token = typeof resolvedSearchParams.token === 'string' ? resolvedSearchParams.token : null;
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -21,9 +27,7 @@ export default async function LocalizedEventCheckInPage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
+        getAll() { return cookieStore.getAll(); },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set({ name, value, ...options })
@@ -35,7 +39,7 @@ export default async function LocalizedEventCheckInPage({
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, title, starts_at, ends_at, is_public')
+    .select('id, title, starts_at, ends_at, is_public, qr_code_url')
     .eq('id', eventId)
     .single();
 
@@ -45,6 +49,7 @@ export default async function LocalizedEventCheckInPage({
   const startsAt = new Date(event.starts_at);
   const endsAt = new Date(event.ends_at);
 
+  // Vérifications de statut
   if (!event.is_public) {
     return (
       <div className="min-h-screen flex items-center justify-center text-white">
@@ -85,7 +90,13 @@ export default async function LocalizedEventCheckInPage({
     );
   }
 
+  // Passe les données nécessaires au composant client
   return (
-    <CheckInClient eventId={eventId} eventTitle={event.title} token={token} isOrganizer={false} />
+    <CheckInClient
+      eventId={eventId}
+      eventTitle={event.title}
+      token={token} // Crucial : transmet le token
+      isOrganizer={false}
+    />
   );
 }

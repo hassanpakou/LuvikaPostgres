@@ -1,6 +1,8 @@
+// src/components/dashboard/EventAttendeesSection.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useLocale } from 'next-intl'; // 🔹 Importer le hook pour la locale
 import { motion } from 'framer-motion';
 import { Calendar, User, Clock, MapPin, QrCode, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -9,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { createClient } from '@/src/lib/supabase/client';
 import QRModal from '@/src/components/profile/QRModal';
 
+// 🔹 Mettre à jour le type Event pour refléter que qr_code_url peut être null
 type Event = {
   id: string;
   name: string;
@@ -16,7 +19,7 @@ type Event = {
   starts_at: string;
   ends_at: string;
   attendee_count: number;
-  qr_code_url?: string;
+  qr_code_url: string | null; // Peut être null pour les nouveaux événements
 };
 
 type Participant = {
@@ -37,12 +40,15 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
   const [showQRModal, setShowQRModal] = useState(false);
   const cleanupRef = useRef<(() => void) | null>(null);
 
-useEffect(() => {
-  if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
-    return;
-  }
-  // Charger ou enregistrer les présences
-}, []);
+  // 🔹 Récupérer la locale active
+  const locale = useLocale(); 
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
+      return;
+    }
+    // Charger ou enregistrer les présences
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -50,7 +56,14 @@ useEffect(() => {
         const res = await fetch('/api/events');
         if (!res.ok) throw new Error('API error');
         const { events } = await res.json();
-        setEvents(events);
+        // 🔹 Reconstruction de l'URL locale pour chaque événement récupéré
+        // Peu importe si qr_code_url est null ou non, on le remplace par l'URL locale
+        const eventsWithLocalisedUrl = events.map((e: Event) => ({
+          ...e,
+          // 🔹 Construire l'URL locale dynamiquement
+          qr_code_url: `/${locale}/events/${e.id}/check-in`
+        }));
+        setEvents(eventsWithLocalisedUrl);
       } catch (err) {
         console.error('❌ Failed to load events', err);
       } finally {
@@ -65,7 +78,7 @@ useEffect(() => {
     return () => {
       if (cleanupRef.current) cleanupRef.current();
     };
-  }, [isFreePlan]);
+  }, [isFreePlan, locale]); // 🔹 Ajouter 'locale' aux dépendances
 
   const loadParticipants = async (event: Event) => {
     setSelectedEvent(event);
@@ -308,7 +321,8 @@ useEffect(() => {
                               className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const url = `${window.location.origin}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
+                                // 🔹 Construire l'URL du token dynamiquement aussi
+                                const url = `/${locale}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
                                 navigator.clipboard.writeText(url);
                                 alert('Lien QR copié ! Partagez-le.');
                               }}
@@ -355,7 +369,8 @@ useEffect(() => {
         <QRModal
           isOpen={showQRModal}
           onClose={() => setShowQRModal(false)}
-          profileUrl={selectedEvent.qr_code_url || ''}
+          // 🔹 Passer l'URL locale reconstruite au QRModal
+          profileUrl={selectedEvent.qr_code_url || ''} // Doit être l'URL locale
           username={selectedEvent.name || 'Événement'}
         />
       )}

@@ -1,3 +1,4 @@
+// src/app/api/events/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
@@ -33,11 +34,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Titre et date requis' }, { status: 400 });
     }
 
-    const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app').replace(/\/+$/, '');
     const eventId = uuidv4();
-    const qrCodeUrl = `${baseUrl}/events/${eventId}/check-in`;
 
-    // 🔹 Créer l’événement
+    // 🔹 Créer l’événement SANS l'URL complète du QR Code
     const { data: event, error: insertError } = await supabase
       .from('events')
       .insert({
@@ -47,7 +46,7 @@ export async function POST(request: Request) {
         location: location || null,
         starts_at,
         ends_at,
-        qr_code_url: qrCodeUrl,
+        // qr_code_url: qrCodeUrl, // ❌ NE PAS INSÉRER L'URL ICI
         is_public: is_public !== false ? true : false,
         profile_id: user.id,
         max_participants: max_participants || null,
@@ -71,14 +70,17 @@ export async function POST(request: Request) {
     }
 
     revalidatePath('/dashboard');
-    return NextResponse.json(event, { status: 201 });
+    // 🔹 Retourner l'événement sans l'URL du QR Code (ou avec une valeur par défaut si nécessaire ailleurs)
+    // L'URL sera reconstruite dans le frontend avec la locale.
+    // On peut s'assurer que qr_code_url est explicitement null dans la réponse si besoin.
+    return NextResponse.json({ ...event, id: eventId, qr_code_url: null }, { status: 201 });
   } catch (err: any) {
     console.error('❌ Erreur création événement:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
 
-// 🔹 GET : lister uniquement les événements actifs + stats en temps réel (CORRIGÉ)
+// 🔹 GET : lister uniquement les événements actifs + stats en temps réel
 export async function GET() {
   try {
     const cookieStore = await cookies();
@@ -103,7 +105,7 @@ export async function GET() {
     // Étape 1 : récupérer les événements actifs
     const { data: events, error } = await supabase
       .from('events')
-      .select('*')
+      .select('*') // Cela inclura qr_code_url (qui sera null pour les nouveaux événements)
       .eq('profile_id', user.id)
       .eq('status', 'active')
       .order('starts_at', { ascending: false });
@@ -123,9 +125,7 @@ export async function GET() {
           ...event,
           name: event.title, // pour compatibilité avec le composant
           attendee_count: count || 0,
-          qr_code_url:
-            event.qr_code_url ||
-            `${process.env.NEXT_PUBLIC_SITE_URL}/events/${event.id}/check-in`,
+          // qr_code_url: event.qr_code_url, // Laisser tel quel, sera null pour les nouveaux
         };
       })
     );

@@ -76,28 +76,64 @@ export default function CreateEventForm({
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
+  // --- CORRECTION DE LA PREVISUALISATION - Récupération de la locale ---
+  // ATTENTION : Cette méthode (localStorage) est un exemple. Pour une intégration parfaite avec next-intl,
+  // la locale devrait être passée via une prop depuis un composant parent qui l'a récupérée avec `useLocale()`.
+  const [currentLocale, setCurrentLocale] = useState<string>('fr'); // Valeur par défaut
+
+  useEffect(() => {
+    // Tente de récupérer la locale depuis localStorage (où next-intl la stocke souvent)
+    const storedLocale = localStorage.getItem('NEXT_LOCALE');
+    if (storedLocale) {
+      setCurrentLocale(storedLocale);
+    } else {
+      // Sinon, tente de la détecter du navigateur
+      const browserLocale = navigator.language.split('-')[0]; // 'fr-FR' -> 'fr'
+      // Vérifier si c'est une locale supportée
+      const supportedLocales = ['fr', 'en', 'sw', 'ln', 'pt', 'ar', 'es', 'ko', 'nl']; // Adaptez à vos langues
+      if (supportedLocales.includes(browserLocale)) {
+        setCurrentLocale(browserLocale);
+      }
+    }
+  }, []); // Exécuté une seule fois au montage
+
+
   // Bouton activé si : titre valide + date de début dans le futur (avec tolérance)
-  const isFormValid = useMemo(() => {
-    if (!title.trim() || title.length < 3) return false;
-    if (!startsAt) return false;
+ // Dans CreateEventForm.tsx, remplace temporairement le useMemo pour isFormValid
+const isFormValid = useMemo(() => {
+  const isTitleInvalid = !title.trim() || title.length < 3;
+  const isStartAtMissing = !startsAt;
+  let isPastDate = false;
 
+  if (startsAt) {
     const startDate = new Date(startsAt);
-    const nowWithTolerance = new Date(Date.now() - 120000); // Tolérance de 2 minutes
+    const nowWithTolerance = new Date(Date.now() - 120000);
+    isPastDate = startDate <= nowWithTolerance;
+  }
 
-    if (startDate <= nowWithTolerance) return false;
+  console.log("Validation Debug:");
+  console.log("- Title invalid (empty or < 3 chars):", isTitleInvalid);
+  console.log("- StartsAt missing:", isStartAtMissing);
+  console.log("- StartsAt in the past:", isPastDate);
+  console.log("- Overall isFormValid:", !(isTitleInvalid || isStartAtMissing || isPastDate));
 
-    return true;
-  }, [title, startsAt]);
+  if (isTitleInvalid || isStartAtMissing || isPastDate) {
+    return false;
+  }
+  return true;
+}, [title, startsAt]);
 
-  // Prévisualisation URL
+  // Prévisualisation URL - CORRIGÉE pour inclure la locale active
   const previewUrl = useMemo(() => {
     if (!title) return '';
     const slug = title
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
-    return `/event/${slug}-${Date.now().toString(36)}`;
-  }, [title]);
+    // Génère l'URL en fonction de la locale active récupérée
+    return `/${currentLocale}/events/${slug}-${Date.now().toString(36)}`;
+  }, [title, currentLocale]); // Ajout de currentLocale aux dépendances
+
 
   useEffect(() => {
     setIsMounted(true);
@@ -133,13 +169,15 @@ export default function CreateEventForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  // Génération QR Code
+  // Génération QR Code (pour la prévisualisation)
   useEffect(() => {
     if (!isMounted || !title || !startsAt) return;
 
     setIsGeneratingQR(true);
     const timer = setTimeout(() => {
       try {
+        // Le payload du QR Code peut contenir des infos de prévisualisation
+        // Mais l'URL finale utilisée pour le check-in est générée côté backend et stockée dans la DB
         const payload = JSON.stringify({
           title,
           starts_at: startsAt,
@@ -147,6 +185,8 @@ export default function CreateEventForm({
           is_public: isPublic,
         });
         const cleanPayload = encodeURIComponent(payload.replace(/\s+/g, ''));
+        // L'URL du QR Code ici est pour la PRÉVISUALISATION uniquement
+        // L'URL réelle du check-in est `${baseUrl}/${locale}/events/${eventId}/check-in` (générée dans l'API)
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanPayload}`;
         setQrDataUrl(qrUrl);
       } catch (err) {
@@ -181,7 +221,7 @@ export default function CreateEventForm({
         const { latitude, longitude } = pos.coords;
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=fr`
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${currentLocale}`
           );
           const data = await res.json();
           const address =
@@ -453,8 +493,9 @@ export default function CreateEventForm({
                     </div>
 
                     <div className="mt-4 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                      {/* --- CHANGEMENT ICI - Affichage de l'URL de prévisualisation --- */}
                       <p className="text-cyan-300 text-xs flex items-center gap-1">
-                        <Link className="w-3 h-3" /> luvika.me{previewUrl}
+                        <Link className="w-3 h-3" /> luvika.me{previewUrl} <span className="text-gray-500">(Structure)</span>
                       </p>
                     </div>
                   </div>

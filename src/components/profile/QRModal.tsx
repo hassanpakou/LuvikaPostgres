@@ -7,19 +7,21 @@ import { Button } from '../../../components/ui/button';
 import { Copy, QrCode, X } from 'lucide-react'; // ✅ Import de X
 import QRCode from 'qrcode';
 
+// 🔹 Mettre à jour le type QRModalProps pour inclure avatarUrl
 export default function QRModal({
   isOpen,
   onClose,
   profileUrl,
   username,
   shortUrl,
-  avatarUrl, // 👈 NOUVEAU
+  avatarUrl, // 👈 AJOUTÉ ICI AUSSI
 }: {
   isOpen: boolean;
   onClose: () => void;
   profileUrl: string;
   username: string;
   shortUrl?: string;
+  // 🔹 Ajouter avatarUrl comme prop optionnelle
   avatarUrl?: string | null;
 }) {
 
@@ -111,22 +113,23 @@ export default function QRModal({
 
             <div className="p-6 text-center">
               <div className="relative w-16 h-16 mx-auto mb-4">
-  {avatarUrl ? (
-    <img
-      src={avatarUrl}
-      alt={`Photo de ${username}`}
-      className="w-full h-full object-cover rounded-2xl border border-white/30 shadow-lg"
-    />
-  ) : (
-    <div className="w-full h-full rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500
-      flex items-center justify-center text-white font-bold text-xl shadow-lg">
-      {username?.charAt(0).toUpperCase()}
-    </div>
-  )}
+                {/* 🔹 Affichage de l'avatar */}
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={`Photo de ${username}`}
+                    className="w-full h-full object-cover rounded-2xl border border-white/30 shadow-lg"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500
+                    flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                    {username?.charAt(0).toUpperCase()}
+                  </div>
+                )}
 
-  {/* halo glass / glow */}
-  <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-lg -z-10" />
-</div>
+                {/* halo glass / glow */}
+                <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-lg -z-10" />
+              </div>
 
               <h3 className="text-xl font-bold text-white mb-1">QR Code de profil</h3>
               <p className="text-cyan-200 text-sm mb-4">

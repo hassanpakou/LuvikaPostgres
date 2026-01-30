@@ -25,7 +25,7 @@ import EventAttendeesSection from '../../../src/components/dashboard/EventAttend
 import DashboardQuickMenu from '../../../src/components/dashboard/DashboardQuickMenu';
 import PortfolioModal from '../../../src/components/dashboard/PortfolioModal';
 import CertificatesModal from '../../../src/components/dashboard/CertificatesModal';
-import EventFormModal from './EventFormModal';
+import CreateEventForm from '../events/CreateEventForm'; // 🔹 Importer le nouveau formulaire
 import { createClient } from '../../../src/lib/supabase/client';
 
 const formatDistance = (dateString: string, t: any): string => {
@@ -803,6 +803,8 @@ type Profile = {
   accepts_contact_requests?: boolean;
   plan?: string | null;
   likes_count?: number;
+  // 🔹 Ajouter avatar_url
+  avatar_url?: string;
 };
 type Action = {
   id: string;
@@ -856,13 +858,13 @@ export default function DashboardContent({
   const [hasLiked, setHasLiked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showEventForm, setShowEventForm] = useState(false);
   const [scansCount, setScansCount] = useState(0);
   const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
   const [isCertificatesModalOpen, setIsCertificatesModalOpen] = useState(false);
   const [isEventFormOpen, setIsEventFormOpen] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false); // Utilisé pour afficher le formulaire directement dans le dashboard
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -886,20 +888,7 @@ export default function DashboardContent({
     const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
     return { plan, active: plan === 'premium' || plan === 'entreprise', expires_at: undefined };
   }, [profile.plan]);
-  const handleCreateEvent = async (data: EventData) => {
-    try {
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        setShowEventForm(false);
-      }
-    } catch (err) {
-      console.error('❌ Création échouée:', err);
-    }
-  };
+  
   const handleLike = () => setHasLiked(!hasLiked);
   const handleQuickAction = (actionId: string) => {
     if (actionId === 'event') {
@@ -1038,6 +1027,27 @@ export default function DashboardContent({
       alert('❌ Échec.');
     }
   };
+  const handleCreateEvent = async (data: any) => { // Ajuster le type de data si nécessaire
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      if (res.ok) {
+        setShowEventForm(false);
+        setIsEventFormOpen(false);
+        // Optionnellement, rafraîchir la liste des événements ou ouvrir le modal des événements
+        setIsEventModalOpen(true); // Ou recharger la section des événements
+      } else {
+        const errorData = await res.json();
+        console.error('❌ Création échouée:', errorData.error || 'Erreur inconnue');
+      }
+    } catch (err) {
+      console.error('❌ Erreur réseau lors de la création:', err);
+    }
+  };
   const [hasCompany, setHasCompany] = useState(false);
   useEffect(() => {
     const checkCompany = async () => {
@@ -1164,6 +1174,7 @@ export default function DashboardContent({
             {t('orders.manage')}
           </Button>
           {/* Voir vos événements */}
+                  {subscription.plan === 'premium' || subscription.plan === 'entreprise' && hasCompany && (
           <Button
             onClick={() => setIsEventModalOpen(true)}
             className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
@@ -1172,7 +1183,7 @@ export default function DashboardContent({
               <Calendar className="h-5 w-5" />
             </span>
             <span className="font-medium">Voir vos événements</span>
-          </Button>
+          </Button>)}
           {/* Bouton Espace Entreprise (DISTINGUÉ) */}
           {subscription.plan === 'entreprise' && hasCompany && (
             <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
@@ -1184,34 +1195,94 @@ export default function DashboardContent({
               </Button>
             </Link>
           )}
+          {/* 🔹 Bouton pour ouvrir le formulaire de création */}
+        {subscription.plan === 'premium' || subscription.plan === 'entreprise' && hasCompany && (
+        <Button
+          onClick={() => {
+            // Choisissez une des deux options :
+            // Option 1 : Ouvre le formulaire dans un modal
+            setIsEventFormOpen(true);
+            // Option 2 : Affiche le formulaire directement dans la page (remplace la section des événements)
+            // setShowEventForm(true);
+          }}
+          className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6  bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Créer un événement
+        </Button>
+        )}
         </div>
+        
       </div>
 
+      
+      {/* 🔹 Modal pour le formulaire de création */}
       <AnimatePresence>
-        {showEventForm && (
+        {isEventFormOpen && (
           <motion.div
             key="event-form-modal"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
-            onClick={() => setShowEventForm(false)}
+            onClick={() => setIsEventFormOpen(false)} // Fermer si on clique en dehors
           >
             <div
               className="w-full max-w-4xl"
-              onClick={e => e.stopPropagation()}
+              onClick={e => e.stopPropagation()} // Ne pas fermer si on clique à l'intérieur
             >
-              <EventFormModal
-                isOpen={isEventFormOpen}
-                onClose={() => setIsEventFormOpen(false)}
-                onEventCreated={(eventId) => {
-                  setIsEventModalOpen(true);
-                }}
+              <CreateEventForm // 🔹 Utiliser CreateEventForm ici
+                onSubmit={handleCreateEvent} // Passe la fonction de soumission
+                onClose={() => setIsEventFormOpen(false)} // Passe la fonction de fermeture
               />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 🔹 Affichage direct du formulaire (optionnel, alternative au modal) */}
+      {showEventForm && (
+        <div className="mt-6">
+          <CreateEventForm // 🔹 Utiliser CreateEventForm ici
+            onSubmit={handleCreateEvent} // Passe la fonction de soumission
+            onClose={() => setShowEventForm(false)} // Passe la fonction de fermeture
+          />
+        </div>
+      )}
+
+      {/* 🔹 Modal pour voir les événements (affiché après création ou sur demande) */}
+      <AnimatePresence>
+        {isEventModalOpen && (
+          <motion.div
+            key="event-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur flex items-center justify-center p-4"
+            onClick={() => setIsEventModalOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 20 }}
+              className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-4xl p-6 border border-white/15"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Contenu du modal pour voir les événements */}
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white">événements</h2>
+                <Button variant="ghost" size="sm" onClick={() => setIsEventModalOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="max-h-[70vh] overflow-y-auto">
+                <EventAttendeesSection plan={profile.plan ?? null} />
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
 
       {/* 🔹 ✅ Bouton Messages reçus */}
       {profile.accepts_contact_requests && (
@@ -1508,15 +1579,17 @@ export default function DashboardContent({
       isSubmitting={isSubmitting}
     />
   )}
-  {activeModal === 'qr' && (
-    <QRModal
-      key="modal-qr"
-      isOpen={true}
-      onClose={closeModal}
-      profileUrl={profileUrl}
-      username={profile.username}
-    />
-  )}
+{activeModal === 'qr' && (
+  <QRModal
+    key="modal-qr"
+    isOpen={true}
+    onClose={closeModal}
+    profileUrl={profileUrl}
+    username={profile.username}
+    // 🔹 Passer avatar_url ici
+    //avatarUrl={profile.avatar_url}
+  />
+)}
   {activeModal === 'nfc' && (
     <NFCModal
       key="modal-nfc"
@@ -1542,15 +1615,6 @@ export default function DashboardContent({
       onClose={closeModal}
     />
   )}
-  {/* 🔹 Modal création */}
-<EventFormModal 
-  isOpen={isEventFormOpen} 
-  onClose={() => setIsEventFormOpen(false)}
-  onEventCreated={(eventId) => {
-    // 🔹 Optionnel : recharge la liste ou ouvre le modal événements
-    setIsEventModalOpen(true);
-  }}
-/>
   {activeModal === 'followers' && (
     <FollowersModal
       key="modal-followers"
