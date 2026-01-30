@@ -8,7 +8,8 @@ import {
   Heart, Phone, Mail, MessageCircle, MapPin,
   Instagram, Globe, Download, QrCode, ExternalLink, Crown,
   CheckCircle, UserCheck, ArrowUp, ChevronDown, Send, Link as LinkIcon,
-  Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText, Share as ShareIcon
+  Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText, Share as ShareIcon,
+  X, MoreVertical
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { Button } from '@/components/ui/button';
@@ -324,6 +325,8 @@ export default function PublicProfileClient({
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);
   const [showCertificatesModal, setShowCertificatesModal] = useState(false);
   const [showSkillsModal, setShowSkillsModal] = useState(false);
+  const [showAvatarFullscreen, setShowAvatarFullscreen] = useState(false);
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false);
 
   return (
     <div className="relative min-h-screen dynamic-bg">
@@ -413,23 +416,61 @@ export default function PublicProfileClient({
 
           <div className="relative inline-block mt-24">
             {localProfile.avatar_url ? (
-              <motion.img
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                src={localProfile.avatar_url}
-                alt={`${localProfile.full_name} avatar`}
-                className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/30 shadow-xl mx-auto"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/default-avatar.png';
-                }}
-              />
+              <motion.div className="relative">
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  src={localProfile.avatar_url}
+                  alt={`${localProfile.full_name} avatar`}
+                  onClick={() => setShowAvatarFullscreen(true)}
+                  className="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-white/30 shadow-xl mx-auto cursor-pointer hover:opacity-80 transition-opacity"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/default-avatar.png';
+                  }}
+                />
+                <motion.button
+                  onClick={() => setShowAvatarMenu(!showAvatarMenu)}
+                  className="absolute top-0 right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 transition-colors"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <MoreVertical className="w-4 h-4 text-white" />
+                </motion.button>
+                
+                {showAvatarMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute top-12 right-0 bg-slate-900 border border-white/20 rounded-lg shadow-xl z-50 overflow-hidden"
+                  >
+                    <button
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = localProfile.avatar_url;
+                        link.download = `${localProfile.username}-avatar.jpg`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setShowAvatarMenu(false);
+                      }}
+                      className="w-full px-4 py-2 text-sm text-cyan-300 hover:bg-white/10 flex items-center gap-2 transition-colors whitespace-nowrap"
+                    >
+                      <Download className="w-4 h-4" />
+                      Télécharger
+                    </button>
+                  </motion.div>
+                )}
+              </motion.div>
             ) : (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto"
+                className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-3xl font-bold text-white border-4 border-white/30 shadow-xl mx-auto cursor-pointer hover:opacity-80 transition-opacity"
+                onClick={() => setShowAvatarFullscreen(true)}
               >
                 {localProfile.full_name?.charAt(0).toUpperCase() || '?'}
               </motion.div>
@@ -947,6 +988,63 @@ export default function PublicProfileClient({
         onClose={() => setShowContactModal(false)}
         profileId={localProfile.id}
       />
+
+      {/* 🔹 Fullscreen Avatar Modal */}
+      <AnimatePresence>
+        {showAvatarFullscreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowAvatarFullscreen(false)}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-w-2xl w-full"
+            >
+              <motion.button
+                onClick={() => setShowAvatarFullscreen(false)}
+                className="absolute -top-12 right-0 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/20 transition-colors z-50"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <X className="w-6 h-6 text-white" />
+              </motion.button>
+
+              <img
+                src={localProfile.avatar_url || ''}
+                alt={`${localProfile.full_name} avatar`}
+                className="w-full rounded-lg object-cover shadow-2xl"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = '/default-avatar.png';
+                }}
+              />
+
+              <motion.button
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = localProfile.avatar_url;
+                  link.download = `${localProfile.username}-avatar.jpg`;
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+                className="absolute bottom-4 right-4 px-4 py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/50 text-cyan-300 flex items-center gap-2 transition-colors backdrop-blur"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Download className="w-4 h-4" />
+                Télécharger
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
