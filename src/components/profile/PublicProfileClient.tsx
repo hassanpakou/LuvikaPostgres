@@ -455,7 +455,7 @@ export default function PublicProfileClient({
           </div>
 
           <motion.div 
-            className="mt-6"
+            className="mt-6 px-4 md:px-0"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -472,7 +472,7 @@ export default function PublicProfileClient({
               )}
             </p>
             
-            <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 flex items-center justify-center gap-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-white mt-2 mb-6 md:mb-0 flex items-center justify-center gap-2">
               {localProfile.full_name}
               {isBirthdayToday(localProfile) && (
                 <motion.div
@@ -526,7 +526,7 @@ export default function PublicProfileClient({
             hidden: {},
             visible: { transition: { staggerChildren: 0.12 } }
           }}
-          className="mt-4 flex justify-center gap-5 text-center"
+          className="mt-4 flex justify-center gap-5 text-center px-4 md:px-0"
         >
           {/* Likes */}
           <motion.div 
@@ -598,7 +598,7 @@ export default function PublicProfileClient({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed"
+            className="text-gray-300 mt-6 text-center max-w-2xl mx-auto leading-relaxed px-4 md:px-0"
           >
             {localProfile.bio_short}
           </motion.p>
@@ -609,7 +609,7 @@ export default function PublicProfileClient({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.9 }}
-            className="mt-6 flex flex-wrap justify-center gap-4 text-gray-400 text-sm"
+            className="mt-6 flex flex-wrap justify-center gap-4 text-gray-400 text-sm px-4 md:px-0"
           >
             {localProfile.birth_day && localProfile.birth_month && (
               <div className="flex items-center gap-1">
@@ -699,7 +699,7 @@ export default function PublicProfileClient({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.7 }}
-          className="mt-6 flex flex-wrap justify-center gap-3"
+          className="mt-6 flex flex-wrap justify-center gap-3 px-4 md:px-0"
         >
           {isSectionVisible('portfolio', localProfile) && portfolios.length > 0 && (
             <Button
@@ -743,7 +743,7 @@ export default function PublicProfileClient({
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1 }}
-          className="mt-6"
+          className="mt-6 px-4 md:px-0"
         >
           <FloatingButtons 
             profile={localProfile} 
