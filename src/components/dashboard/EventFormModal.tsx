@@ -21,6 +21,7 @@ export default function EventFormModal({ isOpen, onClose, onEventCreated }: Prop
   const [location, setLocation] = useState('');
   const [startsAt, setStartsAt] = useState('');
   const [endsAt, setEndsAt] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -45,7 +46,14 @@ export default function EventFormModal({ isOpen, onClose, onEventCreated }: Prop
       const res = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, description, location, starts_at: startsAt, ends_at: endsAt }),
+        body: JSON.stringify({ 
+          title, 
+          description, 
+          location, 
+          starts_at: startsAt, 
+          ends_at: endsAt,
+          is_public: isPublic
+        }),
       });
 
       const data = await res.json();
@@ -179,6 +187,19 @@ export default function EventFormModal({ isOpen, onClose, onEventCreated }: Prop
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="isPublic"
+                    checked={isPublic}
+                    onChange={e => setIsPublic(e.target.checked)}
+                    className="rounded text-amber-500 focus:ring-amber-500"
+                  />
+                  <Label htmlFor="isPublic" className="text-gray-300 cursor-pointer">
+                    Événement public
+                  </Label>
                 </div>
 
                 <Button

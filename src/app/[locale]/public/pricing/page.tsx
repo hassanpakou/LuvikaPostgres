@@ -1,10 +1,11 @@
-// src/app/[locale]/public/pricing/page.tsx
+// src/app/[locale]/public/pricing/page.tsx - PRICING PAGE COMPONENT
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import PricingPlans from '../../../../components/pricing/PricingPlans'; // ✅ Chemin corrigé
 
-export async function generateMetadata({ params }: { params: { locale: string } }) {
-  const t = await getTranslations({ locale: params.locale, namespace: 'pricing' });
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'pricing' });
   return {
     title: t('title'),
     description: t('plans.freemium.desc'),
@@ -24,7 +25,7 @@ export default async function PricingPage({
   const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
   if (!supported.includes(locale as any)) notFound();
 
-  const t = await getTranslations({ locale });
+  const t = await getTranslations({ locale, namespace: 'pricing' });
   const tFooter = await getTranslations({ locale, namespace: 'footer' });
 
   const plans = [

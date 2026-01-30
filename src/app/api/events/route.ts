@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
     const body = await request.json();
-    const { title, description, location, starts_at, ends_at, max_participants } = body;
+    const { title, description, location, starts_at, ends_at, max_participants, is_public } = body;
 
     if (!title || !starts_at) {
       return NextResponse.json({ error: 'Titre et date requis' }, { status: 400 });
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         starts_at,
         ends_at,
         qr_code_url: qrCodeUrl,
-        is_public: true,
+        is_public: is_public !== false ? true : false,
         profile_id: user.id,
         max_participants: max_participants || null,
         status: 'active',

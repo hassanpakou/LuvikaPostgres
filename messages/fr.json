@@ -840,5 +840,68 @@
       "desc": "Luvika n’est pas un profil — c’est votre outil métier quotidien, conçu pour l’Afrique et scalable à l’international."
     }
   },
-  "enterprise_only": "Entreprise"
+  "enterprise_only": "Entreprise",
+  "blog": {
+    "title": "Blog LUVIKA",
+    "description": "Découvrez les dernières actualités, tutoriels et conseils pour utiliser LUVIKA au maximum."
+  },
+  "pricing": {
+    "title": "Plans Tarifaires",
+    "description": "Choisissez le plan qui correspond à vos besoins",
+    "billing": {
+      "monthly": "Mensuel",
+      "yearly": "Annuel",
+      "per_month": "par mois",
+      "per_year": "par an"
+    },
+    "plans": {
+      "freemium": {
+        "title": "Gratuit",
+        "desc": "Parfait pour commencer",
+        "features": {
+          "nfc": "1 carte NFC",
+          "users": "Profil personnel",
+          "events": "1 événement",
+          "presence": "Suivi des présences",
+          "stats": "Statistiques de base",
+          "roles": "Rôle utilisateur",
+          "dashboard": "Tableau de bord"
+        }
+      },
+      "premium": {
+        "title": "Premium",
+        "popular": "Populaire",
+        "desc": "Pour les professionnels",
+        "features": {
+          "nfc": "10 cartes NFC",
+          "users": "Équipe jusqu'à 5",
+          "events": "Événements illimités",
+          "presence": "Suivi avancé",
+          "stats": "Statistiques détaillées",
+          "roles": "Gestion des rôles",
+          "dashboard": "Dashboard avancé"
+        }
+      },
+      "entreprise": {
+        "title": "Entreprise",
+        "desc": "Solution complète",
+        "features": {
+          "nfc": "Cartes NFC illimitées",
+          "users": "Équipe illimitée",
+          "events": "Événements illimités",
+          "presence": "Suivi en temps réel",
+          "stats": "Analytics complètes",
+          "roles": "Contrôle d'accès avancé",
+          "dashboard": "Dashboard personnalisé"
+        }
+      }
+    },
+    "cta": {
+      "choose": "Choisir {plan}"
+    },
+    "footer": {
+      "custom_plan": "Plan personnalisé",
+      "contact_us": "Nous contacter"
+    }
+  }
 }
