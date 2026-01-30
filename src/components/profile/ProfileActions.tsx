@@ -1,4 +1,3 @@
-// src/components/profile/FloatingButtons.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -20,7 +19,6 @@ export default function FloatingButtons({ profile, setShowQRModal, onContactClic
     let lastScroll = window.scrollY;
     const onScroll = () => {
       const currentScroll = window.scrollY;
-      // Si on descend => cacher, si on remonte => montrer
       setShowFloating(!(currentScroll > lastScroll && currentScroll > 80));
       lastScroll = currentScroll;
     };
@@ -28,7 +26,16 @@ export default function FloatingButtons({ profile, setShowQRModal, onContactClic
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // 🔹 Son à jouer au clic
+  const clickSound = new Audio('/click.mp3'); // 👉 Place ton fichier click.mp3 dans public/
+
+  const playSound = () => {
+    clickSound.currentTime = 0; // redémarre le son si on clique rapidement
+    clickSound.play().catch(() => {}); // ignore erreur si autoplay bloqué
+  };
+
   const downloadVCard = () => {
+    playSound(); // 🔹 joue le son
     const { full_name = '', job_title = '', company = '', email = '', phone = '', whatsapp = '', address = '', website = '', city = '', country = '', username = '' } = profile;
     const fullAddress = [address, city, country].filter(Boolean).join(';');
     const profileUrl = `https://luvika.me/${username}`;
@@ -55,6 +62,7 @@ export default function FloatingButtons({ profile, setShowQRModal, onContactClic
   };
 
   const shareProfile = () => {
+    playSound(); // 🔹 joue le son
     const url = window.location.href;
     if (navigator.share) {
       navigator.share({
@@ -69,14 +77,14 @@ export default function FloatingButtons({ profile, setShowQRModal, onContactClic
 
   const buttons = [
     { label: 'Ajouter contact', icon: <PlusCircle className="w-5 h-5" />, onClick: downloadVCard },
-    { label: 'QR Code', icon: <QrCode className="w-5 h-5" />, onClick: () => setShowQRModal(true) },
+    { label: 'QR Code', icon: <QrCode className="w-5 h-5" />, onClick: () => { playSound(); setShowQRModal(true); } },
     { label: 'Partager', icon: <Share2 className="w-5 h-5" />, onClick: shareProfile },
-    { label: 'Écris-moi', icon: <Mail className="w-5 h-5" />, onClick: onContactClick || (() => {}) },
+    { label: 'Écris-moi', icon: <Mail className="w-5 h-5" />, onClick: () => { playSound(); onContactClick?.(); } },
   ];
 
   return (
     <>
-      {/* 🔹 Desktop / Tablette: flottants verticaux */}
+      {/* 🔹 Desktop / Tablette */}
       <div className="fixed right-6 bottom-6 z-50 hidden md:flex flex-col gap-3">
         {buttons.map((btn, idx) => (
           <motion.div
@@ -112,7 +120,7 @@ export default function FloatingButtons({ profile, setShowQRModal, onContactClic
         ))}
       </div>
 
-      {/* 🔹 Mobile — Navbar bottom différent, disparaît au scroll */}
+      {/* 🔹 Mobile — Navbar bottom */}
       <motion.div
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
         initial={{ y: 80 }}
