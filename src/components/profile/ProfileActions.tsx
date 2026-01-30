@@ -98,84 +98,114 @@ const downloadVCard = () => {
     }
   };
 
-  const buttons = [
-    { label: 'Ajouter moi', icon: <PlusCircle className="w-5 h-5" />, onClick: downloadVCard },
-    { label: '', icon: <QrCode className="w-5 h-5" />, onClick: () => setShowQRModal(true) },
-    { label: '', icon: <Share2 className="w-5 h-5" />, onClick: shareProfile },
-    { 
-      label: 'Écris-moi', 
-      icon: <Mail className="w-5 h-5" />, // ✅ Icône email plus claire
-      onClick: onContactClick || (() => {}) // 👈 Appel de la fonction
-    },
-  ];
+const buttons = [
+  {
+    label: 'Ajouter contact',
+    icon: <PlusCircle className="w-5 h-5" />,
+    onClick: downloadVCard,
+  },
+  {
+    label: 'QR Code',
+    icon: <QrCode className="w-5 h-5" />,
+    onClick: () => setShowQRModal(true),
+  },
+  {
+    label: 'Partager',
+    icon: <Share2 className="w-5 h-5" />,
+    onClick: shareProfile,
+  },
+  {
+    label: 'Écris-moi',
+    icon: <Mail className="w-5 h-5" />,
+    onClick: onContactClick || (() => {}),
+  },
+];
+
 
   return (
     <>
-      {/* 🔹 Desktop / Tablette */}
-      <div className="fixed inset-x-0 bottom-6 z-50 flex justify-center items-center gap-4 md:hidden lg:flex">
-        {buttons.map((btn, idx) => (
-          <motion.button
-            key={`desktop-${idx}`}
-            onClick={btn.onClick}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white font-medium shadow-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{
-              opacity: showFloating ? 1 : 0,
-              y: showFloating ? [0, -2, 0] : 20,
-            }}
-            transition={{
-              opacity: { duration: 0.25 },
-              y: {
-                duration: showFloating ? 3 : 0.25,
-                repeat: showFloating ? Infinity : 0,
-                ease: 'easeInOut',
-              },
-            }}
-            whileHover={{
-              scale: 1.1,
-              boxShadow: '0 0 12px rgba(37, 99, 235, 0.7), 0 0 24px rgba(37, 99, 235, 0.5)',
-            }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {btn.icon}
-            <span className="text-sm font-semibold">{btn.label}</span>
-          </motion.button>
-        ))}
-      </div>
+      {/* 🔹 Desktop / Tablette: compact vertical floating buttons */}
+      <div className="fixed right-6 bottom-6 z-50 hidden md:flex flex-col gap-3">
+  {buttons.map((btn, idx) => (
+    <motion.div
+      key={`desktop-${idx}`}
+      className="relative group"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: showFloating ? 1 : 0, y: showFloating ? 0 : 20 }}
+      transition={{ duration: 0.3, delay: idx * 0.05 }}
+    >
+      {/* Tooltip */}
+      <span
+        className="
+          absolute right-14 top-1/2 -translate-y-1/2
+          bg-black/90 text-white text-xs px-3 py-1.5 rounded-md
+          opacity-0 translate-x-2
+          group-hover:opacity-100 group-hover:translate-x-0
+          transition-all duration-200
+          whitespace-nowrap shadow-lg
+        "
+      >
+        {btn.label}
+      </span>
+
+      {/* Button */}
+      <motion.button
+        onClick={btn.onClick}
+        aria-label={btn.label}
+        className="
+          w-12 h-12 rounded-full
+          bg-black/70 backdrop-blur-md
+          border border-white/10
+          text-white flex items-center justify-center
+          shadow-lg
+          hover:bg-cyan-500/20
+        "
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        {btn.icon}
+      </motion.button>
+    </motion.div>
+  ))}
+</div>
+
 
       {/* 🔹 Mobile — Navbar bottom */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50 hidden md:block lg:hidden"
-        initial={{ y: 60 }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-      >
-        <div className="bg-black/80 backdrop-blur-xl border-t border-white/10">
-          <div className="flex justify-around items-center py-3 px-2">
-            {buttons.map((btn, idx) => (
-              <button
-                key={`mobile-${idx}`}
-                onClick={btn.onClick}
-                className="flex flex-col items-center gap-1 w-16 p-2 rounded-lg hover:bg-white/10 transition-colors"
-                aria-label={btn.label}
-              >
-                <motion.div
-                  className="text-cyan-300"
-                  animate={{ rotate: [0, 5, -5, 0] }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }}
-                >
-                  {btn.icon}
-                </motion.div>
-                <span className="text-[10px] text-gray-300 font-medium">{btn.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </motion.div>
+  className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+  initial={{ y: 80 }}
+  animate={{ y: 0 }}
+  transition={{ type: 'spring', damping: 20, stiffness: 250 }}
+>
+  <div className="bg-black/85 backdrop-blur-xl border-t border-white/10">
+    <div className="flex justify-around items-center py-3 px-2">
+      {buttons.map((btn, idx) => (
+        <button
+          key={`mobile-${idx}`}
+          onClick={btn.onClick}
+          className="
+            flex flex-col items-center gap-1
+            w-20 py-2 rounded-xl
+            active:bg-white/10
+            transition
+          "
+        >
+          <motion.div
+            whileTap={{ scale: 0.9 }}
+            className="text-cyan-400"
+          >
+            {btn.icon}
+          </motion.div>
+
+          <span className="text-[11px] text-gray-300 font-medium">
+            {btn.label}
+          </span>
+        </button>
+      ))}
+    </div>
+  </div>
+</motion.div>
+
     </>
   );
 }
