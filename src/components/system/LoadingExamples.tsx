@@ -8,7 +8,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Button } from '@/src/components/ui/button';
+import { Button } from '@/components/ui/button';
 
 export function LoadingExamples() {
   const router = useRouter();

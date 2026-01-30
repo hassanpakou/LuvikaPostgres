@@ -27,6 +27,11 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
+  // Rediriger /events/* vers /fr/events/* (default locale)
+  if (path.startsWith('/events/')) {
+    return NextResponse.redirect(new URL(path.replace('/events/', '/fr/events/'), request.url));
+  }
+
   // Routes protégées : si pas connecté → redirection
   if (!user && (path.startsWith('/dashboard') || path === '/complete-profile')) {
     return NextResponse.redirect(new URL('/auth/sign-in', request.url));
