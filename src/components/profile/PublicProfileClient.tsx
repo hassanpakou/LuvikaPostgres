@@ -911,6 +911,7 @@ export default function PublicProfileClient({
               profileUrl={profileUrl}
               username={localProfile.username}
               shortUrl={shortUrl}
+              avatarUrl={profile.avatar_url}
             />
           )}
           {isContactModalOpen && (
