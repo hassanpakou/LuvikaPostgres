@@ -146,23 +146,49 @@ export default function NfcPage() {
 
   // ✅ Loader élégant
   if (loading) {
-    return (
-      <div className="max-w-6xl mx-auto py-12 px-4">
-        <div className="text-center">
-          <div className="relative inline-block mb-6">
-            <div className="w-16 h-16 rounded-full border-4 border-cyan-500/30 animate-spin"></div>
+            return (
+  <div className="max-w-6xl mx-auto py-12 px-4 flex justify-center">
+    <div className="w-full max-w-md">
+
+      {/* Bulle glassmorphism */}
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+
+        <div className="flex flex-col items-center text-center">
+
+          {/* Boule circulaire */}
+          <div className="relative w-20 h-20 mb-6">
+
+            {/* Cercle externe */}
+            <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
+
+            {/* Aiguille qui tourne */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse"></div>
+              <div className="w-[2px] h-8 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
             </div>
+
+            {/* Cœur lumineux */}
+            <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-70 animate-pulse"></div>
+            <div className="absolute inset-6 rounded-full bg-slate-950"></div>
           </div>
-          <h3 className="text-xl font-medium text-white mb-2">Chargement des cartes NFC...</h3>
-          <p className="text-gray-400">Récupération des données depuis la base sécurisée</p>
-          <div className="mt-6 max-w-md mx-auto w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full animate-pulse w-1/3"></div>
+
+          {/* Texte */}
+          <h3 className="text-lg font-semibold text-white mb-1">
+            Chargement des cartes NFC...
+          </h3>
+          <p className="text-sm text-gray-400 mb-5">
+            Récupération des données depuis la base sécurisée
+          </p>
+
+          {/* Barre de progression */}
+          <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-progress"></div>
           </div>
+
         </div>
       </div>
-    );
+    </div>
+  </div>
+);
   }
 
   const getStatusBadge = (status: string) => {
