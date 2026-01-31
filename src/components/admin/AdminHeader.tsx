@@ -108,7 +108,7 @@ export function AdminHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-slate-800 border-white/10 w-56">
               <DropdownMenuItem
-                onClick={() => router.push('/settings/profile')}
+                onClick={() => router.push('/dashboard/settings')} // <-- Lien à modifier
                 className="cursor-pointer flex items-center gap-2 text-gray-300 hover:text-white"
               >
                 <Settings className="w-4 h-4" />

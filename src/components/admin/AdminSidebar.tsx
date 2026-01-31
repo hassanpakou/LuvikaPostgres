@@ -14,6 +14,8 @@ const menu = [
   { name: 'Demandes Upgrade', icon: FileText, href: '/admin/admin/upgrade-requests' },
   { name: 'Utilisateurs', icon: Users, href: '/admin/admin/users' },
   { name: 'Abonnements', icon: CreditCard, href: '/admin/admin/subscriptions' },
+    { name: 'Blog', icon: FileText, href: '/dashboard/blog' }, // Ou '/admin/blog' si tu préfères
+
 ];
 
 export function AdminSidebar() {

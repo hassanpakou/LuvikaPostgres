@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Calendar, Tag } from 'lucide-react';
 import type { BlogPost } from '../../types/blog';
 
+
 export default function BlogPostCard({ post }: { post: BlogPost }) {
   return (
     <article className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden hover:bg-white/10 transition-all">
@@ -21,9 +22,13 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
           <span>Par {post.author}</span>
           <div className="flex items-center gap-1">
             <Calendar className="w-4 h-4" />
-            <time dateTime={post.published_at}>
-              {new Date(post.published_at).toLocaleDateString('fr-FR')}
-            </time>
+            {post.published_at ? ( // ✅ Vérification de l'existence de published_at
+              <time dateTime={post.published_at}>
+                {new Date(post.published_at).toLocaleDateString('fr-FR')}
+              </time>
+            ) : (
+              <span>Pas encore publié</span> // ✅ Message alternatif si pas publié
+            )}
           </div>
         </div>
       </div>

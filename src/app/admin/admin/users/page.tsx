@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '../../../../../src/lib/supabase/client';
+// createClient n'est pas utilisé ici
+ import { createClient } from '../../../../../src/lib/supabase/client';
 import { Badge } from '../../../../../components/ui/badge';
 import { UserActions } from '../../../../../components/admin/UserActions';
 import { ToggleGroup, ToggleGroupItem } from '../../../../../components/ui/toggle-group';
@@ -24,47 +25,74 @@ import { useTranslations } from 'next-intl';
 const USERS_PER_PAGE = 5;
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [authUsers, setAuthUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]); // Les utilisateurs avec isBanned
   const [filter, setFilter] = useState<'all' | 'active' | 'banned'>('all');
   const [search, setSearch] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  // Optionnel : Si tu as besoin de l'ID de l'utilisateur connecté côté client
+  // const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const router = useRouter();
   const t = useTranslations();
 
-  // Dans UsersPage.tsx
+  // Récupérer les utilisateurs
 useEffect(() => {
   const fetchUsers = async () => {
-    const res = await fetch('/api/admin/users');
-    if (res.status === 403) {
-      router.push('/auth/sign-in');
-      return;
-    }
-    const data = await res.json();
-    
-    // Mappe banned_until → isBanned
-    const usersWithStatus = data.map((u: any) => ({
-      ...u,
-      isBanned: u.banned_until === 'infinity',
-    }));
+    try {
+      const res = await fetch('/api/admin/users');
+      if (res.status === 403) {
+        router.push('/auth/sign-in');
+        return;
+      }
+      if (!res.ok) {
+        throw new Error(`Erreur API: ${res.status} ${res.statusText}`);
+      }
+      const data = await res.json();
 
-    setUsers(usersWithStatus);
-    setLoading(false);
+      // Vérifier que data est un tableau
+      if (!Array.isArray(data)) {
+        console.error("Erreur: L'API /api/admin/users n'a pas retourné un tableau.", data);
+        setUsers([]);
+        return;
+      }
+
+  // 🔹 Modifie la logique de transformation de isBanned
+      // isBanned est vrai si banned_until est une date future ou infinie (selon Supabase)
+      // Supabase met 'infinity' pour un ban permanent, ou une date temporaire.
+      // On vérifie si banned_until est une chaîne et qu'elle n'est pas 'null'
+      // OU si c'est une date dans le futur.
+      const usersWithStatus = data.map((u: any) => {
+        // Vérifie si banned_until est défini et n'est pas 'null' (sous forme de chaîne)
+        // ou si c'est une date dans le futur
+        const isBanned = u.banned_until && u.banned_until !== 'null';
+        // OU, si tu veux être plus strict et vérifier si c'est une date future :
+        // const isBanned = u.banned_until && new Date(u.banned_until) > new Date();
+
+        return {
+          ...u,
+          isBanned: isBanned,
+        };
+      });
+
+      setUsers(usersWithStatus);
+    } catch (err) {
+      console.error("Erreur lors de la récupération des utilisateurs:", err);
+      // Gérer l'erreur (afficher un message à l'utilisateur)
+    } finally {
+      setLoading(false);
+    }
   };
 
   fetchUsers();
-}, []);
-  const bannedMap = new Map(authUsers.map(u => [u.id, u.banned_until === 'infinity']));
+}, [router]);
 
   // 🔍 Filtrer + trier
   const filteredAndSorted = useMemo(() => {
     let result = users.filter(user => {
-      const isBanned = bannedMap.get(user.id) === true;
-      if (filter === 'banned') return isBanned;
-      if (filter === 'active') return !isBanned;
+      // Utilisez isBanned qui est maintenant dans chaque user
+      if (filter === 'banned') return user.isBanned;
+      if (filter === 'active') return !user.isBanned;
       return true;
     });
 
@@ -99,7 +127,7 @@ useEffect(() => {
     }
 
     return result;
-  }, [users, filter, search, sortConfig, bannedMap]);
+  }, [users, filter, search, sortConfig]);
 
   // 📄 Pagination
   const totalPages = Math.ceil(filteredAndSorted.length / USERS_PER_PAGE);
@@ -140,49 +168,33 @@ useEffect(() => {
 
   // ✅ Loader élégant
   if (loading) {
-            return (
-  <div className="max-w-6xl mx-auto py-12 px-4 flex justify-center">
-    <div className="w-full max-w-md">
-
-      {/* Bulle glassmorphism */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-
-        <div className="flex flex-col items-center text-center">
-
-          {/* Boule circulaire */}
-          <div className="relative w-20 h-20 mb-6">
-
-            {/* Cercle externe */}
-            <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
-
-            {/* Aiguille qui tourne */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[2px] h-8 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
+    return (
+      <div className="max-w-6xl mx-auto py-12 px-4 flex justify-center">
+        <div className="w-full max-w-md">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative w-20 h-20 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[2px] h-8 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
+                </div>
+                <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-70 animate-pulse"></div>
+                <div className="absolute inset-6 rounded-full bg-slate-950"></div>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Chargement des utilisateurs ...
+              </h3>
+              <p className="text-sm text-gray-400 mb-5">
+                Récupération des données depuis la base sécurisée
+              </p>
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-progress"></div>
+              </div>
             </div>
-
-            {/* Cœur lumineux */}
-            <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-70 animate-pulse"></div>
-            <div className="absolute inset-6 rounded-full bg-slate-950"></div>
           </div>
-
-          {/* Texte */}
-          <h3 className="text-lg font-semibold text-white mb-1">
-            Chargement des utilisateurs ...
-          </h3>
-          <p className="text-sm text-gray-400 mb-5">
-            Récupération des données depuis la base sécurisée
-          </p>
-
-          {/* Barre de progression */}
-          <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-progress"></div>
-          </div>
-
         </div>
       </div>
-    </div>
-  </div>
-);
+    );
   }
 
   return (
@@ -280,8 +292,12 @@ useEffect(() => {
               </thead>
               <tbody>
                 {paginatedUsers.map((u) => {
-                  const isBanned = bannedMap.get(u.id) === true;
-                  const isSelf = u.id === currentUserId;
+                  // isBanned est maintenant directement sur u
+                  const isBanned = u.isBanned;
+                  // Optionnel : Si tu as récupéré l'ID de l'utilisateur connecté
+                  // const isSelf = u.id === currentUserId;
+                  // Pour l'instant, on ne sait pas l'ID côté client, donc isSelf est probablement faux
+                  const isSelf = false; // ou remplacez par la logique appropriée si currentUserId est disponible
 
                   return (
                     <tr key={u.id} className="border-b border-white/5 hover:bg-white/5">

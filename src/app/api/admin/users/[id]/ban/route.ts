@@ -8,6 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> } // ✅ Promise<{ id: string }>
 ) {
   const { id: userIdToBan } = await params; // ✅ await params
+  console.log("Tentative de bannir l'utilisateur:", userIdToBan); // 🔍 Log pour débug
 
   const cookieStore = await cookies();
   
@@ -24,14 +25,17 @@ export async function POST(
     }
   );
 
-  const { data : { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user || session.user.user_metadata?.role !== 'admin') {
+    console.log("Accès refusé pour bannir:", userIdToBan); // 🔍 Log
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
   }
 
   const adminId = session.user.id;
+  console.log("Admin demandant le bannissement:", adminId); // 🔍 Log
 
   if (userIdToBan === adminId) {
+    console.log("Tentative d'auto-bannissement:", adminId); // 🔍 Log
     return NextResponse.json({ error: 'Auto-bannissement interdit' }, { status: 400 });
   }
 
@@ -44,6 +48,7 @@ export async function POST(
 
   try {
     // 🔥 Bannir via API REST
+    console.log("Appel API REST pour bannir:", userIdToBan); // 🔍 Log
     const banRes = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/admin/users/${userIdToBan}`,
       {
@@ -61,18 +66,29 @@ export async function POST(
 
     if (!banRes.ok) {
       const errorText = await banRes.text();
-      console.error('Erreur bannissement:', errorText);
-      return NextResponse.json({ error: 'Échec du bannissement' }, { status: 500 });
+      console.error('Erreur bannissement API REST:', errorText);
+      console.error('Statut réponse API REST:', banRes.status); // 🔍 Log
+      return NextResponse.json({ error: 'Échec du bannissement via API REST' }, { status: banRes.status });
     }
+    console.log("Utilisateur banni via API REST avec succès:", userIdToBan); // 🔍 Log
 
     // ✅ Désactiver dans profiles
-    await supabase
+    console.log("Mise à jour du profil pour désactiver:", userIdToBan); // 🔍 Log
+    const { error: profileUpdateError } = await supabase
       .from('profiles')
       .update({ verified: false })
       .eq('id', userIdToBan);
 
+    if (profileUpdateError) {
+      console.error('Erreur mise à jour profile:', profileUpdateError); // 🔍 Log
+      // Ne renvoie pas d'erreur ici, continue vers l'audit
+    } else {
+        console.log("Profil mis à jour avec succès:", userIdToBan); // 🔍 Log
+    }
+
     // 📜 Audit
-    await supabase
+    console.log("Insertion dans admin_actions pour admin:", adminId, "cible:", userIdToBan); // 🔍 Log
+    const { error: auditError } = await supabase
       .from('admin_actions')
       .insert({
         admin_id: adminId,
@@ -81,9 +97,17 @@ export async function POST(
         details: { reason: 'Bannissement manuel' },
       });
 
+    if (auditError) {
+      console.error('Erreur log audit dans admin_actions:', auditError); // 🔍 Log IMPORTANT
+      // Tu peux choisir de renvoyer une erreur ici si l'audit est critique
+      // return NextResponse.json({ error: 'Échec du log d\'audit' }, { status: 500 });
+    } else {
+        console.log("Log d'audit inséré avec succès dans admin_actions"); // 🔍 Log
+    }
+
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.error('Exception bannissement:', err);
+    console.error('Exception dans le processus de bannissement:', err); // 🔍 Log
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
