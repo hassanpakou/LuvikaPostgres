@@ -61,7 +61,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         const eventsWithLocalisedUrl = events.map((e: Event) => ({
           ...e,
           // 🔹 Construire l'URL locale dynamiquement
-          qr_code_url: `/${locale}/events/${e.id}/check-in`
+        qr_code_url: `/${locale}/events/${e.id}/check-in` // <- Ici, locale est ajoutée une fois
         }));
         setEvents(eventsWithLocalisedUrl);
       } catch (err) {
@@ -374,13 +374,14 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
 
        {selectedEvent && (
         <QRModal
-          isOpen={showQRModal}
-          onClose={() => setShowQRModal(false)}
-          profileUrl={selectedEvent.qr_code_url || ''} // URL locale affichée/copiée
-          username={selectedEvent.name || 'Événement'}
-          // 🔹 Calculer et passer l'URL absolue pour le QR Code
-          qrCodeUrl={`${process.env.NEXT_PUBLIC_SITE_URL}${selectedEvent.qr_code_url}`}
-        />
+  isOpen={showQRModal}
+  onClose={() => setShowQRModal(false)}
+  // 🔹 Passer l'URL locale reconstruite au QRModal
+  profileUrl={selectedEvent.qr_code_url || ''} // <- C'est /fr/events/[ID]/check-in
+  username={selectedEvent.name || 'Événement'}
+  // 🔹 Calculer et passer l'URL absolue pour le QR Code
+  qrCodeUrl={`${process.env.NEXT_PUBLIC_SITE_URL}${selectedEvent.qr_code_url}`} // <- SITE_URL + /fr/events/[ID]/check-in
+/>
       )}
     </Card>
   );
