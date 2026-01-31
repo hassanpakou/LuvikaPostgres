@@ -57,10 +57,10 @@
     }
   },
   "dashboard": {
-    "greeting_morning": "Bonjour, {name} 🌞",
-    "greeting_afternoon": "Bon après-midi, {name} ☀️",
-    "greeting_evening": "Bonsoir, {name} 🌙",
-    "greeting_night": "Coucou, {name} 🌃",
+  "greeting_morning": "Bonjour, {name}",
+  "greeting_afternoon": "Bon après-midi, {name}",
+  "greeting_evening": "Bonsoir, {name}",
+  "greeting_night": "Coucou, {name}",
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
     "export_csv": "Exporter (.csv)",

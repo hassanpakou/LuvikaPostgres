@@ -7,7 +7,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
   Heart, Download, X, Mail, Check,
   Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight
+  Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight,
+  ShoppingBag,
+  Moon,
+  Sun
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1123,192 +1126,256 @@ export default function DashboardContent({
   }, []);
 
   return (
-    <div className="space-y-8 pb-28">
-      {/* En-tête */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
-            {(() => {
-              const hour = new Date().getHours();
-              if (hour >= 5 && hour < 12) return t('greeting_morning', { name: profile.full_name });
-              if (hour >= 12 && hour < 17) return t('greeting_afternoon', { name: profile.full_name });
-              if (hour >= 17 && hour < 22) return t('greeting_evening', { name: profile.full_name });
-              return t('greeting_night', { name: profile.full_name });
-            })()}
-          </h1>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-wrap">
-            <p className="text-gray-400 text-sm sm:text-base">{t('subtitle')}</p>
-            <button
-              onClick={handleLike}
-              className="flex items-center gap-1 text-gray-300 hover:text-red-400 w-fit"
-            >
-              <Heart size={16} fill={hasLiked ? 'red' : 'none'} className="transition-colors" />
-              <span className="text-sm">{profile.likes_count ?? 0}</span>
-            </button>
-          </div>
-        </div>
-        {/* Wrapper des boutons */}
-        <div className="flex flex-wrap gap-3 w-full">
-          {/* Voir profil public */}
-          <Link href={`/${locale}/${profile.username}`} target="_blank" className="w-full sm:w-auto">
-            <Button
-              variant="outline"
-              className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 py-2 px-4 sm:px-6 transition"
-            >
-              {t('view_public')}
-            </Button>
-          </Link>
-          {/* Export CSV */}
-          <Button
-            onClick={handleExport}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md hover:from-blue-500 hover:to-cyan-400 transition transform hover:-translate-y-0.5 hover:scale-105"
-          >
-            <Download className="h-5 w-5" />
-            <span className="font-medium">{t('export_csv')}</span>
-          </Button>
-          {/* Gestion des commandes */}
-          <Button
-            onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
-            className="w-full sm:w-auto py-2 px-4 sm:px-6 bg-gradient-to-r from-blue-900 to-blue-900 text-white font-medium shadow-md hover:from-blue-800 hover:to-blue-800 transition transform hover:-translate-y-0.5 hover:scale-105"
-          >
-            {t('orders.manage')}
-          </Button>
-          {/* 🔹 Voir vos événements - Maintenant accessible aux Premium et Entreprise (avec ou sans entreprise) */}
-  {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
-    <Button
-      onClick={() => setIsEventModalOpen(true)}
-      className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
-    >
-      <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
-        <Calendar className="h-5 w-5" />
-      </span>
-      <span className="font-medium">Voir vos événements</span>
-    </Button>
-  )}
-          {/* 🔹 Créer un événement - Maintenant accessible aux Premium et Entreprise (avec ou sans entreprise) */}
-  {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
-    <Button
-      onClick={() => {
-        // Choisissez une des deux options :
-        // Option 1 : Ouvre le formulaire dans un modal
-        setIsEventFormOpen(true);
-        // Option 2 : Affiche le formulaire directement dans la page (remplace la section des événements)
-        // setShowEventForm(true);
-      }}
-      className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6  bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-    >
-      <Plus className="w-4 h-4 mr-2" />
-      Créer un événement
-    </Button>
-  )}
-        {/* Bouton Espace Entreprise (DISTINGUÉ) */}
-          {subscription.plan === 'entreprise' && hasCompany && (
-            <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
-              <Button
-                className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
-              >
-                <Building className="h-5 w-5" />
-                <span>Espace Business</span>
-              </Button>
-            </Link>
-          )}
-        </div>
-        
-      </div>
+<div className="space-y-6 pb-24">
+  {/* 🎨 En-tête - Design Compact */}
+  <div className="glass-border rounded-xl p-4 md:p-5 backdrop-blur-xl">
+    {/* 🔹 Ligne 1: Salutation */}
+    <div className="mb-4">
+<h1 className="flex flex-wrap items-center gap-2 text-2xl sm:text-3xl font-bold">
+  {/* Texte */}
+  <span className="bg-gradient-to-r from-white via-cyan-300 to-blue-400 bg-clip-text text-transparent animate-gradient">
+    {(() => {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 12) return t('greeting_morning', { name: profile.full_name });
+      if (hour >= 12 && hour < 17) return t('greeting_afternoon', { name: profile.full_name });
+      if (hour >= 17 && hour < 22) return t('greeting_evening', { name: profile.full_name });
+      return t('greeting_night', { name: profile.full_name });
+    })()}
+  </span>
 
+  {/* ☀️🌙 Icône contextuelle */}
+  <span
+    className={`
+      relative flex items-center justify-center
+      w-6 h-6
+      rounded-full
+      shadow-sm
+      opacity-80
+      ${
+        (() => {
+          const hour = new Date().getHours();
+          if (hour >= 5 && hour < 12)
+            return 'bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 shadow-orange-400/30 animate-pulse';
+          if (hour >= 12 && hour < 17)
+            return 'bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-500 shadow-orange-400/20';
+          return 'bg-gradient-to-br from-indigo-500 via-purple-600 to-blue-800 shadow-indigo-500/20';
+        })()
+      }
+    `}
+  >
+    {/* Halo doux */}
+    <span className="absolute inset-0 rounded-full blur-sm opacity-30 bg-white/20" />
+
+    {/* Icône */}
+    {(() => {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 17) {
+        return <Sun className="relative z-10 w-3.5 h-3.5 text-white drop-shadow-sm" />;
+      }
+      return <Moon className="relative z-10 w-3.5 h-3.5 text-white drop-shadow-sm" />;
+    })()}
+  </span>
+</h1>
+
+
+<div className="flex items-center gap-2 mt-1.5">
+  <div
+    className="
+      relative flex items-center gap-1.5
+      px-2 py-1 rounded-full
+      text-red-400
+      cursor-default
+      select-none
+    "
+  >
+    {/* 💓 Halo pulsant permanent */}
+    <span className="absolute inset-0 rounded-full bg-red-500/20 animate-pulse" />
+
+    {/* ❤️ Icône */}
+    <Heart
+      size={14}
+      fill="red"
+      className="relative z-10 drop-shadow-sm"
+    />
+
+    {/* 🔢 Compteur */}
+    <span className="relative z-10 text-xs font-semibold">
+      {profile.likes_count ?? 0}
+    </span>
+  </div>
+</div>
+
+
+    </div>
+
+    {/* 🔹 Ligne 2: Boutons Actions - Grille Compacte */}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
       
-      {/* 🔹 Modal pour le formulaire de création */}
-      <AnimatePresence>
-        {isEventFormOpen && (
-          <motion.div
-            key="event-form-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-start justify-center p-4"
-            onClick={() => setIsEventFormOpen(false)} // Fermer si on clique en dehors
-          >
-            <div
-              className="w-full max-w-4xl"
-              onClick={e => e.stopPropagation()} // Ne pas fermer si on clique à l'intérieur
-            >
-              <CreateEventForm // 🔹 Utiliser CreateEventForm ici
-                onSubmit={handleCreateEvent} // Passe la fonction de soumission
-                onClose={() => setIsEventFormOpen(false)} // Passe la fonction de fermeture
-              />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* 🌐 Voir profil public */}
+      <Link href={`/${locale}/${profile.username}`} target="_blank">
+        <Button
+          variant="outline"
+          className={`
+            w-full h-10
+            border-white/15 bg-white/5
+            text-white text-sm font-medium
+            hover:bg-white/15 hover:border-white/30
+            transition-all duration-300
+            rounded-lg
+            group
+            px-3
+          `}
+        >
+          <Eye className="mr-1.5 h-4 w-4 group-hover:scale-110 transition-transform" />
+          <span className="hidden sm:inline">{t('view_public')}</span>
+        </Button>
+      </Link>
 
-      {/* 🔹 Affichage direct du formulaire (optionnel, alternative au modal) */}
-      {showEventForm && (
-        <div className="mt-6">
-          <CreateEventForm // 🔹 Utiliser CreateEventForm ici
-            onSubmit={handleCreateEvent} // Passe la fonction de soumission
-            onClose={() => setShowEventForm(false)} // Passe la fonction de fermeture
-          />
-        </div>
+      {/* 📥 Export CSV */}
+      <Button
+        onClick={handleExport}
+        className={`
+          w-full h-10
+          bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600
+          text-white text-sm font-semibold
+          hover:from-blue-500 hover:via-cyan-400 hover:to-blue-500
+          shadow-md shadow-blue-500/20
+          transition-all duration-300
+          rounded-lg
+          group
+          relative overflow-hidden
+          px-3
+        `}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <Download className="mr-1.5 h-4 w-4 group-hover:scale-110 transition-transform" />
+        <span className="hidden sm:inline">{t('export_csv')}</span>
+      </Button>
+
+      {/* 🛒 Gestion des commandes */}
+      <Button
+        onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
+        className={`
+          w-full h-10
+          bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900
+          text-white text-sm font-semibold
+          hover:from-blue-800 hover:via-blue-700 hover:to-blue-800
+          shadow-md shadow-blue-900/30
+          transition-all duration-300
+          rounded-lg
+          group
+          relative overflow-hidden
+          px-3
+        `}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <ShoppingBag className="mr-1.5 h-4 w-4 group-hover:scale-110 transition-transform" />
+        <span className="hidden sm:inline">{t('orders.manage')}</span>
+      </Button>
+
+      {/* 📅 Voir vos événements */}
+      {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+        <Button
+          onClick={() => setIsEventModalOpen(true)}
+          className={`
+            w-full h-10
+            bg-gradient-to-r from-cyan-600 via-blue-500 to-cyan-600
+            text-white text-sm font-semibold
+            hover:from-cyan-500 hover:via-blue-400 hover:to-cyan-500
+            shadow-md shadow-cyan-500/20
+            transition-all duration-300
+            rounded-lg
+            group
+            relative overflow-hidden
+            px-3
+          `}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Calendar className="mr-1.5 h-4 w-4 group-hover:rotate-12 group-hover:scale-110 transition-transform" />
+          <span className="hidden sm:inline">Voir événements</span>
+        </Button>
       )}
 
-      {/* 🔹 Modal pour voir les événements (affiché après création ou sur demande) */}
-      <AnimatePresence>
-        {isEventModalOpen && (
-          <motion.div
-            key="event-modal"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 backdrop-blur flex items-center justify-center p-4"
-            onClick={() => setIsEventModalOpen(false)}
+      {/* ➕ Créer un événement */}
+      {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+        <Button
+          onClick={() => setIsEventFormOpen(true)}
+          className={`
+            w-full h-10
+            bg-gradient-to-r from-green-600 via-emerald-500 to-green-600
+            text-white text-sm font-semibold
+            hover:from-green-500 hover:via-emerald-400 hover:to-green-500
+            shadow-md shadow-green-500/20
+            transition-all duration-300
+            rounded-lg
+            group
+            relative overflow-hidden
+            px-3
+          `}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Plus className="mr-1.5 h-4 w-4 group-hover:scale-125 transition-transform" />
+          <span className="hidden sm:inline">Créer</span>
+        </Button>
+      )}
+
+      {/* 🏢 Espace Business */}
+      {subscription.plan === 'entreprise' && hasCompany && (
+        <Link href="/dashboard/entreprise">
+          <Button
+            className={`
+              w-full h-10
+              bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600
+              text-white text-sm font-semibold
+              hover:from-indigo-500 hover:via-purple-500 hover:to-indigo-500
+              shadow-md shadow-purple-500/30
+              transition-all duration-300
+              rounded-lg
+              group
+              relative overflow-hidden
+              px-3
+            `}
           >
-            <motion.div
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-4xl p-6 border border-white/15"
-              onClick={e => e.stopPropagation()}
-            >
-              {/* Contenu du modal pour voir les événements */}
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-white">événements</h2>
-                <Button variant="ghost" size="sm" onClick={() => setIsEventModalOpen(false)}>
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-              <div className="max-h-[70vh] overflow-y-auto">
-                <EventAttendeesSection plan={profile.plan ?? null} />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-
-     {/* 🔹 ✅ Bouton Messages reçus */}
-{profile.accepts_contact_requests && (
-  <div className="col-span-1 md:col-span-2">
-    <Button
-      onClick={() => setIsContactModalOpen(true)}
-      className={`
-        w-full h-14
-        bg-white/5 backdrop-blur-xl
-        border border-white/10
-        text-cyan-300 font-medium
-        rounded-xl
-        group transition-all duration-300
-        hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10
-        hover:border-cyan-400/40
-        active:scale-[0.99]
-        shadow-lg shadow-cyan-500/5
-      `}
-    >
-      <Mail className="mr-2 h-5 w-5 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
-      {t('messages.view_received')}
-      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
-    </Button>
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Building className="mr-1.5 h-4 w-4 group-hover:scale-110 transition-transform" />
+            <span className="hidden sm:inline">Business</span>
+          </Button>
+        </Link>
+      )}
+    </div>
   </div>
-)}
+
+  {/* 🔹 ✅ Bouton Messages reçus - Compact */}
+  {profile.accepts_contact_requests && (
+    <div className="glass-border rounded-lg p-0.5">
+      <Button
+        onClick={() => setIsContactModalOpen(true)}
+        className={`
+          w-full h-12
+          bg-gradient-to-r from-cyan-600/10 via-blue-500/10 to-cyan-600/10
+          border border-cyan-400/20
+          text-cyan-300 text-sm font-semibold
+          rounded-lg
+          group transition-all duration-300
+          hover:bg-gradient-to-r hover:from-cyan-500/20 hover:via-blue-400/20 hover:to-cyan-500/20
+          hover:border-cyan-400/50
+          active:scale-[0.99]
+          shadow-md shadow-cyan-500/10
+          relative overflow-hidden
+        `}
+      >
+        {/* 🌊 Fond animé au hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        <Mail className="mr-2 h-5 w-5 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
+        {t('messages.view_received')}
+        <ChevronRight className="ml-1.5 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+        
+        {/* ✨ Lueur en bas */}
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      </Button>
+    </div>
+  )}
 
       
 
