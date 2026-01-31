@@ -104,13 +104,16 @@
     },
     "subscription": {
       "title": "Abonnement",
+      "active_indicator": " Actif",
+      "inactive_indicator": "⚠️ Inactif",
+      "status_active": "Abonnement actif",
       "plans": {
         "freemium": "Freemium",
         "basic": "Freemium",
         "premium": "Premium",
         "entreprise": "Entreprise"
       },
-      "active": "✅ Actif",
+      "active": " Actif",
       "inactive": "⚠️ Inactif",
       "active_until": "Votre plan est actif jusqu’au {date}.",
       "upgrade_prompt": "Votre compte est en mode Freemium. Contactez l’administrateur pour activer un plan.",
@@ -119,6 +122,8 @@
       "success_message": "Un administrateur vous contactera sous 24h.",
       "upgrade_to_premium": "Passer à Premium",
       "request_enterprise": "Convertir en compte Entreprise"
+    },"messages": {
+      "view_received": "Voir les messages reçus"
     },
     "qr": {
       "title": "QR Code de profil",
@@ -688,7 +693,7 @@
     "saving": "Enregistrement..."
   },
   "enterprise": {
-    "title": "🏢 Espace Entreprise",
+    "title": "🏢 Espace Business",
     "subtitle": "Gérez votre boutique, vos employés, vos cartes et votre présence — en temps réel.",
     "modules": {
       "dashboard": {

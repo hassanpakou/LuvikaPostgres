@@ -1285,187 +1285,208 @@ export default function DashboardContent({
       </AnimatePresence>
 
 
-      {/* 🔹 ✅ Bouton Messages reçus */}
-      {profile.accepts_contact_requests && (
-        <div className="col-span-1 md:col-span-2">
+     {/* 🔹 ✅ Bouton Messages reçus */}
+{profile.accepts_contact_requests && (
+  <div className="col-span-1 md:col-span-2">
+    <Button
+      onClick={() => setIsContactModalOpen(true)}
+      className={`
+        w-full h-14
+        bg-white/5 backdrop-blur-xl
+        border border-white/10
+        text-cyan-300 font-medium
+        rounded-xl
+        group transition-all duration-300
+        hover:bg-gradient-to-r hover:from-cyan-500/10 hover:to-blue-500/10
+        hover:border-cyan-400/40
+        active:scale-[0.99]
+        shadow-lg shadow-cyan-500/5
+      `}
+    >
+      <Mail className="mr-2 h-5 w-5 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300" />
+      {t('messages.view_received')}
+      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
+    </Button>
+  </div>
+)}
+
+      
+
+      {/* 📊 Grille principale - 3 colonnes */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  
+  {/* 🔹 Colonne 1: Abonnement */}
+  <Card className="glass-border col-span-1">
+    <CardHeader>
+      <CardTitle className="flex items-center flex-wrap gap-2">
+        <span>{t('subscription.title')}</span>
+        
+        {/* Badge du plan */}
+        <Badge className={`${planColors[subscription.plan] || 'bg-gray-600'} text-white`}>
+          {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
+        </Badge>
+        
+        {/* indicateur lumineux CLIGNOTANT */}
+        <div className="flex items-center gap-1.5" aria-live="polite">
+          {subscription.active ? (
+            <>
+              <motion.div
+                className="relative w-3 h-3 rounded-full bg-green-500/90"
+                style={{ 
+                  boxShadow: '0 0 8px 2px rgba(34, 197, 94, 0.8)',
+                  filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.6))'
+                }}
+                animate={{
+                  opacity: [1, 0.4, 1],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{
+                  duration: 1.8,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                role="status"
+                aria-label={t('subscription.active_indicator')}
+              >
+                <motion.div 
+                  className="absolute inset-0 rounded-full bg-green-300/30"
+                  animate={{ scale: [0.8, 1.2, 0.8] }}
+                  transition={{ 
+                    duration: 2.5, 
+                    repeat: Infinity, 
+                    ease: "easeOut" 
+                  }}
+                />
+              </motion.div>
+              <span className="text-green-300 text-sm font-medium">
+                {t('subscription.active')}
+              </span>
+            </>
+          ) : (
+            <>
+              <div 
+                className="w-3 h-3 rounded-full bg-yellow-400/70" 
+                style={{ boxShadow: '0 0 4px rgba(234, 179, 8, 0.5)' }}
+                role="status"
+                aria-label={t('subscription.inactive_indicator')}
+              />
+              <span className="text-yellow-300 text-sm font-medium">
+                {t('subscription.inactive')}
+              </span>
+            </>
+          )}
+          <span className="sr-only">
+            {subscription.active 
+              ? t('subscription.status_active') 
+              : t('subscription.status_inactive')}
+          </span>
+        </div>
+      </CardTitle>
+    </CardHeader>
+    
+    <CardContent>
+      <p className="text-gray-300 mb-4">
+        {subscription.active
+          ? t('subscription.active_until', { date: '∞' })
+          : t('subscription.upgrade_prompt')}
+      </p>
+      
+      {profile.plan !== 'entreprise' && (
+        <Button
+          size="sm"
+          className="mt-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300 w-full"
+          onClick={() => setActiveModal('upgrade')}
+        >
+          {profile.plan === 'basic'
+            ? t('subscription.upgrade_to_premium')
+            : t('subscription.request_enterprise')}
+        </Button>
+      )}
+    </CardContent>
+  </Card>
+
+  {/* 🔹 Colonne 2: QR Code */}
+  <Card className="glass-border col-span-1">
+    <CardHeader>
+      <CardTitle>{t('qr.title')}</CardTitle>
+    </CardHeader>
+    <CardContent className="text-center">
+      {qrBase64 ? (
+        <div>
+          <img
+            src={qrBase64}
+            alt={t('qr.alt', { username: profile.username })}
+            className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
+          />
+          <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
           <Button
-            onClick={() => setIsContactModalOpen(true)}
-            className="w-full h-14 bg-gradient-to-r from-cyan-600/20 to-blue-500/20 hover:from-cyan-600/30 hover:to-blue-500/30 border border-cyan-400/30 text-cyan-300 font-medium group transition-all"
+            size="sm"
+            variant="outline"
+            className="mt-3 border-white/20 text-white hover:bg-white/10 w-full"
+            onClick={() => window.open(profileUrl, '_blank')}
           >
-            <Mail className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-            Voir mes messages reçus
-            <ChevronRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            {t('qr.open_link')}
           </Button>
         </div>
+      ) : (
+        <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
       )}
+    </CardContent>
+  </Card>
 
-      
-
-      {/* Abonnement */}
-<Card className="glass-border">
-  <CardHeader>
-    <CardTitle className="flex items-center flex-wrap gap-2">
-      <span>{t('subscription.title')}</span>
-      
-      {/* Badge du plan */}
-      <Badge className={`${planColors[subscription.plan] || 'bg-gray-600'} text-white`}>
-        {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
-      </Badge>
-      
-      {/* indicateur lumineux CLIGNOTANT - remplace le statut texte */}
-      <div className="flex items-center gap-1.5" aria-live="polite">
-        {subscription.active ? (
-          <>
-            <motion.div
-              className="relative w-3 h-3 rounded-full bg-green-500/90"
-              style={{ 
-                boxShadow: '0 0 8px 2px rgba(34, 197, 94, 0.8)',
-                filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.6))'
-              }}
-              animate={{
-                opacity: [1, 0.4, 1],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              role="status"
-              aria-label={t('subscription.active_indicator')}
+  {/* 🔹 Colonne 3: NFC */}
+  <Card className="glass-border col-span-1">
+    <CardHeader>
+      <CardTitle>{t('nfc.title', { count: cards.length })}</CardTitle>
+    </CardHeader>
+    <CardContent>
+      {cards.length === 0 ? (
+        <p className="text-gray-400 text-center py-6">{t('nfc.empty')}</p>
+      ) : (
+        <ul className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+          {cards.map(card => (
+            <li 
+              key={card.id} 
+              className="flex justify-between items-center p-3 glass-border rounded-lg hover:bg-white/5 transition-colors"
             >
-              {/* Effet de lueur subtile */}
-              <motion.div 
-                className="absolute inset-0 rounded-full bg-green-300/30"
-                animate={{ scale: [0.8, 1.2, 0.8] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  ease: "easeOut" 
-                }}
-              />
-            </motion.div>
-            <span className="text-green-300 text-sm font-medium hidden md:inline">
-              {t('subscription.active')}
-            </span>
-          </>
-        ) : (
-          <>
-            <div 
-              className="w-3 h-3 rounded-full bg-yellow-400/70" 
-              style={{ boxShadow: '0 0 4px rgba(234, 179, 8, 0.5)' }}
-              role="status"
-              aria-label={t('subscription.inactive_indicator')}
-            />
-            <span className="text-yellow-300 text-sm font-medium hidden md:inline">
-              {t('subscription.inactive')}
-            </span>
-          </>
-        )}
-        <span className="sr-only">
-          {subscription.active 
-            ? t('subscription.status_active') 
-            : t('subscription.status_inactive')}
-        </span>
-      </div>
-    </CardTitle>
-  </CardHeader>
-  
-  <CardContent>
-    <p className="text-gray-300 mb-4">
-      {subscription.active
-        ? t('subscription.active_until', { date: '∞' })
-        : t('subscription.upgrade_prompt')}
-    </p>
-    
-    {profile.plan !== 'entreprise' && (
+              <div>
+                <span className="font-mono text-sm text-blue-300 block">
+                  {card.matricule || card.card_id}
+                </span>
+                <div className="text-xs text-gray-400 mt-1">
+                  {formatDistance(card.created_at, t)} {t('nfc.ago')}
+                </div>
+              </div>
+              <Badge className={
+                card.status === 'active' ? 'bg-green-500' :
+                card.status === 'lost' ? 'bg-yellow-500' :
+                card.status === 'blocked' ? 'bg-red-500' : 'bg-gray-500'
+              }>
+                {t(`nfc.status.${card.status}`)}
+              </Badge>
+            </li>
+          ))}
+        </ul>
+      )}
+      
+      <SimulateNFCTap profileId={profile.id} />
+      
       <Button
         size="sm"
-        className="mt-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300"
-        onClick={() => setActiveModal('upgrade')}
+        className="mt-4 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
+        disabled={subscription.plan === 'basic' && cards.length >= 1}
+        onClick={() => router.push('/dashboard/nfc/add')}
       >
-        {profile.plan === 'basic'
-          ? t('subscription.upgrade_to_premium')
-          : t('subscription.request_enterprise')}
+        {subscription.plan === 'basic' && cards.length >= 1
+          ? t('nfc.upgrade_required')
+          : t('nfc.add_card')}
       </Button>
-    )}
-  </CardContent>
-</Card>
+    </CardContent>
+  </Card>
+</div>
 
-      {/* QR & NFC */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="glass-border">
-          <CardHeader><CardTitle>{t('qr.title')}</CardTitle></CardHeader>
-          <CardContent className="text-center">
-            {qrBase64 ? (
-              <div>
-                <img
-                  src={qrBase64}
-                  alt={t('qr.alt', { username: profile.username })}
-                  className="mx-auto w-48 h-48 bg-white p-2 rounded-lg"
-                />
-                <p className="text-sm text-gray-400 mt-2">{t('qr.instructions')}</p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3 border-white/20 text-white hover:bg-white/10"
-                  onClick={() => window.open(profileUrl, '_blank')}
-                >
-                  {t('qr.open_link')}
-                </Button>
-              </div>
-            ) : (
-              <div className="w-48 h-48 bg-gray-800 rounded-lg mx-auto animate-pulse" />
-            )}
-          </CardContent>
-        </Card>
-        <Card className="glass-border">
-          <CardHeader>
-            <CardTitle>{t('nfc.title', { count: cards.length })}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {cards.length === 0 ? (
-              <p className="text-gray-400">{t('nfc.empty')}</p>
-            ) : (
-              <ul className="space-y-3">
-                {cards.map(card => (
-  <li key={card.id} className="flex justify-between items-center p-3 glass-border">
-    <div>
-      {/* ✅ Affiche le matricule */}
-      <span className="font-mono text-sm text-blue-300">{card.matricule || card.card_id}</span>
-      <div className="text-xs text-gray-400">
-        {formatDistance(card.created_at, t)} {t('nfc.ago')}
-      </div>
-    </div>
-                    <Badge className={
-                      card.status === 'active' ? 'bg-green-500' :
-                      card.status === 'lost' ? 'bg-yellow-500' :
-                      card.status === 'blocked' ? 'bg-red-500' : 'bg-gray-500'
-                    }>
-                      {t(`nfc.status.${card.status}`)}
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <SimulateNFCTap profileId={profile.id} />
-            <Button
-              size="sm"
-              className="mt-4 w-full bg-gradient-to-r from-blue-600 to-cyan-500"
-              disabled={subscription.plan === 'basic' && cards.length >= 1}
-              onClick={() => router.push('/dashboard/nfc/add')}
-            >
-              {subscription.plan === 'basic' && cards.length >= 1
-                ? t('nfc.upgrade_required')
-                : t('nfc.add_card')}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* 🔹 ✅ Menu flottant */}
-      <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
-
+{/* 🔹 Menu flottant - reste en overlay */}
+<DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
 
       {/* Stats */}
       <Card className="glass-border">
