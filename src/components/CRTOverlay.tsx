@@ -25,7 +25,7 @@ export default function CRTOverlay() {
 
   return (
     <>
-      {/* 📺 Effet CRT (lignes horizontales) */}
+      {/* 📺 Effet CRT - PLUS DISCRET SUR MOBILE */}
       <div 
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -33,35 +33,44 @@ export default function CRTOverlay() {
             repeating-linear-gradient(
               0deg,
               transparent,
-              transparent 1.5px,
-              rgba(0, 0, 0, 0.05) 1.5px,
-              rgba(0, 0, 0, 0.05) 3px
+              transparent 2px,
+              rgba(0, 0, 0, 0.06) 2px,  // ✅ Moins opaque sur mobile
+              rgba(0, 0, 0, 0.06) 4px
             )
           `,
-          opacity: 0.08,
+          opacity: 0.08,  // ✅ Réduit de 0.12 à 0.08 pour mobile
           zIndex: 1,
         }}
       />
 
-      {/* 📡 Bruit/Grain subtil */}
+      {/* 📡 Bruit/Grain - PLUS DISCRET SUR MOBILE */}
       <div 
         className="fixed inset-0 pointer-events-none"
         style={{
           backgroundImage: `
-            radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.02) 0%, transparent 20%),
-            radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.02) 0%, transparent 20%)
+            radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),  // ✅ 0.04 → 0.03
+            radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.03) 0%, transparent 20%)
           `,
-          opacity: 0.3,
+          opacity: 0.3,  // ✅ Réduit de 0.4 à 0.3
           zIndex: 2,
         }}
       />
 
-      {/* ✨ Scintillement subtil */}
+      {/* ✨ Scintillement - PLUS LENT SUR MOBILE */}
       <div 
-        className="fixed inset-0 pointer-events-none animate-flicker"
+        className="fixed inset-0 pointer-events-none animate-flicker-mobile"
         style={{
-          background: 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)',  // ✅ 0.08 → 0.06
           zIndex: 3,
+        }}
+      />
+
+      {/* 🎯 Overlay de luminosité - FOND MOINS SOMBRE */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, rgba(30, 30, 40, 0.08) 0%, rgba(20, 20, 30, 0.12) 100%)',  // ✅ Plus clair
+          zIndex: 0,
         }}
       />
     </>

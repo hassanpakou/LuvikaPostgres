@@ -24,7 +24,7 @@ export default async function DashboardLayout({
   if (!user) redirect('/auth/sign-in');
 
   return (
-    <div className="relative min-h-screen bg-black text-white">
+    <div className="relative min-h-screen bg-gradient-to-br  text-white">
       {/* 🌌 Fond Cyberpunk (client-side uniquement) */}
       <BackgroundCyberpunk />
       
@@ -33,21 +33,17 @@ export default async function DashboardLayout({
 
 {/* 📊 Badge Performance */}
 <PerformanceBadge />
-
       {/* 📱 Contenu Principal */}
       <div className="relative z-10">
-        {/* Navbar */}
         <Navbar />
-        
-        {/* Contenu */}
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           {children}
         </div>
       </div>
 
-      {/* 🎮 Badge Cyberpunk - SYSTEM ONLINE */}
+      {/* 🎮 Badge Cyberpunk */}
       <div className="fixed bottom-4 right-4 z-50">
-        <div className="glass-border rounded-lg p-3 border border-cyan-500/30 bg-black/50 backdrop-blur">
+        <div className="glass-border rounded-lg p-3 border border-cyan-500/30 bg-black/30 backdrop-blur">  {/* ✅ bg-black/50 → bg-black/30 */}
           <div className="flex items-center gap-2 text-xs text-cyan-300 font-mono">
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
             <span>SYSTEM ONLINE</span>

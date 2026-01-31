@@ -152,6 +152,7 @@
       "recent_visitors": "Derniers visiteurs",
       "no_scans": "Aucun scan récent.",
       "anonymous": "Visiteur anonyme",
+      "visitors": "Visiteurs",
       "scan_type": {
         "nfc": "NFC",
         "qr": "QR"
@@ -404,7 +405,8 @@
       "active_subscriptions": "Abonnements actifs",
       "total_scans": "Scans totaux",
       "orders": "Commandes",
-      "nfc_cards": "Cartes NFC"
+      "nfc_cards": "Cartes NFC",
+      "trends": "Tendances récentes"
     },"subscriptions": {
         "no_active": "Aucun abonnement actif pour le moment.",
         "title": "Gestion des abonnements",

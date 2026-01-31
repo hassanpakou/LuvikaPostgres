@@ -9,12 +9,10 @@ export default function BackgroundCyberpunk() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    // Détection mobile
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
     
-    // Détection prefers-reduced-motion
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
     
@@ -31,46 +29,53 @@ export default function BackgroundCyberpunk() {
     };
   }, []);
 
-  // Désactiver si mobile ou prefers-reduced-motion
-  if (isMobile || prefersReducedMotion) {
+  // ❌ Suppression de la condition qui cachait tout sur mobile
+  // if (isMobile || prefersReducedMotion) {
+  //   return null;
+  // }
+
+  // ✅ Désactiver uniquement si prefers-reduced-motion
+  if (prefersReducedMotion) {
     return null;
   }
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-      {/* 🔵 Grille Cyberpunk */}
+      {/* 🔵 Grille Cyberpunk - PLUS LÉGER SUR MOBILE */}
       <div className="absolute inset-0">
         <div 
-          className="absolute inset-0 opacity-15"
+          className={`absolute inset-0 ${isMobile ? 'opacity-15' : 'opacity-25'}`}
           style={{
             backgroundImage: `
-              linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px)
+              linear-gradient(rgba(59, 130, 246, ${isMobile ? '0.1' : '0.2'}) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(59, 130, 246, ${isMobile ? '0.1' : '0.2'}) 1px, transparent 1px)
             `,
-            backgroundSize: '40px 40px',
+            backgroundSize: isMobile ? '60px 60px' : '40px 40px', // ✅ Plus espacé sur mobile
             maskImage: 'radial-gradient(circle at center, white 0%, transparent 70%)'
           }}
         />
       </div>
 
-      {/* 🟢 Ligne de Scan Horizontal */}
-      <motion.div
-        className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
-        animate={{
-          y: ['0%', '100%'],
-          opacity: [0.5, 1, 0.5],
-        }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: 'linear',
-        }}
-        initial={{ y: '0%' }}
-      />
+      {/* 🟢 Ligne de Scan Horizontal - MASQUÉE SUR MOBILE (trop lourd) */}
+      {!isMobile && (
+        <motion.div
+          className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent"
+          animate={{
+            y: ['0%', '100%'],
+            opacity: [0.6, 1, 0.6],
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: 'linear',
+          }}
+          initial={{ y: '0%' }}
+        />
+      )}
 
-      {/* 🟣 Particules Flottantes */}
+      {/* 🟣 Particules Flottantes - MOINS NOMBREUSES SUR MOBILE */}
       <div className="absolute inset-0">
-        {[...Array(15)].map((_, i) => (
+        {[...Array(isMobile ? 8 : 15)].map((_, i) => ( // ✅ 8 au lieu de 15 sur mobile
           <motion.div
             key={i}
             className="absolute rounded-full"
@@ -81,18 +86,18 @@ export default function BackgroundCyberpunk() {
               top: `${Math.random() * 100}%`,
               left: `${Math.random() * 100}%`,
               boxShadow: i % 3 === 0 
-                ? '0 0 10px #6366f1, 0 0 20px #6366f1' 
+                ? '0 0 10px #6366f1, 0 0 20px #6366f1'  // ✅ Moins intense sur mobile
                 : i % 3 === 1 
                 ? '0 0 10px #8b5cf6, 0 0 20px #8b5cf6' 
                 : '0 0 10px #22d3ee, 0 0 20px #22d3ee',
             }}
             animate={{
-              y: [0, -20, 0],
-              x: [0, Math.random() * 40 - 20, 0],
-              opacity: [0.6, 1, 0.6],
+              y: [0, isMobile ? -10 : -20, 0],  // ✅ Mouvement réduit sur mobile
+              x: [0, Math.random() * (isMobile ? 20 : 40) - (isMobile ? 10 : 20), 0],
+              opacity: [0.7, 1, 0.7],
             }}
             transition={{
-              duration: 4 + Math.random() * 3,
+              duration: isMobile ? 6 : 4 + Math.random() * 3,  // ✅ Plus lent sur mobile
               repeat: Infinity,
               ease: "easeInOut",
               delay: i * 0.1
@@ -101,33 +106,10 @@ export default function BackgroundCyberpunk() {
         ))}
       </div>
 
-      {/* 🟡 Lignes de Code Défilantes */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-full flex">
-          {[...Array(4)].map((_, col) => (
-            <div 
-              key={col} 
-              className="w-1/4 overflow-hidden"
-              style={{ animation: `codeScroll ${15 + col * 2}s linear infinite` }}
-            >
-              <div className="space-y-1 text-xs font-mono opacity-15">
-                {[...Array(40)].map((_, i) => (
-                  <div key={i} className="text-cyan-400/50 pl-2">
-                    {i % 7 === 0 ? `// ${['SYSTEM', 'SECURITY', 'NETWORK', 'DATA', 'ACCESS', 'LOG'][Math.floor(Math.random() * 6)]} ${Math.floor(Math.random() * 9999)}` :
-                     i % 5 === 0 ? `const ${['user', 'data', 'token', 'session', 'config'][Math.floor(Math.random() * 5)]} = ${Math.random().toFixed(4)};` :
-                     `0x${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0').toUpperCase()}`}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 🔴 Réseau de Connexions */}
-      <div className="absolute inset-0 opacity-5">
+      {/* 🔴 Réseau de Connexions - MOINS NOMBREUX SUR MOBILE */}
+      <div className={`absolute inset-0 ${isMobile ? 'opacity-5' : 'opacity-8'}`}>
         <svg width="100%" height="100%">
-          {[...Array(10)].map((_, i) => {
+          {[...Array(isMobile ? 6 : 10)].map((_, i) => {  // ✅ 6 au lieu de 10 sur mobile
             const x1 = Math.random() * 100;
             const y1 = Math.random() * 100;
             const x2 = Math.random() * 100;
@@ -140,11 +122,11 @@ export default function BackgroundCyberpunk() {
                 x2={`${x2}%`}
                 y2={`${y2}%`}
                 stroke="#6366f1"
-                strokeWidth="0.5"
+                strokeWidth={isMobile ? 0.5 : 1}  // ✅ Plus fin sur mobile
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ 
-                  duration: 8 + Math.random() * 4, 
+                  duration: isMobile ? 12 : 8 + Math.random() * 4,  // ✅ Plus lent sur mobile
                   repeat: Infinity, 
                   ease: "easeInOut",
                   delay: i * 0.3
@@ -155,28 +137,28 @@ export default function BackgroundCyberpunk() {
         </svg>
       </div>
 
-      {/* ⚡ Effet Glitch sur les Bords */}
+      {/* ⚡ Effet Glitch - PLUS DISCRET SUR MOBILE */}
       <div className="absolute inset-0 pointer-events-none">
         <div 
-          className="absolute inset-0 opacity-5"
+          className={`absolute inset-0 ${isMobile ? 'opacity-5' : 'opacity-8'}`}
           style={{ 
             backgroundImage: 'linear-gradient(90deg, #6366f1 1px, transparent 1px)',
-            backgroundSize: '3px 100%',
-            animation: 'glitchMove 0.5s steps(20) infinite'
+            backgroundSize: isMobile ? '5px 100%' : '3px 100%',  // ✅ Plus espacé sur mobile
+            animation: isMobile ? 'glitchMove 1s steps(15) infinite' : 'glitchMove 0.5s steps(20) infinite'
           }}
         />
         <div 
-          className="absolute inset-0 opacity-3"
+          className={`absolute inset-0 ${isMobile ? 'opacity-3' : 'opacity-5'}`}
           style={{ 
             backgroundImage: 'linear-gradient(0deg, #22d3ee 1px, transparent 1px)',
-            backgroundSize: '100% 4px',
-            animation: 'glitchMoveY 0.8s steps(15) infinite'
+            backgroundSize: isMobile ? '100% 6px' : '100% 4px',  // ✅ Plus espacé sur mobile
+            animation: isMobile ? 'glitchMoveY 1.2s steps(12) infinite' : 'glitchMoveY 0.8s steps(15) infinite'
           }}
         />
       </div>
 
-      {/* 🌈 Brume Colorée */}
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-purple-500/5 to-transparent" />
+      {/* 🌈 Brume Colorée - PLUS DISCRÈTE SUR MOBILE */}
+      <div className={`absolute inset-0 bg-gradient-to-br ${isMobile ? 'from-cyan-500/5 via-purple-500/5' : 'from-cyan-500/8 via-purple-500/8'} to-transparent`} />
     </div>
   );
 }

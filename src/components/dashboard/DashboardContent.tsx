@@ -1641,6 +1641,82 @@ export default function DashboardContent({
   </motion.div>
 )}
 </AnimatePresence>
+{/* 🔹 Modal Création Événement */}
+<AnimatePresence>
+{isEventFormOpen && (
+  <motion.div
+    key="event-form-modal"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-start justify-center p-4 overflow-auto"
+    onClick={() => setIsEventFormOpen(false)}
+  >
+    <motion.div
+      initial={{ scale: 0.95, y: 20, opacity: 0 }}
+      animate={{ scale: 1, y: 0, opacity: 1 }}
+      exit={{ scale: 0.95, y: 20, opacity: 0 }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      className="relative w-full max-w-4xl mt-8 overflow-hidden rounded-3xl border border-white/15 bg-black/40 backdrop-blur-2xl shadow-2xl shadow-green-500/20"
+      onClick={e => e.stopPropagation()}
+    >
+      {/* 🔵 Overlay radial */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-500/10 via-transparent to-transparent" />
+      
+      {/* 📱 Contenu */}
+      <div className="relative z-10">
+        <CreateEventForm
+          onSubmit={async (data) => {
+            try {
+              // 🔹 Appel API pour créer l'événement
+              const response = await fetch('/api/events/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+              });
+              
+              if (!response.ok) throw new Error('Erreur création événement');
+              
+              const eventData = await response.json();
+              console.log('✅ Événement créé:', eventData);
+              
+              // 🔹 Fermer le modal et afficher notification
+              setIsEventFormOpen(false);
+              // Optionnel: afficher toast de succès ici
+            } catch (error) {
+              console.error('❌ Erreur:', error);
+              // Optionnel: afficher toast d'erreur ici
+            }
+          }}
+          onClose={() => setIsEventFormOpen(false)}
+          isLoading={false}
+        />
+      </div>
+      
+      {/* ✨ Particules vertes d'arrière-plan */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(5)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full"
+            
+            animate={{
+              scale: [1, 1.4, 1],
+              opacity: [0.4, 0.8, 0.4],
+            }}
+            transition={{
+              duration: 5 + Math.random() * 3,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: i * 0.7
+            }}
+          />
+        ))}
+      </div>
+    </motion.div>
+  </motion.div>
+)}
+</AnimatePresence>
       {/* 🔹 ✅ Modaux — TOUTES les clés ajoutées */}
 <AnimatePresence>
   {activeModal === 'visibility' && (
