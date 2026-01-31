@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, BadgeCheck, Clock } from 'lucide-react';
+import { X, User, BadgeCheck, Clock, Briefcase, Crown } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 
@@ -127,15 +127,26 @@ export default function FollowersModal({
                       <Clock className="mr-1 h-3 w-3" />
                       {new Date(follower.followed_at).toLocaleDateString('fr-FR')}
                     </div>
-                    {follower.plan && follower.plan !== 'basic' && (
-                      <Badge className={`mt-1 px-2 py-0.5 text-[10px] rounded ${
-                        follower.plan === 'premium' 
-                          ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
-                          : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
-                      }`}>
-                        {follower.plan === 'premium' ? '⭐ Premium' : '🏢 Entreprise'}
-                      </Badge>
-                    )}
+{follower.plan && follower.plan !== 'basic' && (
+  <Badge
+    className={`mt-1 px-2 py-0.5 text-[10px] rounded ${
+      follower.plan === 'premium' 
+        ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
+        : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
+    }`}
+  >
+    {follower.plan === 'premium' ? (
+      <>
+        <Crown className="w-3 h-3 inline mr-1" /> Pro
+      </>
+    ) : (
+      <>
+        <Briefcase className="w-3 h-3 inline mr-1" /> Business
+      </>
+    )}
+  </Badge>
+)}
+
                   </motion.li>
                 ))}
               </ul>

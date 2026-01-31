@@ -509,7 +509,7 @@ const UpgradeModal = ({
                 {t('request_upgrade')}
               </h2>
               <p className="text-gray-300">
-                Un administrateur vous contactera sous 24h pour finaliser votre passage à Premium ou Entreprise.
+                Un administrateur vous contactera sous 24h pour finaliser votre passage à Pro ou Bussness.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -755,7 +755,7 @@ const OrdersModal = ({
             <div className="glass-border bg-white/5 p-4 rounded-lg">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-white">Carte NFC Premium</p>
+                  <p className="font-medium text-white">Carte NFC Pro</p>
                   <p className="text-sm text-gray-400">Livraison estimée $ 5 : 48 heures</p>
                 </div>
                 <span className="px-2 py-1 text-xs bg-violet-500/20 text-violet-300 rounded">
@@ -948,8 +948,8 @@ export default function DashboardContent({
         closeModal();
         alert(
           targetPlan === 'entreprise'
-            ? '✅ Demande de conversion en Entreprise envoyée.'
-            : '✅ Demande de passage à Premium envoyée.'
+            ? '✅ Demande de conversion en Business envoyée.'
+            : '✅ Demande de passage à Pro envoyée.'
         );
         window.location.reload();
       } else {
@@ -1173,34 +1173,34 @@ export default function DashboardContent({
           >
             {t('orders.manage')}
           </Button>
-          {/* Voir vos événements */}
-                  {subscription.plan === 'premium' || subscription.plan === 'entreprise' && hasCompany && (
-          <Button
-            onClick={() => setIsEventModalOpen(true)}
-            className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
-          >
-            <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
-              <Calendar className="h-5 w-5" />
-            </span>
-            <span className="font-medium">Voir vos événements</span>
-          </Button>)}
-          
-          {/* 🔹 Bouton pour ouvrir le formulaire de création */}
-        {subscription.plan === 'premium' || subscription.plan === 'entreprise' && hasCompany && (
-        <Button
-          onClick={() => {
-            // Choisissez une des deux options :
-            // Option 1 : Ouvre le formulaire dans un modal
-            setIsEventFormOpen(true);
-            // Option 2 : Affiche le formulaire directement dans la page (remplace la section des événements)
-            // setShowEventForm(true);
-          }}
-          className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6  bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Créer un événement
-        </Button>
-        )}
+          {/* 🔹 Voir vos événements - Maintenant accessible aux Premium et Entreprise (avec ou sans entreprise) */}
+  {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+    <Button
+      onClick={() => setIsEventModalOpen(true)}
+      className="group w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg hover:from-cyan-500 hover:to-blue-500 transition transform hover:-translate-y-0.5 hover:scale-105"
+    >
+      <span className="flex items-center justify-center w-8 h-8 rounded-md bg-white/10 group-hover:bg-white/20 transition">
+        <Calendar className="h-5 w-5" />
+      </span>
+      <span className="font-medium">Voir vos événements</span>
+    </Button>
+  )}
+          {/* 🔹 Créer un événement - Maintenant accessible aux Premium et Entreprise (avec ou sans entreprise) */}
+  {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+    <Button
+      onClick={() => {
+        // Choisissez une des deux options :
+        // Option 1 : Ouvre le formulaire dans un modal
+        setIsEventFormOpen(true);
+        // Option 2 : Affiche le formulaire directement dans la page (remplace la section des événements)
+        // setShowEventForm(true);
+      }}
+      className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6  bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
+    >
+      <Plus className="w-4 h-4 mr-2" />
+      Créer un événement
+    </Button>
+  )}
         {/* Bouton Espace Entreprise (DISTINGUÉ) */}
           {subscription.plan === 'entreprise' && hasCompany && (
             <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
@@ -1208,7 +1208,7 @@ export default function DashboardContent({
                 className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
               >
                 <Building className="h-5 w-5" />
-                <span>Espace Entreprise</span>
+                <span>Espace Business</span>
               </Button>
             </Link>
           )}

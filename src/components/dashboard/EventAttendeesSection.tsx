@@ -241,7 +241,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         <CardHeader>
           <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
             <Calendar className="text-amber-400" />
-            🗓️ Événements (Premium)
+            🗓️ Événements (Pro)
           </CardTitle>
         </CardHeader>
         <CardContent>

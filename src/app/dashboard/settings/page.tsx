@@ -380,11 +380,11 @@ setMessage({ type: 'success', text: t('save_success') });
             <Badge variant="outline" className="text-xs flex items-center gap-1">
   {profile.plan === 'premium' ? (
     <>
-      <Crown className="w-3 h-3" /> Premium
+      <Crown className="w-3 h-3" /> Pro
     </>
   ) : profile.plan === 'entreprise' ? (
     <>
-      <Briefcase className="w-3 h-3" /> Entreprise
+      <Briefcase className="w-3 h-3" /> Business
     </>
   ) : (
     <>
@@ -441,13 +441,13 @@ setMessage({ type: 'success', text: t('save_success') });
       <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
         <div className="flex items-center gap-2 text-yellow-400">
           <Lock className="w-4 h-4" />
-          <span className="font-medium">Fonctionnalité Premium</span>
+          <span className="font-medium">Fonctionnalité Pro</span>
         </div>
         <p className="text-gray-400 text-sm mt-1">
-          Débloquez les photos de profil et de couverture avec un abonnement Premium.
+          Débloquez les photos de profil et de couverture avec un abonnement Pro.
         </p>
         <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
-          Passer à Premium
+          Passer à Pro
         </Button>
       </div>
     ) : (
@@ -648,13 +648,13 @@ setMessage({ type: 'success', text: t('save_success') });
       <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
         <div className="flex items-center gap-2 text-yellow-400">
           <Lock className="w-4 h-4" />
-          <span className="font-medium">Compétences Premium</span>
+          <span className="font-medium">Compétences Pro</span>
         </div>
         <p className="text-gray-400 text-sm mt-1">
-          Ajoutez jusqu’à 10 compétences avec un abonnement Premium.
+          Ajoutez jusqu’à 10 compétences avec un abonnement Pro.
         </p>
         <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
-          Passer à Premium
+          Passer à Pro
         </Button>
       </div>
     ) : (
@@ -737,13 +737,13 @@ setMessage({ type: 'success', text: t('save_success') });
       <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
         <div className="flex items-center gap-2 text-yellow-400">
           <Lock className="w-4 h-4" />
-          <span className="font-medium">Liens Premium</span>
+          <span className="font-medium">Liens Pro</span>
         </div>
         <p className="text-gray-400 text-sm mt-1">
-          Ajoutez vos liens GitHub, LinkedIn, portfolio, etc. avec Premium.
+          Ajoutez vos liens GitHub, LinkedIn, portfolio, etc. avec Pro.
         </p>
         <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
-          Passer à Premium
+          Passer à Pro
         </Button>
       </div>
     ) : (
@@ -865,7 +865,7 @@ setMessage({ type: 'success', text: t('save_success') });
     <div key={section} className={`flex items-center justify-between p-3 rounded-lg ${isLocked || isAvatarCoverLocked ? 'bg-gray-800/50 cursor-not-allowed' : 'bg-white/5 hover:bg-white/10'} transition-colors`}>
       <div className="flex items-center gap-2">
         <span className="text-gray-300 capitalize">{section}</span>
-        {(isLocked || isAvatarCoverLocked) && <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">🔒 Premium</Badge>}
+        {(isLocked || isAvatarCoverLocked) && <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">🔒 Pro</Badge>}
       </div>
       <Switch
         checked={isVisible}

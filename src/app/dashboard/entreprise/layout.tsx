@@ -29,7 +29,7 @@ export default async function AdminLayout({
   const isAdmin = profile?.role === 'admin';
 
   if (!isAdmin && !isEnterprise) {
-    console.warn('🚫 Accès Layout Entreprise refusé:', { role: profile?.role, plan: profile?.plan });
+    console.warn('🚫 Accès Layout Business refusé:', { role: profile?.role, plan: profile?.plan });
     redirect('/dashboard');
   }
 
