@@ -4,10 +4,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '../../../components/ui/button';
-import { Copy, QrCode, X } from 'lucide-react'; // ✅ Import de X
+import { Copy, QrCode, X, User } from 'lucide-react';
 import QRCode from 'qrcode';
 
-// 🔹 Mettre à jour le type QRModalProps pour inclure avatarUrl et qrCodeUrl
 type QRModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -17,6 +16,9 @@ type QRModalProps = {
   avatarUrl?: string | null;
   // 🔹 Nouvelle prop optionnelle pour l'URL du QR Code (sinon, on utilise profileUrl)
   qrCodeUrl?: string;
+  // 🔹 Nouvelle prop optionnelle pour le QR Code d'un participant spécifique
+  participantQrUrl?: string;
+  participantName?: string; // Nom du participant si applicable
 };
 
 export default function QRModal({
@@ -26,14 +28,16 @@ export default function QRModal({
   username,
   shortUrl,
   avatarUrl,
-  qrCodeUrl, // 👈 AJOUTÉ ICI AUSSI
-}: QRModalProps) { // Utilise le type mis à jour
+  qrCodeUrl,
+  participantQrUrl, // 👈 AJOUTÉ
+  participantName,  // 👈 AJOUTÉ
+}: QRModalProps) {
 
   const [copied, setCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrError, setQrError] = useState<string | null>(null);
-  // 🔹 Utiliser qrCodeUrl pour le QR Code, sinon profileUrl
-  const urlForQR = qrCodeUrl || profileUrl;
+  // 🔹 Utiliser participantQrUrl si fourni, sinon qrCodeUrl, sinon profileUrl pour le QR
+  const urlForQR = participantQrUrl || qrCodeUrl || profileUrl;
   const displayUrl = shortUrl || profileUrl;
 
   useEffect(() => {
@@ -62,7 +66,7 @@ export default function QRModal({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (!isOpen) return null; // ✅ Meilleure gestion de l'état
+  if (!isOpen) return null;
 
   return (
     <>
@@ -110,38 +114,54 @@ export default function QRModal({
           className="max-w-md w-full"
         >
           <div className="glass-border backdrop-blur-2xl bg-gradient-to-br from-cyan-900/20 to-blue-900/30 border border-cyan-400/30 rounded-3xl overflow-hidden shadow-2xl relative">
-            {/* 🔹 Bouton de fermeture en haut à droite */}
+            {/* Bouton de fermeture en haut à droite */}
             <button
               onClick={onClose}
               className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-black/40 flex items-center justify-center text-white hover:bg-black/60 transition-colors shadow-lg"
               aria-label="Fermer le modal"
             >
-              <X className="w-5 h-5" /> {/* ✅ Vraie icône de fermeture */}
+              <X className="w-5 h-5" />
             </button>
 
             <div className="p-6 text-center">
-              <div className="relative w-16 h-16 mx-auto mb-4">
-                {/* 🔹 Affichage de l'avatar */}
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={`Photo de ${username}`}
-                    className="w-full h-full object-cover rounded-2xl border border-white/30 shadow-lg"
-                  />
-                ) : (
+              {/* 🔹 Affichage conditionnel de l'avatar ou d'un utilisateur générique */}
+              {participantName ? (
+                // Si c'est un participant spécifique, afficher un icône utilisateur générique
+                <div className="relative w-16 h-16 mx-auto mb-4">
                   <div className="w-full h-full rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500
                     flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                    {username?.charAt(0).toUpperCase()}
+                    <User className="w-8 h-8" />
                   </div>
-                )}
+                  <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-lg -z-10" />
+                </div>
+              ) : (
+                // Sinon, afficher l'avatar du profil comme avant
+                <div className="relative w-16 h-16 mx-auto mb-4">
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={`Photo de ${username}`}
+                      className="w-full h-full object-cover rounded-2xl border border-white/30 shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500
+                      flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                      {username?.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-lg -z-10" />
+                </div>
+              )}
 
-                {/* halo glass / glow */}
-                <div className="absolute inset-0 rounded-2xl bg-cyan-400/20 blur-lg -z-10" />
-              </div>
-
-              <h3 className="text-xl font-bold text-white mb-1">QR Code de profil</h3>
+              {/* 🔹 Titre conditionnel */}
+              <h3 className="text-xl font-bold text-white mb-1">
+                {participantName ? `QR Code pour ${participantName}` : 'QR Code de profil'}
+              </h3>
               <p className="text-cyan-200 text-sm mb-4">
-                Scannez pour accéder à <span className="font-mono">@{username}</span>
+                {participantName
+                  ? `Scan pour le check-in de "${participantName}" à l'événement.`
+                  : `Scannez pour accéder à @${username}`
+                }
               </p>
 
               <div className="flex justify-center mb-5">
@@ -153,7 +173,7 @@ export default function QRModal({
                   <motion.img
                     key={urlForQR} // <--- Clé basée sur l'URL du QR pour forcer le rafraichissement si elle change
                     src={qrDataUrl}
-                    alt={`QR Code pour ${username}`}
+                    alt={`QR Code pour ${participantName || username}`}
                     className="w-48 h-48 rounded-2xl border-2 border-white/30 bg-white shadow-md"
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
@@ -183,7 +203,7 @@ export default function QRModal({
                   {copied ? '✅ Copié !' : '📋 Copier le lien'}
                 </Button>
                 <Button
-                  onClick={() => window.open(displayUrl, '_blank')} // <--- Ouvre l'URL affichée
+                  onClick={() => window.open(displayUrl, '_blank')}
                   className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600"
                 >
                   🌐 Ouvrir le lien

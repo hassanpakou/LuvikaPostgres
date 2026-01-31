@@ -6,19 +6,18 @@ import CheckInClient from '../../../../../components/events/CheckInClient'; // A
 import { X, Lock, Clock } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
+
 export default async function LocalizedEventCheckInPage({
-  params, // params est un Promise
-  searchParams, // searchParams est aussi un Promise
+  params,
+  searchParams,
 }: {
-  params: Promise<{ locale: string; id: string }>; // Typage du Promise pour params
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>; // Typage du Promise pour searchParams
+  params: Promise<{ locale: string; id: string }>; // Next.js 15+
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // 🔹 Attendre la résolution des Promises params et searchParams
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
 
-  const eventId = resolvedParams.id; // Accéder à l'ID après avoir résolu le Promise
-  // 🔹 Accéder au token après avoir résolu searchParams
+  const eventId = resolvedParams.id;
   const token = typeof resolvedSearchParams.token === 'string' ? resolvedSearchParams.token : null;
 
   const cookieStore = await cookies();
@@ -39,7 +38,7 @@ export default async function LocalizedEventCheckInPage({
 
   const { data: event } = await supabase
     .from('events')
-    .select('id, title, starts_at, ends_at, is_public, qr_code_url')
+    .select('id, title, starts_at, ends_at, is_public') // 🔹 Récupérer is_public
     .eq('id', eventId)
     .single();
 
@@ -89,14 +88,17 @@ export default async function LocalizedEventCheckInPage({
       </div>
     );
   }
+  const requiresName = !event.is_public; // Pour les événements privés
 
   // Passe les données nécessaires au composant client
   return (
     <CheckInClient
       eventId={eventId}
       eventTitle={event.title}
-      token={token} // Crucial : transmet le token
+      token={token}
       isOrganizer={false}
+      // 🔹 Passer l'info sur le nom
+      requiresName={requiresName}
     />
   );
 }

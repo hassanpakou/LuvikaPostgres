@@ -1422,10 +1422,6 @@ export default function DashboardContent({
       {/* 🔹 ✅ Menu flottant */}
       <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
 
-      {/* 🔹 ✅ Section Événements */}
-      <div className="col-span-1 md:col-span-2">
-        <EventAttendeesSection plan={profile.plan ?? null} />
-      </div>
 
       {/* Stats */}
       <Card className="glass-border">

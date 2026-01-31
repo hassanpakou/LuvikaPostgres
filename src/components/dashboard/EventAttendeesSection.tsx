@@ -1,17 +1,17 @@
 // src/components/dashboard/EventAttendeesSection.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useLocale } from 'next-intl'; // 🔹 Importer le hook pour la locale
+import { useState, useEffect, useRef, FormEvent } from 'react';
+import { useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Calendar, User, Clock, MapPin, QrCode, Download } from 'lucide-react';
+import { Calendar, User, Clock, MapPin, QrCode, Download, Plus, Edit3, Trash2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { createClient } from '@/src/lib/supabase/client';
 import QRModal from '@/src/components/profile/QRModal';
 
-// 🔹 Mettre à jour le type Event pour refléter que qr_code_url peut être null
 type Event = {
   id: string;
   name: string;
@@ -19,7 +19,8 @@ type Event = {
   starts_at: string;
   ends_at: string;
   attendee_count: number;
-  qr_code_url: string | null; // Peut être null pour les nouveaux événements
+  qr_code_url: string | null;
+  is_public: boolean; // Ajout pour savoir si c'est privé
 };
 
 type Participant = {
@@ -29,6 +30,7 @@ type Participant = {
   checked_in_at: string | null;
   is_checked_in: boolean;
   qr_token: string;
+  created_at: string; // Utile pour l'affichage
 };
 
 export default function EventAttendeesSection({ plan }: { plan: string | null }) {
@@ -38,16 +40,18 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [loading, setLoading] = useState(true);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [loadingParticipants, setLoadingParticipants] = useState(false); // Chargement des participants
+  const [newParticipant, setNewParticipant] = useState({ name: '', email: '' }); // État pour le formulaire d'ajout
+  const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null); // État pour la modification
   const cleanupRef = useRef<(() => void) | null>(null);
+  const [selectedParticipantQr, setSelectedParticipantQr] = useState<{ url: string; name: string } | null>(null);
 
-  // 🔹 Récupérer la locale active
-  const locale = useLocale(); 
+  const locale = useLocale();
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
       return;
     }
-    // Charger ou enregistrer les présences
   }, []);
 
   useEffect(() => {
@@ -56,12 +60,9 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         const res = await fetch('/api/events');
         if (!res.ok) throw new Error('API error');
         const { events } = await res.json();
-        // 🔹 Reconstruction de l'URL locale pour chaque événement récupéré
-        // Peu importe si qr_code_url est null ou non, on le remplace par l'URL locale
         const eventsWithLocalisedUrl = events.map((e: Event) => ({
           ...e,
-          // 🔹 Construire l'URL locale dynamiquement
-        qr_code_url: `/${locale}/events/${e.id}/check-in` // <- Ici, locale est ajoutée une fois
+          qr_code_url: `/${locale}/events/${e.id}/check-in`
         }));
         setEvents(eventsWithLocalisedUrl);
       } catch (err) {
@@ -78,28 +79,32 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
     return () => {
       if (cleanupRef.current) cleanupRef.current();
     };
-  }, [isFreePlan, locale]); // 🔹 Ajouter 'locale' aux dépendances
-
-  const handleCopyEventLink = (eventId: string, token: string) => {
-  // 🔹 Construire l'URL absolue
-  const absoluteUrl = `${window.location.origin}/${locale}/events/${eventId}/check-in?token=${token}`;
-  navigator.clipboard.writeText(absoluteUrl);
-  alert('Lien QR copié ! Partagez-le.');
-};
+  }, [isFreePlan, locale]);
 
   const loadParticipants = async (event: Event) => {
     setSelectedEvent(event);
+    setLoadingParticipants(true); // Indicateur de chargement
+    setParticipants([]); // Réinitialiser la liste
+    setNewParticipant({ name: '', email: '' }); // Réinitialiser le formulaire d'ajout
+    setEditingParticipant(null); // Réinitialiser l'édition
+
     try {
+      // Arrêter l'écoute précédente si existante
+      if (cleanupRef.current) {
+         cleanupRef.current();
+         cleanupRef.current = null;
+      }
+
+      // Charger les participants via la nouvelle API
+      const participantsRes = await fetch(`/api/events/${event.id}/participants`);
+      if (!participantsRes.ok) {
+          throw new Error('Erreur chargement participants');
+      }
+      const loadedParticipants: Participant[] = await participantsRes.json();
+      setParticipants(loadedParticipants);
+
+      // Mettre en place la synchronisation temps réel (comme avant)
       const supabase = createClient();
-
-      const { data: parts, error: fetchError } = await supabase
-        .from('event_participants')
-        .select('*')
-        .eq('event_id', event.id)
-        .order('created_at', { ascending: false });
-
-      if (fetchError) throw fetchError;
-      setParticipants(parts || []);
 
       const channel = supabase
         .channel(`event-${event.id}-participants`)
@@ -127,16 +132,105 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         if (channel) supabase.removeChannel(channel);
       };
 
-      if (cleanupRef.current) cleanupRef.current();
       cleanupRef.current = cleanup;
+
     } catch (err) {
       console.error('❌ Failed to load participants', err);
+      setParticipants([]); // S'assurer que la liste est vide en cas d'erreur
+    } finally {
+        setLoadingParticipants(false); // Fin du chargement
     }
   };
 
   const handleExportCSV = () => {
     if (!selectedEvent) return;
     window.open(`/api/events/${selectedEvent.id}/participants.csv`, '_blank');
+  };
+
+  // --- Nouvelles fonctions CRUD ---
+
+  const handleAddParticipant = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selectedEvent || !newParticipant.name.trim()) return;
+
+    try {
+      const res = await fetch(`/api/events/${selectedEvent.id}/participants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newParticipant.name.trim(), email: newParticipant.email.trim() || null }),
+      });
+
+      if (res.ok) {
+        const addedParticipant: Participant = await res.json();
+        setParticipants(prev => [addedParticipant, ...prev]); // Ajouter au début de la liste
+        setNewParticipant({ name: '', email: '' }); // Réinitialiser le formulaire
+      } else {
+        const errorData = await res.json();
+        alert(`Erreur: ${errorData.error || 'Impossible d\'ajouter le participant'}`);
+      }
+    } catch (err) {
+      console.error('Erreur ajout participant:', err);
+      alert('Erreur réseau lors de l\'ajout du participant.');
+    }
+  };
+
+  const handleUpdateParticipant = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!editingParticipant || !editingParticipant.name.trim()) return;
+
+    try {
+      const res = await fetch(`/api/events/${selectedEvent?.id}/participants`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participantId: editingParticipant.id,
+          name: editingParticipant.name.trim(),
+          email: editingParticipant.email?.trim() || null,
+        }),
+      });
+
+      if (res.ok) {
+        setParticipants(prev =>
+          prev.map(p => p.id === editingParticipant.id ? editingParticipant : p)
+        );
+        setEditingParticipant(null); // Quitter le mode édition
+      } else {
+        const errorData = await res.json();
+        alert(`Erreur: ${errorData.error || 'Impossible de modifier le participant'}`);
+      }
+    } catch (err) {
+      console.error('Erreur modification participant:', err);
+      alert('Erreur réseau lors de la modification du participant.');
+    }
+  };
+
+  const handleDeleteParticipant = async (participantId: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer ce participant ?')) return;
+
+    try {
+      const res = await fetch(`/api/events/${selectedEvent?.id}/participants`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participantId }),
+      });
+
+      if (res.ok) {
+        setParticipants(prev => prev.filter(p => p.id !== participantId));
+        // Optionnel : Décrémenter le compteur local si le participant était check-in
+        if (selectedEvent) {
+             const wasCheckedIn = participants.find(p => p.id === participantId)?.is_checked_in;
+             if (wasCheckedIn) {
+                 setEvents(prev => prev.map(e => e.id === selectedEvent.id ? { ...e, attendee_count: Math.max(0, (e.attendee_count || 0) - 1) } : e));
+             }
+        }
+      } else {
+        const errorData = await res.json();
+        alert(`Erreur: ${errorData.error || 'Impossible de supprimer le participant'}`);
+      }
+    } catch (err) {
+      console.error('Erreur suppression participant:', err);
+      alert('Erreur réseau lors de la suppression du participant.');
+    }
   };
 
   const now = new Date();
@@ -157,20 +251,20 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
             </div>
             <h3 className="font-bold text-white mb-2">Gérez vos événements</h3>
             <p className="text-gray-300 text-sm mb-4">
-              Créez des événements, générez des QR, suivez les présents en temps réel.
+              Créez des événements, gérez les invités, générez des QR, suivez les présents.
             </p>
             <ul className="text-left text-gray-400 text-xs space-y-1 mb-6 max-w-xs mx-auto">
               <li className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                QR dédié par participant
+                Liste d'invités personnalisée
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                Anti-doublon
+                QR unique par invité
               </li>
               <li className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-                Statistiques en temps réel
+                Suivi des présences temps réel
               </li>
             </ul>
             <Button
@@ -203,6 +297,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
       </Card>
     );
   }
+
 
   return (
     <Card className="glass-border bg-transparent border-white/10">
@@ -295,75 +390,186 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
                     <User className="text-cyan-400" />
                     Participants à « {selectedEvent.name} »
                   </h3>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex items-center gap-1"
-                    onClick={handleExportCSV}
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Exporter CSV
-                  </Button>
+                  <div className="flex gap-2">
+                     <Button
+                       size="sm"
+                       variant="outline"
+                       className="flex items-center gap-1"
+                       onClick={handleExportCSV}
+                     >
+                       <Download className="w-3.5 h-3.5" />
+                       Exporter CSV
+                     </Button>
+                     {/* Bouton pour ajouter un participant (uniquement pour les événements privés) */}
+                     {!selectedEvent.is_public && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="flex items-center gap-1 text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
+                          onClick={(e) => {
+                             e.stopPropagation();
+                             setNewParticipant({ name: '', email: '' }); // Réinitialiser le formulaire
+                          }}
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          Ajouter
+                        </Button>
+                     )}
+                  </div>
                 </div>
-                {participants.length === 0 ? (
+
+                {/* Formulaire d'ajout de participant */}
+                {!selectedEvent.is_public && (
+                   <form onSubmit={handleAddParticipant} className="mb-4 p-3 glass-border rounded-lg flex gap-2">
+                     <Input
+                       value={newParticipant.name}
+                       onChange={(e) => setNewParticipant({...newParticipant, name: e.target.value})}
+                       placeholder="Nom complet"
+                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 flex-grow"
+                       required
+                     />
+                     <Input
+                       value={newParticipant.email}
+                       onChange={(e) => setNewParticipant({...newParticipant, email: e.target.value})}
+                       placeholder="Email (optionnel)"
+                       type="email"
+                       className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 w-40"
+                     />
+                     <Button type="submit" size="sm" className="bg-emerald-600 hover:bg-emerald-500">
+                       <Plus className="w-4 h-4 mr-1" /> Ajouter
+                     </Button>
+                   </form>
+                )}
+
+                {loadingParticipants ? (
+                   <p className="text-gray-400 text-sm text-center py-2">Chargement des participants...</p>
+                ) : participants.length === 0 ? (
                   <p className="text-gray-400 text-sm">Aucun participant inscrit</p>
                 ) : (
                   <ul className="space-y-2">
                     {participants.map((p) => (
-                      <li
-                        key={p.id}
-                        className="flex items-center justify-between p-3 glass-border rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium text-white">{p.name}</p>
-                          {p.email && <p className="text-sm text-gray-400">{p.email}</p>}
-                        </div>
-                        <div className="flex gap-2">
-                          {p.is_checked_in ? (
-                            <span className="text-xs text-emerald-400">✅ Présent</span>
-                          ) : (
-                            <Button
-  size="sm"
-  variant="ghost"
-  className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
-  onClick={(e) => {
-    e.stopPropagation();
-    handleCopyEventLink(selectedEvent.id, p.qr_token); // Utiliser la fonction
-    // Remplacer la ligne suivante :
-    // const url = `/${locale}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
-    // navigator.clipboard.writeText(url);
-  }}
-  title="Copier lien QR"
->
-  <QrCode className="w-4 h-4" />
-</Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-amber-400 border-amber-400/30 hover:bg-amber-400/10"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if (
-                                !confirm(
-                                  'Archiver cet événement ? Il sera masqué du dashboard.'
-                                )
-                              )
-                                return;
-                              const res = await fetch(`/api/events/${selectedEvent.id}/archive`, {
-                                method: 'PATCH',
-                              });
-                              if (res.ok) {
-                                setEvents((prev) => prev.filter((e) => e.id !== selectedEvent.id));
-                                setSelectedEvent(null);
-                              }
-                            }}
-                          >
-                            🗃️ Archiver
-                          </Button>
-                        </div>
+  <li
+    key={p.id}
+    className="flex items-center justify-between p-3 glass-border rounded-lg"
+  >
+    {/* Mode Visualisation */}
+    {editingParticipant?.id !== p.id ? (
+       <>
+         <div className="flex-1 min-w-0">
+           <p className="font-medium text-white truncate">{p.name}</p>
+           {p.email && <p className="text-sm text-gray-400 truncate">{p.email}</p>}
+           <p className="text-xs text-gray-500">Créé le: {new Date(p.created_at).toLocaleDateString()}</p>
+         </div>
+         <div className="flex gap-2">
+           {p.is_checked_in ? (
+             <span className="text-xs text-emerald-400 flex items-center gap-1">
+               <User className="w-3 h-3" /> Présent
+             </span>
+           ) : (
+             <>
+               {/* Bouton pour copier le lien spécifique */}
+               <Button
+                 size="sm"
+                 variant="ghost"
+                 className="p-1 h-auto text-cyan-400 hover:bg-cyan-500/10"
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   const url = `${window.location.origin}/${locale}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
+                   navigator.clipboard.writeText(url);
+                   alert('Lien QR copié ! Partagez-le.');
+                 }}
+                 title="Copier lien QR"
+               >
+                 <QrCode className="w-4 h-4" />
+               </Button>
+               {/* 🔹 Nouveau bouton pour afficher le QR Code dans le modal */}
+               <Button
+                 size="sm"
+                 variant="ghost"
+                 className="p-1 h-auto text-purple-400 hover:bg-purple-500/10" // Couleur différente
+                 onClick={(e) => {
+                   e.stopPropagation();
+                   // Construit l'URL spécifique du participant
+                   const participantSpecificUrl = `${window.location.origin}/${locale}/events/${selectedEvent.id}/check-in?token=${p.qr_token}`;
+                   // Ouvre le modal avec les props spécifiques
+                   setSelectedParticipantQr({ url: participantSpecificUrl, name: p.name });
+                   setShowQRModal(true);
+                 }}
+                 title="Voir QR Code"
+               >
+                 <QrCode className="w-4 h-4" />
+               </Button>
+             </>
+           )}
+           {/* Boutons d'édition/suppression pour les événements privés */}
+           {!selectedEvent.is_public && (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="p-1 h-auto text-amber-400 hover:bg-amber-400/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingParticipant(p);
+                  }}
+                  title="Modifier"
+                >
+                  <Edit3 className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="p-1 h-auto text-red-400 hover:bg-red-400/10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteParticipant(p.id);
+                  }}
+                  title="Supprimer"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+           )}
+         </div>
+       </>
+                        ) : (
+                           // Mode Édition
+                           <form
+                             onSubmit={handleUpdateParticipant}
+                             className="flex-1 flex items-center gap-2 w-full"
+                             onClick={(e) => e.stopPropagation()} // Empêcher la sélection de l'événement
+                           >
+                             <Input
+                               value={editingParticipant.name}
+                               onChange={(e) => setEditingParticipant({...editingParticipant, name: e.target.value})}
+                               className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 flex-grow"
+                               required
+                             />
+                             <Input
+                               value={editingParticipant.email || ''}
+                               onChange={(e) => setEditingParticipant({...editingParticipant, email: e.target.value || null})}
+                               placeholder="Email"
+                               type="email"
+                               className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 w-32"
+                             />
+                             <div className="flex gap-1">
+                               <Button type="submit" size="sm" variant="outline" className="text-xs">Sauver</Button>
+                               <Button
+                                 type="button"
+                                 size="sm"
+                                 variant="outline"
+                                 className="text-xs"
+                                 onClick={() => setEditingParticipant(null)} // Annuler
+                               >
+                                 Annuler
+                               </Button>
+                             </div>
+                           </form>
+                        )}
                       </li>
                     ))}
+
+                    
                   </ul>
                 )}
               </>
@@ -372,17 +578,24 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         )}
       </CardContent>
 
-       {selectedEvent && (
+      {/* --- MODIFIER L'APPEL AU QRModal DANS LE RENDEU --- */}
+      {selectedEvent && (
         <QRModal
-  isOpen={showQRModal}
-  onClose={() => setShowQRModal(false)}
-  // 🔹 Passer l'URL locale reconstruite au QRModal
-  profileUrl={selectedEvent.qr_code_url || ''} // <- C'est /fr/events/[ID]/check-in
-  username={selectedEvent.name || 'Événement'}
-  // 🔹 Calculer et passer l'URL absolue pour le QR Code
-  qrCodeUrl={`${process.env.NEXT_PUBLIC_SITE_URL}${selectedEvent.qr_code_url}`} // <- SITE_URL + /fr/events/[ID]/check-in
-/>
+          isOpen={showQRModal}
+          onClose={() => {
+            setShowQRModal(false);
+            setSelectedParticipantQr(null); // Réinitialiser quand le modal se ferme
+          }}
+          // 🔹 Passer les props conditionnelles pour le participant
+          profileUrl={selectedEvent?.qr_code_url || ''}
+          username={selectedEvent?.name || 'Événement'}
+          // Utiliser l'URL spécifique du participant si disponible
+          participantQrUrl={selectedParticipantQr?.url}
+          participantName={selectedParticipantQr?.name}
+        />
       )}
-    </Card>
+    </Card> 
+    
   );
+  
 }

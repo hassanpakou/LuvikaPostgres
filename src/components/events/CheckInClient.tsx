@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input'; // Ajouter Input
 import { Loader2, QrCode, User, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -10,23 +11,25 @@ export default function CheckInClient({
   eventId,
   eventTitle,
   token,
-  isOrganizer
+  isOrganizer,
+  requiresName = false, // Nouvelle prop pour indiquer si le nom est requis
 }: {
   eventId: string;
   eventTitle: string;
   token: string | null;
   isOrganizer: boolean;
+  requiresName?: boolean; // Optionnel
 }) {
   const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [inputName, setInputName] = useState(''); // État pour le nom saisi
 
-  // Vérifie la validité du token immédiatement au chargement
   useEffect(() => {
     if (!token) {
       setMessage('QR code invalide. Aucun jeton fourni.');
       setStatus('error');
     } else {
-      setStatus('idle'); // Réinitialise si un token est fourni
+      setStatus('idle');
     }
   }, [token]);
 
@@ -37,12 +40,19 @@ export default function CheckInClient({
       return;
     }
 
+    // 🔹 Vérifier le nom si requis
+    if (requiresName && !inputName.trim()) {
+      setMessage('Veuillez entrer votre nom.');
+      setStatus('error');
+      return;
+    }
+
     setStatus('checking');
     try {
       const res = await fetch(`/api/events/${eventId}/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, name: requiresName ? inputName.trim() : undefined }), // 🔹 Envoyer le nom si requis
       });
       const data = await res.json();
 
@@ -51,6 +61,7 @@ export default function CheckInClient({
         setMessage(`✅ Bienvenue, ${data.name || 'participant'} !`);
       } else {
         setStatus('error');
+        // 🔹 Gérer les nouveaux messages d'erreur
         setMessage(data.error || 'Erreur lors du check-in.');
       }
     } catch (err) {
@@ -86,6 +97,21 @@ export default function CheckInClient({
           <CardTitle className="text-white">{eventTitle}</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* 🔹 Champ de saisie du nom, conditionnel */}
+          {requiresName && (
+            <div className="mb-4">
+              <label htmlFor="check-in-name" className="block text-sm font-medium text-gray-300 mb-2">
+                Votre nom complet *
+              </label>
+              <Input
+                id="check-in-name"
+                value={inputName}
+                onChange={(e) => setInputName(e.target.value)}
+                placeholder="Entrez votre nom"
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+              />
+            </div>
+          )}
           {status === 'error' && (
             <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
               <div className="flex items-start gap-2">

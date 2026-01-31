@@ -1,16 +1,11 @@
 // src/app/api/events/[eventId]/check-in/route.ts
-
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
+import { createServerClient } from '@supabase/ssr';
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ eventId: string }> }
-) {
-  const { eventId } = await params;
-  const { token } = await request.json();
+export async function POST(request: Request, { params }: { params: Promise<{ eventId: string }> }) { // ✅ 'eventId'
+  const { eventId } = await params; // ✅ Extraire 'eventId'
+  const { token, name } = await request.json();
 
   if (!token || typeof token !== 'string') {
     return NextResponse.json({ error: 'Token invalide ou manquant' }, { status: 400 });
@@ -32,64 +27,35 @@ export async function POST(
     }
   );
 
-  // Vérifier l’événement
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, starts_at, ends_at, is_public')
-    .eq('id', eventId)
-    .single();
-
-  if (!event || !event.is_public) {
-    return NextResponse.json({ error: 'Événement introuvable' }, { status: 404 });
-  }
-
-  const now = new Date();
-  const startsAt = new Date(event.starts_at);
-  const endsAt = new Date(event.ends_at);
-
-  if (now < startsAt) return NextResponse.json({ error: 'Trop tôt' }, { status: 400 });
-  if (now > endsAt) return NextResponse.json({ error: 'Événement terminé' }, { status: 400 });
-
-  // 🔐 Vérifier le token
-  const { data: participant } = await supabase
-    .from('event_participants')
-    .select('id, name, email, is_checked_in')
-    .eq('event_id', eventId)
-    .eq('qr_token', token)
-    .single();
-
-  if (!participant) {
-    return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
-  }
-
-  if (participant.is_checked_in) {
-    return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
-  }
-
-  // ✅ Enregistrer le check-in
-  const { error: updateError } = await supabase
-    .from('event_participants')
-    .update({
-      is_checked_in: true,
-      checked_in_at: now.toISOString(),
-    })
-    .eq('id', participant.id);
-
-  if (updateError) {
-    console.error('Supabase update error:', updateError);
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
-  }
-
-  // 🔄 Optionnel : compatibilité avec ancienne table
-  await supabase.from('event_attendees').insert({
-    event_id: eventId,
-    name: participant.name,
-    email: participant.email,
-    scanned_at: now.toISOString(),
+  // 🔐 TRANSACTION SUPABASE pour garantir l'atomicité
+  const { data, error } = await supabase.rpc('check_in_participant', { // Appel d'une fonction RPC ou d'une procédure stockée
+    p_event_id: eventId,
+    p_token: token,
+    p_name: name // Le nom est passé ici
   });
 
-  revalidatePath('/dashboard');
-  revalidatePath(`/events/${eventId}`);
+  if (error) {
+    console.error("Erreur de check-in:", error);
+    // Gérer les différents codes d'erreur de la fonction RPC
+    if (error.code === 'EVENT_NOT_FOUND') {
+      return NextResponse.json({ error: 'Événement introuvable ou privé' }, { status: 404 });
+    } else if (error.code === 'TOKEN_NOT_FOUND') {
+      return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
+    } else if (error.code === 'ALREADY_CHECKED_IN') {
+      return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
+    } else if (error.code === 'NAME_MISMATCH') { // Nouveau cas d'erreur
+      return NextResponse.json({ error: 'Nom incorrect pour ce QR' }, { status: 403 });
+    } else if (error.code === 'EVENT_FULL') {
+      return NextResponse.json({ error: 'Événement complet' }, { status: 409 });
+    } else if (error.code === 'EVENT_NOT_ACTIVE_YET') {
+      return NextResponse.json({ error: 'Événement pas encore actif' }, { status: 400 });
+    } else if (error.code === 'EVENT_ENDED') {
+      return NextResponse.json({ error: 'Événement terminé' }, { status: 400 });
+    }
+    // Erreur générique
+    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
+  }
 
-  return NextResponse.json({ success: true, name: participant.name });
+  // Si succès, renvoyer les infos du participant
+  return NextResponse.json({ success: true, name: data.name, checked_in_at: data.checked_in_at });
 }
