@@ -13,30 +13,82 @@ export default function CommunicationPage() {
   const t = useTranslations('enterprise.modules.communication');
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [companyId, setCompanyId] = useState<string | null>(null); // ✅ Ajoutez cet état
+  const [messages, setMessages] = useState<any[]>([]); // ✅ Pour afficher les messages reçus
   const supabase = createClient();
 
-  const handleBroadcast = async () => {
-    if (!message.trim()) return;
-    setLoading(true);
-    try {
-      const { data : { user } } = await supabase.auth.getUser();
+  // 🔹 useEffect : Récupération companyId
+  useEffect(() => {
+    const fetchCompany = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data : company } = await supabase
+      const { data: company } = await supabase
         .from('companies')
         .select('id')
         .eq('owner_id', user.id)
         .single();
 
-      if (!company) return;
+      if (company) {
+        setCompanyId(company.id);
+      }
+    };
+
+    fetchCompany();
+  }, []);
+
+  // 🔹 useEffect : Écoute temps réel des messages
+  useEffect(() => {
+    if (!companyId) return;
+
+    const handleNewMessage = (payload: any) => {
+      setMessages(prev => [payload.new, ...prev]);
+      // 🔔 Notification visuelle ou sonore
+      if (typeof window !== 'undefined') {
+        // Option 1 : Son
+        const audio = new Audio('/sounds/message.mp3');
+        audio.volume = 0.3;
+        audio.play().catch(err => console.log('Audio play failed:', err));
+        
+        // Option 2 : Notification browser (optionnel)
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Nouveau message', {
+            body: payload.new.message,
+            icon: '/logo.png'
+          });
+        }
+      }
+    };
+
+    const channel = supabase
+      .channel('comms')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public',
+        table: 'internal_messages',
+        filter: `company_id=eq.${companyId}`
+      }, handleNewMessage)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [companyId]);
+
+  const handleBroadcast = async () => {
+    if (!message.trim() || !companyId) return;
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
       await supabase
         .from('internal_messages')
         .insert({
-          company_id: company.id,
+          company_id: companyId,
           sender_id: user.id,
           message: message.trim(),
-          scope: 'all', // ou 'department', 'role'
+          scope: 'all',
           created_at: new Date().toISOString()
         });
 

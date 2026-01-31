@@ -1,27 +1,44 @@
-// src/app/dashboard/entreprise/orders/page.tsx
+//src/app/dashboard/entreprise/orders/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { Package, TrendingUp } from 'lucide-react';
+import { Package, TrendingUp, Calendar } from 'lucide-react';
 import { Badge } from '../../../../../components/ui/badge';
 import { format } from 'date-fns';
-import { fr } from 'date-fns/locale'; // ✅ CORRECT POUR date-fns v2/v3
+import { fr } from 'date-fns/locale';
 import { useTranslations } from 'next-intl';
+import { useSoundNotification } from '../../../../../src/hooks/useSoundNotification';
+import { toast } from 'sonner';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../../../../../components/ui/select';
+import { Button } from '../../../../../components/ui/button';
+import { Download } from 'lucide-react';
+import { exportOrders } from '../../../../../src/lib/utils/exportCSV';
+import { filterByDateRange, calculateStats } from '../../../../../src/lib/utils/stats';
 
 export default function OrdersPage() {
   const t = useTranslations('enterprise.modules.orders');
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('month');
   const supabase = createClient();
+  const { playSound } = useSoundNotification();
 
+  // 🔹 useEffect : Récupération initiale
   useEffect(() => {
     const fetchOrders = async () => {
-      const { data : { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data : company } = await supabase
+      const { data: company } = await supabase
         .from('companies')
         .select('id')
         .eq('owner_id', user.id)
@@ -29,9 +46,15 @@ export default function OrdersPage() {
 
       if (!company) return;
 
-      const {  data } = await supabase
-        .from('orders')
-        .select('*, profiles(full_name)')
+      setCompanyId(company.id);
+
+      const { data } = await supabase
+        .from('ecommerce_orders')
+        .select(`
+          *,
+          buyer:profiles!ecommerce_orders_buyer_id_fkey(full_name, email),
+          seller:companies(name, logo_url)
+        `)
         .eq('seller_id', company.id)
         .order('created_at', { ascending: false });
 
@@ -42,79 +65,141 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-// ✅ Loader élégant
+  // 🔹 useEffect : Écoute temps réel NOUVELLES COMMANDES
+  useEffect(() => {
+    if (!companyId) return;
+
+    const channel = supabase
+      .channel('ecommerce-orders-updates')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public',
+        table: 'ecommerce_orders',
+        filter: `seller_id=eq.${companyId}`
+      }, (payload) => {
+        setOrders(prev => [payload.new, ...prev]);
+        playSound();
+        
+        // Notification toast
+        if (window.location.pathname.includes('/dashboard/entreprise/orders')) {
+          toast.success(`🔔 Nouvelle commande ! ${payload.new.total_amount} $`, {
+            duration: 5000,
+            icon: '🛒'
+          });
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [companyId, playSound]);
+
+  // 🔹 Filtres et stats
+  const filteredOrders = filterByDateRange(orders, dateRange);
+  const stats = calculateStats(filteredOrders);
+
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      const { error } = await supabase
+        .from('ecommerce_orders')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', orderId);
+      
+      if (error) throw error;
+      
+      setOrders(prev => prev.map(o =>
+        o.id === orderId ? { ...o, status: newStatus } : o
+      ));
+      toast.success('✅ Statut mis à jour');
+    } catch (err) {
+      console.error('Erreur:', err);
+      toast.error('❌ Erreur lors de la mise à jour');
+    }
+  };
+
+  // ✅ Loader élégant
   if (loading) {
-       return (
-  <div className="max-w-6xl mx-auto py-12 px-4 flex justify-center">
-    <div className="w-full max-w-md">
-
-      {/* Bulle glassmorphism */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-
-        <div className="flex flex-col items-center text-center">
-
-          {/* Boule circulaire */}
-          <div className="relative w-20 h-20 mb-6">
-
-            {/* Cercle externe */}
-            <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
-
-            {/* Aiguille qui tourne */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[2px] h-8 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
+    return (
+      <div className="max-w-6xl mx-auto py-12 px-4 flex justify-center">
+        <div className="w-full max-w-md">
+          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative w-20 h-20 mb-6">
+                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-[2px] h-8 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
+                </div>
+                <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-70 animate-pulse"></div>
+                <div className="absolute inset-6 rounded-full bg-slate-950"></div>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">
+                Chargement du profil…
+              </h3>
+              <p className="text-sm text-gray-400 mb-5">
+                Récupération des données depuis la base sécurisée
+              </p>
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-progress"></div>
+              </div>
             </div>
-
-            {/* Cœur lumineux */}
-            <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-70 animate-pulse"></div>
-            <div className="absolute inset-6 rounded-full bg-slate-950"></div>
           </div>
-
-          {/* Texte */}
-          <h3 className="text-lg font-semibold text-white mb-1">
-            Chargement du profil…
-          </h3>
-          <p className="text-sm text-gray-400 mb-5">
-            Récupération des données depuis la base sécurisée
-          </p>
-
-          {/* Barre de progression */}
-          <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-progress"></div>
-          </div>
-
         </div>
       </div>
-    </div>
-  </div>
-);
+    );
   }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+        <div className="flex gap-2">
+          <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
+            <SelectTrigger className="w-36 bg-white/5 border-white/20">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Aujourd'hui</SelectItem>
+              <SelectItem value="week">Cette semaine</SelectItem>
+              <SelectItem value="month">Ce mois-ci</SelectItem>
+              <SelectItem value="all">Tout</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => exportOrders(orders)} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="glass-border text-center p-6">
           <TrendingUp className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-          <p className="text-gray-400">{t('total_revenue')}</p>
+          <p className="text-gray-400 text-sm">Chiffre d'affaires</p>
           <p className="text-2xl font-bold text-white">
-            {orders
-              .filter(o => o.status === 'delivered')
-              .reduce((sum, o) => sum + (o.total_amount || 0), 0)
-              .toLocaleString()} $
+            {stats.revenue.toLocaleString()} $
           </p>
+          <p className="text-xs text-gray-500 mt-1">({dateRange})</p>
         </Card>
         <Card className="glass-border text-center p-6">
           <Package className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-          <p className="text-gray-400">{t('pending_orders')}</p>
+          <p className="text-gray-400 text-sm">En attente</p>
           <p className="text-2xl font-bold text-white">
-            {orders.filter(o => o.status === 'pending').length}
+            {stats.pending}
           </p>
         </Card>
         <Card className="glass-border text-center p-6">
-          <Package className="w-8 h-8 text-violet-400 mx-auto mb-2" />
-          <p className="text-gray-400">{t('completed_orders')}</p>
+          <Package className="w-8 h-8 text-green-400 mx-auto mb-2" />
+          <p className="text-gray-400 text-sm">Livrées</p>
           <p className="text-2xl font-bold text-white">
-            {orders.filter(o => o.status === 'delivered').length}
+            {stats.delivered}
+          </p>
+        </Card>
+        <Card className="glass-border text-center p-6">
+          <Calendar className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
+          <p className="text-gray-400 text-sm">Moyenne</p>
+          <p className="text-2xl font-bold text-white">
+            {stats.average.toFixed(0)} $
           </p>
         </Card>
       </div>
@@ -125,23 +210,33 @@ export default function OrdersPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {orders.slice(0, 10).map(order => (
+            {filteredOrders.slice(0, 10).map(order => (
               <div key={order.id} className="flex justify-between items-center p-4 glass-border rounded-lg">
                 <div>
-                  <p className="text-white">#{order.id.slice(0, 8)}</p>
-                  <p className="text-sm text-gray-400">{order.profiles?.full_name || 'Client anonyme'}</p>
+                  <p className="text-white font-mono">#{order.id.slice(0, 8)}</p>
+                  <p className="text-sm text-gray-400">
+                    {order.buyer?.full_name || order.buyer_name || 'Client anonyme'}
+                  </p>
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-white">{(order.total_amount || 0).toLocaleString()} $</p>
-                  <Badge className={
-                    order.status === 'pending' ? 'bg-amber-500/20 text-amber-300' :
-                    order.status === 'delivered' ? 'bg-green-500/20 text-green-300' :
-                    'bg-gray-500/20 text-gray-300'
-                  }>
-                    {order.status}
-                  </Badge>
+                  <Select
+                    value={order.status}
+                    onValueChange={(value) => updateOrderStatus(order.id, value)}
+                  >
+                    <SelectTrigger className="w-32 mt-1 bg-white/5 border-white/20">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">🕗 En attente</SelectItem>
+                      <SelectItem value="processing">⚙️ En cours</SelectItem>
+                      <SelectItem value="shipped">🚚 Expédiée</SelectItem>
+                      <SelectItem value="delivered">✅ Livrée</SelectItem>
+                      <SelectItem value="cancelled">❌ Annulée</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <p className="text-xs text-gray-500 mt-1">
-{format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
+                    {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
                   </p>
                 </div>
               </div>
