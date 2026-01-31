@@ -496,7 +496,6 @@ export default function Navbar() {
                   LUVIKA
                 </span>
                 {isAdmin && <Shield className="ml-1 h-5 w-5" />}
-                {isUser && <UserIcon className="ml-1 h-5 w-5" />}
               </Link>
             </motion.div>
 

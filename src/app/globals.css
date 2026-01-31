@@ -105,3 +105,215 @@
   background-size: 200% 200%;
   animation: gradient 8s ease infinite;
 }
+
+/* ========== ANIMATIONS CYBERPUNK ========== */
+
+@keyframes codeScroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes glitchMove {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes glitchMoveY {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-1px);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+  75% {
+    transform: translateY(-0.5px);
+  }
+}
+
+@keyframes pulseNeon {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--neon-color), 0 0 10px var(--neon-color);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--neon-color), 0 0 20px var(--neon-color), 0 0 30px var(--neon-color);
+  }
+}
+
+@keyframes scanPulse {
+  0% {
+    opacity: 0.3;
+    transform: scaleX(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1.2);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scaleX(0.8);
+  }
+}
+
+/* Classe utilitaire pour éléments néon */
+.neon-glow {
+  --neon-color: #22d3ee;
+  animation: pulseNeon 2s ease-in-out infinite;
+}
+
+/* Effet terminal/écran CRT */
+.crt-effect {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 1.5px,
+      rgba(0, 0, 0, 0.03) 1.5px,
+      rgba(0, 0, 0, 0.03) 3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 1.5px,
+      rgba(0, 0, 0, 0.03) 1.5px,
+      rgba(0, 0, 0, 0.03) 3px
+    );
+  opacity: 0.05;
+  z-index: 9999;
+}
+
+/* Bruit/grain subtil */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.02) 0%, transparent 20%),
+    radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.02) 0%, transparent 20%);
+  z-index: 9998;
+  opacity: 0.3;
+}
+/* ========== ANIMATIONS CYBERPUNK ========== */
+
+@keyframes codeScroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes glitchMove {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  50% {
+    transform: translateX(2px);
+  }
+  75% {
+    transform: translateX(-1px);
+  }
+}
+
+@keyframes glitchMoveY {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-1px);
+  }
+  50% {
+    transform: translateY(1px);
+  }
+  75% {
+    transform: translateY(-0.5px);
+  }
+}
+
+@keyframes pulseNeon {
+  0%, 100% {
+    box-shadow: 0 0 5px var(--neon-color), 0 0 10px var(--neon-color);
+  }
+  50% {
+    box-shadow: 0 0 10px var(--neon-color), 0 0 20px var(--neon-color), 0 0 30px var(--neon-color);
+  }
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 0.03;
+  }
+  50% {
+    opacity: 0.05;
+  }
+}
+
+.animate-flicker {
+  animation: flicker 0.15s infinite;
+}
+
+/* Classe utilitaire pour éléments néon */
+.neon-glow {
+  --neon-color: #22d3ee;
+  animation: pulseNeon 2s ease-in-out infinite;
+}
+
+/* Animation gradient subtile pour les titres */
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+/* Animation pulse lente */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ========== ACCESSIBILITÉ ========== */
+
+/* Désactiver les animations si prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .crt-effect,
+  .noise-overlay,
+  [class*="animate-"] {
+    animation: none !important;
+    display: none !important;
+  }
+  
+  .glass-border {
+    backdrop-filter: none !important;
+  }
+}
