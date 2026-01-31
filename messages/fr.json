@@ -108,20 +108,20 @@
       "inactive_indicator": "⚠️ Inactif",
       "status_active": "Abonnement actif",
       "plans": {
-        "freemium": "Freemium",
-        "basic": "Freemium",
-        "premium": "Premium",
-        "entreprise": "Entreprise"
+        "freemium": "Basic",
+        "basic": "Basic",
+        "premium": "Professionnel",
+        "entreprise": "Business"
       },
       "active": " Actif",
       "inactive": "⚠️ Inactif",
       "active_until": "Votre plan est actif jusqu’au {date}.",
-      "upgrade_prompt": "Votre compte est en mode Freemium. Contactez l’administrateur pour activer un plan.",
+      "upgrade_prompt": "Votre compte est en mode Basic. Contactez l’administrateur pour activer un plan.",
       "request_upgrade": "Demander une mise à niveau",
       "success_title": "✅ Succès !",
       "success_message": "Un administrateur vous contactera sous 24h.",
-      "upgrade_to_premium": "Passer à Premium",
-      "request_enterprise": "Convertir en compte Entreprise"
+      "upgrade_to_premium": "Passer à Professionnel",
+      "request_enterprise": "Convertir en compte BUSINESS"
     },"messages": {
       "view_received": "Voir les messages reçus"
     },
@@ -141,7 +141,7 @@
         "blocked": "Bloquée",
         "inactive": "Inactive"
       },
-      "upgrade_required": "⚠️ Plan Premium requis",
+      "upgrade_required": "⚠️ Plan Professionnel requis",
       "add_card": "Ajouter une carte NFC"
     },
     "stats": {
@@ -205,7 +205,7 @@
         "username_placeholder": "votre_nom",
         "job_title": "Poste",
         "job_title_placeholder": "Développeur Full-Stack",
-        "company": "Entreprise",
+        "company": "Business",
         "company_placeholder": "LUVIKA",
         "bio_short": "Bio courte",
         "bio_short_placeholder": "1 ligne percutante",
@@ -225,8 +225,8 @@
       "visibility": {
         "title": "Visibilité",
         "description": "Choisissez ce qui apparaît sur votre profil public",
-        "portfolio_locked": "Débloquez le portfolio avec un abonnement Premium",
-        "certificates_locked": "Les certificats sont réservés aux comptes Premium/Entreprise"
+        "portfolio_locked": "Débloquez le portfolio avec un abonnement Professionnel",
+        "certificates_locked": "Les certificats sont réservés aux comptes Professionnel/Business"
       },
       "advanced": {
         "title": "Options avancées",
@@ -286,7 +286,7 @@
       "phone": "Téléphone",
       "whatsapp": "WhatsApp",
       "job_title": "Poste",
-      "company": "Entreprise",
+      "company": "Business",
       "bio_short": "Bio courte",
       "skip": "Passer",
       "back": "Retour",
@@ -342,7 +342,7 @@
       "email_exists": "📧 Vous avez déjà un compte avec cet email. Connectez-vous ou utilisez un autre email.",
       "check_email": "✅ Vérifiez vos emails — un lien de confirmation vous a été envoyé.",
       "choose_plan": "Choisissez votre plan",
-      "plan_desc": "Démarrez gratuitement, passez à Premium pour plus de fonctionnalités"
+      "plan_desc": "Démarrez gratuitement, passez à Professionnel pour plus de fonctionnalités"
     },
     "reset": {
       "title": "Nouveau mot de passe",
@@ -435,8 +435,8 @@
       "expires_help": "Laisser vide pour un abonnement à vie",
       "updated_success": "Plan mis à jour avec succès",
       "update_error": "Échec de la mise à jour",
-      "upgrade_to_premium": "Passer à Premium",
-      "request_enterprise": "Convertir en compte Entreprise"    },
+      "upgrade_to_premium": "Passer à Professionnel",
+      "request_enterprise": "Convertir en compte Business"    },
     "nfc": {
       "status": "Statut",
       "created": "Créée le",
@@ -477,8 +477,8 @@
     },
     "plans": {
       "basic": "Basic",
-      "premium": "Premium",
-      "entreprise": "Entreprise",
+      "premium": "Pro",
+      "entreprise": "Business",
       "undefined": "Non défini"
     },
     "actions": {
@@ -593,7 +593,7 @@
     },
     "step2": {
       "title": "2. Générez votre QR Code",
-      "desc": "Ou associez une carte NFC (option Premium)."
+      "desc": "Ou associez une carte NFC (option Professionnel)."
     },
     "step3": {
       "title": "3. Partagez !",
@@ -608,7 +608,7 @@
     "features": "Fonctionnalités",
     "pricing": "Tarifs",
     "download": "Télécharger",
-    "company": "Entreprise",
+    "company": "Business",
     "about": "À propos",
     "contact": "Contact",
     "blog": "Blog",
@@ -636,7 +636,7 @@
     },
     "plans": {
       "freemium": {
-        "title": "Freemium",
+        "title": "Basic",
         "desc": "Pour commencer",
         "popular": "Le plus populaire",
         "features": {
@@ -650,7 +650,7 @@
         }
       },
       "premium": {
-        "title": "Premium",
+        "title": "Professionnel",
         "desc": "Pour les pros ambitieux",
         "popular": "Le plus populaire",
         "features": {
@@ -664,7 +664,7 @@
         }
       },
       "entreprise": {
-        "title": "Entreprise",
+        "title": "Business",
         "desc": "Pour équipes & entreprises",
         "popular": "",
         "features": {
@@ -847,7 +847,7 @@
       "desc": "Luvika n’est pas un profil — c’est votre outil métier quotidien, conçu pour l’Afrique et scalable à l’international."
     }
   },
-  "enterprise_only": "Entreprise",
+  "enterprise_only": "Business",
   "blog": {
     "title": "Blog LUVIKA",
     "description": "Découvrez les dernières actualités, tutoriels et conseils pour utiliser LUVIKA au maximum."
@@ -876,7 +876,7 @@
         }
       },
       "premium": {
-        "title": "Premium",
+        "title": "Professionnel",
         "popular": "Populaire",
         "desc": "Pour les professionnels",
         "features": {
@@ -890,7 +890,7 @@
         }
       },
       "entreprise": {
-        "title": "Entreprise",
+        "title": "Business",
         "desc": "Solution complète",
         "features": {
           "nfc": "Cartes NFC illimitées",

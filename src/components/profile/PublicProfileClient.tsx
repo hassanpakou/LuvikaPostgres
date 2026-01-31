@@ -455,8 +455,8 @@ export default function PublicProfileClient({
                     ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white'
                     : 'bg-gradient-to-r from-emerald-600 to-teal-500 text-white'
                 }`}>
-                  {localProfile.plan === 'premium' ? <Crown className="w-4 h-4 inline mr-1" /> : <Briefcase className="w-4 h-4 inline mr-1" />} 
-                  {localProfile.plan === 'premium' ? 'Premium' : 'Businesss'}
+                  {localProfile.plan === 'Professionnel' ? <Crown className="w-4 h-4 inline mr-1" /> : <Briefcase className="w-4 h-4 inline mr-1" />} 
+                  {localProfile.plan === 'Professionnel' ? 'Professionnel' : 'Businesss'}
                 </Badge>
               </motion.div>
             )}
