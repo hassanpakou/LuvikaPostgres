@@ -1299,55 +1299,98 @@ export default function DashboardContent({
         </div>
       )}
 
-      {/* Commandes */}
-     
-      {(subscription.plan === 'premium' || subscription.plan === 'entreprise') && (
-        <Card className="glass-border">
-          <CardHeader><CardTitle>{t('orders.title')}</CardTitle></CardHeader>
-          <CardContent>
-            <p className="text-gray-300 mb-4">{t('orders.description')}</p>
-            <Button
-              onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
-              className="bg-gradient-to-r from-blue-600 to-cyan-500"
-            >
-              {t('orders.manage')}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      
 
       {/* Abonnement */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <span>{t('subscription.title')}</span>
-            <Badge className={`${planColors[subscription.plan] || 'bg-gray-600'} text-white`}>
-              {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
-            </Badge>
-            <Badge className={subscription.active ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}>
-              {subscription.active ? t('subscription.active') : t('subscription.inactive')}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-300">
-            {subscription.active
-              ? t('subscription.active_until', { date: '∞' })
-              : t('subscription.upgrade_prompt')}
-          </p>
-          {profile.plan !== 'entreprise' && (
-  <Button
-    size="sm"
-    className="mt-3 bg-gradient-to-r from-blue-600 to-cyan-500"
-    onClick={() => setActiveModal('upgrade')}
-  >
-    {profile.plan === 'basic'
-      ? t('subscription.upgrade_to_premium')
-      : t('subscription.request_enterprise')}
-  </Button>
-)}
-        </CardContent>
-      </Card>
+<Card className="glass-border">
+  <CardHeader>
+    <CardTitle className="flex items-center flex-wrap gap-2">
+      <span>{t('subscription.title')}</span>
+      
+      {/* Badge du plan */}
+      <Badge className={`${planColors[subscription.plan] || 'bg-gray-600'} text-white`}>
+        {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
+      </Badge>
+      
+      {/* indicateur lumineux CLIGNOTANT - remplace le statut texte */}
+      <div className="flex items-center gap-1.5" aria-live="polite">
+        {subscription.active ? (
+          <>
+            <motion.div
+              className="relative w-3 h-3 rounded-full bg-green-500/90"
+              style={{ 
+                boxShadow: '0 0 8px 2px rgba(34, 197, 94, 0.8)',
+                filter: 'drop-shadow(0 0 4px rgba(34, 197, 94, 0.6))'
+              }}
+              animate={{
+                opacity: [1, 0.4, 1],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+              role="status"
+              aria-label={t('subscription.active_indicator')}
+            >
+              {/* Effet de lueur subtile */}
+              <motion.div 
+                className="absolute inset-0 rounded-full bg-green-300/30"
+                animate={{ scale: [0.8, 1.2, 0.8] }}
+                transition={{ 
+                  duration: 2.5, 
+                  repeat: Infinity, 
+                  ease: "easeOut" 
+                }}
+              />
+            </motion.div>
+            <span className="text-green-300 text-sm font-medium hidden md:inline">
+              {t('subscription.active')}
+            </span>
+          </>
+        ) : (
+          <>
+            <div 
+              className="w-3 h-3 rounded-full bg-yellow-400/70" 
+              style={{ boxShadow: '0 0 4px rgba(234, 179, 8, 0.5)' }}
+              role="status"
+              aria-label={t('subscription.inactive_indicator')}
+            />
+            <span className="text-yellow-300 text-sm font-medium hidden md:inline">
+              {t('subscription.inactive')}
+            </span>
+          </>
+        )}
+        <span className="sr-only">
+          {subscription.active 
+            ? t('subscription.status_active') 
+            : t('subscription.status_inactive')}
+        </span>
+      </div>
+    </CardTitle>
+  </CardHeader>
+  
+  <CardContent>
+    <p className="text-gray-300 mb-4">
+      {subscription.active
+        ? t('subscription.active_until', { date: '∞' })
+        : t('subscription.upgrade_prompt')}
+    </p>
+    
+    {profile.plan !== 'entreprise' && (
+      <Button
+        size="sm"
+        className="mt-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 transition-all duration-300"
+        onClick={() => setActiveModal('upgrade')}
+      >
+        {profile.plan === 'basic'
+          ? t('subscription.upgrade_to_premium')
+          : t('subscription.request_enterprise')}
+      </Button>
+    )}
+  </CardContent>
+</Card>
 
       {/* QR & NFC */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
