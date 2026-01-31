@@ -1184,17 +1184,7 @@ export default function DashboardContent({
             </span>
             <span className="font-medium">Voir vos événements</span>
           </Button>)}
-          {/* Bouton Espace Entreprise (DISTINGUÉ) */}
-          {subscription.plan === 'entreprise' && hasCompany && (
-            <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
-              <Button
-                className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
-              >
-                <Building className="h-5 w-5" />
-                <span>Espace Entreprise</span>
-              </Button>
-            </Link>
-          )}
+          
           {/* 🔹 Bouton pour ouvrir le formulaire de création */}
         {subscription.plan === 'premium' || subscription.plan === 'entreprise' && hasCompany && (
         <Button
@@ -1211,6 +1201,17 @@ export default function DashboardContent({
           Créer un événement
         </Button>
         )}
+        {/* Bouton Espace Entreprise (DISTINGUÉ) */}
+          {subscription.plan === 'entreprise' && hasCompany && (
+            <Link href="/dashboard/entreprise" className="w-full sm:w-auto">
+              <Button
+                className="w-full sm:w-auto flex items-center gap-2 py-2 px-4 sm:px-6 bg-gradient-to-r from-indigo-600 to-purple-700 text-white font-bold shadow-2xl hover:from-indigo-500 hover:to-purple-600 hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] transition-all transform hover:-translate-y-1 hover:scale-105"
+              >
+                <Building className="h-5 w-5" />
+                <span>Espace Entreprise</span>
+              </Button>
+            </Link>
+          )}
         </div>
         
       </div>

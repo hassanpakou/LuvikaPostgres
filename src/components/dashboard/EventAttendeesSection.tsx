@@ -588,6 +588,8 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
           }}
           // 🔹 Passer les props conditionnelles pour le participant
           profileUrl={selectedEvent?.qr_code_url || ''}
+            qrCodeUrl={`${process.env.NEXT_PUBLIC_SITE_URL}${selectedEvent.qr_code_url}`} // <--- Ici, qrCodeUrl reçoit l'URL absolue
+
           username={selectedEvent?.name || 'Événement'}
           // Utiliser l'URL spécifique du participant si disponible
           participantQrUrl={selectedParticipantQr?.url}

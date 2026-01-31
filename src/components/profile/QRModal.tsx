@@ -61,10 +61,10 @@ export default function QRModal({
 
   const copyLink = () => {
     // 🔹 Toujours copier l'URL affichée (displayUrl)
-    navigator.clipboard.writeText(displayUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+ navigator.clipboard.writeText(`${window.location.origin}${urlForQR}`);
+  setCopied(true);
+  setTimeout(() => setCopied(false), 2000);
+};  
 
   if (!isOpen) return null;
 
