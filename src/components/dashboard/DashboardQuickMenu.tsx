@@ -1,7 +1,7 @@
 // src/components/dashboard/DashboardQuickMenu.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye, Bell, QrCode, Contact, AlertTriangle,
@@ -17,7 +17,27 @@ type Action = {
   disabled?: boolean;
 };
 
-// 🔹 Composant — version finale
+// 🔹 Hook pour jouer un son
+const useSound = (soundPath: string) => {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    // Précharger le son
+    audioRef.current = new Audio(soundPath);
+    audioRef.current.volume = 0.3; // Volume à 30%
+  }, [soundPath]);
+
+  const play = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0; // Réinitialiser
+      audioRef.current.play().catch(err => console.warn('Audio play failed:', err));
+    }
+  };
+
+  return play;
+};
+
+// 🔹 Composant — version minimale (design initial inchangé)
 export default function DashboardQuickMenu({
   onAction,
   actions,
@@ -27,6 +47,9 @@ export default function DashboardQuickMenu({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  
+  // 🔊 Sons de clic
+  const playClickSound = useSound('/click.mp3');
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -35,16 +58,25 @@ export default function DashboardQuickMenu({
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // 🔊 Jouer le son quand le menu s'ouvre/ferme
+  useEffect(() => {
+    if (isOpen) {
+      playClickSound();
+    }
+  }, [isOpen, playClickSound]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-20 right-6 z-50"> {/* ✅ SEULE MODIFICATION : bottom-6 → bottom-20 */}
       {/* Bouton central (+) */}
       <motion.button
         initial={{ scale: 1 }}
         animate={{ scale: isOpen ? 1.1 : 1 }}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          playClickSound(); // 🔊 Son au clic
+          setIsOpen(!isOpen);
+        }}
         className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-600 to-blue-500 flex items-center justify-center shadow-xl border border-white/20 shadow-cyan-500/30"
         aria-label="Actions rapides"
       >
@@ -89,6 +121,7 @@ export default function DashboardQuickMenu({
                     }}
                     onClick={() => {
                       if (!action.disabled) {
+                        playClickSound(); // 🔊 Son au clic
                         onAction(action.id);
                         setIsOpen(false);
                       }
@@ -108,7 +141,7 @@ export default function DashboardQuickMenu({
         )}
       </AnimatePresence>
 
-      {/* Version mobile : popup linéaire — corrigée */}
+      {/* Version mobile : popup linéaire */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <motion.div
@@ -116,7 +149,10 @@ export default function DashboardQuickMenu({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-end p-4"
-            onClick={() => setIsOpen(false)}
+            onClick={() => {
+              playClickSound(); // 🔊 Son au clic dehors
+              setIsOpen(false);
+            }}
           >
             <motion.div
               initial={{ y: '100%' }}
@@ -137,6 +173,7 @@ export default function DashboardQuickMenu({
                     whileTap={{ scale: action.disabled ? 1 : 0.95 }}
                     onClick={() => {
                       if (!action.disabled) {
+                        playClickSound(); // 🔊 Son au clic
                         onAction(action.id);
                         setIsOpen(false);
                       }
@@ -162,7 +199,10 @@ export default function DashboardQuickMenu({
               <Button
                 variant="outline"
                 className="w-full border-white/20 text-gray-300 hover:bg-white/10"
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  playClickSound(); // 🔊 Son au clic
+                  setIsOpen(false);
+                }}
               >
                 Fermer
               </Button>
