@@ -55,6 +55,15 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/lo.jpeg" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="LUVIKA" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#06b6d4" />
+      </head>
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>

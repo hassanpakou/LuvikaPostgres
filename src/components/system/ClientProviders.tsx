@@ -11,6 +11,15 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Enregistrement du Service Worker pour PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => console.log('SW registered:', registration.scope))
+          .catch(error => console.log('SW registration failed:', error));
+      });
+    }
   }, []);
 
   return (
