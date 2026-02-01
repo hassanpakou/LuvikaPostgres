@@ -20,6 +20,8 @@ import {
   Eye,
   ShieldAlert,
   Snowflake,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { createClient } from '../../src/lib/supabase/client';
 import { Badge } from '../../components/ui/badge';
@@ -383,10 +385,26 @@ export default function Navbar() {
   const [loading, setLoading] = useState(true);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const locale = useLocale() as Locale;
   const pathname = usePathname(); // ✅ Après les hooks
   const t = useTranslations();
   const router = useRouter();
+
+  // 🔹 Charger le thème depuis localStorage au montage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    }
+  }, []);
+
+  // 🔹 Appliquer le thème au DOM quand il change
+  useEffect(() => {
+    localStorage.setItem('theme', theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
 
   // 🔥 Charger user + profile au montage
   useEffect(() => {
@@ -536,6 +554,27 @@ export default function Navbar() {
                   </Link>
                 </motion.div>
               )}
+
+              {/* 🔹 BOUTON THÈME */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const newTheme = theme === 'light' ? 'dark' : 'light';
+                  setTheme(newTheme);
+                  localStorage.setItem('theme', newTheme);
+                  document.documentElement.classList.toggle('dark', newTheme === 'dark');
+                }}
+                className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 px-3 rounded-xl transition-all duration-300"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? (
+                  <Moon className="h-4 w-4 mr-1" />
+                ) : (
+                  <Sun className="h-4 w-4 mr-1" />
+                )}
+                <span className="font-medium">{theme === 'light' ? 'Sombre' : 'Clair'}</span>
+              </Button>
 
               {!isAdmin && (
                 <div className="relative">
@@ -767,6 +806,33 @@ export default function Navbar() {
             )}
 
             <div className="flex flex-col space-y-2 pt-3">
+              {/* 🔹 BOUTON THÈME - MOBILE */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  const newTheme = theme === 'light' ? 'dark' : 'light';
+                  setTheme(newTheme);
+                  localStorage.setItem('theme', newTheme);
+                  document.documentElement.classList.toggle('dark', newTheme === 'dark');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full text-gray-300 hover:text-cyan-200 hover:bg-white/10 px-3 py-2 rounded-xl transition-all duration-300"
+                aria-label="Toggle theme"
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center">
+                    {theme === 'light' ? (
+                      <Moon className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Sun className="h-4 w-4 mr-2" />
+                    )}
+                    <span className="font-medium">{theme === 'light' ? 'Sombre' : 'Clair'}</span>
+                  </div>
+                  <span className="text-xs text-gray-400">Thème</span>
+                </div>
+              </Button>
+
               {user ? (
                 <>
                   <div className="flex items-center p-3 rounded-xl bg-white/5 border border-white/10">
