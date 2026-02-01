@@ -61,7 +61,7 @@ export function AdminHeader() {
           .eq('id', authUser.id)
           .single();
 
-        if (profileError) {
+        if (profileError && Object.keys(profileError).length > 0) {
           console.error("Erreur chargement profil:", profileError);
           // Même si le profil n'existe pas encore, on continue avec un profil vide
           setProfile(null);

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { UserPlus, Edit, Trash2 } from 'lucide-react';
+import { UserPlus, Edit, Trash2, ArrowLeft } from 'lucide-react';
 import { Badge } from '../../../../../components/ui/badge';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -108,6 +108,14 @@ export default function EmployeesPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
         <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
         <Button onClick={() => router.push('/dashboard/entreprise/employees/new')}>
           <UserPlus className="w-4 h-4 mr-2" /> {t('add_employee')}

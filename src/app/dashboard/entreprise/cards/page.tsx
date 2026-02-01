@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { IdCard } from 'lucide-react';
+import { IdCard, ArrowLeft } from 'lucide-react';
 import { Badge } from '../../../../../components/ui/badge';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -15,11 +15,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../../../../../components/ui/select';
+import { useRouter } from 'next/navigation';
+import { Button } from '../../../../../components/ui/button';
 
 export default function CardsPage() {
   const t = useTranslations('enterprise.modules.cards');
   const [cards, setCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -106,7 +109,17 @@ export default function CardsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {cards.map(card => (

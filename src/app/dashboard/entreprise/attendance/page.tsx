@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { Clock, UserCheck, Calendar } from 'lucide-react';
+import { Clock, UserCheck, Calendar, ArrowLeft } from 'lucide-react';
 import { Badge } from '../../../../../components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -13,6 +13,7 @@ import { Button } from '../../../../../components/ui/button';
 import { Download, RefreshCw } from 'lucide-react';
 import { exportAttendanceLogs } from '../../../../../src/lib/utils/exportCSV';
 import { isThisMonth, isToday } from '../../../../../src/lib/utils/stats';
+import { useRouter } from 'next/navigation';
 
 export default function AttendancePage() {
   const t = useTranslations('enterprise.modules.attendance');
@@ -24,6 +25,7 @@ export default function AttendancePage() {
     todayLate: 0,
     monthTotal: 0
   });
+  const router = useRouter();
   const supabase = createClient();
 
   // 🔹 1er useEffect : Récupération initiale des logs
@@ -132,6 +134,14 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
         <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
         <Button onClick={() => exportAttendanceLogs(logs)} variant="outline">
           <Download className="w-4 h-4 mr-2" />

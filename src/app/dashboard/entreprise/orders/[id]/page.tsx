@@ -59,10 +59,17 @@ export default function OrderDetailPage() {
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" onClick={() => router.back()}>
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Retour
-      </Button>
+      <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise/orders')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        <h1 className="text-2xl font-bold text-white">Détails de la commande</h1>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Informations principales */}

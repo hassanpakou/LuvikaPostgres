@@ -4,10 +4,11 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../../../components/ui/card';
-import { Megaphone, MessageSquare, Users } from 'lucide-react';
+import { Megaphone, MessageSquare, Users, ArrowLeft } from 'lucide-react';
 import { Button } from '../../../../../components/ui/button';
 import { Textarea } from '../../../../../components/ui/textarea';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 
 export default function CommunicationPage() {
   const t = useTranslations('enterprise.modules.communication');
@@ -15,6 +16,7 @@ export default function CommunicationPage() {
   const [loading, setLoading] = useState(false);
   const [companyId, setCompanyId] = useState<string | null>(null); // ✅ Ajoutez cet état
   const [messages, setMessages] = useState<any[]>([]); // ✅ Pour afficher les messages reçus
+  const router = useRouter();
   const supabase = createClient();
 
   // 🔹 useEffect : Récupération companyId
@@ -104,7 +106,17 @@ export default function CommunicationPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      </div>
       
       <Card className="glass-border">
         <CardHeader>

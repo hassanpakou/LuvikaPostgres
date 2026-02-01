@@ -7,9 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../../../compone
 import { Input } from '../../../../../components/ui/input';
 import { Label } from '../../../../../components/ui/label';
 import { Button } from '../../../../../components/ui/button';
-import { Settings, MapPin, Globe, LinkIcon, Building2, Mail, Phone, FileText } from 'lucide-react';
+import { Settings, MapPin, Globe, LinkIcon, Building2, Mail, Phone, FileText, ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 
 export default function SettingsPage() {
   const t = useTranslations('enterprise.modules.settings');
@@ -27,6 +28,7 @@ export default function SettingsPage() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
@@ -102,7 +104,17 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      <div className="flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
+        <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      </div>
       
       <Card className="glass-border">
         <CardHeader>

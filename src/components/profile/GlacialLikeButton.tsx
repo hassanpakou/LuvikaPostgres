@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
+import { createClient } from '../../lib/supabase/client';
 
 export default function GlacialLikeButton({
   profileId,
@@ -16,14 +17,14 @@ export default function GlacialLikeButton({
   const [hasLiked, setHasLiked] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-useEffect(() => {
-  if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
-    return;
-  }
-  // Charger ou enregistrer les présences
-}, []);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
+      return;
+    }
+    // Charger ou enregistrer les présences
+  }, []);
 
-  // 💾 Persistance locale
+  // 💾 Persistance locale et vérification serveur
   useEffect(() => {
     const liked = localStorage.getItem(`luvika_liked_${profileId}`) === 'true';
     setHasLiked(liked);
@@ -32,7 +33,33 @@ useEffect(() => {
     }
   }, [profileId, initialLikes]);
 
-  const handleLike = () => {
+  // 🔹 Realtime updates
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`profile-${profileId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${profileId}`
+        },
+        (payload) => {
+          if (payload.new.likes_count !== undefined) {
+            setLikes(payload.new.likes_count);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profileId]);
+
+  const handleLike = async () => {
     if (isAnimating) return;
     
     setIsAnimating(true);
@@ -43,8 +70,33 @@ useEffect(() => {
     setLikes(newLikes);
     localStorage.setItem(`luvika_liked_${profileId}`, String(newHasLiked));
 
-    // 📡 Éventuel API call (à activer plus tard)
-    // fetch('/api/interactions/like', { method: 'POST', body: JSON.stringify({ profile_id: profileId }) });
+    try {
+      // 📡 API call pour mettre à jour le serveur
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          likes_count: newLikes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', profileId)
+        .select('likes_count')
+        .single();
+
+      if (error) {
+        console.error('❌ Like update failed:', error);
+        // En cas d'erreur, rétablir l'état précédent
+        setHasLiked(!newHasLiked);
+        setLikes(hasLiked ? likes + 1 : likes - 1);
+      } else {
+        setLikes(data.likes_count);
+      }
+    } catch (err) {
+      console.error('❌ Like error:', err);
+      // En cas d'erreur, rétablir l'état précédent
+      setHasLiked(!newHasLiked);
+      setLikes(hasLiked ? likes + 1 : likes - 1);
+    }
 
     setTimeout(() => setIsAnimating(false), 600);
   };

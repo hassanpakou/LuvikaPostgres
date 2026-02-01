@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { Plus, Edit, Trash2, Eye, Share2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Share2, ArrowLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 
@@ -133,6 +133,14 @@ export default function ShopPage() {
     <div className="space-y-6">
       {/* 🔝 En-tête avec bouton Partager */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Button
+          variant="ghost"
+          onClick={() => router.push('/dashboard/entreprise')}
+          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Retour
+        </Button>
         <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
         <div className="flex gap-3">
           <Button
