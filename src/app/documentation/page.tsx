@@ -10,7 +10,7 @@ import {
   ChevronDown, ChevronUp, Search, Filter,
   User, QrCode, CreditCard, BarChart3, Settings,
   HelpCircle, UserCheck, Users2, Store, 
-  Calendar as CalendarIcon, MessageSquare
+  Calendar as CalendarIcon, MessageSquare, Download
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../../../components/ui/button';
@@ -619,6 +619,78 @@ const documentationSections = [
   }
 ];
 
+// Fonction pour générer le contenu Markdown de la documentation
+const generateDocumentationContent = () => {
+  let content = '# Documentation LUVIKA\n\n';
+  content += 'Guide complet pour comprendre, utiliser et contribuer à la plateforme LUVIKA.\n\n';
+
+  documentationSections.forEach(section => {
+    content += `## ${section.title}\n\n`;
+    content += `${section.description}\n\n`;
+
+    Object.entries(section.content).forEach(([key, sectionContent]) => {
+      content += `### ${sectionContent.title}\n\n`;
+      
+      if (sectionContent.content) {
+        content += `${sectionContent.content}\n\n`;
+      }
+
+      if (sectionContent.items) {
+        sectionContent.items.forEach((item: string | DocumentationItem, index: number) => {
+          if (typeof item === 'string') {
+            content += `- ${item}\n`;
+          } else {
+            content += `#### ${item.name || item.title || ''}\n`;
+            if (item.description) {
+              content += `${item.description}\n\n`;
+            }
+            if (item.fields) {
+              content += `**Champs:** ${Array.isArray(item.fields) ? item.fields.join(', ') : ''}\n\n`;
+            }
+            if (item.params) {
+              content += `**Paramètres:** ${Array.isArray(item.params) ? item.params.join(', ') : ''}\n\n`;
+            }
+          }
+        });
+        content += '\n';
+      }
+
+      if (sectionContent.endpoints) {
+        content += '#### Endpoints API\n\n';
+        sectionContent.endpoints.forEach((endpoint: { method: any; path: any; description: any; auth: any; params: any[]; }) => {
+          content += `**${endpoint.method}** \`${endpoint.path}\`\n`;
+          content += `${endpoint.description}\n`;
+          if (endpoint.auth) {
+            content += '*Authentification requise*\n';
+          }
+          if (endpoint.params) {
+            content += `**Paramètres:** ${endpoint.params.join(', ')}\n`;
+          }
+          content += '\n';
+        });
+      }
+    });
+
+    content += '---\n\n';
+  });
+
+  return content;
+};
+
+// Fonction pour télécharger la documentation
+const downloadDocumentation = () => {
+  const content = generateDocumentationContent();
+  const blob = new Blob([content], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'LUVIKA_Documentation.md';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
 export default function DocumentationPage() {
   const t = useTranslations('documentation');
   const [activeSection, setActiveSection] = useState('overview');
@@ -665,6 +737,10 @@ export default function DocumentationPage() {
                   <Github className="w-5 h-5 mr-2" />
                   View on GitHub
                 </a>
+              </Button>
+              <Button size="lg" variant="outline" onClick={downloadDocumentation}>
+                <Download className="w-5 h-5 mr-2" />
+                Download Documentation
               </Button>
             </div>
           </motion.div>
