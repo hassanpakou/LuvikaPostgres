@@ -7,7 +7,10 @@ import {
   Book, Code, Database, Zap, Shield, Globe, 
   Smartphone, Users, Calendar, ShoppingBag, 
   ChevronRight, ExternalLink, Github, 
-  ChevronDown, ChevronUp, Search, Filter
+  ChevronDown, ChevronUp, Search, Filter,
+  User, QrCode, CreditCard, BarChart3, Settings,
+  HelpCircle, UserCheck, Users2, Store, 
+  Calendar as CalendarIcon, MessageSquare
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '../../../components/ui/button';
@@ -42,99 +45,448 @@ interface DocumentationContent {
 // Documentation sections
 const documentationSections = [
   {
+    id: 'user-guide',
+    title: 'Guide Utilisateur',
+    icon: HelpCircle,
+    color: 'from-blue-500 to-cyan-500',
+    description: 'Guide étape par étape pour les débutants',
+    content: {
+      getting_started: {
+        title: 'Commencer',
+        content: 'Bienvenue sur LUVIKA ! Ce guide vous aidera à comprendre et à utiliser toutes les fonctionnalités de notre plateforme de cartes de visite numériques.',
+        items: [
+          '1. Créez votre compte - Inscrivez-vous avec votre email',
+          '2. Complétez votre profil - Ajoutez vos informations et votre photo',
+          '3. Choisissez votre forfait - Version Basic (gratuite) ou fonctionnalités Premium',
+          '4. Obtenez votre carte numérique - Partagez votre profil avec NFC ou code QR',
+          '5. Démarrez le networking - Connectez-vous avec d\'autres professionnels'
+        ]
+      },
+      for_beginners: {
+        title: 'Pour les Complets Débutants',
+        content: 'Vous ne savez pas par où commencer ? Suivez ces étapes simples :',
+        items: [
+          {
+            title: 'Étape 1 : Comprendre les Cartes de Visite Numériques',
+            description: 'Une carte de visite numérique est comme une carte papier traditionnelle, mais elle est stockée sur votre téléphone et peut être partagée instantanément via NFC ou code QR.'
+          },
+          {
+            title: 'Étape 2 : Créer Votre Profil',
+            description: 'Votre profil est votre carte de visite numérique. Ajoutez votre nom, photo, poste, entreprise et coordonnées.'
+          },
+          {
+            title: 'Étape 3 : Partager Votre Carte',
+            description: 'Vous pouvez partager votre carte en : touchant les téléphones ensemble (NFC), en scannant les codes QR, ou en envoyant un lien.'
+          },
+          {
+            title: 'Étape 4 : Gérer vos Contacts',
+            description: 'Lorsque quelqu\'un consulte votre profil, vous pouvez voir qui a visité et vous connecter avec eux.'
+          }
+        ]
+      },
+      common_tasks: {
+        title: 'Tâches Courantes',
+        items: [
+          'Comment créer votre profil',
+          'Comment ajouter une photo à votre carte',
+          'Comment partager votre carte numérique',
+          'Comment suivre qui a consulté votre profil',
+          'Comment créer et gérer des événements',
+          'Comment mettre à niveau votre forfait',
+          'Comment obtenir de l\'aide et du support'
+        ]
+      }
+    }
+  },
+  {
+    id: 'profile-management',
+    title: 'Gestion du Profil',
+    icon: User,
+    color: 'from-green-500 to-emerald-500',
+    description: 'Créer et personnaliser votre carte de visite numérique',
+    content: {
+      creating_profile: {
+        title: 'Créer Votre Profil',
+        content: 'Votre profil est votre carte de visite numérique. Rendez-le professionnel et complet.',
+        items: [
+          'Allez dans Tableau de bord → Paramètres',
+          'Remplissez vos informations personnelles',
+          'Téléversez une photo professionnelle',
+          'Ajoutez vos coordonnées',
+          'Choisissez les informations à afficher publiquement',
+          'Enregistrez vos modifications'
+        ]
+      },
+      profile_sections: {
+        title: 'Sections du Profil',
+        items: [
+          {
+            name: 'Informations Personnelles',
+            description: 'Votre nom, photo, poste et entreprise',
+            fields: ['Nom complet', 'Nom d\'utilisateur', 'Poste', 'Entreprise', 'Biographie']
+          },
+          {
+            name: 'Coordonnées',
+            description: 'Comment les gens peuvent vous contacter',
+            fields: ['Email', 'Téléphone', 'Adresse', 'Site Web']
+          },
+          {
+            name: 'Réseaux Sociaux',
+            description: 'Vos profils sociaux professionnels',
+            fields: ['LinkedIn', 'Twitter', 'Instagram', 'GitHub']
+          },
+          {
+            name: 'Détails Professionnels',
+            description: 'Vos compétences et expertise',
+            fields: ['Compétences', 'Portfolio', 'CV', 'Certificats']
+          }
+        ]
+      },
+      visibility_settings: {
+        title: 'Confidentialité et Visibilité',
+        content: 'Contrôlez les informations visibles au public.',
+        items: [
+          'Profil public : Visible par tout le monde',
+          'Informations privées : Seulement visibles par les personnes que vous approuvez',
+          'Demandes de contact : Autoriser les inconnus à vous envoyer un message',
+          'Analytics : Suivre qui visite votre profil'
+        ]
+      }
+    }
+  },
+  {
+    id: 'nfc-qr-codes',
+    title: 'NFC & Codes QR',
+    icon: QrCode,
+    color: 'from-purple-500 to-pink-500',
+    description: 'Partagez votre carte numérique instantanément',
+    content: {
+      nfc_cards: {
+        title: 'Cartes NFC',
+        content: 'Cartes physiques qui redirigent vers votre profil numérique lorsqu\'elles sont tapées.',
+        items: [
+          'Commandez des cartes NFC depuis votre tableau de bord',
+          'Chaque carte a un ID unique',
+          'Lorsque quelqu\'un tape la carte, il voit votre profil',
+          'Vous pouvez suivre les scans et interactions',
+          'Remplacez facilement les cartes perdues'
+        ]
+      },
+      qr_codes: {
+        title: 'Partage par Code QR',
+        content: 'Générez des codes QR pour votre profil, événements ou produits.',
+        items: [
+          'Générez le code QR dans Tableau de bord → Code QR',
+          'Téléchargez et imprimez le code QR',
+          'Partagez numériquement via les applications de messagerie',
+          'Suivez les scans et l\'engagement',
+          'Personnalisez l\'apparence du code QR'
+        ]
+      },
+      sharing_methods: {
+        title: 'Comment Partager Votre Carte',
+        items: [
+          'Tap NFC : Touchez les téléphones ensemble',
+          'Scan QR : Scannez le code QR',
+          'Partage de Lien : Envoyez l\'URL de votre profil',
+          'Réseaux Sociaux : Partagez sur vos réseaux',
+          'Signature Email : Ajoutez à vos emails'
+        ]
+      }
+    }
+  },
+  {
+    id: 'events',
+    title: 'Événements',
+    icon: CalendarIcon,
+    color: 'from-orange-500 to-red-500',
+    description: 'Créer et gérer des événements professionnels',
+    content: {
+      creating_events: {
+        title: 'Créer des Événements',
+        content: 'Organisez des conférences, webinaires ou meetups.',
+        items: [
+          'Allez dans Tableau de bord → Événements',
+          'Cliquez sur "Créer un Événement"',
+          'Remplissez les détails de l\'événement (titre, date, lieu)',
+          'Générez un code QR pour l\'enregistrement',
+          'Partagez l\'événement avec votre réseau',
+          'Suivez les inscriptions et la participation'
+        ]
+      },
+      event_features: {
+        title: 'Fonctionnalités des Événements',
+        items: [
+          {
+            name: 'Inscriptions aux Événements',
+            description: 'Gérez les participants et suivez les RSVP'
+          },
+          {
+            name: 'Enregistrement par QR',
+            description: 'Enregistrement rapide utilisant les codes QR sur le lieu'
+          },
+          {
+            name: 'Analytics des Événements',
+            description: 'Voir la participation, l\'engagement et les retours'
+          },
+          {
+            name: 'Promotion d\'Événements',
+            description: 'Partagez les événements sur les réseaux sociaux et par email'
+          }
+        ]
+      },
+      event_management: {
+        title: 'Gestion des Événements',
+        content: 'Gardez vos événements organisés et réussis.',
+        items: [
+          'Surveillez les inscriptions en temps réel',
+          'Envoyez des rappels aux participants',
+          'Enregistrez les participants lors de l\'événement',
+          'Collectez les retours après l\'événement',
+          'Analysez la performance de l\'événement'
+        ]
+      }
+    }
+  },
+  {
+    id: 'subscriptions',
+    title: 'Abonnements',
+    icon: CreditCard,
+    color: 'from-indigo-500 to-blue-500',
+    description: 'Choisissez le bon forfait pour vos besoins',
+    content: {
+      plan_comparison: {
+        title: 'Comparaison des Forfaits',
+        items: [
+          {
+            name: 'Basic (Gratuit)',
+            description: 'Parfait pour les particuliers qui démarrent',
+            features: ['1 carte NFC', 'Profil basique', 'Génération de code QR', 'Analytics limités']
+          },
+          {
+            name: 'Professional',
+            description: 'Pour les professionnels sérieux et les freelances',
+            features: ['Cartes NFC illimitées', 'Profil avancé', 'Création d\'événements', 'Analytics détaillés', 'Support prioritaire']
+          },
+          {
+            name: 'Business',
+            description: 'Pour les équipes et les entreprises',
+            features: ['Gestion d\'équipe', 'Branding personnalisé', 'Analytics avancés', 'Accès API', 'Support dédié']
+          }
+        ]
+      },
+      upgrading: {
+        title: 'Comment Passer à la Version Supérieure',
+        content: 'Améliorez votre forfait pour débloquer plus de fonctionnalités.',
+        items: [
+          'Allez dans Tableau de bord → Abonnement',
+          'Choisissez votre forfait souhaité',
+          'Entrez les informations de paiement',
+          'Confirmez votre mise à niveau',
+          'Profitez immédiatement des fonctionnalités premium'
+        ]
+      },
+      billing: {
+        title: 'Informations de Facturation',
+        content: 'Gérez votre abonnement et vos paiements.',
+        items: [
+          'Options de facturation mensuelle ou annuelle',
+          'Traitement de paiement sécurisé',
+          'Annulation facile à tout moment',
+          'Reçus et factures disponibles',
+          'Gestion du renouvellement automatique'
+        ]
+      }
+    }
+  },
+  {
+    id: 'analytics',
+    title: 'Analytics',
+    icon: BarChart3,
+    color: 'from-teal-500 to-emerald-500',
+    description: 'Suivre les performances de votre carte numérique',
+    content: {
+      profile_analytics: {
+        title: 'Analytics du Profil',
+        content: 'Voyez comment les gens interagissent avec votre carte numérique.',
+        items: [
+          'Vues totales du profil',
+          'Statistiques de scan (NFC et QR)',
+          'Démographie des visiteurs',
+          'Heures d\'activité de pointe',
+          'Distribution géographique'
+        ]
+      },
+      engagement_metrics: {
+        title: 'Indicateurs d\'Engagement',
+        items: [
+          {
+            name: 'Taux de Scan',
+            description: 'Fréquence à laquelle votre carte est scannée'
+          },
+          {
+            name: 'Complétude du Profil',
+            description: 'Complétude de vos informations de profil'
+          },
+          {
+            name: 'Demandes de Contact',
+            description: 'Messages et demandes de connexion reçus'
+          },
+          {
+            name: 'Partages Sociaux',
+            description: 'Fréquence à laquelle votre profil est partagé'
+          }
+        ]
+      },
+      reporting: {
+        title: 'Rapports et Analyses',
+        content: 'Générez des rapports pour suivre votre succès en networking.',
+        items: [
+          'Rapports d\'activité hebdomadaires',
+          'Résumés de performance mensuels',
+          'Rapports de participation aux événements',
+          'Suivi du ROI pour les efforts de networking',
+          'Exportation des données pour analyse'
+        ]
+      }
+    }
+  },
+  {
+    id: 'admin-panel',
+    title: 'Panneau d\'Administration',
+    icon: Settings,
+    color: 'from-gray-500 to-gray-700',
+    description: 'Gérer les utilisateurs et les paramètres de la plateforme',
+    content: {
+      user_management: {
+        title: 'Gestion des Utilisateurs',
+        content: 'Outils d\'administration pour gérer les utilisateurs de la plateforme.',
+        items: [
+          'Voir tous les utilisateurs enregistrés',
+          'Bannir ou débannir les utilisateurs',
+          'Gérer les rôles et permissions des utilisateurs',
+          'Examiner les rapports et plaintes des utilisateurs',
+          'Surveiller l\'activité des utilisateurs'
+        ]
+      },
+      platform_analytics: {
+        title: 'Analytics de la Plateforme',
+        content: 'Aperçu de la performance et de l\'utilisation de la plateforme.',
+        items: [
+          'Utilisateurs enregistrés au total',
+          'Abonnements actifs',
+          'Scans et interactions totaux',
+          'Métriques de revenus et de croissance',
+          'Surveillance des performances système'
+        ]
+      },
+      system_settings: {
+        title: 'Configuration Système',
+        content: 'Configurer les paramètres et fonctionnalités de toute la plateforme.',
+        items: [
+          'Modèles d\'email et notifications',
+          'Paramètres et politiques de sécurité',
+          'Commutateurs de fonctionnalités et mode maintenance',
+          'Gestion de base de données et sauvegardes',
+          'Paramètres d\'intégration'
+        ]
+      }
+    }
+  },
+  {
     id: 'overview',
-    title: 'Overview',
+    title: 'Aperçu',
     icon: Book,
     color: 'from-blue-500 to-cyan-500',
-    description: 'Complete guide to LUVIKA platform',
+    description: 'Guide complet de la plateforme LUVIKA',
     content: {
       introduction: {
-        title: 'What is LUVIKA?',
-        content: 'LUVIKA is a comprehensive digital business card and networking platform that combines NFC technology, QR codes, and modern web technologies to revolutionize how professionals connect and share information.'
+        title: 'Qu\'est-ce que LUVIKA ?',
+        content: 'LUVIKA est une plateforme complète de cartes de visite numériques et de networking qui combine la technologie NFC, les codes QR et les technologies web modernes pour révolutionner la manière dont les professionnels se connectent et partagent leurs informations.'
       },
       features: {
-        title: 'Key Features',
+        title: 'Fonctionnalités Clés',
         items: [
-          'Smart NFC Business Cards',
-          'QR Code Generation',
-          'Profile Management',
-          'Event Management',
-          'Subscription System',
-          'Analytics Dashboard',
-          'Multi-language Support',
-          'Real-time Updates'
+          'Cartes de Visite NFC Intelligentes',
+          'Génération de Code QR',
+          'Gestion de Profil',
+          'Gestion d\'Événements',
+          'Système d\'Abonnement',
+          'Tableau de Bord Analytics',
+          'Support Multilingue',
+          'Mises à Jour en Temps Réel'
         ]
       },
       architecture: {
-        title: 'Technology Stack',
+        title: 'Stack Technologique',
         items: [
-          'Next.js 16+ with App Router',
+          'Next.js 16+ avec App Router',
           'TypeScript',
           'Tailwind CSS',
           'Supabase (PostgreSQL + Auth)',
-          'Framer Motion for Animations',
+          'Framer Motion pour les Animations',
           'Lucide React Icons',
-          'Next Intl for i18n'
+          'Next Intl pour l\'i18n'
         ]
       }
     }
   },
   {
     id: 'api',
-    title: 'API Reference',
+    title: 'Référence API',
     icon: Code,
     color: 'from-green-500 to-emerald-500',
-    description: 'RESTful API endpoints and usage',
+    description: 'Points de terminaison et utilisation de l\'API RESTful',
     content: {
       authentication: {
-        title: 'Authentication',
-        content: 'All API endpoints require authentication using Supabase JWT tokens.',
+        title: 'Authentification',
+        content: 'Tous les points de terminaison de l\'API nécessitent une authentification utilisant les jetons JWT Supabase.',
         endpoints: [
           {
             method: 'POST',
             path: '/api/auth/sign-in',
-            description: 'User authentication',
+            description: 'Authentification utilisateur',
             params: ['email', 'password']
           },
           {
             method: 'POST', 
             path: '/api/auth/sign-up',
-            description: 'User registration',
+            description: 'Enregistrement utilisateur',
             params: ['email', 'password', 'full_name']
           }
         ]
       },
       profiles: {
-        title: 'Profile Management',
+        title: 'Gestion de Profil',
         endpoints: [
           {
             method: 'GET',
             path: '/api/profile',
-            description: 'Get user profile',
+            description: 'Obtenir le profil utilisateur',
             auth: true
           },
           {
             method: 'PUT',
             path: '/api/profile',
-            description: 'Update user profile',
+            description: 'Mettre à jour le profil utilisateur',
             auth: true,
             params: ['full_name', 'username', 'bio', 'avatar_url']
           }
         ]
       },
       events: {
-        title: 'Event Management',
+        title: 'Gestion d\'Événements',
         endpoints: [
           {
             method: 'GET',
             path: '/api/events',
-            description: 'List events',
+            description: 'Lister les événements',
             auth: true
           },
           {
             method: 'POST',
             path: '/api/events',
-            description: 'Create event',
+            description: 'Créer un événement',
             auth: true,
             params: ['title', 'description', 'date', 'location']
           }
@@ -144,123 +496,123 @@ const documentationSections = [
   },
   {
     id: 'database',
-    title: 'Database Schema',
+    title: 'Schéma de Base de Données',
     icon: Database,
     color: 'from-purple-500 to-pink-500',
-    description: 'Supabase database structure',
+    description: 'Structure de la base de données Supabase',
     content: {
       tables: {
-        title: 'Core Tables',
+        title: 'Tables Principales',
         items: [
           {
             name: 'profiles',
-            description: 'User profiles and settings',
+            description: 'Profils et paramètres utilisateurs',
             fields: ['id', 'full_name', 'username', 'email', 'avatar_url', 'bio_short', 'bio_long']
           },
           {
             name: 'events',
-            description: 'Event management',
+            description: 'Gestion des événements',
             fields: ['id', 'title', 'description', 'date', 'location', 'created_by', 'is_public']
           },
           {
             name: 'subscriptions',
-            description: 'User subscription plans',
+            description: 'Forfaits d\'abonnement utilisateurs',
             fields: ['id', 'user_id', 'plan_type', 'start_date', 'end_date', 'status']
           },
           {
             name: 'nfc_cards',
-            description: 'NFC card assignments',
+            description: 'Assignations de cartes NFC',
             fields: ['id', 'user_id', 'card_id', 'status', 'created_at']
           }
         ]
       },
       relationships: {
-        title: 'Relationships',
-        content: 'The database uses foreign keys to maintain referential integrity between tables.'
+        title: 'Relations',
+        content: 'La base de données utilise des clés étrangères pour maintenir l\'intégrité référentielle entre les tables.'
       }
     }
   },
   {
     id: 'frontend',
-    title: 'Frontend Architecture',
+    title: 'Architecture Frontend',
     icon: Smartphone,
     color: 'from-orange-500 to-red-500',
-    description: 'React components and structure',
+    description: 'Composants React et structure',
     content: {
       components: {
-        title: 'Component Structure',
+        title: 'Structure des Composants',
         items: [
-          'Layout Components (Header, Footer, Navigation)',
-          'UI Components (Buttons, Cards, Forms)',
-          'Business Components (Profile, Events, Dashboard)',
-          'System Components (Loading, Notifications, Modals)'
+          'Composants de Mise en Page (Header, Footer, Navigation)',
+          'Composants UI (Boutons, Cartes, Formulaires)',
+          'Composants Métier (Profil, Événements, Tableau de Bord)',
+          'Composants Système (Chargement, Notifications, Modales)'
         ]
       },
       pages: {
-        title: 'Page Structure',
+        title: 'Structure des Pages',
         items: [
-          'Public Pages (Home, Blog, Pricing)',
-          'Authentication Pages (Sign In, Sign Up)',
-          'Dashboard Pages (Profile, Settings, Events)',
-          'Admin Pages (User Management, Analytics)'
+          'Pages Publiques (Accueil, Blog, Tarifs)',
+          'Pages d\'Authentification (Connexion, Inscription)',
+          'Pages du Tableau de Bord (Profil, Paramètres, Événements)',
+          'Pages Admin (Gestion Utilisateurs, Analytics)'
         ]
       }
     }
   },
   {
     id: 'security',
-    title: 'Security',
+    title: 'Sécurité',
     icon: Shield,
     color: 'from-gray-500 to-gray-700',
-    description: 'Security measures and best practices',
+    description: 'Mesures de sécurité et meilleures pratiques',
     content: {
       measures: {
-        title: 'Security Features',
+        title: 'Fonctionnalités de Sécurité',
         items: [
-          'JWT Authentication',
-          'Row Level Security (RLS)',
-          'Input Validation',
-          'CORS Protection',
-          'Rate Limiting'
+          'Authentification JWT',
+          'Sécurité au Niveau Ligne (RLS)',
+          'Validation des Entrées',
+          'Protection CORS',
+          'Limitation de Débit'
         ]
       },
       bestPractices: {
-        title: 'Best Practices',
+        title: 'Meilleures Pratiques',
         items: [
-          'Always validate user input',
-          'Use HTTPS in production',
-          'Implement proper error handling',
-          'Regular security audits',
-          'Keep dependencies updated'
+          'Toujours valider les entrées utilisateur',
+          'Utiliser HTTPS en production',
+          'Implémenter une gestion d\'erreur appropriée',
+          'Audits de sécurité réguliers',
+          'Garder les dépendances à jour'
         ]
       }
     }
   },
   {
     id: 'deployment',
-    title: 'Deployment',
+    title: 'Déploiement',
     icon: Globe,
     color: 'from-indigo-500 to-blue-500',
-    description: 'Production deployment guide',
+    description: 'Guide de déploiement en production',
     content: {
       requirements: {
-        title: 'Requirements',
+        title: 'Exigences',
         items: [
           'Node.js 18+',
-          'Supabase project',
-          'Vercel account (recommended)',
-          'Environment variables configured'
+          'Projet Supabase',
+          'Compte Vercel (recommandé)',
+          'Variables d\'environnement configurées'
         ]
       },
       steps: {
-        title: 'Deployment Steps',
+        title: 'Étapes de Déploiement',
         items: [
-          '1. Clone the repository',
-          '2. Install dependencies: npm install',
-          '3. Configure environment variables',
-          '4. Deploy to Vercel or your preferred platform',
-          '5. Run database migrations',
-          '6. Configure Supabase settings'
+          '1. Clonez le dépôt',
+          '2. Installez les dépendances : npm install',
+          '3. Configurez les variables d\'environnement',
+          '4. Déployez sur Vercel ou votre plateforme préférée',
+          '5. Exécutez les migrations de base de données',
+          '6. Configurez les paramètres Supabase'
         ]
       }
     }
@@ -300,8 +652,8 @@ export default function DocumentationPage() {
               Documentation
             </h1>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-              Complete guide to understanding, using, and contributing to the LUVIKA platform.
-              Find everything you need to get started and make the most of our features.
+              Guide complet pour comprendre, utiliser et contribuer à la plateforme LUVIKA.
+              Trouvez tout ce dont vous avez besoin pour démarrer et tirer le meilleur parti de nos fonctionnalités.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button size="lg" className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400">
