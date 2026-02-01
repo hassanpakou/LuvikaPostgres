@@ -57,10 +57,10 @@
     }
   },
   "dashboard": {
-  "greeting_morning": "Bonjour, {name}",
-  "greeting_afternoon": "Bon après-midi, {name}",
-  "greeting_evening": "Bonsoir, {name}",
-  "greeting_night": "Coucou, {name}",
+    "greeting_morning": "Bonjour, {name}",
+    "greeting_afternoon": "Bon après-midi, {name}",
+    "greeting_evening": "Bonsoir, {name}",
+    "greeting_night": "Coucou, {name}",
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
     "export_csv": "Exporter (.csv)",
@@ -122,7 +122,8 @@
       "success_message": "Un administrateur vous contactera sous 24h.",
       "upgrade_to_premium": "Passer à Professionnel",
       "request_enterprise": "Convertir en compte BUSINESS"
-    },"messages": {
+    },
+    "messages": {
       "view_received": "Voir les messages reçus"
     },
     "qr": {
@@ -245,13 +246,12 @@
         "verified_badge": "Badge de vérification",
         "verified_badge_desc": "Affiche à côté de votre nom",
         "verified_tooltip": "Profil vérifié",
-              "enterprise_only": "Réservé aux entreprises"
-
+        "enterprise_only": "Réservé aux entreprises"
       }
     }
   },
-  "auth": {    "signout": "Déconnexion"
-,
+  "auth": {
+    "signout": "Déconnexion",
     "welcome": {
       "title": "Bienvenue !",
       "message": "Content de vous revoir sur LUVIKA. Prêt à créer ? 🌟"
@@ -407,12 +407,13 @@
       "orders": "Commandes",
       "nfc_cards": "Cartes NFC",
       "trends": "Tendances récentes"
-    },"subscriptions": {
-        "no_active": "Aucun abonnement actif pour le moment.",
-        "title": "Gestion des abonnements",
-        "description": "Activez ou changez le plan d’un utilisateur.",
-        "action": "Gérer les abonnements"
-      },
+    },
+    "subscriptions": {
+      "no_active": "Aucun abonnement actif pour le moment.",
+      "title": "Gestion des abonnements",
+      "description": "Activez ou changez le plan d’un utilisateur.",
+      "action": "Gérer les abonnements"
+    },
     "nav": {
       "orders": "Commandes",
       "back_to_dashboard": "Retour au tableau de bord"
@@ -436,7 +437,8 @@
       "updated_success": "Plan mis à jour avec succès",
       "update_error": "Échec de la mise à jour",
       "upgrade_to_premium": "Passer à Professionnel",
-      "request_enterprise": "Convertir en compte Business"    },
+      "request_enterprise": "Convertir en compte Business"
+    },
     "nfc": {
       "status": "Statut",
       "created": "Créée le",
@@ -551,24 +553,43 @@
     "view_public_profile": "Voir mon profil public"
   },
   "about": {
-    "title": "À propos",
-    "subtitle": "LUVIKA est né d’une vision simple : redonner du sens au networking professionnel, avec élégance, sécurité, et fierté africaine.",
-    "mission": {
-      "title": "Notre mission",
-      "content": "Transformer la carte de visite physique en une identité numérique intelligente, contrôlable, sécurisée, et accessible à tous — en particulier aux entrepreneurs, développeurs, et leaders africains."
+    "title": "À propos de LUVIKA",
+    "subtitle": "Luvika : Origine du nom et genèse du projet",
+    "origin": {
+      "title": "Origine du nom Luvika",
+      "content": "Le nom Luvika provient de la combinaison de deux éléments significatifs :\n• Luvi, dérivé du mot Luvila, de la langue kikongo, qui désigne l'identité, l'essence, ce qui définit profondément une personne.\n• Ka, qui signifie carte, faisant référence à un support d'identification.\n\nAinsi, Luvika peut être compris comme une identité portée par une carte.\n\nCe nom incarne la vision du projet : offrir une identité numérique moderne, intégrée dans une carte NFC, permettant à chaque individu de se présenter, de partager son profil professionnel et de valoriser son identité de manière simple, sécurisée et innovante.\nÀ travers Luvika, l'identité cesse d'être simplement déclarative : elle devient numérique, portable et connectée, tout en restant fidèle à son essence culturelle et humaine."
     },
-    "values": {
-      "security": "Sécurité",
-      "security_desc": "Vos données restent sous votre contrôle. Rien n’est partagé sans votre consentement.",
-      "accessibility": "Accessibilité",
-      "accessibility_desc": "Une interface simple, multilingue (français, lingála, anglais), conçue pour tous.",
-      "african_pride": "Fierté africaine",
-      "african_pride_desc": "Une solution pensée à Kinshasa, pour l’Afrique et le monde."
+    "context": {
+      "title": "Contexte et idée initiale",
+      "content": "Luvika est né d'une réflexion personnelle et profonde. À un moment de calme, je me questionnais sur la manière de valoriser mes ressources, mes origines et mon identité, particulièrement celle de ma tribu. L'idée initiale était de créer une solution capable de reconnecter les personnes à leurs sources, permettant de valoriser son histoire, son village d'origine, sa tribu et son appartenance au clan.\n\nLe concept initial visait ainsi le développement d'une application capable d'identifier clairement l'origine d'une personne : son village, sa tribu, son clan. À travers cette plateforme, ces éléments culturels et identitaires pourraient être connus, partagés et préservés."
     },
-    "team": {
-      "title": "Notre équipe",
-      "content": "Une équipe passionnée de développeurs, designers, et entrepreneurs basée à Kinshasa, RDC.",
-      "cta": "Rejoignez-nous"
+    "problem": {
+      "title": "Problème identifié / limite du concept initial",
+      "content": "Cependant, une analyse plus approfondie m'a conduit à une prise de conscience importante : un projet exclusivement centré sur l'identité culturelle risquait de toucher un public limité et de ne pas favoriser une adoption large."
+    },
+    "transformation": {
+      "title": "Transformation stratégique du projet",
+      "content": "C'est alors qu'est survenue une transformation stratégique du concept. Luvika a évolué pour devenir un identifiant professionnel numérique, basé sur un système de cartes NFC, tout en gardant l'identité comme base fondamentale de sa vision. Cette évolution a permis d'apporter au projet une utilité concrète, moderne et universelle, répondant à des besoins professionnels et commerciaux réels."
+    },
+    "solution": {
+      "title": "Naissance de la solution Luvika (NFC et identité numérique)",
+      "content": "Durant le développement, il est apparu évident que simplement créer des profils d'utilisateurs ne suffisait pas. Ainsi, Luvika s'est structuré autour de trois plans distincts :\n• Le plan Basique, destiné aux utilisateurs qui souhaitent une présence numérique simple et accessible.\n• Le plan Professionnel, offrant des fonctionnalités avancées, incluant la création et la gestion d'événements tels que conférences, mariages, fêtes ou réunions professionnelles.\n• Le plan Business, conçu pour les entreprises et les utilisateurs ayant des besoins élargis, intégrant des outils de vente, de visibilité et de gestion avancée.\n\nGrâce à cette structuration, Luvika est devenu bien plus qu'une simple application. C'est aujourd'hui une plateforme versatile qui permet de valoriser l'identité, de faciliter les échanges professionnels, de numériser les cartes d'identification professionnelle via la technologie NFC et de créer de la valeur économique pour ses utilisateurs."
+    },
+    "offers": {
+      "title": "Structuration des offres (Basique, Professionnel, Business)",
+      "content": "Luvika propose trois formules tarifaires adaptées à différents besoins :\n\n**Formule Basique** : Pour les particuliers qui souhaitent une présence numérique simple et accessible. Idéale pour les étudiants, jeunes professionnels et particuliers.\n\n**Formule Professionnel** : Pour les freelances, entrepreneurs et professionnels. Offre des fonctionnalités avancées comme la création d'événements, la gestion de contacts et les outils de networking.\n\n**Formule Business** : Pour les entreprises et organisations. Intègre des outils de gestion d'équipe, de visibilité commerciale et de création de valeur économique."
+    },
+    "vision": {
+      "title": "Vision et mission de Luvika",
+      "content": "**Vision** : Devenir la référence africaine de l'identité numérique professionnelle, combinant innovation technologique et fierté culturelle.\n\n**Mission** : Transformer la carte de visite physique en une identité numérique intelligente, contrôlable, sécurisée et accessible à tous — particulièrement pour les entrepreneurs, développeurs et leaders africains.\n\nNous croyons en un futur où l'identité numérique renforce les liens professionnels tout en préservant les racines culturelles de chaque personne."
+    },
+    "value": {
+      "title": "Valeur ajoutée pour les utilisateurs",
+      "content": "Luvika apporte une valeur ajoutée significative à ses utilisateurs :\n\n• **Facilité d'utilisation** : Interface intuitive et multilingue, accessible à tous\n• **Sécurité renforcée** : Contrôle total sur vos données personnelles et professionnelles\n• **Connectivité** : Échanges professionnels facilités grâce à la technologie NFC\n• **Visibilité** : Valorisation de votre profil et de vos compétences\n• **Culture** : Valorisation de l'identité et des racines culturelles\n• **Économie** : Création de valeur et d'opportunités commerciales\n• **Innovation** : Technologie de pointe au service du développement personnel et professionnel"
+    },
+    "perspective": {
+      "title": "Perspective et ambition du projet",
+      "content": "Luvika a pour ambition de :\n\n• **Révolutionner le networking** en Afrique et dans le monde\n• **Créer un écosystème numérique** professionnel et culturellement ancré\n• **Faciliter les échanges** entre professionnels africains et internationaux\n• **Promouvoir l'innovation technologique africaine**\n• **Contribuer au développement économique** du continent\n• **Devenir une plateforme indispensable** pour les professionnels du monde entier\n\nNotre objectif est de faire de Luvika un symbole de l'excellence technologique africaine, tout en restant profondément connecté aux valeurs et à l'identité de ses utilisateurs."
     }
   },
   "contact": {
@@ -621,63 +642,62 @@
     "copyright": "Tous droits réservés. Conçu à Kinshasa avec ❤️."
   },
   "pricing": {
-    "title": "Plans & Tarifs",
+    "title": "Plans Tarifaires",
+    "description": "Choisissez le plan qui correspond à vos besoins",
     "billing": {
       "monthly": "Mensuel",
       "yearly": "Annuel",
-      "per_month": "/mois",
-      "per_year": "/an"
-    },
-    "cta": {
-      "choose": "Choisir {plan}"
-    },
-    "footer": {
-      "custom_plan": "Besoin d’un plan personnalisé ?",
-      "contact_us": "Contactez-nous"
+      "per_month": "par mois",
+      "per_year": "par an"
     },
     "plans": {
       "freemium": {
-        "title": "Basic",
-        "desc": "Pour commencer",
-        "popular": "Le plus populaire",
+        "title": "Gratuit",
+        "desc": "Parfait pour commencer",
         "features": {
           "nfc": "1 carte NFC",
-          "users": "1 utilisateur",
-          "events": "Pas d’événements",
-          "presence": "Visibilité de base",
-          "stats": "Statistiques limitées",
-          "roles": "Pas de rôles d’équipe",
-          "dashboard": "Dashboard simple"
+          "users": "Profil personnel",
+          "events": "1 événement",
+          "presence": "Suivi des présences",
+          "stats": "Statistiques de base",
+          "roles": "Rôle utilisateur",
+          "dashboard": "Tableau de bord"
         }
       },
       "premium": {
         "title": "Professionnel",
-        "desc": "Pour les pros ambitieux",
-        "popular": "Le plus populaire",
+        "popular": "Populaire",
+        "desc": "Pour les professionnels",
         "features": {
-          "nfc": "Cartes NFC illimitées",
-          "users": "Jusqu’à 5 utilisateurs",
-          "events": "Événements basiques",
-          "presence": "Mise en avant",
-          "stats": "Statistiques avancées",
-          "roles": "Rôles d’équipe",
+          "nfc": "10 cartes NFC",
+          "users": "Équipe jusqu'à 5",
+          "events": "Événements illimités",
+          "presence": "Suivi avancé",
+          "stats": "Statistiques détaillées",
+          "roles": "Gestion des rôles",
           "dashboard": "Dashboard avancé"
         }
       },
       "entreprise": {
         "title": "Business",
-        "desc": "Pour équipes & entreprises",
-        "popular": "",
+        "desc": "Solution complète",
         "features": {
-          "nfc": "Cartes NFC illimitées + custom",
-          "users": "Utilisateurs illimités",
-          "events": "Événements avancés",
-          "presence": "Visibilité prioritaire",
-          "stats": "Analytics consolidés",
-          "roles": "Rôles avancés + audit",
-          "dashboard": "Dashboard global + API"
+          "nfc": "Cartes NFC illimitées",
+          "users": "Équipe illimitée",
+          "events": "Événements illimités",
+          "presence": "Suivi en temps réel",
+          "stats": "Analytics complètes",
+          "roles": "Contrôle d'accès avancé",
+          "dashboard": "Dashboard personnalisé"
         }
       }
+    },
+    "cta": {
+      "choose": "Choisir {plan}"
+    },
+    "footer": {
+      "custom_plan": "Plan personnalisé",
+      "contact_us": "Nous contacter"
     }
   },
   "validate_button": "Valider",
@@ -852,64 +872,5 @@
   "blog": {
     "title": "Blog LUVIKA",
     "description": "Découvrez les dernières actualités, tutoriels et conseils pour utiliser LUVIKA au maximum."
-  },
-  "pricing": {
-    "title": "Plans Tarifaires",
-    "description": "Choisissez le plan qui correspond à vos besoins",
-    "billing": {
-      "monthly": "Mensuel",
-      "yearly": "Annuel",
-      "per_month": "par mois",
-      "per_year": "par an"
-    },
-    "plans": {
-      "freemium": {
-        "title": "Gratuit",
-        "desc": "Parfait pour commencer",
-        "features": {
-          "nfc": "1 carte NFC",
-          "users": "Profil personnel",
-          "events": "1 événement",
-          "presence": "Suivi des présences",
-          "stats": "Statistiques de base",
-          "roles": "Rôle utilisateur",
-          "dashboard": "Tableau de bord"
-        }
-      },
-      "premium": {
-        "title": "Professionnel",
-        "popular": "Populaire",
-        "desc": "Pour les professionnels",
-        "features": {
-          "nfc": "10 cartes NFC",
-          "users": "Équipe jusqu'à 5",
-          "events": "Événements illimités",
-          "presence": "Suivi avancé",
-          "stats": "Statistiques détaillées",
-          "roles": "Gestion des rôles",
-          "dashboard": "Dashboard avancé"
-        }
-      },
-      "entreprise": {
-        "title": "Business",
-        "desc": "Solution complète",
-        "features": {
-          "nfc": "Cartes NFC illimitées",
-          "users": "Équipe illimitée",
-          "events": "Événements illimités",
-          "presence": "Suivi en temps réel",
-          "stats": "Analytics complètes",
-          "roles": "Contrôle d'accès avancé",
-          "dashboard": "Dashboard personnalisé"
-        }
-      }
-    },
-    "cta": {
-      "choose": "Choisir {plan}"
-    },
-    "footer": {
-      "custom_plan": "Plan personnalisé",
-      "contact_us": "Nous contacter"
-    }
   }
 }

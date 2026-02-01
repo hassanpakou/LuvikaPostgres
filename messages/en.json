@@ -539,24 +539,43 @@
     "view_public_profile": "View my public profile"
   },
   "about": {
-    "title": "About",
-    "subtitle": "LUVIKA was born from a simple vision: to bring meaning back to professional networking, with elegance, security, and African pride.",
-    "mission": {
-      "title": "Our mission",
-      "content": "Transform the physical business card into a smart, controllable, secure, and accessible digital identity — especially for African entrepreneurs, developers, and leaders."
+    "title": "About LUVIKA",
+    "subtitle": "Luvika: Origin of the name and genesis of the project",
+    "origin": {
+      "title": "Origin of the name Luvika",
+      "content": "The name Luvika comes from the combination of two significant elements:\n• Luvi, derived from the word Luvila, from the Kikongo language, which refers to identity, essence, what deeply defines a person.\n• Ka, which means card, referring to an identification support.\n\nThus, Luvika can be understood as an identity carried by a card.\n\nThis name embodies the project's vision: to offer a modern digital identity, integrated into an NFC card, allowing each individual to present themselves, share their professional profile and value their identity in a simple, secure and innovative way.\nThrough Luvika, identity ceases to be merely declarative: it becomes digital, portable and connected, while remaining faithful to its cultural and human essence."
     },
-    "values": {
-      "security": "Security",
-      "security_desc": "Your data remains under your control. Nothing is shared without your consent.",
-      "accessibility": "Accessibility",
-      "accessibility_desc": "A simple, multilingual interface (French, Lingala, English) designed for everyone.",
-      "african_pride": "African Pride",
-      "african_pride_desc": "A solution designed in Kinshasa, for Africa and the world."
+    "context": {
+      "title": "Context and initial idea",
+      "content": "Luvika was born from a personal and deep reflection. At a moment of calm, I was questioning how to value my resources, my origins and my identity, particularly that of my tribe. The initial idea was to create a solution capable of reconnecting people to their sources, allowing them to value their history, their village of origin, their tribe and their belonging to the clan.\n\nThe initial concept thus aimed at the development of an application capable of clearly identifying a person's origin: their village, tribe, clan. Through this platform, these cultural and identity elements could be known, shared and preserved."
     },
-    "team": {
-      "title": "Our team",
-      "content": "A passionate team of developers, designers, and entrepreneurs based in Kinshasa, DRC.",
-      "cta": "Join us"
+    "problem": {
+      "title": "Identified problem / limitation of the initial concept",
+      "content": "However, a more in-depth analysis led me to an important awareness: a project exclusively focused on cultural identity risked reaching a limited audience and not favoring a wide adoption."
+    },
+    "transformation": {
+      "title": "Strategic transformation of the project",
+      "content": "It was then that a strategic transformation of the concept occurred. Luvika evolved to become a digital professional identifier, based on an NFC card system, while keeping identity as the fundamental basis of its vision. This evolution allowed bringing to the project a concrete, modern and universal utility, responding to real professional and commercial needs."
+    },
+    "solution": {
+      "title": "Birth of the Luvika solution (NFC and digital identity)",
+      "content": "During development, it became evident that simply creating user profiles was not enough. Thus, Luvika was structured around three distinct plans:\n• The Basic plan, intended for users who want a simple and accessible digital presence.\n• The Professional plan, offering advanced features, including the creation and management of events such as conferences, weddings, parties or professional meetings.\n• The Business plan, designed for companies and users with expanded needs, integrating sales tools, visibility and advanced management.\n\nThanks to this structuring, Luvika became much more than a simple application. It is today a versatile platform that allows to value identity, facilitate professional exchanges, digitize professional identification cards via NFC technology and create economic value for its users."
+    },
+    "offers": {
+      "title": "Structure of offers (Basic, Professional, Business)",
+      "content": "Luvika offers three pricing plans adapted to different needs:\n\n**Basic Plan**: For individuals who want a simple and accessible digital presence. Ideal for students, young professionals and individuals.\n\n**Professional Plan**: For freelancers, entrepreneurs and professionals. Offers advanced features such as event creation, contact management and networking tools.\n\n**Business Plan**: For companies and organizations. Integrates team management tools, commercial visibility and economic value creation."
+    },
+    "vision": {
+      "title": "Vision and mission of Luvika",
+      "content": "**Vision**: To become the African reference for professional digital identity, combining technological innovation and cultural pride.\n\n**Mission**: To transform the physical business card into an intelligent, controllable, secure and accessible digital identity for all — particularly for African entrepreneurs, developers and leaders.\n\nWe believe in a future where digital identity strengthens professional connections while preserving the cultural roots of each person."
+    },
+    "value": {
+      "title": "Added value for users",
+      "content": "Luvika brings significant added value to its users:\n\n• **Ease of use**: Intuitive and multilingual interface, accessible to all\n• **Enhanced security**: Total control over your personal and professional data\n• **Connectivity**: Facilitated professional exchanges thanks to NFC technology\n• **Visibility**: Enhancement of your profile and skills\n• **Culture**: Enhancement of identity and cultural roots\n• **Economy**: Creation of value and commercial opportunities\n• **Innovation**: Cutting-edge technology at the service of personal and professional development"
+    },
+    "perspective": {
+      "title": "Perspective and ambition of the project",
+      "content": "Luvika has the ambition to:\n\n• **Revolutionize networking** in Africa and the world\n• **Create a digital ecosystem** professionally and culturally rooted\n• **Facilitate exchanges** between African and international professionals\n• **Promote African technological innovation**\n• **Contribute to the economic development** of the continent\n• **Become an indispensable platform** for professionals around the world\n\nOur goal is to make Luvika a symbol of African technological excellence, while remaining deeply connected to the values and identity of its users."
     }
   },
   "contact": {

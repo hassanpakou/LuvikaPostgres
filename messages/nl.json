@@ -539,24 +539,43 @@
     "view_public_profile": "Mijn openbare profiel bekijken"
   },
   "about": {
-    "title": "Over",
-    "subtitle": "LUVIKA is ontstaan uit een eenvoudige visie: betekenis terugbrengen in professioneel netwerken, met elegantie, veiligheid en Afrikaanse trots.",
-    "mission": {
-      "title": "Onze missie",
-      "content": "Transformeer het fysieke visitekaartje in een slimme, beheersbare, veilige en toegankelijke digitale identiteit — vooral voor Afrikaanse ondernemers, ontwikkelaars en leiders."
+    "title": "Over LUVIKA",
+    "subtitle": "Luvika: Oorsprong van de naam en ontstaan van het project",
+    "origin": {
+      "title": "Oorsprong van de naam Luvika",
+      "content": "De naam Luvika komt van de combinatie van twee significante elementen:\n• Luvi, afgeleid van het woord Luvila, uit de Kikongo-taal, dat verwijst naar identiteit, essentie, wat een persoon diep bepaalt.\n• Ka, wat kaart betekent, verwijzend naar een identificatiemiddel.\n\nZo kan Luvika worden begrepen als een identiteit gedragen door een kaart.\n\nDeze naam belichaamt de visie van het project: het aanbieden van een moderne digitale identiteit, geïntegreerd in een NFC-kaart, die elk individu in staat stelt zichzelf te presenteren, zijn professionele profiel te delen en zijn identiteit op een eenvoudige, veilige en innovatieve manier te waarderen.\nDoor Luvika wordt identiteit niet langer louter declaratief: het wordt digitaal, draagbaar en verbonden, terwijl het trouw blijft aan zijn culturele en menselijke essentie."
     },
-    "values": {
-      "security": "Veiligheid",
-      "security_desc": "Je gegevens blijven onder jouw controle. Niets wordt gedeeld zonder jouw toestemming.",
-      "accessibility": "Toegankelijkheid",
-      "accessibility_desc": "Een eenvoudige, meertalige interface (Frans, Lingala, Engels) ontworpen voor iedereen.",
-      "african_pride": "Afrikaanse trots",
-      "african_pride_desc": "Een oplossing ontworpen in Kinshasa, voor Afrika en de wereld."
+    "context": {
+      "title": "Context en initiële idee",
+      "content": "Luvika is ontstaan uit een persoonlijke en diepe reflectie. In een moment van rust vroeg ik me af hoe ik mijn middelen, mijn oorsprong en mijn identiteit, met name die van mijn stam, kan waarderen. Het initiële idee was om een oplossing te creëren die mensen in staat stelt om weer contact te maken met hun bronnen, waardoor ze hun geschiedenis, hun oorspronkelijke dorp, hun stam en hun clan kunnen waarderen.\n\nHet initiële concept richtte zich dus op de ontwikkeling van een applicatie die duidelijk de oorsprong van een persoon kan identificeren: hun dorp, stam, clan. Door dit platform kunnen deze culturele en identitaire elementen worden gekend, gedeeld en behouden."
     },
-    "team": {
-      "title": "Ons team",
-      "content": "Een gepassioneerd team van ontwikkelaars, designers en ondernemers gevestigd in Kinshasa, DRC.",
-      "cta": "Sluit je aan bij ons"
+    "problem": {
+      "title": "Geïdentificeerd probleem / beperking van het initiële concept",
+      "content": "Echter, een diepere analyse bracht mij tot een belangrijk besef: een project dat uitsluitend gericht is op culturele identiteit riskeert een beperkt publiek te bereiken en geen brede adoptie te bevorderen."
+    },
+    "transformation": {
+      "title": "Strategische transformatie van het project",
+      "content": "Toen vond een strategische transformatie van het concept plaats. Luvika evolueerde tot een digitaal professioneel identificatiemiddel, gebaseerd op een NFC-kaartsysteem, terwijl identiteit de fundamentele basis van de visie bleef. Deze evolutie stelde het project in staat om een concrete, moderne en universele nuttigheid te bieden, die reageert op echte professionele en commerciële behoeften."
+    },
+    "solution": {
+      "title": "Geboorte van de Luvika-oplossing (NFC en digitale identiteit)",
+      "content": "Tijdens de ontwikkeling werd duidelijk dat het enkel creëren van gebruikersprofielen niet voldoende was. Zo werd Luvika gestructureerd rond drie verschillende plannen:\n• Het Basisplan, bedoeld voor gebruikers die een eenvoudige en toegankelijke digitale aanwezigheid wensen.\n• Het Professionele Plan, dat geavanceerde functionaliteiten biedt, inclusief het creëren en beheren van evenementen zoals conferenties, bruiloften, feesten of professionele bijeenkomsten.\n• Het Business Plan, ontworpen voor bedrijven en gebruikers met uitgebreide behoeften, met geïntegreerde verkoop-, zichtbaarheids- en geavanceerde beheertools.\n\nDankzij deze structurering werd Luvika veel meer dan een eenvoudige applicatie. Het is vandaag een veelzijdig platform dat identiteit kan waarderen, professionele uitwisselingen kan vergemakkelijken, professionele identiteitskaarten kan digitaliseren via NFC-technologie en economische waarde kan creëren voor zijn gebruikers."
+    },
+    "offers": {
+      "title": "Structurering van aanbiedingen (Basis, Professioneel, Business)",
+      "content": "Luvika biedt drie prijsplannen die aangepast zijn aan verschillende behoeften:\n\n**Basisplan**: Voor particulieren die een eenvoudige en toegankelijke digitale aanwezigheid wensen. Ideaal voor studenten, jonge professionals en particulieren.\n\n**Professioneel Plan**: Voor freelancers, ondernemers en professionals. Biedt geavanceerde functionaliteiten zoals het creëren van evenementen, contactbeheer en netwerkingtools.\n\n**Business Plan**: Voor bedrijven en organisaties. Integreert teambeheertools, commerciële zichtbaarheid en economische waardecreatie."
+    },
+    "vision": {
+      "title": "Visie en missie van Luvika",
+      "content": "**Visie**: De Afrikaanse referentie worden voor professionele digitale identiteit, door technologische innovatie en culturele trots te combineren.\n\n**Missie**: De fysieke visitekaartje transformeren tot een intelligente, controleerbare, veilige en toegankelijke digitale identiteit voor iedereen — met name voor Afrikaanse ondernemers, ontwikkelaars en leiders.\n\nWe geloven in een toekomst waarin digitale identiteit professionele verbindingen versterkt terwijl de culturele wortels van elk persoon worden behouden."
+    },
+    "value": {
+      "title": "Toegevoegde waarde voor gebruikers",
+      "content": "Luvika levert een significante toegevoegde waarde aan zijn gebruikers:\n\n• **Gebruiksgemak**: Intuïtieve en meertalige interface, toegankelijk voor iedereen\n• **Versterkte beveiliging**: Totale controle over uw persoonlijke en professionele gegevens\n• **Connectiviteit**: Gemakkelijker professionele uitwisselingen dankzij NFC-technologie\n• **Zichtbaarheid**: Waardering van uw profiel en vaardigheden\n• **Cultuur**: Waardering van identiteit en culturele wortels\n• **Economie**: Creatie van waarde en commerciële kansen\n• **Innovatie**: Geavanceerde technologie in dienst van persoonlijke en professionele ontwikkeling"
+    },
+    "perspective": {
+      "title": "Perspectief en ambitie van het project",
+      "content": "Luvika heeft de ambitie om:\n\n• **Netwerken te revolutioneren** in Afrika en de wereld\n• **Een digitaal ecosysteem te creëren** dat professioneel en cultureel geworteld is\n• **Uitwisselingen te vergemakkelijken** tussen Afrikaanse en internationale professionals\n• **Afrikaanse technologische innovatie te bevorderen**\n• **Bij te dragen aan de economische ontwikkeling** van het continent\n• **Een onmisbaar platform te worden** voor professionals over de hele wereld\n\nOns doel is om van Luvika een symbool te maken van Afrikaanse technologische uitmuntendheid, terwijl we diep verbonden blijven met de waarden en identiteit van zijn gebruikers."
     }
   },
   "contact": {

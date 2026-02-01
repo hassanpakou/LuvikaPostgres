@@ -539,24 +539,43 @@
     "view_public_profile": "Tazama wasifu wangu wa umma"
   },
   "about": {
-    "title": "Kuhusu",
-    "subtitle": "LUVIKA ilizaliwa kutoka maono rahisi: kurudisha maana kwenye mtandao wa kitaaluma, kwa urembo, usalama, na kiburi cha Kiafrika.",
-    "mission": {
-      "title": "Misi yetu",
-      "content": "Kubadilisha kadi ya kibinafsi kuwa utambulisho wa kidijitali unaotumia akili, unaozidishwa, unaosalama, na unaofikika kwa wote — haswa kwa wajasiriamali, wasanidi, na viongozi wa Kiafrika."
+    "title": "Kuhusu LUVIKA",
+    "subtitle": "Luvika: Asili ya jina na uzuri wa mradi",
+    "origin": {
+      "title": "Asili ya jina Luvika",
+      "content": "Jina Luvika linatokana na kuunganisha vipengele viwili vya maana:\n• Luvi, linatokana na neno Luvila, kutoka lugha ya Kikongo, linalomaanisha utambulisho, uhai, kinachowafafanua kila mtu.\n• Ka, linalomaanisha kadi, kinarejelea kifaa cha utambulisho.\n\nKwa hivyo, Luvika inaweza kueleweka kama utambulisho unaosafirishwa na kadi.\n\nJina hili linawakilisha maono ya mradi: kutoa utambulisho wa kidijitali wa kisasa, unaosajiliwa kwenye kadi ya NFC, iwezekanisha kila mtu kujitambulisha, kushiriki wasifu wake wa kikazi na kuthibitisha utambulisho wake kwa njia rahisi, ya usalama na ya kuboresha.\nKupitia Luvika, utambulisho hauwezi tena kuwa rahisi tu: huwa kidijitali, kinaweza kusafirishwa na kinaweza kuunganishwa, wakati inaacha kuwa imara kwa asili yake ya kitamaduni na ya kibinadamu."
     },
-    "values": {
-      "security": "Usalama",
-      "security_desc": "Data zako zinabaki chini ya udhibiti wako. Hakuna kitu kinachoshirikiwa bila ruhusa yako.",
-      "accessibility": "Ufikivu",
-      "accessibility_desc": "Kiolesura rahisi, cha lugha nyingi (Kifaransa, Lingala, Kiingereza), kilichotengenezwa kwa ajili ya wote.",
-      "african_pride": "Kiburi cha Kiafrika",
-      "african_pride_desc": "Suluhisho lililotengenezwa Kinshasa, kwa Afrika na dunia."
+    "context": {
+      "title": "Muktadha na wazo la awali",
+      "content": "Luvika ilizaliwa kutokana na kufikiria kibinafsi na kina. Wakati wa amani, nilijiuliza jinsi ningeweza kuthibitisha rasilimali zangu, asili zangu na utambulisho wangu, hasa wa kabila langu. Wazo la awali lilikuwa kuunda suluhisho linaloweza kuunganisha watu tena kwa vyanzo vyao, iwezekanisha kuthibitisha historia yao, kijiji chao cha asili, kabila chao na ujamao wao.\n\nMawazo ya awali yalilenga kuendeleza programu inayoweza kubainisha wazi asili ya mtu: kijiji chake, kabila chake, jamaa lake. Kupitia jukwaa hili, vipengele hivi vya kitamaduni na vya utambulisho vinaweza kujifunzwa, kushirikiwa na kuhifadhiwa."
     },
-    "team": {
-      "title": "Timu yetu",
-      "content": "Timu yenye hamu ya wasanidi, waharusi, na wajasiriamali yenye makao yake Kinshasa, RDC.",
-      "cta": "Jiunge nasi"
+    "problem": {
+      "title": "Tatizo limegunduliwa / kikomo cha dhana ya awali",
+      "content": "Hata hivyo, uchambuzi wa kina umenifanya nifahamu jambo muhimu: mradi unaokusudiwa tu kwenye utambulisho wa kitamaduni unakumbatia kipato kikubwa na hakinafanya kujitokeza kwa watu wengi."
+    },
+    "transformation": {
+      "title": "Mabadiliko ya kisiasa ya mradi",
+      "content": "Kisha palikuwa mabadiliko ya kisiasa ya dhana. Luvika ilibadilika kuwa kitambulisho cha kikazi cha kidijitali, kinachotegemea mfumo wa kadi za NFC, wakati utambulisho unaacha kuwa msingi wa msingi wa maono yake. Mabadiliko haya yameniwezesha kuleta mradi faida halisi, ya kisasa na ya kimataifa, inayojibu mahitaji halisi ya kikazi na ya biashara."
+    },
+    "solution": {
+      "title": "Kuzaliwa kwa suluhisho la Luvika (NFC na utambulisho wa kidijitali)",
+      "content": "Wakati wa kujengwa, likawezekana kuelewa kwamba kujenga tu wasifu wa watumiaji si kutosha. Kwa hivyo, Luvika ilijengwa kuhusu mipango mitatu inayotofautiana:\n• Mpango wa Msingi, unalengwa kwa watumiaji ambao wanataka uwepo wa kidijitali unaosahauliwa na unaofikiwa.\n• Mpango wa Kikazi, unatoa uwezo wa juu, unajumuisha kuunda na kudhibiti matukio kama vile mikutano, harusi, sherehe au mkutano wa kikazi.\n• Mpango wa Biashara, unalengwa kwa mashirika na watumiaji ambao wana mahitaji makubwa, unajumuisha zana za mauzo, uonekano na usimamizi wa juu.\n\nDhahiri ya muundo huu, Luvika imekuwa zaidi ya programu rahisi. Ni leo jukwaa la kila aina linalowezesha kuthibitisha utambulisho, kufacilitiisha mawasiliano ya kikazi, kudigitalisha kadi za utambulisho wa kikazi kupitia teknolojia ya NFC na kuunda thamani ya kiuchumi kwa watumiaji wake."
+    },
+    "offers": {
+      "title": "Muundo wa ofa (Msingi, Kikazi, Biashara)",
+      "content": "Luvika inatoa mipango mitatu ya bei inayofaa mahitaji tofauti:\n\n**Mpango wa Msingi**: Kwa watu binafsi ambao wanataka uwepo wa kidijitali unaosahauliwa na unaofikiwa. Inafaa kwa wanafunzi, wafanyakazi wapya na watu binafsi.\n\n**Mpango wa Kikazi**: Kwa wafanyakazi, wajasiriamali na wafanyakazi. Inatoa uwezo wa juu kama vile kuunda matukio, usimamizi wa mawasiliano na zana za kuvutia wafanyakazi.\n\n**Mpango wa Biashara**: Kwa mashirika na mashirika. Inajumuisha zana za usimamizi wa timu, uonekano wa biashara na kuunda thamani ya kiuchumi."
+    },
+    "vision": {
+      "title": "Maono na malengo ya Luvika",
+      "content": "**Maono**: Kuwa kibambo cha Afrika cha utambulisho wa kikazi wa kidijitali, kinachojumuisha ubunifu wa teknolojia na kiburi cha kitamaduni.\n\n**Malengo**: Kubadilisha kadi ya wakati wa kimwili kuwa utambulisho wa kidijitali unaosimamiwa, unaosimamiwa, unaosimamiwa na unaofikiwa kwa kila mtu — hasa kwa wajasiriamali, watoa mazingira na wale wanaotawala Afrika.\n\nTunamwamini katika siku ambayo utambulisho wa kidijitali unawezesha kuimarisha mawasiliano ya kikazi wakati unapambana na mizizi ya kitamaduni ya kila mtu."
+    },
+    "value": {
+      "title": "Thamani inayowekwa kwa watumiaji",
+      "content": "Luvika inaweka thamani kubwa kwa watumiaji wake:\n\n• **Urahisi wa matumizi**: Kiongozi cha kielelezo kinachofaa kila lugha, kinachofikiwa kwa kila mtu\n• **Usalama ulioimarishwa**: Udhibiti kamili wa data yako ya kibinafsi na ya kikazi\n• **Unganisha**: Mawasiliano ya kikazi yanayofikiwa kwa teknolojia ya NFC\n• **Uonekano**: Kuthibitisha wasifu wako na uwezo wako\n• **Tamaduni**: Kuthibitisha utambulisho na mizizi ya kitamaduni\n• **Uchumi**: Kuunda thamani na fursa za biashara\n• **Ubunifu**: Teknolojia ya juu inayotumika kwa maendeleo ya kibinafsi na ya kikazi"
+    },
+    "perspective": {
+      "title": "Mwanzo na hamu ya mradi",
+      "content": "Luvika ina hamu ya:\n\n• **Kubadilisha mawasiliano** Afrika na ulimwengu\n• **Kujenga mfumo wa kidijitali** unaosimamiwa kwa kikazi na kitamaduni\n• **Kufacilitiisha mawasiliano** kati ya wafanyakazi wa Afrika na wa kimataifa\n• **Kuthibitisha ubunifu wa teknolojia wa Afrika**\n• **Kuchangia maendeleo ya kiuchumi** ya bara\n• **Kuwa jukwaa muhimu** kwa wafanyakazi wa ulimwengu\n\nLengo letu ni kufanya Luvika kuwa kibambo cha uwezo wa teknolojia wa Afrika, wakati unaacha kuwa imara kwa maadili na utambulisho wa watumiaji wake."
     }
   },
   "contact": {

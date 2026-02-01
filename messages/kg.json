@@ -539,24 +539,43 @@
     "view_public_profile": "Voir mon profil public"
   },
   "about": {
-    "title": "À propos",
-    "subtitle": "LUVIKA est né d’une vision simple : redonner du sens au networking professionnel, avec élégance, sécurité, et fierté africaine.",
-    "mission": {
-      "title": "Notre mission",
-      "content": "Transformer la carte de visite physique en une identité numérique intelligente, contrôlable, sécurisée, et accessible à tous — en particulier aux entrepreneurs, développeurs, et leaders africains."
+    "title": "Mbala na LUVIKA",
+    "subtitle": "Luvika: Mokama ya lisolo pe mokama ya projet",
+    "origin": {
+      "title": "Mokama ya lisolo Luvika",
+      "content": "Lisolo Luvika eza na bato mibota ya bantina:\n• Luvi, eza na molukiluki Luvila, ya lingala, oyo eza na bantina ya identité, ya eseni, oyo eza na bantina ya bato moko.\n• Ka, eza na bantina ya carte, oyo eza na bantina ya support ya identité.\n\nKasi, Luvika eza na bantina ya identité oyo eza na carte.\n\nLisolo oyo eza na bantina ya vision ya projet: kozwa identité ya digital, oyo eza na carte NFC, mpona bato moko kozwa kozwa, kozwa profile ya professionnel pe kozwa identité na nzela ya simple, ya sécurisé pe ya innovant.\nNa Luvika, identité eza na bantina ya declaratif: eza digital, eza portable pe eza connecté, mpona eza na bantina ya eseni ya culture pe ya humain."
     },
-    "values": {
-      "security": "Sécurité",
-      "security_desc": "Vos données restent sous votre contrôle. Rien n’est partagé sans votre consentement.",
-      "accessibility": "Accessibilité",
-      "accessibility_desc": "Une interface simple, multilingue (français, lingála, anglais), conçue pour tous.",
-      "african_pride": "Fierté africaine",
-      "african_pride_desc": "Une solution pensée à Kinshasa, pour l’Afrique et le monde."
+    "context": {
+      "title": "Contexte pe idee ya kala",
+      "content": "Luvika eza na bantina ya réflexion ya personel pe ya profonde. Na mokolo ya calme, nakipaka kala kozwa kozwa ressources na ngai, origines na ngai pe identité na ngai, kala ya tribu na ngai. Idee ya kala eza kozwa solution oyo eza na bantina ya reconnecter bato na sources, mpona kozwa kozwa histoire, village ya kala, tribu pe clan.\n\nConcept ya kala eza kozwa application oyo eza na bantina ya kozwa origine ya bato: village, tribu, clan. Na platform oyo, bato oyo eza na bantina ya culture pe identité eza na bantina ya kozwa, kozwa pe kozwa."
     },
-    "team": {
-      "title": "Notre équipe",
-      "content": "Une équipe passionnée de développeurs, designers, et entrepreneurs basée à Kinshasa, RDC.",
-      "cta": "Rejoignez-nous"
+    "problem": {
+      "title": "Problème ya kala / limite ya concept ya kala",
+      "content": "Kasi, analyse ya profonde eza na bantina ya kala ya importante: projet ya exclusivement ya identité ya culture eza na bantina ya toucher audience ya limite pe eza na bantina ya favoriser adoption ya large."
+    },
+    "transformation": {
+      "title": "Transformation ya stratégique ya projet",
+      "content": "Eza na mokolo ya transformation ya stratégique ya concept. Luvika eza na bantina ya identifiant ya professionnel ya digital, oyo eza na bantina ya système ya carte NFC, mpona eza na bantina ya identité ya base ya vision. Evolution oyo eza na bantina ya kozwa projet ya utilité ya concrete, ya moderne pe ya universel, mpona kozwa besoins ya professionnel pe ya commercial."
+    },
+    "solution": {
+      "title": "Naissance ya solution Luvika (NFC pe identité ya digital)",
+      "content": "Na développement, eza na bantina ya evident ya créer profils ya utilisateur eza na bantina ya pas assez. Kasi, Luvika eza na bantina ya structure na bato mibota:\n• Plan ya Basique, eza na bantina ya utilisateurs oyo baza na présence ya digital ya simple pe ya accessible.\n• Plan ya Professionnel, eza na bantina ya fonctionnalités ya avancées, oyo eza na bantina ya création pe gestion ya événements kala conférences, mariages, fêtes pe réunions ya professionnel.\n• Plan ya Business, eza na bantina ya entreprises pe utilisateurs oyo bazalaka besoins ya élargis, oyo eza na bantina ya intégrer outils ya vente, visibilité pe gestion ya avancée.\n\nGrâce ya structure oyo, Luvika eza na bantina ya plus ya simple application. Eza platform ya versatile oyo eza na bantina ya kozwa identité, kozwa échanges ya professionnel, kozwa cartes ya identification ya professionnel na technologie ya NFC pe kozwa valeur ya économique mpona utilisateurs."
+    },
+    "offers": {
+      "title": "Structure ya offres (Basique, Professionnel, Business)",
+      "content": "Luvika eza na bantina ya trois plans ya pricing oyo eza na bantina ya adaptés na différents besoins:\n\n**Plan ya Basique**: Mpona particuliers oyo bazalaka présence ya digital ya simple pe ya accessible. Ideal mpona étudiants, jeunes professionnels pe particuliers.\n\n**Plan ya Professionnel**: Mpona freelancers, entrepreneurs pe professionnels. Oyo eza na bantina ya fonctionnalités ya avancées kala création ya événements, gestion ya contacts pe outils ya networking.\n\n**Plan ya Business**: Mpona entreprises pe organisations. Oyo eza na bantina ya intégrer outils ya gestion ya équipe, visibilité ya commerciale pe création ya valeur ya économique."
+    },
+    "vision": {
+      "title": "Vision pe mission ya Luvika",
+      "content": "**Vision**: Kozwa référence ya africaine ya identité ya professionnel ya digital, oyo eza na bantina ya combiner innovation ya technologique pe fierté ya culturel.\n\n**Mission**: Kozwa carte ya visite physique ya identité ya digital ya intelligent, contrôlable, sécurisée pe accessible mpona tous — kala entrepreneurs, développeurs pe leaders ya africains.\n\nTubaza na futur oyo identité ya digital eza na bantina ya renforcer liens ya professionnel mpona eza na bantina ya préserver racines ya culturel ya bato moko."
+    },
+    "value": {
+      "title": "Valeur ya ajoutée mpona utilisateurs",
+      "content": "Luvika eza na bantina ya valeur ya ajoutée ya significative mpona utilisateurs:\n\n• **Facilité ya utilisation**: Interface ya intuitive pe ya multilingue, accessible mpona tous\n• **Sécurité ya renforcée**: Contrôle ya total na données ya personel pe ya professionnel\n• **Connectivité**: Échanges ya professionnel ya facilités grâce ya technologie ya NFC\n• **Visibilité**: Valorisation ya profile pe compétences\n• **Culture**: Valorisation ya identité pe racines ya culturel\n• **Économie**: Création ya valeur pe opportunités ya commerciale\n• **Innovation**: Technologie ya pointe ya service ya développement ya personel pe ya professionnel"
+    },
+    "perspective": {
+      "title": "Perspective pe ambition ya projet",
+      "content": "Luvika eza na bantina ya ambition ya:\n\n• **Révolutionner networking** na Afrique pe na monde\n• **Créer écosystème ya digital** professionnel pe culturellement enraciné\n• **Faciliter échanges** na bantina ya professionnels ya africains pe ya internationaux\n• **Promouvoir innovation ya technologique ya africaine**\n• **Contribuer développement ya économique** ya continent\n• **Devenir platform ya indispensable** mpona professionnels ya monde entier\n\nObjectif ya ngai eza kozwa Luvika symbole ya excellence ya technologique ya africaine, mpona eza na bantina ya connecté na valeurs pe identité ya utilisateurs."
     }
   },
   "contact": {

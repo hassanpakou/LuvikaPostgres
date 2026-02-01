@@ -13,24 +13,30 @@ export default async function AboutPage({
   if (!supported.includes(locale as any)) notFound();
 
   const t = await getTranslations({ locale });
-  const tFooter = await getTranslations({ locale, namespace: 'footer' });
 
   return (
     <>
       <AboutContent
         title={t('about.title')}
         subtitle={t('about.subtitle')}
-        mission_title={t('about.mission.title')}
-        mission_content={t('about.mission.content')}
-        security={t('about.values.security')}
-        security_desc={t('about.values.security_desc')}
-        accessibility={t('about.values.accessibility')}
-        accessibility_desc={t('about.values.accessibility_desc')}
-        african_pride={t('about.values.african_pride')}
-        african_pride_desc={t('about.values.african_pride_desc')}
-        team_title={t('about.team.title')}
-        team_content={t('about.team.content')}
-        team_cta={t('about.team.cta')}
+        origin_title={t('about.origin.title')}
+        origin_content={t('about.origin.content')}
+        context_title={t('about.context.title')}
+        context_content={t('about.context.content')}
+        problem_title={t('about.problem.title')}
+        problem_content={t('about.problem.content')}
+        transformation_title={t('about.transformation.title')}
+        transformation_content={t('about.transformation.content')}
+        solution_title={t('about.solution.title')}
+        solution_content={t('about.solution.content')}
+        offers_title={t('about.offers.title')}
+        offers_content={t('about.offers.content')}
+        vision_title={t('about.vision.title')}
+        vision_content={t('about.vision.content')}
+        value_title={t('about.value.title')}
+        value_content={t('about.value.content')}
+        perspective_title={t('about.perspective.title')}
+        perspective_content={t('about.perspective.content')}
       />
     </>
   );
