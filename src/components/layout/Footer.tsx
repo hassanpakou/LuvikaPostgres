@@ -50,6 +50,7 @@ export default function Footer({
         { label: features, href: '/#features' },
         { label: pricing, href: '/pricing' },
         { label: download, href: '/download' },
+        { label: 'Documentation', href: '/documentation' },
       ],
     },
     {
