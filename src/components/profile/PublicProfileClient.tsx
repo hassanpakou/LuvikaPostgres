@@ -297,10 +297,12 @@ export default function PublicProfileClient({
     setBubbles(generated);
   }, []);
 
-  // 🔹 Realtime updates
+  // 🔹 Realtime updates - Channels par table
   useEffect(() => {
     const supabase = createClient();
-    const channel = supabase
+    
+    // Channel pour les mises à jour du profil
+    const profileChannel = supabase
       .channel(`profile-${localProfile.id}`)
       .on(
         'postgres_changes',
@@ -316,10 +318,251 @@ export default function PublicProfileClient({
       )
       .subscribe();
 
+    // Channel pour les likes
+    const likesChannel = supabase
+      .channel(`likes-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'likes',
+          filter: `profile_id=eq.${profile.id}`
+        },
+        (payload: any) => {
+          // Mise à jour du compteur de likes
+          if (payload.eventType === 'INSERT') {
+            setLocalProfile(prev => ({ 
+              ...prev, 
+              likes_count: (prev.likes_count || 0) + 1 
+            }));
+          } else if (payload.eventType === 'DELETE') {
+            setLocalProfile(prev => ({ 
+              ...prev, 
+              likes_count: Math.max(0, (prev.likes_count || 0) - 1) 
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    // Channel pour les followers/following
+    const followsChannel = supabase
+      .channel(`follows-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'follows',
+          filter: `followed_id=eq.${profile.id}`
+        },
+        async (payload: any) => {
+          // Mise à jour du compteur de followers
+          if (payload.eventType === 'INSERT') {
+            setFollowersCount(prev => prev + 1);
+          } else if (payload.eventType === 'DELETE') {
+            setFollowersCount(prev => Math.max(0, prev - 1));
+          }
+          
+          // Vérifier si l'utilisateur actuel suit toujours
+          if (currentUserId) {
+            const { count } = await supabase
+              .from('follows')
+              .select('*', { count: 'exact', head: true })
+              .eq('follower_id', currentUserId)
+              .eq('followed_id', profile.id);
+            setIsFollowing((count || 0) > 0);
+          }
+        }
+      )
+      .subscribe();
+
+    // Channel pour les scans
+    const scansChannel = supabase
+      .channel(`scans-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'scans',
+          filter: `profile_id=eq.${profile.id}`
+        },
+        () => {
+          // Incrémenter le compteur de scans
+          setScansCount(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    // Channel pour le portfolio
+    const portfolioChannel = supabase
+      .channel(`portfolio-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'portfolios',
+          filter: `profile_id=eq.${profile.id}`
+        },
+        async () => {
+          // Recharger le portfolio
+          const res = await fetch(`/api/portfolio?profile_id=${localProfile.id}`);
+          const { portfolios, certificates } = await res.json();
+          setPortfolios(portfolios);
+          setCertificates(certificates);
+        }
+      )
+      .subscribe();
+
+    // Channel pour les certifications
+    const certificatesChannel = supabase
+      .channel(`certificates-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'certificates',
+          filter: `profile_id=eq.${profile.id}`
+        },
+        async () => {
+          // Recharger les certifications
+          const res = await fetch(`/api/portfolio?profile_id=${localProfile.id}`);
+          const { portfolios, certificates } = await res.json();
+          setPortfolios(portfolios);
+          setCertificates(certificates);
+        }
+      )
+      .subscribe();
+
+    // Channel pour les compétences
+    const skillsChannel = supabase
+      .channel(`skills-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${profile.id}`
+        },
+        (payload: any) => {
+          // Mise à jour des compétences
+          if (payload.new.skills) {
+            setLocalProfile(prev => ({ ...prev, skills: payload.new.skills }));
+          }
+        }
+      )
+      .subscribe();
+
+    // Channel pour les cartes NFC
+    const nfcChannel = supabase
+      .channel(`nfc-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'nfc_cards',
+          filter: `user_id=eq.${profile.id}`
+        },
+        async () => {
+          // Recharger les cartes NFC
+          const { data, error } = await supabase
+            .from('nfc_cards')
+            .select('status')
+            .eq('user_id', profile.id);
+          
+          if (!error && data) {
+            const activeOrLostCards = data.filter(card => card.status === 'active' || card.status === 'lost');
+            setHasLostCard(activeOrLostCards.some(card => card.status === 'lost'));
+            
+            // Mettre à jour le tableau des cartes dans le profil
+            setLocalProfile(prev => ({ 
+              ...prev, 
+              nfc_cards: activeOrLostCards 
+            }));
+          }
+        }
+      )
+      .subscribe();
+
+    // Channel pour les demandes de contact
+    const contactRequestsChannel = supabase
+      .channel(`contact-requests-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contact_requests',
+          filter: `profile_id=eq.${profile.id}`
+        },
+        () => {
+          // Optionnel : mettre à jour l'état des demandes de contact
+          // Peut être implémenté selon les besoins spécifiques
+        }
+      )
+      .subscribe();
+
+    // Channel pour les messages
+    const messagesChannel = supabase
+      .channel(`messages-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${profile.id}`
+        },
+        () => {
+          // Optionnel : notification de nouveau message
+          // Peut être implémenté selon les besoins spécifiques
+        }
+      )
+      .subscribe();
+
+    // Channel pour la visibilité des sections
+    const visibilityChannel = supabase
+      .channel(`visibility-${localProfile.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${profile.id}`
+        },
+        (payload: any) => {
+          // Mise à jour de la visibilité des sections
+          if (payload.new.sections_visibility) {
+            setLocalProfile(prev => ({ 
+              ...prev, 
+              sections_visibility: payload.new.sections_visibility 
+            }));
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(profileChannel);
+      supabase.removeChannel(likesChannel);
+      supabase.removeChannel(followsChannel);
+      supabase.removeChannel(scansChannel);
+      supabase.removeChannel(portfolioChannel);
+      supabase.removeChannel(certificatesChannel);
+      supabase.removeChannel(skillsChannel);
+      supabase.removeChannel(nfcChannel);
+      supabase.removeChannel(contactRequestsChannel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(visibilityChannel);
     };
-  }, [localProfile.id]);
+  }, [localProfile.id, profile.id, currentUserId]);
 
   const [showContactModal, setShowContactModal] = useState(false);
   const [showPortfolioModal, setShowPortfolioModal] = useState(false);

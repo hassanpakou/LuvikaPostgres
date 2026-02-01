@@ -12,7 +12,7 @@ export default async function PublicProfilePage({
 }) {
   const { locale, username } = await params;
 
-  // --- Locales autorisées ---
+  // --- 1️⃣ Vérification des locales ---
   const supported = ['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as const;
   if (!supported.includes(locale as any)) {
     redirect('/fr');
@@ -20,7 +20,7 @@ export default async function PublicProfilePage({
 
   const decodedUsername = decodeURIComponent(username).toLowerCase().trim();
 
-  // --- Routes réservées ---
+  // --- 2️⃣ Vérification des routes réservées ---
   const RESERVED_ROUTES = [
     'pricing',
     'about',
@@ -36,7 +36,7 @@ export default async function PublicProfilePage({
     notFound();
   }
 
-  // --- Supabase Server Client ---
+  // --- 3️⃣ Supabase Server Client ---
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,7 +56,7 @@ export default async function PublicProfilePage({
     }
   );
 
-  // --- Récupération du profil avec theme ---
+  // --- 4️⃣ Récupération du profil ---
   let profileData = null;
   let profileError = null;
 
@@ -73,7 +73,7 @@ export default async function PublicProfilePage({
     .maybeSingle();
 
   if (error || !data) {
-    // Essai de correspondance partielle (fallback)
+    // Fallback : correspondance partielle
     const { data: fallbackData, error: fallbackError } = await supabase
       .from('profiles')
       .select(`
@@ -98,24 +98,25 @@ export default async function PublicProfilePage({
     notFound();
   }
 
-  // --- Authentification ---
+  // --- 5️⃣ Authentification ---
   const { data: { user } } = await supabase.auth.getUser();
   const currentUser = user as User | null;
   const isOwner = currentUser?.id === profileData.id;
   const isAdmin = currentUser?.user_metadata?.role === 'admin';
 
+  // --- 6️⃣ Gestion des profils privés ---
   if (!profileData.is_public && !isOwner && !isAdmin) {
     return redirect(`/${locale}/${decodedUsername}/private`);
   }
 
-  // --- Followers ---
+  // --- 7️⃣ Followers ---
   const { count: followersCount } = await supabase
     .from('follows')
     .select('*', { count: 'exact', head: true })
     .eq('followed_id', profileData.id);
   const initialFollowers = followersCount || 0;
 
-  // --- Following ---
+  // --- 8️⃣ Following ---
   let initialFollowing = 0;
   let isInitiallyFollowing = false;
   if (currentUser) {
@@ -133,7 +134,7 @@ export default async function PublicProfilePage({
     isInitiallyFollowing = (followingThisUser || 0) > 0;
   }
 
-  // --- Render ---
+  // --- 9️⃣ Render ---
   return (
     <div suppressHydrationWarning className="min-h-screen relative">
       {/* Fond animé profil */}
@@ -157,7 +158,7 @@ export default async function PublicProfilePage({
         </div>
       </div>
 
-<div className="w-full min-h-screen relative z-10">
+      <div className="w-full min-h-screen relative z-10">
         <PublicProfileClient
           profile={profileData}
           followers={initialFollowers}

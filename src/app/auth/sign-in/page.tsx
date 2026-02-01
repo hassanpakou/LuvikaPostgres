@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, X, Sun, Moon } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
@@ -78,6 +78,44 @@ const GlassButton = ({
     </span>
   </motion.button>
 );
+
+// 🔦 Bouton thème
+const ThemeToggle = () => {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') !== 'light';
+    }
+    return true; // default to dark
+  });
+
+  const toggleTheme = () => {
+    const newTheme = isDark ? 'light' : 'dark';
+    setIsDark(!isDark);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', !isDark);
+  };
+
+  return (
+    <motion.button
+      onClick={toggleTheme}
+      className="absolute top-6 right-6 p-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm group"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      aria-label="Toggle theme"
+    >
+      <motion.div
+        animate={{ rotate: isDark ? 0 : 180 }}
+        transition={{ duration: 0.3 }}
+      >
+        {isDark ? (
+          <Sun className="w-5 h-5 text-yellow-300" />
+        ) : (
+          <Moon className="w-5 h-5 text-gray-600" />
+        )}
+      </motion.div>
+    </motion.button>
+  );
+};
 
 export default function SignInPage() {
   const t = useTranslations();
@@ -154,6 +192,9 @@ export default function SignInPage() {
         </motion.div>
         <span className="text-sm font-medium">{t('navbar.home')}</span>
       </Link>
+
+      {/* 🔦 Bouton thème */}
+      <ThemeToggle />
 
       {/* 🔷 Card principale */}
       <motion.div

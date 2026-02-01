@@ -7,7 +7,46 @@ import { createClient } from '../../../../src/lib/supabase/client'; // ✅ Corre
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
-import { Lock, CheckCircle } from 'lucide-react';
+import { Lock, CheckCircle, Sun, Moon } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+// 🔦 Bouton thème
+const ThemeToggle = () => {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('theme') !== 'light';
+    }
+    return true; // default to dark
+  });
+
+  const toggleTheme = () => {
+    const newTheme = isDark ? 'light' : 'dark';
+    setIsDark(!isDark);
+    localStorage.setItem('theme', newTheme);
+    document.documentElement.classList.toggle('dark', !isDark);
+  };
+
+  return (
+    <motion.button
+      onClick={toggleTheme}
+      className="absolute top-6 right-6 p-2 rounded-full bg-white/10 border border-white/20 hover:bg-white/20 transition-all backdrop-blur-sm group"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      aria-label="Toggle theme"
+    >
+      <motion.div
+        animate={{ rotate: isDark ? 0 : 180 }}
+        transition={{ duration: 0.3 }}
+      >
+        {isDark ? (
+          <Sun className="w-5 h-5 text-yellow-300" />
+        ) : (
+          <Moon className="w-5 h-5 text-gray-600" />
+        )}
+      </motion.div>
+    </motion.button>
+  );
+};
 
 export default function UpdatePasswordPage() {
   const t = useTranslations();
@@ -109,6 +148,9 @@ export default function UpdatePasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
+      {/* 🔦 Bouton thème */}
+      <ThemeToggle />
+
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="mx-auto w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
