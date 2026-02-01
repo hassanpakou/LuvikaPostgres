@@ -157,39 +157,6 @@ export default function SettingsPage() {
     fetchProfile();
   }, [router, t]);
 
-  // 🔹 Realtime updates
-  useEffect(() => {
-    if (!profile) return;
-    
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`profile-${profile.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${profile.id}`
-        },
-        (payload) => {
-          setProfile(prev => ({ ...prev, ...payload.new } as Profile));
-          // Rafraîchir les previews si les URLs changent
-          if (payload.new.avatar_url !== profile.avatar_url) {
-            setAvatarPreview(payload.new.avatar_url);
-          }
-          if (payload.new.cover_url !== profile.cover_url) {
-            setCoverPreview(payload.new.cover_url);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [profile?.id]);
-
   // 🔹 Complétion
   const getCompletion = () => {
     if (!profile) return 0;
@@ -304,7 +271,20 @@ const removeSkill = (index: number) => {
     if (!profile) return;
     setSaving(true);
     setMessage(null);
-    
+router.refresh(); // 👈 Force Next.js à recharger les données serveur/client
+    setTimeout(() => setMessage(null), 3000);
+
+const { data: updatedProfile } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('id', profile.id)
+  .single();
+
+if (updatedProfile) {
+  setProfile(updatedProfile); // ✅ Rafraîchit le profil local immédiatement
+}
+
+setMessage({ type: 'success', text: t('save_success') });
     try {
       const supabase = createClient();
       const updates = {
@@ -364,9 +344,6 @@ const removeSkill = (index: number) => {
 
       setMessage({ type: 'success', text: t('save_success') });
       setTimeout(() => setMessage(null), 3000);
-      
-      // Rafraîchir les données serveur
-      router.refresh();
     } catch (err: any) {
       console.error('❌ Erreur sauvegarde:', err);
       setMessage({ type: 'error', text: err.message || t('save_error') });
