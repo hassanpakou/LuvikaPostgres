@@ -14,6 +14,73 @@ import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { createClient } from '../../../lib/supabase/client';
 
+// 🔹 Effet bulles flottantes
+const FloatingBubbles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(5)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-400/20"
+        style={{
+          width: `${12 + i * 6}px`,
+          height: `${12 + i * 6}px`,
+          left: `${10 + i * 18}%`,
+          bottom: '-20px',
+        }}
+        animate={{
+          y: [-20, -140],
+          opacity: [0, 0.6, 0],
+          scale: [0.8, 1.2, 0.8],
+        }}
+        transition={{
+          duration: 6 + i,
+          repeat: Infinity,
+          delay: i * 0.5,
+          ease: "easeOut"
+        }}
+      />
+    ))}
+  </div>
+);
+
+// 🔹 Bouton glassmorphism animé
+const GlassButton = ({ 
+  children, 
+  onClick, 
+  disabled,
+  className = "",
+  type = "button"
+}: { 
+  children: React.ReactNode; 
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+  type?: "button" | "submit" | "reset";
+}) => (
+  <motion.button
+    type={type as any}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    disabled={disabled}
+    className={`
+      relative overflow-hidden
+      px-6 py-3 rounded-xl
+      bg-white/10 backdrop-blur-xl
+      border border-white/20
+      text-white font-medium
+      transition-all duration-300
+      ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/20'}
+      ${className}
+    `}
+  >
+    {/* ✨ Micro-anim inside */}
+    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+    <span className="relative z-10 flex items-center justify-center gap-2">
+      {children}
+    </span>
+  </motion.button>
+);
+
 type Step = 'plan' | 'identity' | 'email' | 'security';
 type Plan = 'basic' | 'premium' | 'entreprise';
 
@@ -241,14 +308,18 @@ export default function SignUpPage() {
   };
 
   const stepTitles = {
-    plan: t(''),
-    identity: t(''),
-    email: t(''),
-    security: t(''),
+    plan: t('auth.signup.plan_title'),
+    identity: t('auth.signup.identity_title'),
+    email: t('auth.signup.email_title'),
+    security: t('auth.signup.security_title'),
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* 🔹 Fond dynamique */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.05),transparent_70%)]" />
+      <FloatingBubbles />
+
       <Link
         href="/"
         className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300"
@@ -352,17 +423,26 @@ export default function SignUpPage() {
             transition={{ duration: 0.3 }}
             className="lg:col-span-2"
           >
-            <div className="glass-border backdrop-blur-xl rounded-2xl p-6 md:p-8 shadow-2xl border border-white/15">
+            <div className="relative backdrop-blur-2xl bg-white/5 rounded-2xl border border-white/15 shadow-2xl overflow-hidden">
+              {/* 🔹 Glow interne */}
+              <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-cyan-500/5 to-blue-500/5 blur opacity-30" />
               {/* Titre + icône centrés */}
-              <div className="text-center mb-8">
-                <div className="flex justify-center mb-4">
-                  {step === 'plan' && <CreditCard className="w-8 h-8 text-cyan-400" />}
-                  {step === 'identity' && <User className="w-8 h-8 text-cyan-400" />}
-                  {step === 'email' && <Mail className="w-8 h-8 text-cyan-400" />}
-                  {step === 'security' && <Lock className="w-8 h-8 text-cyan-400" />}
-                </div>
-                <h1 className="text-2xl font-bold text-white">{stepTitles[step]}</h1>
-                <p className="text-gray-400 mt-2 text-sm">
+              <div className="relative p-7 md:p-8">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+                  className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-4 border border-white/10"
+                >
+                  {step === 'plan' && <CreditCard className="w-7 h-7 text-cyan-300" />}
+                  {step === 'identity' && <User className="w-7 h-7 text-cyan-300" />}
+                  {step === 'email' && <Mail className="w-7 h-7 text-cyan-300" />}
+                  {step === 'security' && <Lock className="w-7 h-7 text-cyan-300" />}
+                </motion.div>
+                <h1 className="text-2xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
+                  {stepTitles[step]}
+                </h1>
+                <p className="text-gray-400 text-sm">
                   {step === 'plan' && t('auth.signup.plan_desc')}
                   {step === 'identity' && t('auth.signup.identity_desc')}
                   {step === 'email' && t('auth.signup.email_desc')}
@@ -418,7 +498,7 @@ export default function SignUpPage() {
                                 <h3 className="font-bold text-white">{plan.title}</h3>
                                 {plan.id === 'premium' && (
                                   <span className="bg-cyan-500 text-xs px-2 py-0.5 rounded-full text-white">
-                                    {t('pricing.plans.freemium.popular')}
+                                    {t('pricing.plans.premium.popular')}
                                   </span>
                                 )}
                               </div>
@@ -599,20 +679,20 @@ export default function SignUpPage() {
               <div className="mt-10 pt-6 border-t border-white/10">
                 <div className="flex justify-between">
                   {step !== 'plan' && (
-                    <Button
+                    <GlassButton
                       type="button"
-                      variant="ghost"
                       onClick={handleBack}
-                      className="text-gray-300 hover:text-white hover:bg-white/10"
+                      disabled={loading}
+                      className="bg-white/10 hover:bg-white/20"
                     >
                       <ArrowLeft className="w-4 h-4 mr-1" />
                       {t('auth.signup.back')}
-                    </Button>
+                    </GlassButton>
                   )}
 
                   <div className="flex-1" />
 
-                  <Button
+                  <GlassButton
                     type="button"
                     onClick={
                       step === 'plan' ? () => setStep('identity') :
@@ -621,20 +701,24 @@ export default function SignUpPage() {
                       handleSignUp
                     }
                     disabled={isNextDisabled() || loading}
-                    className="bg-gradient-to-r from-emerald-600 to-cyan-500 hover:from-emerald-500 hover:to-cyan-400 flex items-center px-6 py-3"
+                    className="bg-gradient-to-r from-emerald-600/80 to-cyan-500/80 hover:from-emerald-600 hover:to-cyan-500"
                   >
                     {loading ? (
-                      <span className="flex items-center">
-                        <span className="animate-spin w-4 h-4 mr-2">⚙️</span>
-                        {t('auth.signup.creating')}
-                      </span>
+                      <>
+                        <motion.div
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                          className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                        />
+                        <span>{t('auth.signup.creating')}</span>
+                      </>
                     ) : (
                       <>
                         {step !== 'security' ? t('auth.signup.next') : t('auth.signup.create_account')}
                         {step !== 'security' && <ArrowRight className="w-4 h-4 ml-1" />}
                       </>
                     )}
-                  </Button>
+                  </GlassButton>
                 </div>
 
                 <div className="mt-6 text-center">

@@ -4,9 +4,76 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
-import { Button } from '../../../../components/ui/button';
-import { AlertCircle, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { AlertCircle, Sparkles, ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
+
+// 🔹 Effet bulles flottantes
+const FloatingBubbles = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    {[...Array(5)].map((_, i) => (
+      <motion.div
+        key={i}
+        className="absolute rounded-full bg-gradient-to-r from-red-400/20 to-cyan-400/20"
+        style={{
+          width: `${12 + i * 6}px`,
+          height: `${12 + i * 6}px`,
+          left: `${10 + i * 18}%`,
+          bottom: '-20px',
+        }}
+        animate={{
+          y: [-20, -140],
+          opacity: [0, 0.6, 0],
+          scale: [0.8, 1.2, 0.8],
+        }}
+        transition={{
+          duration: 6 + i,
+          repeat: Infinity,
+          delay: i * 0.5,
+          ease: "easeOut"
+        }}
+      />
+    ))}
+  </div>
+);
+
+// 🔹 Bouton glassmorphism animé
+const GlassButton = ({ 
+  children, 
+  onClick, 
+  disabled,
+  className = "",
+  type = "button"
+}: { 
+  children: React.ReactNode; 
+  onClick?: () => void;
+  disabled?: boolean;
+  className?: string;
+  type?: "button" | "submit" | "reset";
+}) => (
+  <motion.button
+    type={type as any}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    disabled={disabled}
+    className={`
+      relative overflow-hidden
+      px-6 py-3 rounded-xl
+      bg-white/10 backdrop-blur-xl
+      border border-white/20
+      text-white font-medium
+      transition-all duration-300
+      ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/20'}
+      ${className}
+    `}
+  >
+    {/* ✨ Micro-anim inside */}
+    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+    <span className="relative z-10 flex items-center justify-center gap-2">
+      {children}
+    </span>
+  </motion.button>
+);
 
 export default function ErrorPage() {
   const searchParams = useSearchParams();
@@ -21,41 +88,62 @@ export default function ErrorPage() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-red-900/10 to-black">
-      <div className="relative w-full max-w-md">
-        {/* 🔹 Bulles flottantes */}
-        <div className="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-red-500/10 blur-3xl animate-float"></div>
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-cyan-500/10 blur-3xl animate-float animation-delay-2000"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* 🔹 Fond dynamique */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(6,182,212,0.05),transparent_70%)]" />
+      <FloatingBubbles />
 
-        <div className="glass-border backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/15 text-center relative z-10 overflow-hidden">
+      <Link 
+        href="/auth/sign-in" 
+        className="absolute top-6 left-6 flex items-center gap-1 text-gray-400 hover:text-cyan-300 transition"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        <span className="text-sm">{t('auth.error.back_to_login')}</span>
+      </Link>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md relative"
+      >
+        <div className="relative backdrop-blur-2xl bg-white/5 rounded-2xl border border-white/15 shadow-2xl overflow-hidden">
           {/* 🔹 Glow interne */}
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 to-cyan-500/5 rounded-3xl -z-10"></div>
+          <div className="absolute -inset-px rounded-2xl bg-gradient-to-r from-red-500/5 to-cyan-500/5 blur opacity-30" />
 
-          <div className="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded-full mb-6 border border-red-400/30 shadow-lg">
-            <AlertCircle className="w-10 h-10 text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
-            <Sparkles className="absolute -top-1 -right-1 w-5 h-5 text-cyan-300 animate-pulse" />
+          <div className="relative p-7 md:p-8">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
+              className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-red-500/20 to-orange-500/20 flex items-center justify-center mb-4 border border-white/10"
+            >
+              <AlertCircle className="w-7 h-7 text-red-400" />
+              <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-cyan-300 animate-pulse" />
+            </motion.div>
+            <h1 className="text-2xl font-bold text-white mb-2 bg-clip-text text-transparent bg-gradient-to-r from-red-300 to-cyan-300">
+              {t('auth.error.title')}
+            </h1>
+            <p className="text-gray-400 text-sm">
+              {message}
+            </p>
+
+            <div className="mt-8 flex justify-center">
+              <GlassButton
+                onClick={() => router.push('/auth/sign-in')}
+                className="bg-gradient-to-r from-cyan-600/80 to-blue-500/80 hover:from-cyan-600 hover:to-blue-500"
+              >
+                <Sparkles className="w-4 h-4 mr-1" />
+                {t('auth.signin.submit')}
+              </GlassButton>
+            </div>
+
+            <p className="text-center text-gray-500 text-sm mt-4 flex items-center justify-center gap-1">
+              <Sparkles className="w-3 h-3 text-cyan-400" />
+              {t('auth.error.safe_return')}
+            </p>
           </div>
-
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-red-200 bg-clip-text text-transparent mb-4">
-            {t('auth.error.title')}
-          </h1>
-
-          <p className="text-gray-300 mb-8 leading-relaxed">
-            {message}
-          </p>
-
-          <Button asChild className="w-full bg-gradient-to-r from-cyan-600 to-blue-500 hover:from-cyan-500 hover:to-blue-400 h-12 text-lg font-semibold shadow-lg hover:shadow-cyan-500/30 transition-all duration-300">
-            <Link href="/auth/sign-in">
-              {t('auth.signin.submit')}
-            </Link>
-          </Button>
-
-          <p className="text-gray-500 text-sm mt-6 flex items-center justify-center gap-1">
-            <Sparkles className="w-3 h-3 text-cyan-400" />
-            Retournez en sécurité vers votre espace.
-          </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
