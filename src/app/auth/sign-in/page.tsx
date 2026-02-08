@@ -4,13 +4,33 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, X, Sun, Moon } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { createClient } from '../../../../src/lib/supabase/client';
+
+// 🔹 Server-side translations fallback
+const t = (key: string) => {
+  const translations = {
+    'auth.signin.title': 'Connexion',
+    'auth.signin.subtitle': 'Connectez-vous à votre compte LUVIKA.',
+    'auth.signin.email': 'Email',
+    'auth.signin.password': 'Mot de passe',
+    'auth.signin.forgot_password': 'Mot de passe oublié ?',
+    'auth.signin.submit': 'Se connecter',
+    'auth.signin.connecting': 'Connexion en cours...',
+    'auth.signin.no_account': 'Vous n\'avez pas de compte ?',
+    'auth.signin.sign_up': 'S\'inscrire',
+    'auth.signin.error_credentials': 'Email ou mot de passe incorrect.',
+    'auth.welcome.title': 'Bienvenue !',
+    'auth.welcome.message': 'Heureux de vous revoir parmi nous.',
+    'navbar.home': 'Accueil'
+  };
+  return translations[key as keyof typeof translations] || key;
+};
+
 
 // 🔹 Effet bulles flottantes
 const FloatingBubbles = () => (
@@ -118,7 +138,6 @@ const ThemeToggle = () => {
 };
 
 export default function SignInPage() {
-  const t = useTranslations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();

@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { CheckCircle, Sparkles, ArrowLeft } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
-import { useTranslations } from 'next-intl';
 
 // 🔹 Effet bulles flottantes
 const FloatingBubbles = () => (
@@ -80,7 +79,17 @@ export default async function CallbackPage({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const t = useTranslations();
+  // Server-side translations
+  const t = (key: string) => {
+    const translations = {
+      'auth.callback.back_to_login': 'Retour à la connexion',
+      'auth.callback.title': 'Vérification en cours...',
+      'auth.callback.subtitle': 'Votre compte est en cours de vérification. Veuillez patienter.',
+      'auth.callback.dashboard': 'Accéder au tableau de bord',
+      'auth.callback.customize': 'Personnalisez votre profil dès maintenant'
+    };
+    return translations[key as keyof typeof translations] || key;
+  };
   const cookieStore = await cookies();
 
   const supabase = createServerClient(

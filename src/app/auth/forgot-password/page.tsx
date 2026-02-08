@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, ArrowLeft, X, Check, Sun, Moon } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
@@ -116,8 +115,23 @@ const ThemeToggle = () => {
   );
 };
 
+// 🔹 Server-side translations
+const t = (key: string) => {
+  const translations = {
+    'auth.forgot_password.back_to_login': 'Retour à la connexion',
+    'auth.forgot_password.title': 'Réinitialisation du mot de passe',
+    'auth.forgot_password.subtitle': 'Entrez votre email pour recevoir un lien de réinitialisation.',
+    'auth.forgot_password.email': 'Adresse email',
+    'auth.forgot_password.email_placeholder': 'votre@email.com',
+    'auth.forgot_password.submit': 'Envoyer le lien',
+    'auth.forgot_password.success': 'Un email de réinitialisation a été envoyé à votre adresse.',
+    'auth.forgot_password.error': 'Erreur lors de l\'envoi de l\'email. Veuillez réessayer.',
+    'auth.forgot_password.sending': 'Envoi en cours...'
+  };
+  return translations[key as keyof typeof translations] || key;
+};
+
 export default function ForgotPasswordPage() {
-  const t = useTranslations();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

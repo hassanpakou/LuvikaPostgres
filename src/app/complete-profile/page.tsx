@@ -8,7 +8,6 @@ import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
-import { useTranslations } from 'next-intl';
 import { 
   User, Phone, Briefcase, 
   Check, AlertCircle, X, SkipForward 
@@ -26,8 +25,42 @@ type FormData = {
   address: string;
 };
 
+// 🔹 Server-side translations fallback
+const t = (key: string) => {
+  const translations = {
+    'auth.complete.error_full_name_required': 'Veuillez saisir votre nom complet',
+    'auth.complete.error_username_too_short': 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
+    'auth.complete.username_taken': 'Ce nom d\'utilisateur est déjà pris',
+    'auth.complete.error_generic': 'Erreur lors de la mise à jour du profil',
+    'auth.complete.success': 'Profil mis à jour avec succès !',
+    'auth.complete.step_identity': 'Identité',
+    'auth.complete.step_contact': 'Contact',
+    'auth.complete.step_bio': 'Bio',
+    'auth.complete.title_identity': 'Complétez votre identité',
+    'auth.complete.title_contact': 'Informations de contact',
+    'auth.complete.title_bio': 'Bio professionnelle',
+    'auth.complete.desc_identity': 'Vos informations personnelles',
+    'auth.complete.desc_contact': 'Comment les gens peuvent vous contacter',
+    'auth.complete.desc_bio': 'Votre expertise et votre parcours',
+    'auth.complete.full_name': 'Nom complet',
+    'auth.complete.full_name_placeholder': 'Entrez votre nom complet',
+    'auth.complete.username': 'Nom d\'utilisateur',
+    'auth.complete.username_placeholder': 'Choisissez un nom d\'utilisateur',
+    'auth.complete.phone': 'Téléphone',
+    'auth.complete.whatsapp': 'WhatsApp',
+    'auth.complete.job_title': 'Poste',
+    'auth.complete.company': 'Entreprise',
+    'auth.complete.bio_short': 'Bio courte',
+    'auth.complete.back': 'Retour',
+    'auth.complete.next': 'Suivant',
+    'auth.complete.finish': 'Terminer',
+    'auth.complete.saving': 'Enregistrement...',
+    'auth.complete.skip': 'Passer'
+  };
+  return translations[key as keyof typeof translations] || key;
+};
+
 export default function CompleteProfilePage() {
-  const t = useTranslations('auth.complete');
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import { createClient } from '../../../../src/lib/supabase/client'; // ✅ Correct import
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
@@ -10,6 +9,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../../../components
 import { Lock, CheckCircle, Sun, Moon, ArrowLeft, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+
+// 🔹 Server-side translations fallback
+const t = (key: string) => {
+  const translations = {
+    'auth.reset.title': 'Réinitialiser le mot de passe',
+    'auth.reset.subtitle': 'Entrez votre nouveau mot de passe',
+    'auth.reset.new_password': 'Nouveau mot de passe',
+    'auth.reset.submit': 'Mettre à jour',
+    'auth.reset.success_title': 'Mot de passe mis à jour',
+    'auth.reset.success_message': 'Votre mot de passe a été mis à jour avec succès.',
+    'auth.reset.verifying': 'Vérification en cours',
+    'auth.reset.verifying_subtitle': 'Vérification du lien de réinitialisation...',
+    'auth.reset.invalid_link': 'Lien invalide ou expiré',
+    'auth.reset.error_update': 'Erreur lors de la mise à jour du mot de passe',
+    'auth.reset.back_to_login': 'Retour à la connexion',
+    'auth.signin.submit': 'Se connecter'
+  };
+  return translations[key as keyof typeof translations] || key;
+};
 
 // 🔹 Effet bulles flottantes
 const FloatingBubbles = () => (
@@ -117,7 +135,6 @@ const ThemeToggle = () => {
 };
 
 export default function UpdatePasswordPage() {
-  const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
   

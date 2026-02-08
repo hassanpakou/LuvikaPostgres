@@ -12,11 +12,18 @@ import {
   HelpCircle, UserCheck, Users2, Store, 
   Calendar as CalendarIcon, MessageSquare, Download
 } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
 import { Input } from '../../../components/ui/input';
 import { Badge } from '../../../components/ui/badge';
+
+// 🔹 Server-side translations fallback
+const t = (key: string) => {
+  const translations = {
+    'documentation': 'Documentation'
+  };
+  return translations[key as keyof typeof translations] || key;
+};
 
 // Type definitions for documentation content
 interface DocumentationItem {
@@ -692,7 +699,6 @@ const downloadDocumentation = () => {
 };
 
 export default function DocumentationPage() {
-  const t = useTranslations('documentation');
   const [activeSection, setActiveSection] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});

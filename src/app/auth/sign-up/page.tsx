@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Mail, Lock, ArrowLeft, ArrowRight, 
@@ -13,6 +12,58 @@ import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { createClient } from '../../../lib/supabase/client';
+
+// 🔹 Server-side translations fallback
+const t = (key: string) => {
+  const translations = {
+    'auth.signup.plan_title': 'Choisissez votre plan',
+    'auth.signup.identity_title': 'Informations personnelles',
+    'auth.signup.email_title': 'Adresse email',
+    'auth.signup.security_title': 'Sécurité',
+    'auth.signup.plan_desc': 'Choisissez le plan qui correspond à vos besoins',
+    'auth.signup.identity_desc': 'Remplissez vos informations personnelles',
+    'auth.signup.email_desc': 'Entrez votre adresse email',
+    'auth.signup.security_desc': 'Choisissez un mot de passe sécurisé',
+    'auth.signup.full_name': 'Nom complet',
+    'auth.signup.full_name_placeholder': 'Entrez votre nom complet',
+    'auth.signup.username': 'Nom d\'utilisateur',
+    'auth.signup.username_hint_plain': 'Votre nom d\'utilisateur sera: {username}',
+    'auth.signup.email': 'Email',
+    'auth.signup.password': 'Mot de passe',
+    'auth.signup.password_confirm': 'Confirmez le mot de passe',
+    'auth.signup.error_name': 'Le nom doit contenir au moins 2 caractères',
+    'auth.signup.error_username': 'Le nom d\'utilisateur doit contenir 3-20 caractères alphanumériques',
+    'auth.signup.error_email_format': 'Format d\'email invalide',
+    'auth.signup.email_exists': 'Cet email est déjà utilisé',
+    'auth.signup.check_email': '✅ Compte créé ! Vérifiez votre boîte mail.',
+    'auth.signup.error_generic': 'Erreur lors de la création du compte',
+    'auth.signup.back': 'Retour',
+    'auth.signup.next': 'Suivant',
+    'auth.signup.create_account': 'Créer le compte',
+    'auth.signup.creating': 'Création en cours...',
+    'auth.signup.already_have_account': 'Vous avez déjà un compte ?',
+    'auth.signup.sign_in': 'Se connecter',
+    'auth.signup.password_length': '8 caractères minimum',
+    'auth.signup.password_uppercase': 'Une lettre majuscule',
+    'auth.signup.password_lowercase': 'Une lettre minuscule',
+    'auth.signup.password_number': 'Un chiffre',
+    'auth.signup.password_special': 'Un caractère spécial',
+    'auth.signup.password_match': 'Les mots de passe correspondent',
+    'auth.signup.2fa_enabled': 'Authentification à deux facteurs activée',
+    'pricing.plans.freemium.title': 'Freemium',
+    'pricing.plans.freemium.desc': 'Pour les particuliers',
+    'pricing.plans.premium.title': 'Professionnel',
+    'pricing.plans.premium.desc': 'Pour les professionnels',
+    'pricing.plans.entreprise.title': 'Entreprise',
+    'pricing.plans.entreprise.desc': 'Pour les grandes entreprises',
+    'pricing.plans.premium.popular': 'POPULAIRE',
+    'LUVIKA': 'LUVIKA',
+    'tagline': 'Votre identité digitale en un tap NFC',
+    'admin.stats.total_users': 'Utilisateurs enregistrés',
+    'navbar.home': 'Accueil'
+  };
+  return translations[key as keyof typeof translations] || key;
+};
 
 // 🔹 Effet bulles flottantes
 const FloatingBubbles = () => (
@@ -123,7 +174,6 @@ const ThemeToggle = () => {
 };
 
 export default function SignUpPage() {
-  const t = useTranslations();
   const router = useRouter();
   const [step, setStep] = useState<Step>('plan');
   const [loading, setLoading] = useState(false);
@@ -553,7 +603,7 @@ export default function SignUpPage() {
                           className="pl-12 pr-4 h-12 bg-white/5 border border-white/20 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl"
                         />
                         <p className="text-xs text-gray-500 mt-1">
-                          {t('auth.signup.username_hint_plain', { username: formData.username || 'votre_nom' })}
+                          {t('auth.signup.username_hint_plain').replace('{username}', formData.username || 'votre_nom')}
                         </p>
                         {!isValidUsername && formData.username && (
                           <p className="text-xs text-red-400 mt-1">{t('auth.signup.error_username')}</p>
