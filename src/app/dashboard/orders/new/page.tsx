@@ -2,13 +2,14 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import { Label } from '../../../../../components/ui/label';
 import { Input } from '../../../../../components/ui/input';
 import { Textarea } from '../../../../../components/ui/textarea';
-import { Button } from '../../../../../components/ui/button';
 import { Badge } from '../../../../../components/ui/badge';
 import { Loader2, Package, MapPin, QrCode } from 'lucide-react';
 
@@ -52,7 +53,13 @@ export default function NewOrderPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={() => router.back()} className="text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour
+          </Button>
+        </div>
       <div>
         <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
         <p className="text-gray-400">{t('description')}</p>

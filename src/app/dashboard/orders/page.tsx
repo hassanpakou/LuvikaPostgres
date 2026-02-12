@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 import { createServerClient } from '@supabase/ssr';
 import { Package, Clock, Truck, CheckCircle, AlertTriangle, X, Loader2 } from 'lucide-react';
 
@@ -156,6 +158,12 @@ export default function UserOrdersPage() {
       )}
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" onClick={() => router.back()} className="text-gray-600 hover:text-gray-900">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour
+          </Button>
+        </div>
         <div>
           <h1 className="text-2xl font-bold">Mes commandes</h1>
           <p className="text-gray-400 mt-1">

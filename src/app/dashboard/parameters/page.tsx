@@ -27,9 +27,14 @@ import {
   Save,
   Bell,
   BellOff,
+  AlertTriangle,
+  HelpCircle,
+  Info,
+  Pause,
+  Trash,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -40,6 +45,7 @@ import { Input } from '@/components/ui/input';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
 import { createClient } from '@/src/lib/supabase/client';
+import { Textarea } from '@/components/ui/textarea';
 
 // 🔑 1. Mettre à jour le type Profile (en haut du fichier)
 type Profile = {
@@ -327,7 +333,14 @@ export default function ParametersPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isRealtimeActive, setIsRealtimeActive] = useState(false);
-
+// 🔹 États pour la gestion du compte
+const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+const [showDeleteModal, setShowDeleteModal] = useState(false);
+const [deactivationReason, setDeactivationReason] = useState('');
+const [deletePassword, setDeletePassword] = useState('');
+const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+const [deactivating, setDeactivating] = useState(false);
+const [deleting, setDeleting] = useState(false);
   // 🔐 Hook biométrique
   const {
     status: biometricStatus,
@@ -574,6 +587,113 @@ const handleSave = async () => {
     );
   }
 
+  // 🔹 Désactiver le compte (temporaire)
+const handleDeactivateAccount = async () => {
+  if (!deactivationReason.trim()) {
+    toast.warning('⚠️ Veuillez indiquer une raison');
+    return;
+  }
+
+  setDeactivating(true);
+  try {
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) throw new Error('Utilisateur non authentifié');
+
+    // 🔹 Appel API sécurisé pour désactiver
+    const response = await fetch('/api/account/deactivate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        reason: deactivationReason.trim(),
+        userId: user.id 
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Échec de la désactivation');
+    }
+
+    // 🔹 Déconnexion après désactivation
+    await supabase.auth.signOut();
+    toast.success('✅ Compte désactivé', {
+      description: 'Votre compte a été temporairement désactivé. Contactez le support pour le réactiver.',
+      duration: 6000,
+    });
+    router.push('/');
+  } catch (error: any) {
+    console.error('Deactivation error:', error);
+    toast.error('❌ Échec de la désactivation', {
+      description: error.message || 'Veuillez réessayer plus tard',
+    });
+  } finally {
+    setDeactivating(false);
+    setShowDeactivateModal(false);
+    setDeactivationReason('');
+  }
+};
+
+// 🔹 Supprimer le compte (définitif)
+const handleDeleteAccount = async () => {
+  if (!deletePassword.trim()) {
+    toast.warning('⚠️ Veuillez entrer votre mot de passe');
+    return;
+  }
+  if (!deleteConfirmChecked) {
+    toast.warning('⚠️ Veuillez confirmer la suppression irréversible');
+    return;
+  }
+
+  setDeleting(true);
+  try {
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) throw new Error('Utilisateur non authentifié');
+
+    // 🔹 Vérification du mot de passe via Supabase
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email!,
+      password: deletePassword,
+    });
+
+    if (signInError) {
+      throw new Error('Mot de passe incorrect');
+    }
+
+    // 🔹 Appel API sécurisé pour suppression
+    const response = await fetch('/api/account/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: user.id }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Échec de la suppression');
+    }
+
+    // 🔹 Déconnexion après suppression
+    await supabase.auth.signOut();
+    toast.success('✅ Compte supprimé', {
+      description: 'Toutes vos données ont été supprimées définitivement.',
+      duration: 8000,
+    });
+    router.push('/');
+  } catch (error: any) {
+    console.error('Deletion error:', error);
+    toast.error('❌ Échec de la suppression', {
+      description: error.message || 'Vérifiez votre mot de passe et réessayez',
+    });
+  } finally {
+    setDeleting(false);
+    setShowDeleteModal(false);
+    setDeletePassword('');
+    setDeleteConfirmChecked(false);
+  }
+};
   return (
     <div className="space-y-8 pb-24">
       {/* En-tête */}
@@ -980,11 +1100,317 @@ const handleSave = async () => {
         </CardContent>
       </Card>
 
+{/* 🔹 🔒 GESTION DU COMPTE - Nouvelle section critique */}
+<Card className="glass-border border-rose-500/20 bg-gradient-to-br from-rose-900/15 to-pink-900/5">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2 text-rose-400">
+      <Shield className="w-5 h-5" /> Gestion du compte
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-5">
+    {/* 🔸 Désactiver temporairement */}
+    <div className="p-4 rounded-xl bg-amber-900/15 border border-amber-500/20 hover:border-amber-500/40 transition-all">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <Timer className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <Label className="text-gray-300 font-medium">Désactiver temporairement</Label>
+          </div>
+          <p className="text-sm text-gray-300 mb-3">
+            Votre profil sera masqué, vous ne recevrez plus de notifications, et vous ne pourrez pas vous connecter. 
+            <span className="font-medium text-amber-300"> Vous pourrez le réactiver à tout moment</span> en contactant le support ou en vous reconnectant.
+          </p>
+          <ul className="text-xs text-gray-400 space-y-1 mt-2">
+            <li className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 flex-shrink-0" />
+              <span>Vos données sont conservées en sécurité</span>
+            </li>
+            <li className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 flex-shrink-0" />
+              <span>Réactivation possible sur demande</span>
+            </li>
+            <li className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 flex-shrink-0" />
+              <span>Aucune perte de contenu ou d'historique</span>
+            </li>
+          </ul>
+        </div>
+        <div className="mt-4 md:mt-0 flex items-end">
+          <Button
+            variant="outline"
+            onClick={() => setShowDeactivateModal(true)}
+            className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/50 transition-all"
+          >
+            <Pause className="w-4 h-4 mr-1.5" />
+            Désactiver le compte
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    {/* 🔸 Supprimer définitivement - WARNING VISUEL */}
+    <div className="p-4 rounded-xl bg-red-900/15 border border-red-500/20 hover:border-red-500/40 transition-all">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+            <Label className="text-gray-300 font-medium flex items-center gap-1.5">
+              Supprimer définitivement
+              <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
+                Irréversible
+              </Badge>
+            </Label>
+          </div>
+          <p className="text-sm text-gray-300 mb-3">
+            <span className="font-bold text-red-300">Action irréversible :</span> 
+            Toutes vos données seront supprimées définitivement :
+          </p>
+          <ul className="text-xs text-gray-400 space-y-1.5 mt-2 pl-4 list-disc">
+            <li>Profil public et informations personnelles</li>
+            <li>Cartes NFC, QR Codes et historique de scans</li>
+            <li>Portfolios, certifications, compétences</li>
+            <li>Événements, contacts, messages</li>
+            <li>Documents (CV, liens personnalisés)</li>
+          </ul>
+          <p className="text-xs text-red-300 mt-3 font-medium flex items-center gap-1.5">
+            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+            Cette action ne peut pas être annulée. Sauvegardez vos données importantes avant de continuer.
+          </p>
+        </div>
+        <div className="mt-4 md:mt-0 flex items-end">
+          <Button
+            variant="destructive"
+            onClick={() => setShowDeleteModal(true)}
+            className="bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 hover:border-red-500/50 transition-all shadow-md shadow-red-500/10"
+          >
+            <Trash className="w-4 h-4 mr-1.5" />
+            Supprimer le compte
+          </Button>
+        </div>
+      </div>
+    </div>
+
+    {/* 🔸 Aide et support */}
+    <div className="pt-4 border-t border-white/10">
+      <div className="flex items-start gap-3 p-3 bg-blue-900/15 rounded-lg">
+        <div className="mt-0.5 p-1.5 bg-blue-500/15 rounded-lg">
+          <HelpCircle className="w-4 h-4 text-blue-400" />
+        </div>
+        <div>
+          <p className="text-sm font-medium text-blue-200">Besoin d'aide ?</p>
+          <p className="text-xs text-blue-300 mt-0.5">
+            Contactez notre équipe support avant de supprimer votre compte : 
+            <a href="mailto:support@luvika.me" className="ml-1 text-cyan-300 hover:underline font-medium">
+              support@luvika.me
+            </a>
+          </p>
+          <p className="text-[10px] text-blue-400 mt-1 flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3" />
+            Nous respectons votre vie privée et votre choix. Aucune donnée n'est conservée après suppression.
+          </p>
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
+
       {/* Quick Menu */}
       <DashboardQuickMenu 
         onAction={handleQuickAction} 
         actions={quickActions} 
       />
+
+      {/* 🔹 MODALE DE DESACTIVATION */}
+<AnimatePresence>
+  {showDeactivateModal && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={() => setShowDeactivateModal(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md glass-border border-amber-500/30 bg-gradient-to-br from-amber-900/20 to-amber-900/10 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2 bg-amber-500/15 rounded-lg">
+            <Timer className="w-6 h-6 text-amber-400" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Désactiver votre compte</h3>
+            <p className="text-sm text-amber-200 mt-1">
+              Votre profil sera temporairement masqué. Vous pourrez le réactiver à tout moment.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-4 mb-6">
+          <div>
+            <Label htmlFor="deactivate-reason" className="text-gray-300 mb-1.5 block">
+              Raison de la désactivation (optionnelle)
+            </Label>
+            <Textarea
+              id="deactivate-reason"
+              value={deactivationReason}
+              onChange={(e) => setDeactivationReason(e.target.value)}
+              placeholder="Ex: Pause temporaire, changement de projet..."
+              className="min-h-[100px] bg-white/5 border-white/10 focus:border-amber-400/50 focus:ring-amber-400/20 text-white"
+            />
+            <p className="text-xs text-gray-500 mt-1 text-right">{deactivationReason.length}/200</p>
+          </div>
+
+          <div className="p-3 bg-amber-900/20 border border-amber-500/20 rounded-lg">
+            <p className="text-xs text-amber-200 flex items-start gap-1.5">
+              <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <span>
+                Vos données restent sécurisées et intactes. Aucune information ne sera perdue. 
+                Pour réactiver votre compte, contactez-nous à <span className="font-medium">support@luvika.me</span>.
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowDeactivateModal(false);
+              setDeactivationReason('');
+            }}
+            className="border-white/20 text-gray-300 hover:bg-white/10"
+          >
+            Annuler
+          </Button>
+          <Button
+            onClick={handleDeactivateAccount}
+            disabled={deactivating || deactivationReason.length > 200}
+            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500"
+          >
+            {deactivating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Désactivation...
+              </>
+            ) : (
+              <>
+                <Pause className="w-4 h-4 mr-2" />
+                Confirmer la désactivation
+              </>
+            )}
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+
+  {/* 🔹 MODALE DE SUPPRESSION */}
+  {showDeleteModal && (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={() => setShowDeleteModal(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md glass-border border-red-500/30 bg-gradient-to-br from-red-900/20 to-red-900/10 rounded-2xl p-6"
+      >
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2 bg-red-500/15 rounded-lg">
+            <AlertTriangle className="w-6 h-6 text-red-400" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-white">Suppression définitive</h3>
+            <p className="text-sm text-red-200 mt-1">
+              Cette action est irréversible. Confirmez avec votre mot de passe.
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-5 mb-6">
+          <div>
+            <Label htmlFor="delete-password" className="text-gray-300 mb-1.5 block">
+              Mot de passe pour confirmer
+            </Label>
+            <Input
+              id="delete-password"
+              type="password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              placeholder="••••••••"
+              className="bg-white/5 border-white/10 focus:border-red-400/50 focus:ring-red-400/20 text-white"
+            />
+          </div>
+
+          <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
+            <Checkbox
+              id="delete-confirm"
+              checked={deleteConfirmChecked}
+              onCheckedChange={(checked) => setDeleteConfirmChecked(checked as boolean)}
+              className="mt-0.5 border-red-400/50 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
+            />
+            <Label htmlFor="delete-confirm" className="text-xs text-red-200">
+              Je comprends que <span className="font-bold">toutes mes données seront supprimées définitivement</span> 
+              et que cette action <span className="font-bold">ne peut pas être annulée</span>. J'accepte de perdre 
+              l'accès à mon compte et à tout son contenu.
+            </Label>
+          </div>
+
+          <div className="p-3 bg-rose-900/20 border border-rose-500/20 rounded-lg">
+            <p className="text-xs text-rose-200 flex items-start gap-1.5">
+              <ShieldCheck className="w-3 h-3 mt-0.5 flex-shrink-0" />
+              <span>
+                Conformément au RGPD, vos données seront supprimées dans les 30 jours. 
+                Une confirmation par email vous sera envoyée après la suppression complète.
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowDeleteModal(false);
+              setDeletePassword('');
+              setDeleteConfirmChecked(false);
+            }}
+            className="border-white/20 text-gray-300 hover:bg-white/10"
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleDeleteAccount}
+            disabled={deleting || !deleteConfirmChecked || deletePassword.length < 6}
+            className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 border border-red-500/30"
+          >
+            {deleting ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Suppression...
+              </>
+            ) : (
+              <>
+                <Trash className="w-4 h-4 mr-2" />
+                Supprimer définitivement
+              </>
+            )}
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
     </div>
   );
 }
