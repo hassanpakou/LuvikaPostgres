@@ -21,7 +21,8 @@ import {
   GraduationCap,
   MoreHorizontal,
   PenTool,
-  Search
+  Search,
+  Star
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ import { PublicProfile } from '../../types/profile';
 
 // 🔹 Types
 type Profile = {
+  badges: any;
   created_at: any;
   id: string;
   full_name: string;
@@ -1138,7 +1140,20 @@ const showLinksSection =
           </motion.div>
         )}
       </div>
-
+{/* 🔹 Badge Pionnier LUVIKA */}
+{localProfile.badges?.includes('pioneer') && (
+  <motion.div
+    initial={{ scale: 0, opacity: 0, rotate: -15 }}
+    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+    transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
+    className="absolute -bottom-2 -right-2"
+  >
+    <Badge className="px-2 py-0.5 text-xs font-medium rounded-full border border-amber-400/30 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
+      <Star className="w-3 h-3 inline mr-0.5 fill-white" />
+      Pionnier
+    </Badge>
+  </motion.div>
+)}
       {/* 🔹 TEXTE : Username + Full Name - À droite de l'avatar sur mobile */}
       <motion.div 
   className="ml-3 mt-8 md:ml-0 md:mt-4 text-left md:text-center flex-1 min-w-0"

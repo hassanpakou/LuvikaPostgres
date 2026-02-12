@@ -9,6 +9,7 @@ import CookieBanner from '../components/layout/CookieBanner';
 import InstallModal from '../components/layout/InstallModal';
 import SessionGuard from '../components/SessionGuard';
 import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutProvider';
+import { ReviewPrompt } from '../components/system/ReviewPrompt';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -89,6 +90,8 @@ export default async function RootLayout({
             <SessionTimeoutProvider>
               <SessionGuard>
                 {children}
+                                <ReviewPrompt />
+
               </SessionGuard>
               <CookieBanner />
               <InstallModal />

@@ -11,6 +11,7 @@ export type PublicProfile = {
   website: string | null;
   city: string | null;
   country: string | null;
+  badges?: string[];
   sections_visibility: Record<
     | 'bio'
     | 'contact'
