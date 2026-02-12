@@ -619,7 +619,7 @@ export default function ParametersPage() {
                 <p className="text-xs text-gray-400">{t('privacy.verified_badge_desc')}</p>
                 {profile.verified && (
                   <img 
-                    src="/badge-verified.png" 
+                    src="/badge.png"
                     alt="✅ Vérifié" 
                     className="w-5 h-5 rounded-full border border-emerald-400/30"
                     title={t('privacy.verified_tooltip')}
