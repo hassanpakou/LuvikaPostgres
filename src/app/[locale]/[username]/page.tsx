@@ -1,3 +1,5 @@
+// src/app/[locale]/[username]/page.tsx
+
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';

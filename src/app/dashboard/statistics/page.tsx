@@ -222,7 +222,7 @@ setUserPlan(plan);
     switch (type) {
       case 'nfc': return <Smartphone className="w-4 h-4" />;
       case 'qr_profile': return <QrCode className="w-4 h-4" />;
-      case 'qr_business': return <Globe className="w-4 h-4" />;
+      case 'qr_event': return <Globe className="w-4 h-4" />;
       default: return <Eye className="w-4 h-4" />;
     }
   };
@@ -231,7 +231,7 @@ setUserPlan(plan);
     switch (type) {
       case 'nfc': return 'NFC';
       case 'qr_profile': return 'QR Profil';
-      case 'qr_business': return 'QR Business';
+      case 'qr_event': return 'QR Business';
       default: return type;
     }
   };
@@ -433,7 +433,7 @@ setUserPlan(plan);
                 <SelectItem value="all">{t('all_types')}</SelectItem>
                 <SelectItem value="nfc">NFC</SelectItem>
                 <SelectItem value="qr_profile">QR Profil</SelectItem>
-                <SelectItem value="qr_business">QR Business</SelectItem>
+                <SelectItem value="qr_event">QR Business</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -486,7 +486,7 @@ setUserPlan(plan);
           <CardContent className="p-4 flex items-center justify-between">
             <div>
               <div className="text-2xl font-bold text-white">
-                {getCountByType('qr_business')}
+                {getCountByType('qr_event')}
               </div>
               <div className="text-sm text-gray-400">QR Business</div>
             </div>

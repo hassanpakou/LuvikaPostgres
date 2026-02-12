@@ -5,7 +5,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import Navbar from '@/components/layout/Navbar';
 import { ClientProviders } from '../../../src/components/system/ClientProviders';
-
+  
 const inter = Inter({ subsets: ['latin'] });
 
 // Type union littéral pour les locales supportées

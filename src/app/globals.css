@@ -254,3 +254,32 @@
     shadow-xl
     shadow-cyan-500/20;
 }
+
+/* 🔹 ANIMATIONS FOND PREMIUM */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 45s ease infinite;
+  background-size: 400% 400%;
+}
+
+/* 🔹 Animation pulse subtile pour la brume */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+.animate-pulse-subtle {
+  animation: pulse-subtle 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* 🔹 Optimisation perf mobile */
+@media (prefers-reduced-motion: reduce) {
+  .fixed.inset-0 > * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1296,7 +1296,7 @@ const handleManageCards = () => {
 
 // 🔹 Rediriger vers la page de commande de carte
 const handleOrderCard = () => {
-  router.push('/dashboard/nfc/order');
+  router.push('/dashboard/orders');
 };
 
 // 🔹 Vérifier si l'utilisateur a au moins une carte commandée

@@ -326,6 +326,7 @@ export default function ParametersPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
 
   // 🔐 Hook biométrique
   const {
@@ -362,6 +363,140 @@ export default function ParametersPage() {
     if (actionId === 'refresh') fetchProfile();
     if (actionId === 'back') router.push('/dashboard');
   };
+
+  // 🔹 REALTIME - Canal Supabase pour les mises à jour en temps réel
+  useEffect(() => {
+    const setupRealtime = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+          console.warn('❌ Authentification requise pour le realtime');
+          return;
+        }
+
+        // 🔹 Canal pour les mises à jour du profil
+        const profileChannel = supabase
+          .channel(`realtime-profile-${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'profiles',
+              filter: `id=eq.${user.id}`
+            },
+            (payload) => {
+              console.log('🔄 Profile update received:', payload.new);
+              
+              // 🔹 Mise à jour optimiste avec toast
+              setProfile(prev => {
+                if (!prev) return prev;
+                
+                const updatedProfile = {
+                  ...prev,
+                  ...payload.new,
+                  enable_connection_alerts: payload.new.enable_connection_alerts ?? prev.enable_connection_alerts
+                };
+
+                // 🔹 Notification de mise à jour en temps réel
+                toast.success('✅ Profil mis à jour en temps réel', {
+                  description: 'Vos paramètres ont été synchronisés automatiquement',
+                  icon: <RefreshCw className="w-4 h-4 text-emerald-400" />,
+                  duration: 2000,
+                });
+
+                return updatedProfile;
+              });
+            }
+          )
+          .subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              console.log('✅ Canal realtime profil connecté');
+              setIsRealtimeActive(true);
+              
+              // 🔹 Notification de connexion realtime
+              toast.success('📡 Connexion temps réel active', {
+                description: 'Les modifications seront synchronisées instantanément',
+                icon: <RefreshCw className="w-4 h-4 text-cyan-400" />,
+                duration: 3000,
+              });
+            } else if (status === 'CHANNEL_ERROR') {
+              console.warn('⚠️ Erreur canal realtime');
+              toast.warning('⚠️ Connexion temps réel instable', {
+                description: 'Les modifications seront sauvegardées localement',
+                duration: 4000,
+              });
+            }
+          });
+
+        // 🔹 Canal pour les alertes de connexion (si activé)
+        const alertsChannel = supabase
+          .channel(`realtime-alerts-${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'connection_alerts',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              console.log('🔔 Connection alert received:', payload);
+              
+              // 🔹 Notification push pour les nouvelles connexions
+              if (payload.new) {
+                const alert = payload.new as any; // Type assertion pour éviter les erreurs TypeScript
+                toast.info('📱 Nouvelle connexion détectée', {
+                  description: `Appareil: ${alert.device_info || 'Inconnu'}\nLieu: ${alert.location || 'Non disponible'}`,
+                  icon: <Smartphone className="w-4 h-4 text-amber-400" />,
+                  duration: 6000,
+                  action: {
+                    label: 'Voir',
+                    onClick: () => router.push('/dashboard/settings')
+                  }
+                });
+              }
+            }
+          )
+          .subscribe();
+
+        // 🔹 Gestionnaire de reconnexion
+        const handleReconnect = () => {
+          console.log('🔄 Tentative de reconnexion realtime');
+          toast.info('🔄 Reconnexion en cours...', {
+            description: 'Connexion temps réel en cours de rétablissement',
+            duration: 2000,
+          });
+        };
+
+        // 🔹 Écouteur de connexion réseau
+        const handleOnline = () => {
+          console.log('🌐 Connexion réseau restaurée - reconnexion realtime');
+          handleReconnect();
+        };
+
+        window.addEventListener('online', handleOnline);
+
+        // 🔹 Nettoyage
+        return () => {
+          supabase.removeChannel(profileChannel);
+          supabase.removeChannel(alertsChannel);
+          window.removeEventListener('online', handleOnline);
+          setIsRealtimeActive(false);
+        };
+      } catch (err) {
+        console.error('❌ Erreur realtime setup:', err);
+        toast.error('❌ Temps réel désactivé', {
+          description: 'Impossible de se connecter au service temps réel',
+          duration: 4000,
+        });
+      }
+    };
+
+    setupRealtime();
+  }, [router]);
 
 // 🔑 2. Dans la fonction fetchProfile (ajouter le default)
 const fetchProfile = async () => {
@@ -452,6 +587,24 @@ const handleSave = async () => {
           <p className="text-gray-400">{t('parameters.subtitle')}</p>
         </div>
         <div className="flex gap-2">
+          {/* 🔹 INDICATEUR REALTIME */}
+          <div className="flex items-center gap-2">
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 ${
+              isRealtimeActive 
+                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' 
+                : 'border-gray-500/30 bg-gray-500/10 text-gray-300'
+            }`}>
+              <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
+                isRealtimeActive 
+                  ? 'bg-emerald-400 animate-pulse' 
+                  : 'bg-gray-400'
+              }`} />
+              <span className="text-xs font-medium">
+                {isRealtimeActive ? 'Temps réel' : 'Hors ligne'}
+              </span>
+            </div>
+          </div>
+          
           <Button 
             variant="outline" 
             onClick={() => router.push('/dashboard')}

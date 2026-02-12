@@ -1,3 +1,5 @@
+// src/app/dashboard/card-config/page.tsx
+
 'use client';
 
 import { useState, useEffect, useRef, JSX } from 'react';

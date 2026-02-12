@@ -9,9 +9,11 @@ import {
   Upload, Save, Image as ImageIcon, ExternalLink, Eye, Mail, Phone,
   Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings, Crown,
   AlertTriangle, CheckCircle, X, RotateCcw, Cake, Tag, Link as LinkIcon,
-  Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck
+  Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck,
+  Wifi, WifiOff, RefreshCw, Bell, BellOff, Smartphone as SmartphoneIcon, AlertCircle
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
+import { toast } from 'sonner';
 
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
@@ -144,6 +146,10 @@ export default function SettingsPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [newSkill, setNewSkill] = useState('');
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [profileBackup, setProfileBackup] = useState<Profile | null>(null);
 
   // 🔹 Fetch profil
   useEffect(() => {
@@ -209,6 +215,9 @@ export default function SettingsPage() {
           if (payload.new.cover_url !== profile.cover_url) {
             setCoverPreview(payload.new.cover_url);
           }
+          // Notification temps réel
+          toast.success('Profil mis à jour par un autre appareil');
+          setLastSync(new Date());
         }
       )
       .subscribe();
@@ -217,6 +226,51 @@ export default function SettingsPage() {
       supabase.removeChannel(channel);
     };
   }, [profile?.id]);
+
+  // 🔹 Gestion connectivité
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success('Connexion rétablie');
+      setLastSync(new Date());
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.warning('Connexion perdue - les modifications seront synchronisées plus tard');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // 🔹 Sauvegarde automatique
+  useEffect(() => {
+    if (!profile || !profileBackup) return;
+    
+    const hasChanges = JSON.stringify(profile) !== JSON.stringify(profileBackup);
+    setHasUnsavedChanges(hasChanges);
+
+    if (hasChanges && isOnline) {
+      const timer = setTimeout(() => {
+        handleSave();
+      }, 2000); // Sauvegarde automatique après 2 secondes d'inactivité
+
+      return () => clearTimeout(timer);
+    }
+  }, [profile, profileBackup, isOnline]);
+
+  // 🔹 Backup initial
+  useEffect(() => {
+    if (profile && !profileBackup) {
+      setProfileBackup(JSON.parse(JSON.stringify(profile)));
+    }
+  }, [profile]);
 
   // 🔹 Complétion
   const getCompletion = () => {
@@ -445,10 +499,33 @@ export default function SettingsPage() {
             </Badge>
           </div>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-blue-600 to-cyan-500">
-          <Save className="w-4 h-4 mr-2" />
-          {saving ? t('contact.saving') : t('contact.save')}
-        </Button>
+        <div className="flex items-center gap-3">
+          {/* 🔹 Indicateur de connectivité */}
+          <div className="flex items-center gap-2 text-sm">
+            <div className={`flex items-center gap-1 ${isOnline ? 'text-green-400' : 'text-red-400'}`}>
+              {isOnline ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />}
+              <span>{isOnline ? 'En ligne' : 'Hors ligne'}</span>
+            </div>
+            {hasUnsavedChanges && (
+              <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/20">
+                <AlertCircle className="w-3 h-3 mr-1" />
+                Modifications non sauvegardées
+              </Badge>
+            )}
+          </div>
+          
+          {/* 🔹 Dernière synchronisation */}
+          {lastSync && (
+            <div className="text-xs text-gray-400">
+              Dernière synchro: {lastSync.toLocaleTimeString()}
+            </div>
+          )}
+          
+          <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-blue-600 to-cyan-500">
+            <Save className="w-4 h-4 mr-2" />
+            {saving ? t('contact.saving') : t('contact.save')}
+          </Button>
+        </div>
       </motion.div>
 
       {/* 🔹 Message feedback */}
