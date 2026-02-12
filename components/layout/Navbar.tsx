@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '../../src/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { SiSocialblade } from 'react-icons/si';
 
 type Locale = 'ar' | 'en' | 'es' | 'fr' | 'kg' | 'ln' | 'nl' | 'pt' | 'sw';
 
@@ -115,12 +116,27 @@ export default function Navbar() {
       <div className="mx-4 mt-4 rounded-2xl border border-white/15 backdrop-blur-xl bg-white/5 shadow-lg">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
           {/* Logo */}
-          <Link href={isAdmin ? '/admin' : isUser ? '/dashboard' : '/'} className="flex items-center space-x-2">
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-              LUVIKA
-            </span>
-            {isAdmin && <Shield className="h-5 w-5 text-red-400" />}
-          </Link>
+          {/* 🔹 Logo LUVIKA */}
+<Link
+  href={isAdmin ? '/admin' : isUser ? '/dashboard' : '/'}
+  className="flex items-center gap-3 group"
+>
+  {/* Icône */}
+  <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+    <SiSocialblade className="w-5 h-5 text-white" />
+  </div>
+
+  {/* Texte */}
+  <span className="text-xl font-extrabold tracking-wide bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+    LUVIKA
+  </span>
+
+  {/* Badge Admin */}
+  {isAdmin && (
+    <Shield className="w-5 h-5 text-red-400 drop-shadow-sm" />
+  )}
+</Link>
+
 
           {/* Menu desktop */}
           <nav className="hidden md:flex items-center space-x-1">

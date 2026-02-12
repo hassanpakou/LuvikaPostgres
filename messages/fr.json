@@ -129,9 +129,11 @@
     "completed": "complété",
     "view_public_profile": "Voir mon profil public"
   },"settings": {
+    "url_copied": "✅ Lien copié",
       "title": "Paramètres du Profil",
       "description": "Gérez vos informations personnelles et la confidentialité",
               "save": "Enregistrer les modifications",
+              
               "refresh": "Actualiser",
               "back": "Retour",
       "profile": {
@@ -555,6 +557,7 @@
         "nfc": "NFC",
         "qr": "QR"
       }
+      
     },
     "other_features": {
       "title": "Autres fonctionnalités",

@@ -296,7 +296,9 @@ export default function PublicProfileClientWrapper({
     <div suppressHydrationWarning className="min-h-screen relative">
       {/* ... indicateur de synchronisation ... */}
       
-      <div className="fixed bottom-4 left-4 z-50">
+      <div className="fixed top-9 right-4 mt-6 z-50">
+
+
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
           lastUpdate.getTime() > Date.now() - 60000 
             ? 'bg-green-500/20 text-green-300 border border-green-500/30' 

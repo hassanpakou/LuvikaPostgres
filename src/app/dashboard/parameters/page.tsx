@@ -25,6 +25,8 @@ import {
   ArrowLeft,
   RefreshCw,
   Save,
+  Bell,
+  BellOff,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -39,7 +41,7 @@ import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
 import { createClient } from '@/src/lib/supabase/client';
 
-// 🔐 Type pour le profil
+// 🔑 1. Mettre à jour le type Profile (en haut du fichier)
 type Profile = {
   id: string;
   username?: string | null;
@@ -49,6 +51,8 @@ type Profile = {
   plan?: string | null;
   is_public?: boolean | null;
   accepts_contact_requests?: boolean | null;
+  // 🔹 CHAMP AJOUTÉ POUR LES ALERTES DE CONNEXION
+  enable_connection_alerts?: boolean | null; // ✅ NOUVEAU CHAMP
   [key: string]: any;
 };
 
@@ -280,7 +284,7 @@ function useBiometricAuth() {
       return false;
     }
   };
-
+  
   const disableBiometricAuth = async () => {
     try {
       const res = await fetch('/api/auth/biometric/disable', {
@@ -359,66 +363,73 @@ export default function ParametersPage() {
     if (actionId === 'back') router.push('/dashboard');
   };
 
-  // Charger le profil
-  const fetchProfile = async () => {
-    setLoading(true);
-    try {
-      const supabase = createClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+// 🔑 2. Dans la fonction fetchProfile (ajouter le default)
+const fetchProfile = async () => {
+  setLoading(true);
+  try {
+    const supabase = createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-      if (authError || !user) {
-        router.push('/login');
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-      if (data) setProfile(data);
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      toast.error('❌ Erreur lors du chargement du profil');
-    } finally {
-      setLoading(false);
+    if (authError || !user) {
+      router.push('/login');
+      return;
     }
-  };
+   const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error) throw error;
+    if (data) {
+      // ✅ INITIALISATION SÉCURISÉE DU NOUVEAU CHAMP
+      setProfile({
+        ...data,
+        enable_connection_alerts: data.enable_connection_alerts ?? true // Default à true
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching profile:', err);
+    toast.error('❌ Erreur lors du chargement du profil');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
-  // Sauvegarder les modifications
-  const handleSave = async () => {
-    if (!profile) return;
 
-    setSaving(true);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          hide_birth_year: profile.hide_birth_year,
-          disable_birthday_icon: profile.disable_birthday_icon,
-          verified: profile.verified,
-          is_public: profile.is_public,
-          accepts_contact_requests: profile.accepts_contact_requests,
-        })
-        .eq('id', profile.id);
+// 🔑 3. Dans handleSave (ajouter le champ à la sauvegarde)
+const handleSave = async () => {
+  if (!profile) return;
 
-      if (error) throw error;
+  setSaving(true);
+  try {
+    const supabase = createClient();
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        hide_birth_year: profile.hide_birth_year,
+        disable_birthday_icon: profile.disable_birthday_icon,
+        verified: profile.verified,
+        is_public: profile.is_public,
+        accepts_contact_requests: profile.accepts_contact_requests,
+        // ✅ SAUVEGARDE DU NOUVEAU CHAMP
+        enable_connection_alerts: profile.enable_connection_alerts,
+      })
+      .eq('id', profile.id);
 
-      toast.success('✅ Paramètres enregistrés avec succès !');
-    } catch (err) {
-      console.error('Error saving profile:', err);
-      toast.error('❌ Erreur lors de l\'enregistrement');
-    } finally {
-      setSaving(false);
-    }
-  };
+    if (error) throw error;
+    toast.success('✅ Paramètres enregistrés avec succès !');
+  } catch (err) {
+    console.error('Error saving profile:', err);
+    toast.error('❌ Erreur lors de l\'enregistrement');
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading || !profile) {
     return (
@@ -620,7 +631,7 @@ export default function ParametersPage() {
                 {profile.verified && (
                   <img 
                     src="/badge.png"
-                    alt="✅ Vérifié" 
+                    alt=" Vérifié" 
                     className="w-5 h-5 rounded-full border border-emerald-400/30"
                     title={t('privacy.verified_tooltip')}
                   />
@@ -699,38 +710,120 @@ export default function ParametersPage() {
             </div>
           </div>
           
-          {/* 🔸 NOUVEAU: Options de sécurité avancées */}
-          <div className="pt-4 mt-4 border-t border-white/10">
-            <Label className="text-gray-300 flex items-center gap-2 mb-3">
-              <Shield className="w-4 h-4 text-rose-400" /> Sécurité avancée
-            </Label>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-rose-900/20">
-                <div>
-                  <Label className="text-gray-300 flex items-center gap-2">
-                    <Timer className="w-4 h-4 text-rose-400" /> Session automatique
-                  </Label>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Déconnexion automatique après 15 min d'inactivité
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-900/20">
-                <div>
-                  <Label className="text-gray-300 flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-amber-400" /> Alertes de connexion
-                  </Label>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Recevoir une notification à chaque nouvelle connexion
-                  </p>
-                </div>
-                <Switch defaultChecked />
-              </div>
-            </div>
+          {/* 🔸 SÉCURITÉ AVANCÉE - Version corrigée et fonctionnelle */}
+<div className="pt-4 mt-4 border-t border-white/10">
+  <Label className="text-gray-300 flex items-center gap-2 mb-3">
+    <Shield className="w-4 h-4 text-rose-400" /> Sécurité avancée
+  </Label>
+  
+  <div className="space-y-4">
+    {/* 🔹 INFO SESSIONS (statique - pas de switch trompeur) */}
+    <div className="p-4 rounded-xl bg-gradient-to-r from-rose-900/20 to-pink-900/10 border border-rose-500/20">
+      <div className="flex items-start gap-3">
+        <div className="mt-1 p-2 bg-rose-500/10 rounded-lg">
+          <ShieldCheck className="w-5 h-5 text-rose-400" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-bold text-white flex items-center gap-2">
+            <Timer className="w-4 h-4" /> Sécurité des sessions
+          </h3>
+          <p className="text-sm text-gray-300 mt-1">
+            🔒 Vos sessions sont sécurisées par défaut :
+          </p>
+          <ul className="mt-2 space-y-1.5 text-xs text-gray-400">
+            <li className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
+              <span>Déconnexion automatique après <span className="font-medium text-white">15 minutes</span> d'inactivité</span>
+            </li>
+            <li className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
+              <span>Invalidation immédiate lors du changement de mot de passe</span>
+            </li>
+            <li className="flex items-start gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
+              <span>Alertes en temps réel pour les nouvelles connexions (activable ci-dessous)</span>
+            </li>
+          </ul>
+          
+          {/* 🔹 BOUTON DE SCROLL CORRIGÉ */}
+          <div className="mt-3 pt-3 border-t border-rose-500/20">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const target = document.getElementById('connection-alerts');
+                if (target) {
+                  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  // Optionnel : highlight temporaire
+                  target.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2', 'ring-offset-gray-900');
+                  setTimeout(() => target.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2', 'ring-offset-gray-900'), 2000);
+                }
+              }}
+              className="border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
+            >
+              <Bell className="w-3 h-3 mr-1.5" />
+              Activer les alertes de connexion
+            </Button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    {/* 🔹 ALERTES DE CONNEXION - ID AJOUTÉ + TOAST CORRIGÉ */}
+    <div 
+      id="connection-alerts" // ✅ ID OBLIGATOIRE POUR LE SCROLL
+      className="flex items-center justify-between p-3 rounded-lg bg-amber-900/20 border border-amber-500/20"
+    >
+      <div>
+        <Label className="text-gray-300 flex items-center gap-2">
+          <Smartphone className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          <span>Alertes de connexion</span>
+        </Label>
+        <p className="text-xs text-gray-400 mt-1 flex items-start gap-1">
+          <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+          Recevoir une notification à chaque nouvelle connexion sur un nouvel appareil
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        {/* ✅ BADGE D'ÉTAT */}
+        {profile.enable_connection_alerts ? (
+          <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <CheckCircle className="w-3 h-3 mr-1" /> Activé
+          </Badge>
+        ) : (
+          <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <XCircle className="w-3 h-3 mr-1" /> Désactivé
+          </Badge>
+        )}
+        
+        {/* ✅ SWITCH FONCTIONNEL AVEC TOAST CORRIGÉ */}
+        <Switch 
+          checked={profile.enable_connection_alerts === true} 
+          onCheckedChange={(checked) => {
+            setProfile({ ...profile, enable_connection_alerts: checked });
+            
+            // ✅ CORRECTION CRITIQUE : API Sonner correcte (pas de .message)
+            toast(
+              checked ? '🔔 Alertes activées' : '🔕 Alertes désactivées',
+              {
+                description: checked 
+                  ? 'Vous recevrez une notification pour chaque nouvelle connexion' 
+                  : 'Aucune notification ne sera envoyée pour les nouvelles connexions',
+                icon: checked ? (
+                  <Bell className="w-5 h-5 text-emerald-400" />
+                ) : (
+                  <BellOff className="w-5 h-5 text-amber-400" />
+                ),
+                duration: 3000,
+              }
+            );
+          }}
+          aria-label="Activer/désactiver les alertes de connexion"
+        />
+      </div>
+    </div>
+  </div>
+</div>
         </CardContent>
       </Card>
 

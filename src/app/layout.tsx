@@ -1,3 +1,4 @@
+// src/app/layout.tsx
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
@@ -7,6 +8,7 @@ import { ClientProviders } from '@/src/components/system/ClientProviders';
 import CookieBanner from '../components/layout/CookieBanner';
 import InstallModal from '../components/layout/InstallModal';
 import SessionGuard from '../components/SessionGuard';
+import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutProvider'; // ✅ IMPORT AJOUTÉ
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
     siteName: 'Luvika',
     images: [
       {
-        url: '/lo.jpeg',   // ton image
+        url: '/lo.jpeg',
         width: 1200,
         height: 630,
         alt: 'Logo Luvika',
@@ -43,7 +45,6 @@ export const metadata: Metadata = {
     images: ['/lo.jpeg'],
   },
 };
-
 
 export default async function RootLayout({
   children,
@@ -67,14 +68,16 @@ export default async function RootLayout({
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>
-            <SessionGuard>
-              {children}
-            </SessionGuard>
-            <CookieBanner />
-            <InstallModal />
+            {/* ✅ SESSION TIMEOUT PROVIDER AJOUTÉ ICI (wrapper global) */}
+            <SessionTimeoutProvider>
+              <SessionGuard>
+                {children}
+              </SessionGuard>
+              <CookieBanner />
+              <InstallModal />
+            </SessionTimeoutProvider>
           </ClientProviders>
         </NextIntlClientProvider>
-        
       </body>
     </html>
   );
