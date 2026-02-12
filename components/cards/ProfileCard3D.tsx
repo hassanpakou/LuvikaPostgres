@@ -1,3 +1,5 @@
+// src/components/cards/ProfileCard3D.tsx
+
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
