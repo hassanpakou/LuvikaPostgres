@@ -40,3 +40,5 @@ export const auth = {
     return supabase.auth.getUser()
   },
 }
+
+export { createServerClient }

@@ -9,6 +9,9 @@ interface ActionItemProps {
   icon: React.ReactNode;
   label: string;
   href?: string;
+    value?: string; // <-- ajoute ça
+  gradient?: string;  // <-- ajoute cette ligne
+SocialCard?: React.ReactNode; // Optionnel pour les cartes sociales
   onClick?: () => void;
   className?: string; // ✅ On ajoute className ici
 }
@@ -18,6 +21,9 @@ export default function ActionItem({
   label,
   href,
   onClick,
+  value,
+  SocialCard,
+  gradient,
   className,
 }: ActionItemProps) {
   const [isMobile, setIsMobile] = useState(false);

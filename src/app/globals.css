@@ -233,3 +233,24 @@
     backdrop-filter: none !important;
   }
 }
+/* ========== GLASS SECTIONS (GLOBAL) ========== */
+
+.glass-section {
+  @apply 
+    backdrop-blur-xl
+    bg-white/5
+    border border-white/15
+    rounded-xl
+    shadow-lg
+    shadow-cyan-500/10;
+}
+
+.glass-section-icy {
+  @apply
+    backdrop-blur-2xl
+    bg-gradient-to-br from-white/10 via-white/5 to-transparent
+    border border-cyan-300/20
+    rounded-xl
+    shadow-xl
+    shadow-cyan-500/20;
+}

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Eye, Bell, QrCode, Contact, AlertTriangle,
   MessageSquare, User, Search, Package, Calendar, ArrowUp, Plus, Users,
+  Menu, X,
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 
@@ -17,27 +18,38 @@ type Action = {
   disabled?: boolean;
 };
 
-// 🔹 Hook pour jouer un son
+// 🔹 Hook pour jouer un son (optimisé)
 const useSound = (soundPath: string) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Précharger le son
-    audioRef.current = new Audio(soundPath);
-    audioRef.current.volume = 0.3; // Volume à 30%
+    // Précharger le son avec gestion d'erreur
+    const audio = new Audio(soundPath);
+    audio.volume = 0.25; // Volume discret
+    audioRef.current = audio;
+    
+    return () => {
+      audio.pause();
+      audio.src = '';
+    };
   }, [soundPath]);
 
   const play = () => {
     if (audioRef.current) {
-      audioRef.current.currentTime = 0; // Réinitialiser
-      audioRef.current.play().catch(err => console.warn('Audio play failed:', err));
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(err => {
+        // Silencieux en production - pas d'erreur dans la console
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Audio play failed:', err);
+        }
+      });
     }
   };
 
   return play;
 };
 
-// 🔹 Composant — version minimale (design initial inchangé)
+// 🔹 Composant — version optimisée et responsive
 export default function DashboardQuickMenu({
   onAction,
   actions,
@@ -47,46 +59,162 @@ export default function DashboardQuickMenu({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startYRef = useRef(0);
   
-  // 🔊 Sons de clic
-  const playClickSound = useSound('/click.mp3');
+  // 🔊 Sons de clic (avec fallback silencieux)
+  const playClickSound = useSound('/sounds/click-subtle.mp3');
 
+  // 🔹 Détection responsive améliorée
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      
+      // Fermer le menu si changement de viewport pendant ouvert
+      if (isOpen && mobile !== isMobile) {
+        setIsOpen(false);
+      }
+    };
+    
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [isOpen, isMobile]);
 
-  // 🔊 Jouer le son quand le menu s'ouvre/ferme
+  // 🔊 Jouer le son quand le menu s'ouvre
   useEffect(() => {
     if (isOpen) {
       playClickSound();
     }
   }, [isOpen, playClickSound]);
 
+  // 🔹 Gestion du drag optimisée
+  const handleStart = (clientY: number) => {
+    setIsDragging(true);
+    startYRef.current = clientY;
+    document.body.style.overflow = 'hidden'; // Empêcher le scroll pendant le drag
+  };
+
+  const handleMove = (clientY: number) => {
+    if (!isDragging) return;
+    const deltaY = clientY - startYRef.current;
+    if (deltaY > 0) {
+      setDragOffset(Math.min(deltaY, window.innerHeight * 0.6));
+    }
+  };
+
+  const handleEnd = () => {
+    if (!isDragging) return;
+    
+    document.body.style.overflow = '';
+    setIsDragging(false);
+    
+    if (dragOffset > window.innerHeight * 0.2) {
+      setIsOpen(false);
+    }
+    setDragOffset(0);
+  };
+
+  // 🔹 Gestion des événements de drag
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientY);
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1) handleMove(e.touches[0].clientY);
+    };
+    const handleMouseUp = () => handleEnd();
+    const handleTouchEnd = () => handleEnd();
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+      document.body.style.overflow = '';
+    };
+  }, [isDragging]);
+
+  // 🔹 Fermer avec la touche Échap
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isOpen]);
+
+  // 🔹 Empêcher le scroll quand le menu mobile est ouvert
+  useEffect(() => {
+    if (isOpen && isMobile) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, isMobile]);
+
   return (
-    <div className="fixed bottom-20 right-6 z-50"> {/* ✅ SEULE MODIFICATION : bottom-6 → bottom-20 */}
-      {/* Bouton central (+) */}
+    <div 
+      className={`fixed z-50 ${
+        isMobile 
+          ? 'bottom-6 right-4'        // Mobile: plus bas et centré
+          : 'bottom-20 right-6'       // Desktop: position originale
+      }`}
+      role="region"
+      aria-label="Menu d'actions rapides"
+    >
+      {/* 🔹 Bouton central (+) - Amélioré */}
       <motion.button
         initial={{ scale: 1 }}
-        animate={{ scale: isOpen ? 1.1 : 1 }}
-        whileHover={{ scale: 1.05 }}
+        animate={{ scale: isOpen ? 1.05 : 1 }}
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => {
-          playClickSound(); // 🔊 Son au clic
+          playClickSound();
           setIsOpen(!isOpen);
         }}
-        className="w-14 h-14 rounded-full bg-gradient-to-r from-cyan-600 to-blue-500 flex items-center justify-center shadow-xl border border-white/20 shadow-cyan-500/30"
-        aria-label="Actions rapides"
+        className={`
+          w-14 h-14 rounded-full flex items-center justify-center shadow-xl border-2
+          transition-all duration-300
+          ${
+            isOpen 
+              ? 'bg-gradient-to-r from-indigo-600 to-purple-700 border-indigo-400 shadow-indigo-500/40' 
+              : 'bg-gradient-to-r from-cyan-600 to-blue-500 border-cyan-400 shadow-cyan-500/30 hover:shadow-cyan-500/50'
+          }
+        `}
+        aria-expanded={isOpen}
+        aria-controls="quick-menu-actions"
+        aria-label={isOpen ? "Fermer le menu d'actions" : "Ouvrir le menu d'actions rapides"}
       >
-        <Plus className="text-white" size={24} />
+        {isOpen ? (
+          <X className="text-white" size={24} strokeWidth={2.5} />
+        ) : (
+          <Menu className="text-white" size={24} strokeWidth={2.5} />
+        )}
       </motion.button>
 
-      {/* Menu radial */}
+      {/* 🔹 Menu radial - Desktop uniquement */}
       <AnimatePresence>
         {isOpen && !isMobile && (
-          <div className="absolute bottom-20 right-0">
+          <div 
+            id="quick-menu-actions"
+            className="absolute bottom-20 right-0"
+            role="menu"
+          >
             <div className="relative w-72 h-72">
               {actions.map((action, i) => {
                 const angle = (i / actions.length) * Math.PI * 2 - Math.PI / 2;
@@ -97,6 +225,7 @@ export default function DashboardQuickMenu({
                 return (
                   <motion.button
                     key={action.id}
+                    role="menuitem"
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ 
                       scale: 1, 
@@ -121,18 +250,22 @@ export default function DashboardQuickMenu({
                     }}
                     onClick={() => {
                       if (!action.disabled) {
-                        playClickSound(); // 🔊 Son au clic
+                        playClickSound();
                         onAction(action.id);
                         setIsOpen(false);
                       }
                     }}
-                    className="w-12 h-12 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:scale-110 transition-all"
+                    disabled={action.disabled}
+                    className={`
+                      w-12 h-12 rounded-full flex items-center justify-center border border-white/20 shadow-lg
+                      transition-all duration-200
+                      hover:scale-110 active:scale-95
+                      ${action.disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                    `}
                     title={action.label}
+                    aria-label={action.label}
                   >
                     <span className="text-white">{action.icon}</span>
-                    <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {action.label}
-                    </span>
                   </motion.button>
                 );
               })}
@@ -141,71 +274,130 @@ export default function DashboardQuickMenu({
         )}
       </AnimatePresence>
 
-      {/* Version mobile : popup linéaire */}
+      {/* 🔹 Version mobile : popup linéaire améliorée */}
       <AnimatePresence>
         {isOpen && isMobile && (
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-end p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end"
             onClick={() => {
-              playClickSound(); // 🔊 Son au clic dehors
+              playClickSound();
               setIsOpen(false);
             }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-menu-title"
           >
             <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              className="w-full bg-gradient-to-b from-gray-900/90 to-black/95 backdrop-blur-xl rounded-t-3xl p-6 border-t border-white/10"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ 
+                y: isDragging ? dragOffset : 0,
+                opacity: 1,
+                transition: isDragging
+                  ? { type: 'tween' }
+                  : { type: 'spring', damping: 26, stiffness: 280 },
+              }}
+              exit={{ y: '100%', opacity: 0 }}
+              className={`
+                w-full max-h-[85vh] overflow-y-auto
+                bg-gradient-to-b from-gray-900/95 to-black/95 
+                backdrop-blur-xl rounded-t-3xl 
+                border-t border-white/10
+                shadow-2xl shadow-black/50
+              `}
               onClick={e => e.stopPropagation()}
+              onMouseDown={(e) => handleStart(e.clientY)}
+              onTouchStart={(e) => handleStart(e.touches[0].clientY)}
+              role="menu"
             >
-              <div className="flex justify-center mb-4">
-                <div className="w-12 h-1 bg-gray-600 rounded-full" />
-              </div>
-              <h3 className="text-xl font-bold text-white text-center mb-6">Actions rapides</h3>
-              <div className="grid grid-cols-4 gap-3 mb-6">
-                {actions.map(action => (
-                  <motion.button
-                    key={action.id}
-                    whileHover={{ scale: action.disabled ? 1 : 1.05 }}
-                    whileTap={{ scale: action.disabled ? 1 : 0.95 }}
-                    onClick={() => {
-                      if (!action.disabled) {
-                        playClickSound(); // 🔊 Son au clic
-                        onAction(action.id);
-                        setIsOpen(false);
-                      }
-                    }}
-                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
-                      action.disabled
-                        ? 'opacity-40 cursor-not-allowed'
-                        : 'bg-white/5 hover:bg-white/10'
-                    }`}
-                    title={action.label}
-                  >
-                    <span
-                      className={`w-10 h-10 rounded-full bg-gradient-to-r ${action.color} flex items-center justify-center mb-1`}
-                    >
-                      <span className="text-white">{action.icon}</span>
-                    </span>
-                    <span className="text-[10px] text-gray-300 text-center leading-tight">
-                      {action.label}
-                    </span>
-                  </motion.button>
-                ))}
-              </div>
-              <Button
-                variant="outline"
-                className="w-full border-white/20 text-gray-300 hover:bg-white/10"
-                onClick={() => {
-                  playClickSound(); // 🔊 Son au clic
-                  setIsOpen(false);
-                }}
+              {/* 🔹 Handle de drag amélioré */}
+              <div 
+                className="flex justify-center pt-4 pb-2 touch-none cursor-grab active:cursor-grabbing"
+                aria-hidden="true"
               >
-                Fermer
-              </Button>
+                <div className="w-16 h-1.5 rounded-full bg-white/20" />
+              </div>
+
+              {/* 🔹 Titre avec icône */}
+              <div className="px-6 pb-4 border-b border-white/10">
+                <h3 
+                  id="mobile-menu-title" 
+                  className="text-xl font-bold text-white flex items-center justify-center gap-2"
+                >
+                  <Menu className="w-5 h-5 text-cyan-400" />
+                  Actions rapides
+                </h3>
+              </div>
+
+              {/* 🔹 Grille responsive */}
+              <div className="p-4">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  {actions.map(action => (
+                    <motion.button
+                      key={action.id}
+                      role="menuitem"
+                      whileHover={{ scale: action.disabled ? 1 : 1.05 }}
+                      whileTap={{ scale: action.disabled ? 1 : 0.95 }}
+                      onClick={() => {
+                        if (!action.disabled) {
+                          playClickSound();
+                          onAction(action.id);
+                          setIsOpen(false);
+                        }
+                      }}
+                      disabled={action.disabled}
+                      className={`
+                        flex flex-col items-center justify-center p-3 rounded-xl transition-all
+                        ${
+                          action.disabled
+                            ? 'opacity-40 cursor-not-allowed'
+                            : 'bg-white/5 hover:bg-white/15 active:bg-white/20'
+                        }
+                      `}
+                      title={action.label}
+                      aria-label={action.label}
+                    >
+                      <span
+                        className={`w-11 h-11 rounded-xl flex items-center justify-center mb-1.5 ${
+                          action.disabled ? 'opacity-50' : ''
+                        }`}
+                        style={{
+                          background: `linear-gradient(135deg, ${getGradient(action.color)})`,
+                          boxShadow: `0 4px 12px rgba(${action.color.split(' ')[0].replace('from-', '').replace('-', ',')}, 0.3)`
+                        }}
+                      >
+                        <span className="text-white">{action.icon}</span>
+                      </span>
+                      <span className="text-[11px] text-gray-200 text-center font-medium leading-tight max-w-full truncate">
+                        {action.label}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 🔹 Bouton de fermeture amélioré */}
+              <div className="p-4 pt-2 border-t border-white/10">
+                <Button
+                  variant="ghost"
+                  size="lg"
+                  className={`
+                    w-full h-12 rounded-xl text-gray-300 
+                    border border-white/15 hover:bg-white/10 
+                    active:bg-white/20 transition-all
+                  `}
+                  onClick={() => {
+                    playClickSound();
+                    setIsOpen(false);
+                  }}
+                  aria-label="Fermer le menu"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Fermer
+                </Button>
+              </div>
             </motion.div>
           </motion.div>
         )}
@@ -214,8 +406,9 @@ export default function DashboardQuickMenu({
   );
 }
 
-const getGradient = (cls: string) => {
-  const map: Record<string, string> = {
+// 🔹 Helper pour les gradients (optimisé)
+const getGradient = (cls: string): string => {
+  const gradients: Record<string, string> = {
     'from-purple-500 to-indigo-500': '#a855f7, #818cf8',
     'from-cyan-500 to-blue-500': '#06b6d4, #3b82f6',
     'from-emerald-500 to-teal-500': '#10b981, #0d9488',
@@ -224,6 +417,8 @@ const getGradient = (cls: string) => {
     'from-indigo-500 to-violet-500': '#6366f1, #8b5cf6',
     'from-fuchsia-500 to-pink-500': '#d946ef, #ec4899',
     'from-cyan-400 to-blue-400': '#22d3ee, #60a5fa',
+    'from-green-400 to-emerald-500': '#22c55e, #10b981',
+    'from-gray-500 to-gray-600': '#6b7280, #4b5563',
   };
-  return map[cls] || '#6b7280, #4b5563';
+  return gradients[cls] || '#3b82f6, #60a5fa'; // Default: blue
 };

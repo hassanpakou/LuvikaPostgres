@@ -25,22 +25,7 @@ export default async function ProfileLayout({
       </main>
 
       {/* 🔹 Footer complet avec traductions */}
-      <Footer
-        product={t('product')}
-        features={t('features')}
-        pricing={t('pricing')}
-        download={t('download')}
-        company={t('company')}
-        about={t('about')}
-        contact={t('contact')}
-        blog={t('blog')}
-        legal={t('legal')}
-        privacy={t('privacy')}
-        terms={t('terms')}
-        cookies={t('cookies')}
-        tagline={t('tagline')}
-        copyright={t('copyright')}
-      />
+      <Footer />
     </div>
   );
 }

@@ -11,6 +11,8 @@ interface ProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  icon?: React.ReactNode;
+  gradient?: string;
   children: React.ReactNode;
   // 🔹 Nouvelle prop pour les compétences
   skills?: string[];
@@ -22,6 +24,8 @@ export default function ProfileModal({
   isOpen, 
   onClose, 
   title, 
+  icon,
+  gradient,
   children,
   skills 
 }: ProfileModalProps) {

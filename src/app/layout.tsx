@@ -74,6 +74,7 @@ export default async function RootLayout({
             <InstallModal />
           </ClientProviders>
         </NextIntlClientProvider>
+        
       </body>
     </html>
   );

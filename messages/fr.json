@@ -64,10 +64,7 @@
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
     "export_csv": "Exporter (.csv)",
-    "visibility": {
-      "title": "Visibilité des sections",
-      "description": "Choisissez ce que les visiteurs peuvent voir."
-    },
+    "export_json": "Exporter (.json)",
     "quick_menu": {
       "visibility": "Visibilité",
       "contact": "Messages",
@@ -77,7 +74,396 @@
       "message": "Message perso",
       "orders": "Commandes",
       "upgrade": "Upgrade"
+    },"other_features": {
+      "title": "Autres fonctionnalités",
+      "description": "Gérez votre carte NFC ou partagez un message personnalisé.",
+      "report_card": "Signaler votre carte",
+      "reasons": {
+        "lost": "Carte perdue",
+        "stolen": "Carte volée",
+        "damaged": "Carte endommagée",
+        "no_longer_needed": "Plus besoin de la carte",
+        "other": "Autre (précisez)"
+      },
+      "custom_reason": "Précisez la raison",
+      "custom_reason_placeholder": "Ex: carte cassée, erreur d'impression...",
+      "submit_report": "Signaler la carte",
+      "custom_message": "Message personnalisé",
+      "custom_message_placeholder": "Ex: Je change de poste, merci de mettre à jour mon profil...",
+      "send_message": "Envoyer le message"
     },
+    
+    "messages": {
+      "back":"Retour",
+      "refresh":"Actualiser",
+      "export":"Exporter",
+      "search":"Rechercher",
+      "all_statuses":"Tous",
+  "title": "Messages",
+  "subtitle": "Gérez vos messages et notifications",
+  "no_messages": "Aucun message",
+  "mark_read": "Marquer comme lu",
+  "mark_unread": "Marquer comme non lu",
+  "delete": "Supprimer",
+  "reply": "Répondre",
+  "send": "Envoyer",
+  "message_placeholder": "Votre message...",
+  "new_message": "Nouveau message",
+  "from": "De",
+  "to": "À",
+  "date": "Date",
+  "status": "Statut",
+  "read": "Lu",
+  "unread": "Non lu",
+  "view_received": "Voir les messages reçus" 
+},
+  "navbar": {
+    "sign_out_confirm_title": "Déconnexion",
+    "sign_out_confirm_message": "Voulez-vous vraiment vous déconnecter ?",
+    "sign_out_confirm_yes": "Oui, se déconnecter",
+    "sign_out_confirm_no": "Annuler",
+    "farewell_title": "Au revoir !",
+    "farewell_message": "Merci d’avoir utilisé LUVIKA. Vous allez nous manquer… 😢",
+    "profile_completion": "Complétion du profil",
+    "edit_profile": "Modifier le profil",
+    "completed": "complété",
+    "view_public_profile": "Voir mon profil public"
+  },"settings": {
+      "title": "Paramètres du Profil",
+      "description": "Gérez vos informations personnelles et la confidentialité",
+              "save": "Enregistrer les modifications",
+              "refresh": "Actualiser",
+              "back": "Retour",
+      "profile": {
+        "title": "Profil",
+        "description": "Informations personnelles et professionnelles",
+        "full_name": "Nom complet",
+        "username": "Nom d'utilisateur",
+        "job_title": "Poste",
+        "bio_short": "Biographie courte"
+      },"photo": {
+        "title": "Photo & Couverture",
+        "avatar": "Photo de profil",
+        "cover": "Photo de couverture",
+        "upload_avatar": "Changer la photo",
+        "upload_cover": "Cliquer pour uploader une couverture"
+      },"contact": {
+        "title": "Coordonnées",
+        "email": "Email",
+        "description": "Informations de contact", 
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Téléphone",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Adresse",
+        "address_placeholder": "Kinshasa, RDC",
+        "website": "Site web"
+      },"personal": {
+        "title": "Informations personnelles",
+        "full_name": "Nom complet",
+        "full_name_placeholder": "ex: Hassan M.",
+        "username": "Nom d’utilisateur",
+        "username_placeholder": "votre_nom",
+        "job_title": "Poste",
+        "job_title_placeholder": "Développeur Full-Stack",
+        "company": "Business",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Bio courte",
+        "bio_short_placeholder": "1 ligne percutante",
+        "bio_long": "Bio complète",
+        "bio_long_placeholder": "Votre parcours, passions, valeurs..."
+      },"privacy": {
+    "title": "Confidentialité & Sécurité",
+    "biometric_auth": "Authentification biométrique",
+    "biometric_auth_desc": "Connectez-vous en un clin d'œil avec votre visage ou empreinte digitale. Aucune donnée biométrique n'est stockée sur nos serveurs — tout reste sur votre appareil.",
+    "hide_birth_year": "Masquer l'année de naissance",
+    "hide_birth_year_desc": "Votre année de naissance ne sera pas visible publiquement sur votre profil",
+    "disable_birthday_icon": "Désactiver l'icône anniversaire",
+    "disable_birthday_icon_desc": "Masquer les animations et notifications liées à votre anniversaire",
+    "verified_badge": "Badge de vérification officielle",
+    "verified_badge_desc": "Affiche un badge ✅ vérifié sur votre profil public",
+    "verified_tooltip": "Profil officiellement vérifié",
+    "enterprise_only": "Disponible uniquement sur le plan Entreprise"
+  },"advanced": {
+        "title": "Options avancées",
+        "public_profile": "Profil public",
+        "public_profile_desc": "Visible sans connexion",
+        "contact_requests": "Messages publics",
+        "contact_requests_desc": "Autoriser les visiteurs à vous écrire",
+        "profile_url": "URL de profil"
+      },"subscription": {
+        "title": "Abonnement",
+        "description": "Gérez votre abonnement",
+        "plan": "Plan",
+        "status": "Statut",
+        "active": "Actif",
+        "manage": "Gérer l'abonnement"
+      },
+      "visibility": {
+  "title": "Visibilité",
+  "description": "Choisissez ce qui apparaît sur votre profil public",
+  "is_public": "Profil public", 
+  "is_public_description": "Rendre votre profil visible par tout le monde",  
+  "sections": "Sections visibles", 
+  "portfolio_locked": "Débloquez le portfolio avec un abonnement Professionnel",
+  "certificates_locked": "Les certificats sont réservés aux comptes Professionnel/Business"
+},
+  "contact": {
+        "title": "Contact",
+        "description": "Informations de contact",
+        "email": "Email",
+        "phone": "Téléphone",
+        "address": "Adresse",
+        "email_placeholder":"hassan@luvika.me",
+        "phone_placeholder":"+243 890 177 601",
+        "website":"Site web",
+        "address_placeholder":"Kinshasa, RDC",
+        "saving": "Enregistrement...",
+        "save": "Enregistrer les modifications",
+        "save_success": "✅ Modifications enregistrées",
+        "save_error": "❌ Erreur lors de l'enregistrement"
+      },
+      "social": {
+        "title": "Réseaux sociaux",
+        "description": "Liens vers vos réseaux sociaux",
+        "website": "Site web",
+        "linkedin": "LinkedIn",
+        "github": "GitHub"
+      },
+      "security": {
+        "title": "Sécurité",
+        "description": "Paramètres de sécurité du compte",
+        "two_factor": "Authentification à deux facteurs",
+        "two_factor_description": "Activez l'authentification à deux facteurs pour plus de sécurité",
+        "password": "Mot de passe",
+        "password_description": "Changez votre mot de passe",
+        "change_password": "Changer le mot de passe",
+        "not_configured": "Non configuré"
+      },"parameters": {
+      "title": "Paramètres Système",
+      "subtitle": "Gérez les paramètres avancés de votre compte",
+      "parameters": "Paramètres",
+      "details": "Détails",
+      "refresh": "Actualiser",
+      "add": "Ajouter",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "select_parameter": "Sélectionnez un paramètre pour afficher les détails",
+      "no_parameters": "Aucun paramètre trouvé",
+      "no_description": "Aucune description",
+      "updated": "Mis à jour",
+      "key": "Clé",
+      "value": "Valeur",
+      "type": "Type",
+      "description": "Description",
+      "key_placeholder": "Entrez la clé du paramètre",
+      "value_placeholder": "Entrez la valeur du paramètre",
+      "description_placeholder": "Description optionnelle",
+      "back":"Retour",
+      "types": {
+        "string": "Texte",
+        "number": "Nombre",
+        "boolean": "Booléen",
+        "json": "JSON"
+      }
+    }},
+    "statistics": {
+    "title": "Statistiques",
+    "subtitle": "Analysez les performances de votre profil et vos scans",
+    "back":"Retour",
+    "refresh": "Actualiser",
+    "export": "Exporter",
+    
+    "range": "Période",
+    "last_7_days": "7 derniers jours",
+    "last_30_days": "30 derniers jours",
+    "last_90_days": "90 derniers jours",
+    "all_time": "Depuis toujours",
+    
+    "search": "Rechercher",
+    "search_placeholder": "Nom ou username...",
+    
+    "filter_type": "Type de scan",
+    "all_types": "Tous les types",
+    
+    "total_scans": "Scans totaux",
+    
+    "trends": "Tendances",
+    "recent_scans": "Derniers scans",
+    "no_scans": "Aucun scan récent",
+    "anonymous": "Visiteur anonyme",
+    
+    "insights": "Insights",
+    "unique_visitors": "Visiteurs uniques",
+    "unique_visitors_desc": "Personnes différentes qui ont scanné",
+    "best_day": "Jour le plus actif",
+    "best_day_desc": "Date avec le plus de scans",
+    "security": "Sécurité",
+    "security_desc": "Tous vos scans sont chiffrés et sécurisés"
+  },
+    "card_config": {
+      "subtitle_new": "Créez une nouvelle configuration de carte NFC",
+      "active":" Activée",
+      "info_title": "Info",
+      "custom_link_url_label": "URL du lien personnalisé",
+      "custom_link_url_description": "Entrez l'URL que vous souhaitez partager lorsque ce type de scan est activé. Ex: votre site web, portfolio, LinkedIn, etc.",
+      "info_description": "Gérez les types de scans et leurs priorités. Les types disponibles sont : Profil, Carte de Visite, Contact, Réseaux Sociaux, Portfolio, Certificats, Événement, Lien, CV et Personnalisé.",
+      "preview_title": "Afficher le tiitre",
+      "preview_description": "Description",
+      "preview_hint":"Aperçu indice",
+      "title": "Configuration Carte NFC",
+      "subtitle": "Gérez les types de scans et leurs priorités",
+      "configurations": "Configurations",
+      "details": "Détails",
+      "refresh": "Actualiser",
+      "add": "Ajouter",
+      "edit": "Modifier",
+      "preview_empty": "Aperçu vide",
+      "preview_empty_hint":"Aucun contenu à afficher dans l'aperçu",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "back":"Retour",
+      "select_config": "Sélectionnez une configuration pour afficher les détails",
+      "no_configs": "Aucune configuration trouvée",
+      "no_title": "Aucun titre",
+      "no_description": "Aucune description",
+      "updated": "Mis à jour",
+      "type": "Type",
+      "options_title": "Options",
+      "preview": "Aperçu",
+      "description": "Description",
+      "url": "URL",
+      "priority": "Priorité",
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "enable": "Activer",
+      "disable": "Désactiver",
+      "changes_saved": "✅ Modifications enregistrées",
+      "title_placeholder": "Entrez le titre de la configuration",
+      "description_placeholder": "Description optionnelle",
+      "url_placeholder": "URL optionnelle",
+      "priority_placeholder": "Priorité numérique",
+      "descriptions" : {
+        "profile":"Profil",
+        "cv":"CV",
+        "portfolio":"Portfolio",
+        "contact":"Réseaux sociaux",
+        "event":"Événement",
+        "custom_link":"Lien personnalisé",
+        "social":"Réseaux sociaux",
+        "business":"Carte de Visite",
+        "articles":"Articles"
+      },
+      "types": {
+        "custom_link": "Lien personnalisé", 
+        "articles": "Articles",
+        "profile": "Profil",
+        "business": "Carte de Visite",
+        "contact": "Contact",
+        "social": "Réseaux Sociaux",
+        "portfolio": "Portfolio",
+        "certificates": "Certificats",
+        "event": "Événement",
+        "link": "Lien",
+        "cv": "CV",
+        "custom": "Personnalisé",
+        "bio": "Biographie",
+        "identity": "Identité",
+        "professional": "Professionnel",
+        "location": "Localisation",
+        "availability": "Disponibilité",
+        "birthday": "Anniversaire"
+      },"descriptions" : {
+        "profile":"Profil",
+        "cv":"CV",
+        "portfolio":"Portfolio",
+        "contact":"Réseaux sociaux",
+        "event":"Événement",
+        "custom_link":"Lien personnalisé",
+        "social":"Réseaux sociaux",
+        "business":"Carte de Visite",
+        "articles":"Articles",
+        "link":"Lien Professionnel",
+        "bio": "Afficher la biographie courte/longue",
+        "identity": "Afficher pseudo, pronoms, statut",
+        "professional": "Afficher poste, entreprise, statut pro",
+        "location": "Afficher ville, pays, adresse",
+        "availability": "Afficher le statut de disponibilité",
+  "birthday": "Afficher la date d'anniversaire (respecte 'Masquer l'année')"
+       }
+    },"parameters": {
+      "title": "Paramètres Système",
+      "subtitle": "Gérez les paramètres avancés de votre compte",
+      "parameters": "Paramètres",
+      "details": "Détails",
+      "refresh": "Actualiser",
+      "add": "Ajouter",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "select_parameter": "Sélectionnez un paramètre pour afficher les détails",
+      "no_parameters": "Aucun paramètre trouvé",
+      "no_description": "Aucune description",
+      "updated": "Mis à jour",
+      "key": "Clé",
+      "value": "Valeur",
+      "type": "Type",
+      "description": "Description",
+      "key_placeholder": "Entrez la clé du paramètre",
+      "value_placeholder": "Entrez la valeur du paramètre",
+      "description_placeholder": "Description optionnelle",
+      "back":"Retour",
+      "types": {
+        "string": "Texte",
+        "number": "Nombre",
+        "boolean": "Booléen",
+        "json": "JSON"
+      }
+    },
+    "subscribers": {
+    "title": "Abonnés",
+    "subtitle": "Gérez vos abonnés et leurs permissions",
+    "back": "Retour",
+    "refresh": "Actualiser",
+    "export": "Exporter",
+    
+    "search": "Rechercher",
+    "search_placeholder": "Nom, username ou bio...",
+    
+    "filter_verified": "Vérifié",
+    "all_verified": "Tous",
+    "verified": "Vérifié",
+    "unverified": "Non vérifié",
+    
+    "filter_blocked": "Bloqué",
+    "all_blocked": "Tous",
+    "blocked": "Bloqué",
+    "unblocked": "Débloqué",
+    
+    "sort_by": "Trier par",
+    "order": "Ordre",
+    "sort": {
+      "date": "Date",
+      "name": "Nom"
+    },
+    "asc": "Croissant",
+    "desc": "Décroissant",
+    
+    "results": "résultats",
+    "subscribers": "Liste des abonnés",
+    "no_subscribers": "Aucun abonné pour le moment",
+    
+    "regular": "Standard",
+    "no_bio": "Aucune biographie",
+    
+    "unblock": "Débloquer",
+    "block": "Bloquer",
+    "unverify": "Retirer vérification",
+    "verify": "Vérifier"
+  },
     "contact_requests": {
       "title": "Messages des visiteurs",
       "description": "Autorisez les personnes qui consultent votre profil public à vous laisser un message.",
@@ -123,9 +509,7 @@
       "upgrade_to_premium": "Passer à Professionnel",
       "request_enterprise": "Convertir en compte BUSINESS"
     },
-    "messages": {
-      "view_received": "Voir les messages reçus"
-    },
+    
     "qr": {
       "title": "QR Code de profil",
       "alt": "QR Code pour {username}",
@@ -133,15 +517,28 @@
       "open_link": "Ouvrir le lien"
     },
     "nfc": {
-      "title": "Cartes NFC ({count})",
-      "empty": "Aucune carte NFC associée.",
-      "ago": "il y a",
-      "status": {
-        "active": "Active",
-        "lost": "Perdue",
-        "blocked": "Bloquée",
-        "inactive": "Inactive"
-      },
+  "title": "Ma Carte NFC",
+  "active": "Active",
+  "inactive": "Non active",
+  "none": "Aucune",
+  "card_id":"ID Carte",
+  "no_card_message": "Vous n'avez pas encore de carte NFC LUVIKA.",
+  "no_card_description": "Commandez votre carte NFC personnalisée pour partager facilement vos informations en un simple tap.",
+  "benefit1_title": "Livraison rapide",
+  "benefit1_desc": "Recevez votre carte en 3-5 jours ouvrables",
+  "benefit2_title": "Personnalisable",
+  "benefit2_desc": "Design unique avec votre QR code et infos",
+  "benefit3_title": "Durabilité",
+  "benefit3_desc": "Carte en PVC haute qualité, résistante à l'eau",
+  "order_button": "Commander ma carte NFC",
+  "card_number": "Carte",
+  "scans_count": "Scans",
+  "unique_visitors": "Visiteurs uniques",
+  "manage_button": "Gérer mes cartes",
+  "order_another": "Commander une autre",
+  "tip": "💡 Astuce:",
+  "tip_message": "Personnalisez le contenu de votre carte NFC dans les paramètres pour contrôler les informations partagées."
+},
       "upgrade_required": "⚠️ Plan Professionnel requis",
       "add_card": "Ajouter une carte NFC"
     },
@@ -177,79 +574,80 @@
       "custom_message_placeholder": "Ex: Je change de poste, merci de mettre à jour mon profil...",
       "send_message": "Envoyer le message"
     },
-    "settings": {
-      "title": "Paramètres du profil",
-      "saving": "Sauvegarde...",
-      "save": "Enregistrer",
-      "save_success": "✅ Profil mis à jour",
-      "save_error": "❌ Échec de la sauvegarde",
-      "load_error": "❌ Impossible de charger le profil",
-      "avatar_uploaded": "✅ Photo de profil mise à jour",
-      "avatar_error": "❌ Échec de l’upload",
-      "avatar_invalid": "⚠️ Format invalide (JPG/PNG seulement)",
-      "cover_uploaded": "✅ Couverture mise à jour",
-      "cover_error": "❌ Échec de l’upload",
-      "cover_invalid": "⚠️ Format invalide (JPG/PNG seulement)",
-      "url_copied": "✅ Lien copié",
-      "photo": {
-        "title": "Photo & Couverture",
-        "avatar": "Photo de profil",
-        "cover": "Photo de couverture",
-        "upload_avatar": "Changer la photo",
-        "upload_cover": "Cliquer pour uploader une couverture"
-      },
-      "personal": {
-        "title": "Informations personnelles",
-        "full_name": "Nom complet",
-        "full_name_placeholder": "ex: Hassan M.",
-        "username": "Nom d’utilisateur",
-        "username_placeholder": "votre_nom",
-        "job_title": "Poste",
-        "job_title_placeholder": "Développeur Full-Stack",
-        "company": "Business",
-        "company_placeholder": "LUVIKA",
-        "bio_short": "Bio courte",
-        "bio_short_placeholder": "1 ligne percutante",
-        "bio_long": "Bio complète",
-        "bio_long_placeholder": "Votre parcours, passions, valeurs..."
-      },
-      "contact": {
-        "title": "Coordonnées",
-        "email": "Email",
-        "email_placeholder": "hassan@luvika.me",
-        "phone": "Téléphone",
-        "phone_placeholder": "+243 999 123 456",
-        "address": "Adresse",
-        "address_placeholder": "Kinshasa, RDC",
-        "website": "Site web"
-      },
-      "visibility": {
-        "title": "Visibilité",
-        "description": "Choisissez ce qui apparaît sur votre profil public",
-        "portfolio_locked": "Débloquez le portfolio avec un abonnement Professionnel",
-        "certificates_locked": "Les certificats sont réservés aux comptes Professionnel/Business"
-      },
-      "advanced": {
-        "title": "Options avancées",
-        "public_profile": "Profil public",
-        "public_profile_desc": "Visible sans connexion",
-        "contact_requests": "Messages publics",
-        "contact_requests_desc": "Autoriser les visiteurs à vous écrire",
-        "profile_url": "URL de profil"
-      },
-      "privacy": {
-        "title": "Confidentialité",
-        "hide_birth_year": "Masquer l'année de naissance",
-        "hide_birth_year_desc": "Affiche seulement jour/mois",
-        "disable_birthday_icon": "Désactiver l'icône anniversaire",
-        "disable_birthday_icon_desc": "Masque 🎂 le jour de l'anniversaire",
-        "verified_badge": "Badge de vérification",
-        "verified_badge_desc": "Affiche à côté de votre nom",
-        "verified_tooltip": "Profil vérifié",
-        "enterprise_only": "Réservé aux entreprises"
-      }
-    }
-  },
+    
+    "messages": {
+  "title": "Messages",
+  "subtitle": "Gérez vos messages et notifications",
+  "no_messages": "Aucun message",
+  "mark_read": "Marquer comme lu",
+  "mark_unread": "Marquer comme non lu",
+  "delete": "Supprimer",
+  "reply": "Répondre",
+  "send": "Envoyer",
+  "message_placeholder": "Votre message...",
+  "new_message": "Nouveau message",
+  "from": "De",
+  "to": "À",
+  "date": "Date",
+  "status": "Statut",
+  "read": "Lu",
+  "unread": "Non lu",
+  "view_received": "Voir les messages reçus" 
+},
+    "subscribers": {
+      "title": "Abonnés",
+      "subtitle": "Gérez vos abonnés et followers",
+      "no_subscribers": "Aucun abonné",
+      "total": "Total",
+      "new_today": "Nouveaux aujourd'hui",
+      "search": "Rechercher un abonné",
+      "view_profile": "Voir le profil",
+      "unfollow": "Se désabonner",
+      "follow": "Suivre",
+      "blocked": "Bloqué",
+      "verified": "Vérifié",
+      "pending": "En attente"
+    },"subscribers": {
+    "title": "Abonnés",
+    "subtitle": "Gérez vos abonnés et leurs permissions",
+    
+    "refresh": "Actualiser",
+    "export": "Exporter",
+    
+    "search": "Rechercher",
+    "search_placeholder": "Nom, username ou bio...",
+    
+    "filter_verified": "Vérifié",
+    "all_verified": "Tous",
+    "verified": "Vérifié",
+    "unverified": "Non vérifié",
+    
+    "filter_blocked": "Bloqué",
+    "all_blocked": "Tous",
+    "blocked": "Bloqué",
+    "unblocked": "Débloqué",
+    
+    "sort_by": "Trier par",
+    "order": "Ordre",
+    "sort": {
+      "date": "Date",
+      "name": "Nom"
+    },
+    "asc": "Croissant",
+    "desc": "Décroissant",
+    
+    "results": "résultats",
+    "subscribers": "Liste des abonnés",
+    "no_subscribers": "Aucun abonné pour le moment",
+    
+    "regular": "Standard",
+    "no_bio": "Aucune biographie",
+    
+    "unblock": "Débloquer",
+    "block": "Bloquer",
+    "unverify": "Retirer vérification",
+    "verify": "Vérifier"
+  },    
   "auth": {
     "signout": "Déconnexion",
     "welcome": {
@@ -416,7 +814,7 @@
     },
     "nav": {
       "orders": "Commandes",
-      "back_to_dashboard": "Retour au tableau de bord"
+      "back_to_dashboard": "Retour"
     },
     "subscription": {
       "plan": "Plan",
@@ -536,7 +934,7 @@
     "pricing": "Tarifs",
     "about": "À propos",
     "contact": "Contact",
-    "download": "Télécharger",
+    "blog": "Blog et actualité",
     "sign_in": "Connexion",
     "sign_up": "S’inscrire",
     "language": "Langue",
@@ -625,22 +1023,34 @@
     "download_now": "Commencer maintenant"
   },
   "footer": {
-    "product": "Produit",
-    "features": "Fonctionnalités",
-    "pricing": "Tarifs",
-    "download": "Télécharger",
-    "documentation": "Documentation",
-    "company": "Business",
-    "about": "À propos",
-    "contact": "Contact",
-    "blog": "Blog",
-    "legal": "Légal",
-    "privacy": "Confidentialité",
-    "terms": "Conditions d'utilisation",
-    "cookies": "Gestion des cookies",
-    "tagline": "LUVIKA — Révèle qui tu es. Une identité numérique intelligente, africaine, et sécurisée.",
-    "copyright": "Tous droits réservés. Conçu à Kinshasa avec ❤️."
-  },
+  "product": "Plateforme",
+  "features": "Fonctionnalités",
+  "pricing": "Tarifs",
+  "download": "Télécharger",
+  "documentation": "Documentation",
+  "company": "Ressources",
+  "about": "À propos",
+  "contact": "Contact",
+  "blog": "Blog",
+  "legal": "Légal",
+  "privacy": "Confidentialité",
+  "terms": "Conditions",
+  "cookies": "Gestion des cookies",
+  "tagline": "La plateforme digitale qui révolutionne la présentation professionnelle en Afrique. Connectez, partagez, rayonnez.",
+  "copyright": "Fait avec ❤️ à Kinshasa, RDC",
+  "cta_title": "Rejoignez la révolution digitale",
+  "cta_description": "Créez votre profil professionnel en 2 minutes et commencez à rayonner.",
+  "cta_button": "Créer mon profil",
+  "available_languages": "Disponible en 9 langues",
+  "language": "Langue",
+  "sitemap": "Plan du site",
+  "security": "Sécurité",
+  "status": "Statut",
+  "operational": "Service opérationnel",
+  "made_in_africa": "100% Made in Africa",
+  "gdpr_compliant": "RGPD Compliant",
+  "scroll_to_top": "Retour en haut"
+},
   "pricing": {
     "title": "Plans Tarifaires",
     "description": "Choisissez le plan qui correspond à vos besoins",
@@ -722,7 +1132,138 @@
       "dashboard": {
         "title": "Tableau de bord",
         "desc": "Vue d’ensemble en temps réel de votre activité"
+      },"settings": {
+      "title": "Paramètres du Profil",
+      "description": "Gérez vos informations personnelles et la confidentialité",
+      "profile": {
+        "title": "Profil",
+        "description": "Informations personnelles et professionnelles",
+        "full_name": "Nom complet",
+        "username": "Nom d'utilisateur",
+        "job_title": "Poste",
+        "bio_short": "Biographie courte"
       },
+      "visibility": {
+  "title": "Visibilité",
+  "description": "Choisissez ce qui apparaît sur votre profil public",
+  "is_public": "Profil public", 
+  "is_public_description": "Rendre votre profil visible par tout le monde",  
+  "sections": "Sections visibles", 
+  "portfolio_locked": "Débloquez le portfolio avec un abonnement Professionnel",
+  "certificates_locked": "Les certificats sont réservés aux comptes Professionnel/Business"
+},
+  "contact": {
+        "title": "Contact",
+        "description": "Informations de contact",
+        "email": "Email",
+        "phone": "Téléphone",
+        "address": "Adresse"
+      },
+      "social": {
+        "title": "Réseaux sociaux",
+        "description": "Liens vers vos réseaux sociaux",
+        "website": "Site web",
+        "linkedin": "LinkedIn",
+        "github": "GitHub"
+      },
+      "security": {
+        "title": "Sécurité",
+        "description": "Paramètres de sécurité du compte",
+        "two_factor": "Authentification à deux facteurs",
+        "two_factor_description": "Activez l'authentification à deux facteurs pour plus de sécurité",
+        "password": "Mot de passe",
+        "password_description": "Changez votre mot de passe",
+        "change_password": "Changer le mot de passe",
+        "not_configured": "Non configuré"
+      },
+      "subscription": {
+        "title": "Abonnement",
+        "description": "Gérez votre abonnement",
+        "plan": "Plan",
+        "status": "Statut",
+        "active": "Actif",
+        "manage": "Gérer l'abonnement"
+      },
+      "success": {
+        "title": "Succès",
+        "description": "Vos modifications ont été enregistrées avec succès"
+      },
+      "error": {
+        "title": "Erreur",
+        "description": "Une erreur est survenue lors de l'enregistrement"
+      },
+      "saving": "Enregistrement...",
+      "save": "Enregistrer",
+      "saving": "Sauvegarde...",
+      "save_success": "✅ Profil mis à jour",
+      "save_error": "❌ Échec de la sauvegarde",
+      "load_error": "❌ Impossible de charger le profil",
+      "avatar_uploaded": "✅ Photo de profil mise à jour",
+      "avatar_error": "❌ Échec de l’upload",
+      "avatar_invalid": "⚠️ Format invalide (JPG/PNG seulement)",
+      "cover_uploaded": "✅ Couverture mise à jour",
+      "cover_error": "❌ Échec de l’upload",
+      "cover_invalid": "⚠️ Format invalide (JPG/PNG seulement)",
+      "url_copied": "✅ Lien copié",
+      "photo": {
+        "title": "Photo & Couverture",
+        "avatar": "Photo de profil",
+        "cover": "Photo de couverture",
+        "upload_avatar": "Changer la photo",
+        "upload_cover": "Cliquer pour uploader une couverture"
+      },
+      "personal": {
+        "title": "Informations personnelles",
+        "full_name": "Nom complet",
+        "full_name_placeholder": "ex: Hassan M.",
+        "username": "Nom d’utilisateur",
+        "username_placeholder": "votre_nom",
+        "job_title": "Poste",
+        "job_title_placeholder": "Développeur Full-Stack",
+        "company": "Business",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Bio courte",
+        "bio_short_placeholder": "1 ligne percutante",
+        "bio_long": "Bio complète",
+        "bio_long_placeholder": "Votre parcours, passions, valeurs..."
+      },
+      "contact": {
+        "title": "Coordonnées",
+        "email": "Email",
+        "description": "Informations de contact", 
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Téléphone",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Adresse",
+        "address_placeholder": "Kinshasa, RDC",
+        "website": "Site web"
+      },
+      "visibility": {
+        "title": "Visibilité",
+        "description": "Choisissez ce qui apparaît sur votre profil public",
+        "portfolio_locked": "Débloquez le portfolio avec un abonnement Professionnel",
+        "certificates_locked": "Les certificats sont réservés aux comptes Professionnel/Business"
+      },
+      "advanced": {
+        "title": "Options avancées",
+        "public_profile": "Profil public",
+        "public_profile_desc": "Visible sans connexion",
+        "contact_requests": "Messages publics",
+        "contact_requests_desc": "Autoriser les visiteurs à vous écrire",
+        "profile_url": "URL de profil"
+      },
+      "privacy": {
+        "title": "Confidentialité",
+        "hide_birth_year": "Masquer l'année de naissance",
+        "hide_birth_year_desc": "Affiche seulement jour/mois",
+        "disable_birthday_icon": "Désactiver l'icône anniversaire",
+        "disable_birthday_icon_desc": "Masque 🎂 le jour de l'anniversaire",
+        "verified_badge": "Badge de vérification",
+        "verified_badge_desc": "Affiche à côté de votre nom",
+        "verified_tooltip": "Profil vérifié",
+        "enterprise_only": "Réservé aux entreprises"
+      }
+    },
       "product": {
         "add_to_cart": "Ajouter au panier",
         "added_to_cart": "✅ Ajouté au panier !",

@@ -1,4 +1,4 @@
-// src/app/dashboard/settings/page.tsx
+//src/app/dashboard/settings/page.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Upload, Save, Image as ImageIcon, ExternalLink, Eye, Mail, Phone,
-  Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings,Crown,
+  Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings, Crown,
   AlertTriangle, CheckCircle, X, RotateCcw, Cake, Tag, Link as LinkIcon,
   Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck
 } from 'lucide-react';
@@ -24,7 +24,36 @@ import { Progress } from '../../../../components/ui/progress';
 import { createClient } from '../../../../src/lib/supabase/client';
 import { supabase } from '../../../../lib/supabase';
 
-// 🔹 Types (mis à jour — ton version finale)
+// 🔹 Icônes manquantes (définies avant utilisation)
+const Copy = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className={className}>
+    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12v-4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6m4-10h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
+  </svg>
+);
+
+const SnapchatIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M21.927 9.208l-.863-.527A5.486 5.486 0 0 0 12 7a5.486 5.486 0 0 0-9.064 1.681l-.863.527a1 1 0 0 0-.066 1.72l.902.55a3.489 3.489 0 0 1 0 5.643l-.902.55a1 1 0 0 0 .066 1.72l.863.527A5.486 5.486 0 0 0 12 23a5.486 5.486 0 0 0 9.064-1.681l.863-.527a1 1 0 0 0 .066-1.72l-.902-.55a3.489 3.489 0 0 1 0-5.643l.902-.55a1 1 0 0 0-.066-1.72z"/></svg>
+);
+
+const TelegramIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2zm4.333 13.5l-1.45 4.35c-.15.45-.6.6-1 .45L12 19l-6.5 3.5c-.4.2-.8-.1-.6-.5l1.5-6.5L3.5 12c-.2-.4 0-.8.4-.8l17-7c.4-.2.8.1.6.5l-2.5 12.5c-.1.5-.5.8-.9.6l-2.767-1.167z"/></svg>
+);
+
+const BehanceIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M0 0v24h24V0H0zm8.4 18.4H4.8V5.6h3.6c1.6 0 2.8.4 3.6 1.2s1.2 2 1.2 3.6s-.4 2.8-1.2 3.6s-2 1.2-3.6 1.2zm-1.2-1.6h2c1.2 0 2-.4 2.4-1.2s.6-2 .6-3.6s-.2-2.8-.6-3.6s-1.2-1.2-2.4-1.2H7.2v9.6zm5.6-10.4v1.6h-3.2v3.2h2.8v1.6h-2.8v3.2h3.2v1.6h-4.8V5.6h4.8v1.6z"/></svg>
+);
+
+const DribbbleIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2m-1.1 17.2c-4.8 0-7.1-4.7-7.4-8.2c.3-3.5 2.7-8.2 7.4-8.2c1.1 0 2.1.2 3.1.7c.9-.5 2-.8 3.2-.8c4.6 0 7 4.7 7.3 8.3c-.3 3.6-2.7 8.2-7.3 8.2c-1.1 0-2.2-.3-3.2-.7c-.9.5-1.9.7-2.9.7m-.7-13.3c.2.2.2.5.1.7c-.1.2-.3.3-.6.2c-2.2-.9-3.8-3.2-3.9-3.4c-.1-.2-.1-.4.1-.6c.2-.2.5-.2.7-.1c.1.1 1.7 2.2 3.7 3.2m10.2 0c1.9-1 3.4-3 3.6-3.2c.2-.2.4-.2.6-.1c.2.2.2.4.1.6c-.2.2-1.8 2.6-4 3.5c-.2.1-.5 0-.7-.2c-.2-.2-.1-.5.1-.8m-9.7-3.7c.2.2.2.5.1.7c-.1.2-.3.3-.6.2c-1.3-.5-2.2-2.2-2.3-3.4c.2-2.5 2.1-4.1 2.8-4.6c.2-.1.4-.1.6.1c.2.2.2.4.1.6c-.3.5-1.7 2-1.9 4.4m9.2 0c.1-.6.2-1.1.2-1.8c-.1-2.1-1.1-3.5-1.8-4.1c-.2-.1-.2-.4-.1-.6c.2-.2.4-.2.6-.1c.7.5 2.3 2 2.5 4.3c0 .7.1 1.2.2 1.8c0 .2.1.4-.1.5c-.1.1-.3.1-.4-.1c-.2-.2-.3-.3-.5-.5c-.2-.3-.6-.4-.9-.2c-.3.2-.4.6-.2.9c.3.6 1.2 2.4 2.5 3.4c.2.1.2.4.1.6c-.2.2-.4.2-.6.1c-1.4-1-2.3-2.8-2.5-3.4c-.2-.3-.2-.7.1-.9c.2-.2.6-.4.9-.2c.3.2.4.6.2.9c-.2.3-.2.3-.3.5c-.1.1-.3.2-.5.1c-.2-.1-.3-.4-.1-.7m-4.8 1.8c.9-.1 2.8-1.1 3.9-2.7c.2-.2.5-.2.7-.1c.2.2.2.5.1.7c-.8 1.6-2.6 2.7-4.1 2.9c-.3 0-.5-.2-.5-.4c-.1-.1 0-.2.1-.4z"/></svg>
+);
+
+const FolderIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className={className}>
+    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+  </svg>
+);
+
+// 🔹 Types
 type Profile = {
   id: string;
   full_name: string;
@@ -87,7 +116,6 @@ const isSectionLockedForFree = (section: string, plan: string): boolean => {
   return lockedSections.includes(section) && plan === 'basic';
 };
 
-// 🔹 Désactive les sections premium pour les comptes basic
 const getLockedSectionsForBasic = (plan: string): string[] => {
   if (plan === 'basic') {
     return ['avatar', 'cover', 'skills', 'links', 'certificates', 'portfolio'];
@@ -292,12 +320,12 @@ export default function SettingsPage() {
     setNewSkill('');
   };
 
-const removeSkill = (index: number) => {
-  if (!profile) return;
-  const current = profile.skills || []; // ✅ fallback à []
-  const updated = current.filter((_, i) => i !== index);
-  setProfile({ ...profile, skills: updated });
-};
+  const removeSkill = (index: number) => {
+    if (!profile) return;
+    const current = profile.skills || [];
+    const updated = current.filter((_, i) => i !== index);
+    setProfile({ ...profile, skills: updated });
+  };
 
   // 🔹 Sauvegarde
   const handleSave = async () => {
@@ -362,14 +390,14 @@ const removeSkill = (index: number) => {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: t('save_success') });
+      setMessage({ type: 'success', text: t('contact.save_success') });
       setTimeout(() => setMessage(null), 3000);
       
       // Rafraîchir les données serveur
       router.refresh();
     } catch (err: any) {
       console.error('❌ Erreur sauvegarde:', err);
-      setMessage({ type: 'error', text: err.message || t('save_error') });
+      setMessage({ type: 'error', text: err.message || t('contact.save_error') });
     } finally {
       setSaving(false);
     }
@@ -401,25 +429,25 @@ const removeSkill = (index: number) => {
               <span className="text-sm text-gray-400">{getCompletion()}%</span>
             </div>
             <Badge variant="outline" className="text-xs flex items-center gap-1">
-  {profile.plan === 'premium' ? (
-    <>
-      <Crown className="w-3 h-3" /> Pro
-    </>
-  ) : profile.plan === 'entreprise' ? (
-    <>
-      <Briefcase className="w-3 h-3" /> Business
-    </>
-  ) : (
-    <>
-      <User className="w-3 h-3" /> Basique
-    </>
-  )}
-</Badge>
+              {profile.plan === 'premium' ? (
+                <>
+                  <Crown className="w-3 h-3" /> Pro
+                </>
+              ) : profile.plan === 'entreprise' ? (
+                <>
+                  <Briefcase className="w-3 h-3" /> Business
+                </>
+              ) : (
+                <>
+                  <User className="w-3 h-3" /> Basique
+                </>
+              )}
+            </Badge>
           </div>
         </div>
         <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-blue-600 to-cyan-500">
           <Save className="w-4 h-4 mr-2" />
-          {saving ? t('saving') : t('save')}
+          {saving ? t('contact.saving') : t('contact.save')}
         </Button>
       </motion.div>
 
@@ -439,93 +467,92 @@ const removeSkill = (index: number) => {
             {message.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
             <span>{message.text}</span>
             <button
-  type="button"
-  onClick={() => setMessage(null)}
-  className="ml-auto text-gray-400 hover:text-white"
-  aria-label="Fermer le message"
-  title="Fermer le message"
->
-  <X className="w-4 h-4" />
-</button>
-
+              type="button"
+              onClick={() => setMessage(null)}
+              className="ml-auto text-gray-400 hover:text-white"
+              aria-label="Fermer le message"
+              title="Fermer le message"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* 🔹 Photo & Couverture */}
-<Card className="glass-border">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <ImageIcon className="text-cyan-400" /> {t('photo.title')}
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-6">
-    {profile.plan === 'basic' ? (
-      <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
-        <div className="flex items-center gap-2 text-yellow-400">
-          <Lock className="w-4 h-4" />
-          <span className="font-medium">Fonctionnalité Pro</span>
-        </div>
-        <p className="text-gray-400 text-sm mt-1">
-          Débloquez les photos de profil et de couverture avec un abonnement Pro.
-        </p>
-        <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
-          Passer à Pro
-        </Button>
-      </div>
-    ) : (
-      <>
-        {/* Avatar */}
-        <div className="flex flex-col md:flex-row items-center gap-6">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-xl font-bold text-white border-4 border-white/30 shadow-xl">
-              {avatarPreview ? (
-                <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
-              ) : profile.full_name ? (
-                profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-              ) : (
-                '?'
-              )}
-            </div>
-            <Button size="sm" variant="outline" className="absolute -bottom-2 -right-2 w-8 h-8 p-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
-              <RotateCcw className="w-3 h-3" />
-            </Button>
-          </div>
-          <div className="flex-1">
-            <Label className="text-gray-300">{t('photo.avatar')}</Label>
-            <div className="mt-2 flex gap-2">
-              <Input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
-              <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="flex-1">
-                <Upload className="w-4 h-4 mr-2" /> {t('photo.upload_avatar')}
+      <Card className="glass-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="text-cyan-400" /> {t('photo.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {profile.plan === 'basic' ? (
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Lock className="w-4 h-4" />
+                <span className="font-medium">Fonctionnalité Pro</span>
+              </div>
+              <p className="text-gray-400 text-sm mt-1">
+                Débloquez les photos de profil et de couverture avec un abonnement Pro.
+              </p>
+              <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
+                Passer à Pro
               </Button>
-              {profile.avatar_url && (
-                <Button variant="ghost" size="sm" onClick={() => { setAvatarPreview(null); setProfile({ ...profile, avatar_url: null }); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                  <X className="w-4 h-4" />
-                </Button>
-              )}
             </div>
-          </div>
-        </div>
+          ) : (
+            <>
+              {/* Avatar */}
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full bg-gradient-to-r from-cyan-500 to-blue-400 flex items-center justify-center text-xl font-bold text-white border-4 border-white/30 shadow-xl">
+                    {avatarPreview ? (
+                      <img src={avatarPreview} alt="Avatar" className="w-24 h-24 rounded-full object-cover" />
+                    ) : profile.full_name ? (
+                      profile.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                    ) : (
+                      '?'
+                    )}
+                  </div>
+                  <Button size="sm" variant="outline" className="absolute -bottom-2 -right-2 w-8 h-8 p-0 rounded-full" onClick={() => fileInputRef.current?.click()}>
+                    <RotateCcw className="w-3 h-3" />
+                  </Button>
+                </div>
+                <div className="flex-1">
+                  <Label className="text-gray-300">{t('photo.avatar')}</Label>
+                  <div className="mt-2 flex gap-2">
+                    <Input type="file" ref={fileInputRef} onChange={handleAvatarUpload} accept="image/*" className="hidden" />
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()} className="flex-1">
+                      <Upload className="w-4 h-4 mr-2" /> {t('photo.upload_avatar')}
+                    </Button>
+                    {profile.avatar_url && (
+                      <Button variant="ghost" size="sm" onClick={() => { setAvatarPreview(null); setProfile({ ...profile, avatar_url: null }); }} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-        {/* Couverture */}
-        <div className="space-y-2">
-          <Label className="text-gray-300">{t('photo.cover')}</Label>
-          <div
-            className="w-full h-32 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-white/5 transition-colors"
-            onClick={() => coverInputRef.current?.click()}
-          >
-            {coverPreview ? (
-              <img src={coverPreview} alt="Cover" className="w-full h-32 rounded-lg object-cover" />
-            ) : (
-              <span className="text-gray-400">{t('photo.upload_cover')}</span>
-            )}
-          </div>
-          <Input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
-        </div>
-      </>
-    )}
-  </CardContent>
-</Card>
+              {/* Couverture */}
+              <div className="space-y-2">
+                <Label className="text-gray-300">{t('photo.cover')}</Label>
+                <div
+                  className="w-full h-32 rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-white/5 transition-colors"
+                  onClick={() => coverInputRef.current?.click()}
+                >
+                  {coverPreview ? (
+                    <img src={coverPreview} alt="Cover" className="w-full h-32 rounded-lg object-cover" />
+                  ) : (
+                    <span className="text-gray-400">{t('photo.upload_cover')}</span>
+                  )}
+                </div>
+                <Input type="file" ref={coverInputRef} onChange={handleCoverUpload} accept="image/*" className="hidden" />
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 🔹 Identité personnelle */}
       <Card className="glass-border">
@@ -660,55 +687,55 @@ const removeSkill = (index: number) => {
       </Card>
 
       {/* 🔹 Compétences */}
-<Card className="glass-border">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <Tag className="text-purple-400" /> Compétences
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    {profile.plan === 'basic' ? (
-      <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
-        <div className="flex items-center gap-2 text-yellow-400">
-          <Lock className="w-4 h-4" />
-          <span className="font-medium">Compétences Pro</span>
-        </div>
-        <p className="text-gray-400 text-sm mt-1">
-          Ajoutez jusqu’à 10 compétences avec un abonnement Pro.
-        </p>
-        <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
-          Passer à Pro
-        </Button>
-      </div>
-    ) : (
-      <div className="space-y-2">
-        <Label className="text-gray-300">Ajouter des compétences (5-10 max)</Label>
-        <div className="flex gap-2">
-          <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="ex: React, Firebase..." onKeyDown={e => e.key === 'Enter' && addSkill()} className="flex-1" />
-          <Button size="sm" onClick={addSkill} disabled={!newSkill.trim()}>
-            <Plus className="w-4 h-4" />
-          </Button>
-        </div>
-        {profile.skills && profile.skills.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-3">
-            {profile.skills.map((skill, i) => (
-              <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
-                {skill}
-                <button
-                  onClick={() => removeSkill(i)}
-                  className="ml-1 hover:text-white"
-                  aria-label="Supprimer cette compétence"
-                >
-                  <X className="w-3 h-3" />
-                </button>
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
-    )}
-  </CardContent>
-</Card>
+      <Card className="glass-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Tag className="text-purple-400" /> Compétences
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {profile.plan === 'basic' ? (
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Lock className="w-4 h-4" />
+                <span className="font-medium">Compétences Pro</span>
+              </div>
+              <p className="text-gray-400 text-sm mt-1">
+                Ajoutez jusqu'à 10 compétences avec un abonnement Pro.
+              </p>
+              <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
+                Passer à Pro
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label className="text-gray-300">Ajouter des compétences (5-10 max)</Label>
+              <div className="flex gap-2">
+                <Input value={newSkill} onChange={e => setNewSkill(e.target.value)} placeholder="ex: React, Firebase..." onKeyDown={e => e.key === 'Enter' && addSkill()} className="flex-1" />
+                <Button size="sm" onClick={addSkill} disabled={!newSkill.trim()}>
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
+              {profile.skills && profile.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {profile.skills.map((skill, i) => (
+                    <Badge key={i} variant="secondary" className="bg-purple-500/20 text-purple-300">
+                      {skill}
+                      <button
+                        onClick={() => removeSkill(i)}
+                        className="ml-1 hover:text-white"
+                        aria-label="Supprimer cette compétence"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 🔹 Réseaux sociaux étendus */}
       <Card className="glass-border">
@@ -720,7 +747,7 @@ const removeSkill = (index: number) => {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
             { key: 'instagram', label: 'Instagram', icon: Instagram, prefix: '@' },
-            { key: 'tiktok', label: 'TikTok', icon: SiTiktok , prefix: '@' },
+            { key: 'tiktok', label: 'TikTok', icon: SiTiktok, prefix: '@' },
             { key: 'linkedin', label: 'LinkedIn', icon: Linkedin },
             { key: 'snapchat', label: 'Snapchat', icon: SnapchatIcon, prefix: '@' },
             { key: 'telegram', label: 'Telegram', icon: TelegramIcon, prefix: '@' },
@@ -749,51 +776,51 @@ const removeSkill = (index: number) => {
       </Card>
 
       {/* 🔹 Liens professionnels */}
-<Card className="glass-border">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <LinkIcon className="text-blue-400" /> Liens professionnels
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    {profile.plan === 'basic' ? (
-      <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
-        <div className="flex items-center gap-2 text-yellow-400">
-          <Lock className="w-4 h-4" />
-          <span className="font-medium">Liens Pro</span>
-        </div>
-        <p className="text-gray-400 text-sm mt-1">
-          Ajoutez vos liens GitHub, LinkedIn, portfolio, etc. avec Pro.
-        </p>
-        <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
-          Passer à Pro
-        </Button>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          { key: 'portfolio_url', label: 'Portfolio', icon: FolderIcon, placeholder: 'https://...' },
-          { key: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/...' },
-          { key: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/...' },
-          { key: 'calendly', label: 'Calendly', icon: Calendar, placeholder: 'https://calendly.com/...' },
-          { key: 'cv_url', label: 'CV PDF', icon: FileText, placeholder: 'URL de votre CV' },
-        ].map(({ key, label, icon: Icon, placeholder }) => (
-          <div key={key} className="space-y-1">
-            <Label className="text-gray-300 flex items-center gap-1">
-              <Icon className="w-4 h-4 text-blue-400" />
-              {label}
-            </Label>
-            <Input
-              value={profile[key as keyof Profile]?.toString() || ''}
-              onChange={e => setProfile({ ...profile, [key]: e.target.value || null })}
-              placeholder={placeholder}
-            />
-          </div>
-        ))}
-      </div>
-    )}
-  </CardContent>
-</Card>
+      <Card className="glass-border">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <LinkIcon className="text-blue-400" /> Liens professionnels
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {profile.plan === 'basic' ? (
+            <div className="bg-gray-800/50 p-4 rounded-lg border border-yellow-500/20">
+              <div className="flex items-center gap-2 text-yellow-400">
+                <Lock className="w-4 h-4" />
+                <span className="font-medium">Liens Pro</span>
+              </div>
+              <p className="text-gray-400 text-sm mt-1">
+                Ajoutez vos liens GitHub, LinkedIn, portfolio, etc. avec Pro.
+              </p>
+              <Button size="sm" className="mt-3 bg-gradient-to-r from-purple-600 to-pink-500" onClick={() => router.push('/pricing')}>
+                Passer à Pro
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { key: 'portfolio_url', label: 'Portfolio', icon: FolderIcon, placeholder: 'https://...' },
+                { key: 'github', label: 'GitHub', icon: Github, placeholder: 'https://github.com/...' },
+                { key: 'linkedin', label: 'LinkedIn', icon: Linkedin, placeholder: 'https://linkedin.com/...' },
+                { key: 'calendly', label: 'Calendly', icon: Calendar, placeholder: 'https://calendly.com/...' },
+                { key: 'cv_url', label: 'CV PDF', icon: FileText, placeholder: 'URL de votre CV' },
+              ].map(({ key, label, icon: Icon, placeholder }) => (
+                <div key={key} className="space-y-1">
+                  <Label className="text-gray-300 flex items-center gap-1">
+                    <Icon className="w-4 h-4 text-blue-400" />
+                    {label}
+                  </Label>
+                  <Input
+                    value={profile[key as keyof Profile]?.toString() || ''}
+                    onChange={e => setProfile({ ...profile, [key]: e.target.value || null })}
+                    placeholder={placeholder}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* 🔹 Localisation & disponibilité */}
       <Card className="glass-border">
@@ -866,186 +893,6 @@ const removeSkill = (index: number) => {
           </div>
         </CardContent>
       </Card>
-
-      {/* 🔹 Visibilité */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="text-cyan-400" /> {t('visibility.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-gray-400 text-sm">{t('visibility.description')}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {(['bio', 'contact', 'social', 'portfolio', 'certificates', 'identity', 'professional', 'skills', 'links', 'location'] as const).map(section => {
-  const isLocked = isSectionLockedForFree(section, profile.plan);
-  const isVisible = profile.sections_visibility?.[section] !== false;
-
-  // 🔒 Verrouille aussi avatar/cover si basic
-  const isAvatarCoverLocked = profile.plan === 'basic' && (section === 'portfolio' || section === 'certificates' || section === 'skills' || section === 'links');
-
-  return (
-    <div key={section} className={`flex items-center justify-between p-3 rounded-lg ${isLocked || isAvatarCoverLocked ? 'bg-gray-800/50 cursor-not-allowed' : 'bg-white/5 hover:bg-white/10'} transition-colors`}>
-      <div className="flex items-center gap-2">
-        <span className="text-gray-300 capitalize">{section}</span>
-        {(isLocked || isAvatarCoverLocked) && <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">🔒 Pro</Badge>}
-      </div>
-      <Switch
-        checked={isVisible}
-        onCheckedChange={checked => setProfile({ ...profile, sections_visibility: { ...profile.sections_visibility, [section]: checked } })}
-        disabled={isLocked || isAvatarCoverLocked}
-      />
-    </div>
-  );
-})}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 🔹 Options avancées */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="text-cyan-400" /> {t('advanced.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-gray-300">{t('advanced.public_profile')}</Label>
-              <p className="text-xs text-gray-400">{t('advanced.public_profile_desc')}</p>
-            </div>
-            <Switch checked={profile.is_public} onCheckedChange={checked => setProfile({ ...profile, is_public: checked })} />
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="text-gray-300">{t('advanced.contact_requests')}</Label>
-              <p className="text-xs text-gray-400">{t('advanced.contact_requests_desc')}</p>
-            </div>
-            <Switch checked={profile.accepts_contact_requests} onCheckedChange={checked => setProfile({ ...profile, accepts_contact_requests: checked })} />
-          </div>
-          <div>
-            <Label className="text-gray-300">{t('advanced.profile_url')}</Label>
-            <div className="flex mt-1">
-              <Input value={`https://luvika.me/${profile.username}`} readOnly className="rounded-r-none bg-white/5 border-r-0" />
-              <Button variant="outline" size="icon" className="rounded-l-none border-l-0" onClick={() => {
-                navigator.clipboard.writeText(`https://luvika.me/${profile.username}`);
-                setMessage({ type: 'success', text: t('url_copied') });
-              }}>
-                <Copy className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 🔹 🔐 Confidentialité */}
-<Card className="glass-border">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <EyeOff className="text-red-400" /> {t('privacy.title')}
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-5">
-    {/* Masquer l'année de naissance */}
-    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-      <div>
-        <Label className="text-gray-300 flex items-center gap-2">
-          <Calendar className="w-4 h-4 text-cyan-400" />
-          {t('privacy.hide_birth_year')}
-        </Label>
-        <p className="text-xs text-gray-400 mt-1">{t('privacy.hide_birth_year_desc')}</p>
-      </div>
-      <Switch 
-        checked={profile.hide_birth_year || false} 
-        onCheckedChange={checked => setProfile({ ...profile, hide_birth_year: checked })} 
-      />
-    </div>
-
-    {/* Désactiver l'icône anniversaire */}
-    <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-      <div>
-        <Label className="text-gray-300 flex items-center gap-2">
-          <Cake className="w-4 h-4 text-amber-400" />
-          {t('privacy.disable_birthday_icon')}
-        </Label>
-        <p className="text-xs text-gray-400 mt-1">{t('privacy.disable_birthday_icon_desc')}</p>
-      </div>
-      <Switch 
-        checked={profile.disable_birthday_icon || false} 
-        onCheckedChange={checked => setProfile({ ...profile, disable_birthday_icon: checked })} 
-      />
-    </div>
-
-    {/* Badge de vérification — RÉSERVÉ AUX ENTREPRISES */}
-    <div className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
-      profile.plan === 'entreprise' 
-        ? 'bg-white/5 hover:bg-white/10' 
-        : 'bg-gray-800/50 cursor-not-allowed'
-    }`}>
-      <div>
-        <Label className="text-gray-300 flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          {t('privacy.verified_badge')}
-        </Label>
-        <div className="flex items-center gap-2 mt-1">
-          <p className="text-xs text-gray-400">{t('privacy.verified_badge_desc')}</p>
-          {profile.verified && (
-            <img 
-              src="/badge.png" 
-              alt="✅ Vérifié" 
-              className="w-5 h-5 rounded-full border border-emerald-400/30"
-              title={t('privacy.verified_tooltip')}
-            />
-          )}
-        </div>
-      </div>
-      
-      {profile.plan === 'entreprise' ? (
-        <Switch 
-          checked={profile.verified || false}
-          onCheckedChange={checked => setProfile({ ...profile, verified: checked })}
-        />
-      ) : (
-        <div className="flex items-center gap-2">
-          <Lock className="w-4 h-4 text-yellow-400" />
-          <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">
-            {t('privacy.enterprise_only')}
-          </Badge>
-        </div>
-      )}
-    </div>
-  </CardContent>
-</Card>
     </div>
   );
 }
-
-// 🔹 Icônes manquantes
-const Copy = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className={className}>
-    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12v-4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6m4-10h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
-  </svg>
-);
-
-const SnapchatIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M21.927 9.208l-.863-.527A5.486 5.486 0 0 0 12 7a5.486 5.486 0 0 0-9.064 1.681l-.863.527a1 1 0 0 0-.066 1.72l.902.55a3.489 3.489 0 0 1 0 5.643l-.902.55a1 1 0 0 0 .066 1.72l.863.527A5.486 5.486 0 0 0 12 23a5.486 5.486 0 0 0 9.064-1.681l.863-.527a1 1 0 0 0 .066-1.72l-.902-.55a3.489 3.489 0 0 1 0-5.643l.902-.55a1 1 0 0 0-.066-1.72z"/></svg>
-);
-
-const TelegramIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2zm4.333 13.5l-1.45 4.35c-.15.45-.6.6-1 .45L12 19l-6.5 3.5c-.4.2-.8-.1-.6-.5l1.5-6.5L3.5 12c-.2-.4 0-.8.4-.8l17-7c.4-.2.8.1.6.5l-2.5 12.5c-.1.5-.5.8-.9.6l-2.767-1.167z"/></svg>
-);
-
-const BehanceIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M0 0v24h24V0H0zm8.4 18.4H4.8V5.6h3.6c1.6 0 2.8.4 3.6 1.2s1.2 2 1.2 3.6s-.4 2.8-1.2 3.6s-2 1.2-3.6 1.2zm-1.2-1.6h2c1.2 0 2-.4 2.4-1.2s.6-2 .6-3.6s-.2-2.8-.6-3.6s-1.2-1.2-2.4-1.2H7.2v9.6zm5.6-10.4v1.6h-3.2v3.2h2.8v1.6h-2.8v3.2h3.2v1.6h-4.8V5.6h4.8v1.6z"/></svg>
-);
-
-const DribbbleIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}><path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2m-1.1 17.2c-4.8 0-7.1-4.7-7.4-8.2c.3-3.5 2.7-8.2 7.4-8.2c1.1 0 2.1.2 3.1.7c.9-.5 2-.8 3.2-.8c4.6 0 7 4.7 7.3 8.3c-.3 3.6-2.7 8.2-7.3 8.2c-1.1 0-2.2-.3-3.2-.7c-.9.5-1.9.7-2.9.7m-.7-13.3c-3.6 0-5.4 4-5.6 7c.2 3 2 7 5.6 7c3.7 0 5.5-4 5.7-7c-.2-3.1-2-7.1-5.7-7m-4.2 5.5c.2.2.2.5.1.7c-.1.2-.3.3-.6.2c-2.2-.9-3.8-3.2-3.9-3.4c-.1-.2-.1-.4.1-.6c.2-.2.5-.2.7-.1c.1.1 1.7 2.2 3.7 3.2m10.2 0c1.9-1 3.4-3 3.6-3.2c.2-.2.4-.2.6-.1c.2.2.2.4.1.6c-.2.2-1.8 2.6-4 3.5c-.2.1-.5 0-.7-.2c-.2-.2-.1-.5.1-.8m-9.7-3.7c.2.2.2.5.1.7c-.1.2-.3.3-.6.2c-1.3-.5-2.2-2.2-2.3-3.4c.2-2.5 2.1-4.1 2.8-4.6c.2-.1.4-.1.6.1c.2.2.2.4.1.6c-.3.5-1.7 2-1.9 4.4m9.2 0c.1-.6.2-1.1.2-1.8c-.1-2.1-1.1-3.5-1.8-4.1c-.2-.1-.2-.4-.1-.6c.2-.2.4-.2.6-.1c.7.5 2.3 2 2.5 4.3c0 .7.1 1.2.2 1.8c0 .2.1.4-.1.5c-.1.1-.3.1-.4-.1c-.2-.2-.3-.3-.5-.5c-.2-.3-.6-.4-.9-.2c-.3.2-.4.6-.2.9c.3.6 1.2 2.4 2.5 3.4c.2.1.2.4.1.6c-.2.2-.4.2-.6.1c-1.4-1-2.3-2.8-2.5-3.4c-.2-.3-.2-.7.1-.9c.2-.2.6-.4.9-.2c.3.2.4.6.2.9c-.2.3-.2.3-.3.5c-.1.1-.3.2-.5.1c-.2-.1-.3-.4-.1-.7m-4.8 1.8c.9-.1 2.8-1.1 3.9-2.7c.2-.2.5-.2.7-.1c.2.2.2.5.1.7c-.8 1.6-2.6 2.7-4.1 2.9c-.3 0-.5-.2-.5-.4c-.1-.1 0-.2.1-.4z"/></svg>
-);
-
-const FolderIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className={className}>
-    <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
-  </svg>
-);

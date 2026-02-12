@@ -6,25 +6,21 @@ import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { createClient } from '../../lib/supabase/client';
 
+interface GlacialLikeButtonProps {
+  profileId: string;
+  initialLikes: number;
+  hideCount?: boolean; // ← nouvelle prop pour cacher le compteur
+}
+
 export default function GlacialLikeButton({
   profileId,
   initialLikes,
-}: {
-  profileId: string;
-  initialLikes: number;
-}) {
+  hideCount = false,
+}: GlacialLikeButtonProps) {
   const [likes, setLikes] = useState(initialLikes);
   const [hasLiked, setHasLiked] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
-      return;
-    }
-    // Charger ou enregistrer les présences
-  }, []);
-
-  // 💾 Persistance locale et vérification serveur
   useEffect(() => {
     const liked = localStorage.getItem(`luvika_liked_${profileId}`) === 'true';
     setHasLiked(liked);
@@ -33,7 +29,6 @@ export default function GlacialLikeButton({
     }
   }, [profileId, initialLikes]);
 
-  // 🔹 Realtime updates
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
@@ -71,7 +66,6 @@ export default function GlacialLikeButton({
     localStorage.setItem(`luvika_liked_${profileId}`, String(newHasLiked));
 
     try {
-      // 📡 API call pour mettre à jour le serveur
       const supabase = createClient();
       const { data, error } = await supabase
         .from('profiles')
@@ -85,7 +79,6 @@ export default function GlacialLikeButton({
 
       if (error) {
         console.error('❌ Like update failed:', error);
-        // En cas d'erreur, rétablir l'état précédent
         setHasLiked(!newHasLiked);
         setLikes(hasLiked ? likes + 1 : likes - 1);
       } else {
@@ -93,7 +86,6 @@ export default function GlacialLikeButton({
       }
     } catch (err) {
       console.error('❌ Like error:', err);
-      // En cas d'erreur, rétablir l'état précédent
       setHasLiked(!newHasLiked);
       setLikes(hasLiked ? likes + 1 : likes - 1);
     }
@@ -107,7 +99,7 @@ export default function GlacialLikeButton({
       whileTap={{ scale: 0.95 }}
       onClick={handleLike}
       disabled={isAnimating}
-      className="flex items-center gap-3 px-6 py-3 rounded-full transition-all shadow-lg group"
+      className="flex items-center justify-center px-6 py-3 rounded-full transition-all shadow-lg group"
       aria-label={hasLiked ? "Retirer un like" : "Ajouter un like"}
     >
       <motion.div
@@ -122,11 +114,13 @@ export default function GlacialLikeButton({
       >
         <Heart 
           size={22} 
-          fill={hasLiked ? "#ef4444" : "none"} 
-          className={`${hasLiked ? "text-red-400" : "text-gray-300 group-hover:text-red-300"} transition-colors`}
+          fill={hasLiked ? "#3700FF" : "none"} 
+          className={`${hasLiked ? "text-blue-400" : "text-gray-300 group-hover:text-red-300"} transition-colors`}
         />
       </motion.div>
-      <span className="text-white font-medium text-lg">{likes}</span>
+
+      {/* Affiche le compteur seulement si hideCount=false */}
+      {!hideCount && <span className="text-white font-medium text-lg ml-2">{likes}</span>}
     </motion.button>
   );
 }

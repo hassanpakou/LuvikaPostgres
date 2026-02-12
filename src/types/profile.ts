@@ -25,4 +25,15 @@ export type PublicProfile = {
     boolean
   >;
   // ... ajoutez les autres champs si besoin
+  // 🔹 Ajout : sections supplémentaires pour le nouveau design
+  sections_visibility_extended?: Record<
+    | 'cv' // ✅ CV
+    | 'custom_link' // ✅ Custom Link
+    | 'portfolio' // ✅ Portfolio
+    | 'certificates' // ✅ Certificates
+    | 'skills' // ✅ Skills
+    , boolean
+  >;
+  // 🔹 Ajout : champ pour le lien personnalisé
+  custom_link_url?: string | null;
 };
