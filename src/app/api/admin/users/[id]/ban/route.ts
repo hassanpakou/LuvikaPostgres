@@ -25,13 +25,21 @@ export async function POST(
     }
   );
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.user || session.user.user_metadata?.role !== 'admin') {
-    console.log("Accès refusé pour bannir:", userIdToBan); // 🔍 Log
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-  }
+  // ✅ CORRECTION SÉCURISÉE
+const { data: { user }, error: authError } = await supabase.auth.getUser();
+if (authError || !user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-  const adminId = session.user.id;
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('role')
+  .eq('id', user.id)
+  .single();
+
+if (profile?.role !== 'admin') {
+  return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
+}
+
+  const adminId = user.id;
   console.log("Admin demandant le bannissement:", adminId); // 🔍 Log
 
   if (userIdToBan === adminId) {

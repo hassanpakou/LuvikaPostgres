@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { Search, ChevronDown, X } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
+import { createPortal } from 'react-dom';
 
 // ✅ Déplacé dans un fichier séparé pour cohérence
 export type User = {
@@ -32,6 +33,22 @@ export default function UserSelector({
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+
+const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
+useEffect(() => {
+  if (isOpen) {
+    const button = document.querySelector('[data-user-selector]');
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 4,
+        left: rect.left + window.scrollX,
+        width: rect.width,
+      });
+    }
+  }
+}, [isOpen]);
 
   // 🔹 Chargement utilisateurs
   useEffect(() => {
@@ -89,11 +106,12 @@ export default function UserSelector({
   };
 
   return (
-    <div className="relative">
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full justify-between bg-white/5 border border-white/10 hover:bg-white/10 text-left"
-      >
+  <div className={`relative ${isOpen ? 'overflow-visible' : ''}`}>
+    <Button
+  data-user-selector // ✅ Pour le positionnement
+  onClick={() => setIsOpen(!isOpen)}
+  className="w-full justify-between bg-white/5 border border-white/10 hover:bg-white/10 text-left relative z-50"
+>
         <div className="flex-1 truncate">
           {selectedUser ? (
             <div>
@@ -126,9 +144,17 @@ export default function UserSelector({
         </div>
       </Button>
 
-      {isOpen && (
-        <div className="absolute z-50 mt-1 w-full glass-border backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 max-h-60 overflow-auto">
-          <div className="p-2 border-b border-white/10">
+      {isOpen && typeof document !== 'undefined' && createPortal(
+  <div 
+    className="fixed z-[10000] glass-border backdrop-blur-xl rounded-lg shadow-2xl border border-white/10 max-h-60 overflow-auto"
+    style={{ 
+      top: dropdownPosition.top,
+      left: dropdownPosition.left,
+      width: dropdownPosition.width,
+      boxShadow: '0 20px 50px -20px rgba(0,0,0,0.8)'
+    }}
+  >
+        <div className="p-2 border-b border-white/10">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
@@ -173,7 +199,9 @@ export default function UserSelector({
               ))
             )}
           </div>
-        </div>
+    
+          </div>,
+  document.body
       )}
     </div>
   );
