@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { createClient } from '../../../../src/lib/supabase/client';
 import DashboardQuickMenu from '../../../../src/components/dashboard/DashboardQuickMenu';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 // Types
 type Scan = {
@@ -144,10 +145,40 @@ useEffect(() => {
       const res = await fetch(`/api/analytics?profile_id=${user.id}&range=${dateRange}`);
       const result = await res.json();
       setData(result);
-    } catch (err) {
-      console.error('❌ Erreur chargement stats:', err);
-    }
+   } catch (error: any) {
+  // 🔹 CORRECTION : Gestion d'erreur robuste avec détection d'erreur RPC
+  const errorMessage = error?.message || 'Erreur inconnue';
+  const isRpcError = errorMessage.includes('function') && errorMessage.includes('does not exist');
+  
+  console.error('❌ ERREUR CHARGEMENT ANALYTICS:', {
+    type: error?.name || 'Unknown',
+    message: errorMessage,
+    status: error?.status,
+    stack: error?.stack?.split('\n').slice(0, 3).join('\n'),
+    isRpcError
+  });
+
+  if (isRpcError) {
+    toast.error('⚠️ Fonctions analytics non installées', {
+      description: 'Les fonctions SQL sont manquantes dans la base de données. Contactez l\'administrateur système.',
+      duration: 10000,
+    });
+  } else if (errorMessage.includes('ambiguous')) {
+    toast.error('⚠️ Erreur de colonne ambiguë', {
+      description: 'Une colonne "status" non qualifiée existe dans les fonctions SQL. Contactez le développeur.',
+      duration: 10000,
+    });
+  } else {
+    toast.error('❌ Impossible de charger les statistiques', {
+      description: errorMessage || 'Vérifiez votre connexion et réessayez',
+      duration: 8000,
+    });
+  }
+} finally {
+  setLoading(false);
+}
     const supabase = createClient();
+    
 const { data: { user } } = await supabase.auth.getUser();
 if (!user) return;
 
