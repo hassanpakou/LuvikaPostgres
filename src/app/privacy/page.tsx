@@ -1,4 +1,5 @@
 // src/app/privacy/page.tsx
+'use client';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
