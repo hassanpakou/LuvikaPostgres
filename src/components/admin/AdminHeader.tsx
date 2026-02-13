@@ -119,6 +119,19 @@ const fetchUnreadCount = async (p0: number) => {
     fetchUserData();
   }, [supabase, router]);
 
+  // 🔹 Reset avatarError quand l'URL change + gestion robuste
+useEffect(() => {
+  // Réinitialise l'erreur si une nouvelle URL est présente
+  if (profile?.avatar_url) {
+    setAvatarError(false);
+  }
+  
+  // Nettoyage si le composant est démonté
+  return () => {
+    setAvatarError(false);
+  };
+}, [profile?.avatar_url]);
+
   // 🔹 Déconnexion sécurisée
   const handleSignOut = async () => {
     try {
@@ -249,50 +262,70 @@ const fetchUnreadCount = async (p0: number) => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* 🔹 Menu utilisateur - Design Premium */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`
-                    relative h-10 w-10 rounded-xl
-                    text-gray-300 hover:text-white hover:bg-white/10
-                    border border-white/10 backdrop-blur-md
-                    transition-all duration-300 overflow-hidden
-                    ${loadingUser ? 'animate-pulse' : ''}
-                  `}
-                >
-                  {loadingUser ? (
-                    // 🔹 Skeleton loader élégant
-                    <div className="w-full h-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full animate-pulse"></div>
-                  ) : profile?.avatar_url && !avatarError ? (
-                    // 🔹 Avatar avec gestion d'erreur
-                    <motion.img
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      src={profile.avatar_url}
-                      alt={profile.full_name || user?.email || 'Avatar'}
-                      onError={handleAvatarError}
-                      className="w-full h-full rounded-full object-cover border-2 border-white/20 shadow-md hover:shadow-cyan-500/30 transition-shadow"
-                    />
-                  ) : (
-                    // 🔹 Fallback avec initial + gradient
-                    <motion.div
-                      initial={{ scale: 0.9, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      className="w-full h-full rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md"
-                    >
-                      {getUserInitial()}
-                    </motion.div>
-                  )}
-                  
-                  {/* 🔹 Badge admin subtil */}
-                  {user?.user_metadata?.role === 'admin' && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-slate-900 animate-pulse"></div>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
+            {/* 🔹 Menu utilisateur - Design Premium avec AVATAR CORRIGÉ */}
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button
+      variant="ghost"
+      size="sm"
+      className={`
+        relative h-10 w-10 rounded-full  // ✅ CHANGÉ: rounded-xl → rounded-full
+        text-gray-300 hover:text-white hover:bg-white/10
+        border border-white/10 backdrop-blur-md
+        transition-all duration-300 overflow-hidden
+        ${loadingUser ? 'animate-pulse' : ''}
+      `}
+    >
+      {loadingUser ? (
+        // 🔹 Skeleton loader rond
+        <div className="w-full h-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-full animate-pulse"></div>
+      ) : profile?.avatar_url ? (  // ✅ SUPPRIMÉ: && !avatarError
+        // 🔹 Avatar TOUJOURS affiché si URL présente (gestion d'erreur intégrée)
+        <motion.img
+          key={profile.avatar_url} // ✅ Force le re-rendu si URL change
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          src={profile.avatar_url}
+          alt={profile.full_name || user?.email || 'Avatar'}
+          onError={(e) => {
+            console.warn('⚠️ Erreur chargement avatar:', profile.avatar_url);
+            // Masque l'image en cas d'erreur mais ne bloque pas le fallback
+            (e.target as HTMLImageElement).style.display = 'none';
+            setAvatarError(true);
+          }}
+          className={`
+            w-full h-full rounded-full object-cover 
+            border-2 border-white/20 shadow-md
+            hover:shadow-cyan-500/30 transition-shadow
+            ${avatarError ? 'hidden' : ''} // ✅ Masque SI erreur
+          `}
+        />
+      ) : null}
+      
+      {/* 🔹 Fallback TOUJOURS présent (s'affiche si pas d'URL ou erreur) */}
+      {(loadingUser || !profile?.avatar_url || avatarError) && (
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className={`
+            absolute inset-0 rounded-full 
+            bg-gradient-to-br from-cyan-500 to-blue-600 
+            flex items-center justify-center text-white font-bold text-lg shadow-md
+            ${profile?.avatar_url && !avatarError ? 'opacity-0' : 'opacity-100'} // ✅ Transition fluide
+            transition-opacity duration-300
+          `}
+        >
+          {getUserInitial()}
+        </motion.div>
+      )}
+      
+      {/* 🔹 Badge admin subtil */}
+      {user?.user_metadata?.role === 'admin' && (
+        <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-slate-900 animate-pulse"></div>
+      )}
+    </Button>
+  </DropdownMenuTrigger>
+  
               
               <DropdownMenuContent 
                 align="end" 
