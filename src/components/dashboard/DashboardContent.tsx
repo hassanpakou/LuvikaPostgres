@@ -1,7 +1,7 @@
 // src/components/dashboard/DashboardContent.tsx
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from 'next-themes';
@@ -62,7 +62,9 @@ import CreateEventForm from '../events/CreateEventForm';
 import { createClient } from '../../../src/lib/supabase/client';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-
+import NFCManagementModal from './Modals/NFCManagementModal';
+import { NFCCard } from '../../types/nfc';
+import { normalizeNfcCard } from '@/src/lib/utils/nfc';
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -286,8 +288,8 @@ const ContactToggleModal = ({
             onClick={onToggle}
             className={`flex items-center gap-2 ${
               enabled
-                ? 'bg-red-500/20 hover:bg-red-500/30 text-red-300 border-red-500/30'
-                : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30'
+                ? 'bg-red-500/20 text-red-300 border-red-500/30'
+                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
             }`}
           >
             {enabled ? (
@@ -669,11 +671,13 @@ const NFCModal = ({
   onClose,
   cards,
   onAdd,
+  onManageCard,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  cards: { id: string; card_id: string; status: string; created_at: string }[];
+  cards: NFCCard[];
   onAdd: () => void;
+  onManageCard?: (card: NFCCard) => void;
 }) => {
   if (!isOpen) return null;
   return (
@@ -713,7 +717,11 @@ const NFCModal = ({
           ) : (
             <div className="space-y-3 mb-6">
               {cards.map(card => (
-                <div key={card.id} className="glass-border bg-white/5 p-4 rounded-lg">
+                <div 
+                  key={card.id} 
+                  className="glass-border bg-white/5 p-4 rounded-lg cursor-pointer hover:border-purple-500/30 hover:bg-purple-500/5 transition-all"
+                  onClick={() => onManageCard?.(card)}
+                >
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-mono text-sm text-blue-300">{card.card_id}</p>
@@ -722,9 +730,10 @@ const NFCModal = ({
                       </p>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded ${
-                      card.status === 'active' ? 'bg-green-500/20 text-green-300' :
-                      card.status === 'lost' ? 'bg-yellow-500/20 text-yellow-300' :
-                      'bg-gray-500/20 text-gray-300'
+                      card.status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                      card.status === 'lost' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                      card.status === 'blocked' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                      'bg-gray-500/20 text-gray-300 border-gray-500/30'
                     }`}>
                       {card.status}
                     </span>
@@ -1142,27 +1151,7 @@ type Card = {
   status: 'active' | 'lost' | 'blocked' | 'inactive';
   created_at: string;
 };
-// 🔹 Types compatibles avec votre table nfc_cards existante
-type NFCStatus = 'active' | 'inactive' | 'lost' | 'blocked';
 
-type NFCCard = {
-  id: string;
-  user_id: string;
-  card_id: string;          // ✅ Au lieu de card_number
-  status: NFCStatus;        // ✅ Enum personnalisé (pas is_active)
-  matricule?: string;
-  lost_reason?: string;
-  activated_at?: string;
-  created_at: string;
-  updated_at: string;
-  scan_count?: number;      // ✅ Optionnel (colonne ajoutée)
-  last_scan_at?: string;    // ✅ Optionnel (colonne ajoutée)
-  order_id?: string;        // ✅ Optionnel (colonne ajoutée)
-  stats?: {                 // ✅ Calculé dynamiquement
-    scans: number;
-    unique_visitors: number;
-  };
-};
 type Scan = {
   id: string;
   scan_type: string;
@@ -1214,6 +1203,11 @@ const [searchResults, setSearchResults] = useState<any[]>([]);
 const [isSearching, setIsSearching] = useState(false);
 const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 const [followStatus, setFollowStatus] = useState<Record<string, boolean>>({});
+const [isNFCModalOpen, setIsNFCModalOpen] = useState(false);
+const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
+const [selectedCardForManagement, setSelectedCardForManagement] = useState<NFCCard | null>(null);
+const [nfcCards, setNfcCards] = useState<NFCCard[]>([]);
+
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -1235,14 +1229,12 @@ const [followStatus, setFollowStatus] = useState<Record<string, boolean>>({});
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showFarewell, setShowFarewell] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-  const [nfcCards, setNfcCards] = useState<any[]>([]);
 const [activeCardStats, setActiveCardStats] = useState<{ scans: number; unique_visitors: number } | null>(null);
 const [loadingCards, setLoadingCards] = useState(true);
 const [loadingMessagesCount, setLoadingMessagesCount] = useState(true);
   
   // 🔹 Références pour les canaux realtime
   const channelsRef = useRef<any>({});
-  const closeModal = () => setActiveModal(null);
   const subscription = useMemo(() => {
     const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
     return { plan, active: plan === 'premium' || plan === 'entreprise', expires_at: undefined };
@@ -1379,7 +1371,27 @@ const activeCard = cards[0];
       setIsSubmitting(false);
     }
   };
-  // 🔹 Charger les cartes NFC de l'utilisateur
+
+const loadNfcCards = async () => {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+  
+  const { data, error } = await supabase
+    .from('nfc_cards')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+  
+  if (!error && data) {
+    setNfcCards(data.map(normalizeNfcCard)); // ✅ Normalisation propre
+  }
+};
+
+// Dans le useEffect initial
+useEffect(() => {
+  loadNfcCards();
+}, []);
 // 🔹 Charger les cartes NFC AVEC statistiques depuis la table scans existante
 const fetchCards = async () => {
   try {
@@ -2150,8 +2162,7 @@ const handleToggleFollow = async (profileId: string) => {
       <div className="absolute inset-0 rounded-xl sm:rounded-full bg-green-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
     </Button>
 
-    {/* ❤️ Likes - ROUGE */}
-{/* ❤️ Likes - ROUGE (Version TypeScript-safe) */}
+    {/* ❤️ Likes - ROUGE (Version TypeScript-safe) */}
 <Button
   variant="ghost"
   size="icon"
@@ -2850,10 +2861,10 @@ const handleToggleFollow = async (profileId: string) => {
           className={`
             ${
               activeCard?.status === 'active'
-                ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                 : activeCard?.status === 'lost'
-                ? 'bg-red-500/20 text-red-300 border-red-500/30'
-                : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
             }
           `}
         >
@@ -2976,10 +2987,10 @@ const handleToggleFollow = async (profileId: string) => {
               className={`
                 ${
                   activeCard?.status === 'active'
-                    ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                     : activeCard?.status === 'lost'
-                    ? 'bg-red-500/20 text-red-300 border-red-500/30'
-                    : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                    : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
                 }
               `}
             >
@@ -3006,13 +3017,16 @@ const handleToggleFollow = async (profileId: string) => {
         {/* Boutons d'action */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
-            onClick={handleManageCards}
-            className="flex-1 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 hover:from-purple-600/30 hover:to-indigo-600/30 border border-purple-500/30 text-purple-300 font-semibold py-3 rounded-lg transition-all duration-300 group relative"
-          >
-            <Settings className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-            {t('nfc.manage_button') || 'Gérer mes cartes'}
-            <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-          </Button>
+  onClick={() => {
+    loadNfcCards(); // Recharger au cas où
+    setIsNFCModalOpen(true);
+  }}
+  className="flex-1 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 hover:from-purple-600/30 hover:to-indigo-600/30 border border-purple-500/30 text-purple-300 font-semibold py-3 rounded-lg transition-all duration-300 group relative"
+>
+  <Settings className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+  {t('nfc.manage_button') || 'Gérer mes cartes'}
+  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+</Button>
 
           <Button
             onClick={handleOrderCard}
@@ -3725,15 +3739,6 @@ const handleToggleFollow = async (profileId: string) => {
             username={profile.username}
           />
         )}
-        {activeModal === 'nfc' && (
-          <NFCModal
-            key="modal-nfc"
-            isOpen={true}
-            onClose={closeModal}
-            cards={cards}
-            onAdd={() => router.push('/dashboard/nfc/add')}
-          />
-        )}
         {activeModal === 'orders' && (
           <OrdersModal
             key="modal-orders"
@@ -3776,8 +3781,32 @@ const handleToggleFollow = async (profileId: string) => {
             tNavbar={tNavbar}
           />
         )}
-      {/* 🔹 Modal de Recherche */}
+{/* ✅ NFCModal avec onManageCard */}
+<NFCModal
+  isOpen={isNFCModalOpen}
+  onClose={() => setIsNFCModalOpen(false)}
+  cards={nfcCards}
+  onAdd={() => {/* Logique ajouter carte */}}
+  onManageCard={(card) => { // ✅ Typage automatique
+    setSelectedCardForManagement(card);
+    setIsNFCModalOpen(false);
+    setIsManagementModalOpen(true);
+  }}
+/>
 
+{/* ✅ NFCManagementModal avec card typé */}
+<NFCManagementModal
+  isOpen={isManagementModalOpen}
+  onClose={() => {
+    setIsManagementModalOpen(false);
+    setSelectedCardForManagement(null);
+  }}
+  card={selectedCardForManagement} // ✅ Compatible NFCCard | null
+  onActionComplete={() => {
+    loadNfcCards();
+    toast.success('✅ Action effectuée avec succès');
+  }}
+/>
   {isSearchModalOpen && (
     <motion.div
       initial={{ opacity: 0 }}
@@ -3965,4 +3994,8 @@ const handleToggleFollow = async (profileId: string) => {
       />
     </div>
   );
+}
+
+function closeModal() {
+  throw new Error('Function not implemented.');
 }

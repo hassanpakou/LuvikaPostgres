@@ -6,24 +6,18 @@ import { X, Plus, AlertTriangle } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card } from '../../../../components/ui/card';
 import { Badge } from '../../../../components/ui/badge';
-
-type NFC_Card = {
-  id: string;
-  card_id: string;
-  status: 'active' | 'lost' | 'blocked' | 'inactive';
-  created_at: string;
-};
+import { NFCCard } from '@/src/types/nfc';
 
 export default function NFCModal({
   isOpen,
   onClose,
   cards,
-  onAdd,
+  onManageCard,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  cards: NFC_Card[];
-  onAdd: () => void;
+  cards: NFCCard[];
+  onManageCard?: (card: NFCCard) => void;
 }) {
   if (!isOpen) return null;
 
@@ -65,7 +59,11 @@ export default function NFCModal({
           ) : (
             <div className="space-y-3 mb-6">
               {cards.map(card => (
-                <Card key={card.id} className="glass-border bg-white/5 border-white/10 p-4">
+                <Card 
+                  key={card.id} 
+                  className="glass-border bg-white/5 border-white/10 p-4 hover:border-purple-500/30 hover:bg-purple-500/5 transition-all cursor-pointer"
+                  onClick={() => onManageCard?.(card)}
+                >
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="font-mono text-sm text-blue-300">{card.card_id}</p>
@@ -74,9 +72,10 @@ export default function NFCModal({
                       </p>
                     </div>
                     <Badge className={
-                      card.status === 'active' ? 'bg-green-500' :
-                      card.status === 'lost' ? 'bg-yellow-500' :
-                      card.status === 'blocked' ? 'bg-red-500' : 'bg-gray-500'
+                      card.status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                      card.status === 'lost' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                      card.status === 'blocked' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                      'bg-gray-500/20 text-gray-300 border-gray-500/30'
                     }>
                       {card.status}
                     </Badge>
@@ -85,17 +84,6 @@ export default function NFCModal({
               ))}
             </div>
           )}
-
-          <Button
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-black"
-            onClick={() => {
-              onAdd();
-              onClose();
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Ajouter une carte
-          </Button>
         </motion.div>
       </motion.div>
     </AnimatePresence>

@@ -1,4 +1,4 @@
-// src/app/(admin)/UserSelector.tsx
+// src/app/admin/UserSelector.tsx
 'use client';
 
 import { useState, useEffect } from 'react';

@@ -1,20 +1,21 @@
+// src/app/admin/admin/orders/page.tsx
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion'; // ✅ IMPORT AJOUTÉ ICI
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
 import {
-  Package,
-  ArrowLeft,
-  Search,
-  ChevronDown,
-  ChevronUp,
+  Package, ArrowLeft, Search, Truck, CheckCircle, XCircle, RotateCcw,
+  Calendar, MapPin, User, Mail, AlertCircle, RefreshCw
 } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { ToggleGroup, ToggleGroupItem } from '../../../../../components/ui/toggle-group';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 type Order = {
   id: string;
@@ -29,7 +30,7 @@ type Order = {
   } | null;
 };
 
-const ORDERS_PER_PAGE = 5;
+const ORDERS_PER_PAGE = 8; // ✅ Augmenté pour meilleure densité
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -38,19 +39,21 @@ export default function OrdersPage() {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const router = useRouter();
   const t = useTranslations();
 
+  // 🔹 Chargement des commandes
   useEffect(() => {
     const fetchOrders = async () => {
       const supabase = createClient();
-      const { data : { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user || user.user_metadata?.role !== 'admin') {
         router.push('/auth/sign-in');
         return;
       }
 
-      const {  data } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .select(`
           *,
@@ -58,7 +61,12 @@ export default function OrdersPage() {
         `)
         .order('created_at', { ascending: false });
 
-      setOrders(data || []);
+      if (error) {
+        toast.error('❌ Erreur chargement commandes');
+        console.error(error);
+      } else {
+        setOrders(data || []);
+      }
       setLoading(false);
     };
 
@@ -68,10 +76,7 @@ export default function OrdersPage() {
   // 🔍 Filtrer + trier
   const filteredAndSorted = useMemo(() => {
     let result = orders.filter(order => {
-      // 🔹 Filtre par statut
       if (filter !== 'all' && order.status !== filter) return false;
-
-      // 🔎 Recherche
       if (search) {
         const term = search.toLowerCase();
         const profile = order.profiles;
@@ -85,25 +90,20 @@ export default function OrdersPage() {
       return true;
     });
 
-    // 📊 Tri
     if (sortConfig) {
       const { key, direction } = sortConfig;
       result.sort((a, b) => {
         let aVal: any = a[key as keyof Order];
         let bVal: any = b[key as keyof Order];
-
-        // Gérer les dates
         if (key === 'created_at') {
           aVal = new Date(aVal).getTime();
           bVal = new Date(bVal).getTime();
         }
-
         if (aVal < bVal) return direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
-
     return result;
   }, [orders, filter, search, sortConfig]);
 
@@ -114,7 +114,6 @@ export default function OrdersPage() {
     currentPage * ORDERS_PER_PAGE
   );
 
-  // 🔄 Réinitialiser à la page 1 quand filtre/recherche change
   useEffect(() => {
     setCurrentPage(1);
   }, [filter, search]);
@@ -130,256 +129,508 @@ export default function OrdersPage() {
 
   const getPageNumbers = () => {
     const pages = [];
-    const maxVisible = 5;
+    const maxVisible = 7;
     let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
     let end = Math.min(totalPages, start + maxVisible - 1);
-
-    if (end - start + 1 < maxVisible) {
-      start = Math.max(1, end - maxVisible + 1);
-    }
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
+    if (end - start + 1 < maxVisible) start = Math.max(1, end - maxVisible + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   };
 
-  // ✅ Loader élégant
-  if (loading) {
-           return (
-  <div className="max-w-6xl mx-auto py-12 px-4 flex justify-center">
-    <div className="w-full max-w-md">
-
-      {/* Bulle glassmorphism */}
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-xl">
-
-        <div className="flex flex-col items-center text-center">
-
-          {/* Boule circulaire */}
-          <div className="relative w-20 h-20 mb-6">
-
-            {/* Cercle externe */}
-            <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
-
-            {/* Aiguille qui tourne */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-[2px] h-8 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
-            </div>
-
-            {/* Cœur lumineux */}
-            <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-sm opacity-70 animate-pulse"></div>
-            <div className="absolute inset-6 rounded-full bg-slate-950"></div>
-          </div>
-
-          {/* Texte */}
-          <h3 className="text-lg font-semibold text-white mb-1">
-            Chargement des commandes...
-          </h3>
-          <p className="text-sm text-gray-400 mb-5">
-            Récupération des données depuis la base sécurisée
-          </p>
-
-          {/* Barre de progression */}
-          <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 animate-progress"></div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-  </div>
-);
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <span className="px-2 py-1 bg-yellow-500/20 text-yellow-300 rounded-full text-xs">En attente</span>;
-      case 'processing':
-        return <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">En cours</span>;
-      case 'shipped':
-        return <span className="px-2 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-xs">Expédié</span>;
-      case 'delivered':
-        return <span className="px-2 py-1 bg-green-500/20 text-green-300 rounded-full text-xs">Livré</span>;
-      case 'cancelled':
-        return <span className="px-2 py-1 bg-red-500/20 text-red-300 rounded-full text-xs">Annulé</span>;
-      default:
-        return <span className="px-2 py-1 bg-gray-500/20 text-gray-300 rounded-full text-xs">Inconnu</span>;
+  // 🔹 Mise à jour du statut avec feedback visuel
+  const updateOrderStatus = async (orderId: string, newStatus: string, actionName: string) => {
+    setUpdatingOrderId(orderId);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/update-status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Échec de la mise à jour');
+      
+      toast.success(`✅ ${actionName} effectuée`, {
+        description: `La commande a été mise à jour avec succès`,
+        duration: 3000,
+      });
+      
+      // ✅ Mise à jour optimiste de l'UI
+      setOrders(prev => 
+        prev.map(order => 
+          order.id === orderId ? { ...order, status: newStatus as any } : order
+        )
+      );
+      
+      // Recharger après 500ms pour synchronisation BDD
+      setTimeout(() => {
+        setUpdatingOrderId(null);
+      }, 500);
+    } catch (error: any) {
+      toast.error(`❌ ${actionName} échouée`, {
+        description: error.message || 'Une erreur est survenue',
+        duration: 4000,
+      });
+      setUpdatingOrderId(null);
     }
   };
 
-  return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
-      <div className="mb-6">
-        <Link
-          href="/admin"
-          className="inline-flex items-center gap-2 text-cyan-300 hover:text-cyan-200 mb-4 transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {t('admin.nav.back_to_dashboard')}
-        </Link>
-        <h1 className="text-3xl font-bold text-white">{t('admin.orders.title')}</h1>
-        <p className="text-gray-400">{t('admin.orders.subtitle')}</p>
-      </div>
-
-      {/* 🔎 Barre de recherche + filtre */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Rechercher un utilisateur..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-gray-500 focus:outline-none focus:border-cyan-400"
-          />
-        </div>
-
-        <ToggleGroup
-          type="single"
-          value={filter}
-          onValueChange={(value) => setFilter(value as any)}
-          className="p-1 bg-white/5 rounded-lg border border-white/10"
-        >
-          <ToggleGroupItem value="all" className="px-2 py-1 text-xs">Tous</ToggleGroupItem>
-          <ToggleGroupItem value="pending" className="px-2 py-1 text-xs">En attente</ToggleGroupItem>
-          <ToggleGroupItem value="processing" className="px-2 py-1 text-xs">En cours</ToggleGroupItem>
-          <ToggleGroupItem value="shipped" className="px-2 py-1 text-xs">Expédié</ToggleGroupItem>
-          <ToggleGroupItem value="delivered" className="px-2 py-1 text-xs">Livré</ToggleGroupItem>
-          <ToggleGroupItem value="cancelled" className="px-2 py-1 text-xs">Annulé</ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-
-      {paginatedOrders.length === 0 ? (
-        <Card className="glass-border">
-          <CardContent className="py-12 text-center">
-            <Package className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-            <p className="text-gray-400">
-              {filter === 'all'
-                ? t('admin.orders.no_orders')
-                : 'Aucune commande trouvée'}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <>
-          <div className="space-y-4">
-            {paginatedOrders.map((order) => (
-              <Card key={order.id} className="glass-border">
-                <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-lg font-semibold text-white">
-                      {order.profiles?.full_name} (@{order.profiles?.username})
-                    </CardTitle>
-                    <p className="text-gray-400 text-sm">{order.profiles?.email}</p>
-                  </div>
-                  {getStatusBadge(order.status)}
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs text-gray-400">Quantité</p>
-                      <p className="font-medium text-white">{order.quantity} carte(s)</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">Adresse</p>
-                      <p className="text-gray-300">{order.shipping_address || '—'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400">Date</p>
-                      <p className="text-gray-300">
-                        {new Date(order.created_at).toLocaleDateString('fr-FR')}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* ✅ Actions client */}
-                  <div className="flex gap-2">
-                    {['pending', 'processing'].includes(order.status) && (
-                      <button
-                        onClick={async () => {
-                          const res = await fetch(`/api/admin/orders/${order.id}/update-status`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'shipped' }),
-                          });
-                          if (res.ok) {
-                            toast.success('✅ Commande expédiée !');
-                            setTimeout(() => window.location.reload(), 1000);
-                          } else {
-                            toast.error('❌ Échec de l\'expédition');
-                          }
-                        }}
-                        className="px-3 py-1.5 bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 rounded-lg text-sm"
-                      >
-                        Marquer comme expédiée
-                      </button>
-                    )}
-                    {order.status !== 'cancelled' && (
-                      <button
-                        onClick={async () => {
-                          if (confirm('Annuler cette commande ?')) {
-                            const res = await fetch(`/api/admin/orders/${order.id}/cancel`, {
-                              method: 'POST',
-                            });
-                            if (res.ok) {
-                              toast.success('✅ Commande annulée !');
-                              setTimeout(() => window.location.reload(), 1000);
-                            } else {
-                              toast.error('❌ Échec de l\'annulation');
-                            }
-                          }
-                        }}
-                        className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600/30 text-red-300 rounded-lg text-sm"
-                      >
-                        Annuler
-                      </button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* ✅ Pagination avancée */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-gray-400">
-                Page {currentPage} sur {totalPages} ({filteredAndSorted.length} commandes)
+  // ✅ Loader élégant et professionnel
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/10 to-indigo-900/5 flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl">
+          <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl shadow-black/40">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative w-24 h-24 mb-8">
+                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/30 animate-pulse"></div>
+                <div className="absolute inset-2 rounded-full border-4 border-blue-500/30 animate-spin-slow"></div>
+                <div className="absolute inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
+                  <Package className="w-12 h-12 text-white opacity-90" />
+                </div>
+                <div className="absolute -inset-2 bg-cyan-500/20 rounded-full blur-2xl animate-pulse"></div>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="w-8 h-8 flex items-center justify-center rounded border border-white/10 bg-white/5 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
-                >
-                  ‹
-                </button>
-                {getPageNumbers().map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 flex items-center justify-center rounded ${
-                      page === currentPage
-                        ? 'bg-cyan-600 text-white'
-                        : 'border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="w-8 h-8 flex items-center justify-center rounded border border-white/10 bg-white/5 text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white/10"
-                >
-                  ›
-                </button>
+              <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300 mb-3">
+                Chargement des commandes...
+              </h3>
+              <p className="text-gray-400 mb-6 max-w-md">
+                Récupération sécurisée des données depuis la base de données LUVIKA
+              </p>
+              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-progress"></div>
               </div>
             </div>
-          )}
-        </>
-      )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 🔹 Helper : Badge de statut amélioré avec icône
+  // 🔹 Définir le type de statut UNE FOIS pour toute l'application (en haut du fichier)
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+
+// 🔹 Helper : Mapping des statuts avec typage strict
+const STATUS_CONFIG: Record<OrderStatus, { 
+  icon: React.ComponentType<{ className?: string }>; 
+  color: string; 
+  label: string;
+}> = {
+  pending: { 
+    icon: AlertCircle, 
+    color: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30', 
+    label: 'En attente' 
+  },
+  processing: { 
+    icon: RefreshCw, 
+    color: 'bg-blue-500/15 text-blue-300 border-blue-500/30', 
+    label: 'En cours' 
+  },
+  shipped: { 
+    icon: Truck, 
+    color: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30', 
+    label: 'Expédié' 
+  },
+  delivered: { 
+    icon: CheckCircle, 
+    color: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30', 
+    label: 'Livré' 
+  },
+  cancelled: { 
+    icon: XCircle, 
+    color: 'bg-red-500/15 text-red-300 border-red-500/30', 
+    label: 'Annulé' 
+  },
+};
+
+// 🔹 Type guard pour valider le statut
+const isValidOrderStatus = (status: string): status is OrderStatus => {
+  return status in STATUS_CONFIG;
+};
+
+// 🔹 Fonction avec validation runtime
+const getStatusBadge = (status: string) => {
+  const config = isValidOrderStatus(status) 
+    ? STATUS_CONFIG[status] 
+    : { icon: Package, color: 'bg-gray-500/15 text-gray-300 border-gray-500/30', label: 'Inconnu' };
+  
+  const Icon = config.icon;
+  
+  return (
+    <Badge className={`flex items-center gap-1.5 ${config.color} border font-medium`}>
+      <Icon className="w-3.5 h-3.5" />
+      <span>{config.label}</span>
+    </Badge>
+  );
+};
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/5 to-indigo-900/10 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* 🔹 En-tête élégant avec gradient */}
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 mb-6 transition-colors group"
+          >
+            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-medium">{t('admin.nav.back_to_dashboard')}</span>
+          </Link>
+          
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="p-3 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-2xl">
+                  <Package className="w-7 h-7 text-cyan-400" />
+                </div>
+                <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-300">
+                  {t('admin.orders.title')}
+                </h1>
+              </div>
+              <p className="text-gray-400 max-w-2xl">
+                {t('admin.orders.subtitle')}
+              </p>
+            </div>
+            
+            {/* 🔹 Statistiques rapides */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                <div className="text-2xl font-bold text-cyan-400">{orders.length}</div>
+                <div className="text-xs text-gray-400 mt-1">Total</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                <div className="text-2xl font-bold text-yellow-400">
+                  {orders.filter(o => o.status === 'pending').length}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">En attente</div>
+              </div>
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                <div className="text-2xl font-bold text-emerald-400">
+                  {orders.filter(o => o.status === 'delivered').length}
+                </div>
+                <div className="text-xs text-gray-400 mt-1">Livrées</div>
+              </div>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* 🔹 Barre de recherche + filtres - Design premium */}
+        <div className="glass-card rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 mb-8 shadow-xl shadow-black/30">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Rechercher par nom, email ou username..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            
+            <ToggleGroup
+              type="single"
+              value={filter}
+              onValueChange={(value) => setFilter(value as any)}
+              className="p-1.5 bg-white/10 rounded-xl border border-white/20"
+            >
+              {[
+                { value: 'all', label: 'Toutes', icon: Package },
+                { value: 'pending', label: 'En attente', icon: AlertCircle },
+                { value: 'processing', label: 'En cours', icon: RefreshCw },
+                { value: 'shipped', label: 'Expédiées', icon: Truck },
+                { value: 'delivered', label: 'Livrées', icon: CheckCircle },
+                { value: 'cancelled', label: 'Annulées', icon: XCircle },
+              ].map((item) => {
+                const Icon = item.icon;
+                return (
+                  <ToggleGroupItem 
+                    key={item.value} 
+                    value={item.value} 
+                    className={`
+                      flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
+                      ${
+                        filter === item.value
+                          ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20'
+                          : 'text-gray-300 hover:text-white hover:bg-white/10'
+                      }
+                    `}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{item.label}</span>
+                  </ToggleGroupItem>
+                );
+              })}
+            </ToggleGroup>
+          </div>
+        </div>
+
+        {/* 🔹 Liste des commandes - Design moderne et lisible */}
+        {paginatedOrders.length === 0 ? (
+          <Card className="glass-card border border-dashed border-white/20 bg-white/5">
+            <CardContent className="py-16 text-center">
+              <div className="relative inline-block mb-6">
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full blur-xl opacity-20 animate-pulse"></div>
+                <Package className="relative w-16 h-16 text-gray-600 mx-auto" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Aucune commande trouvée</h3>
+              <p className="text-gray-400 max-w-md mx-auto">
+                {filter === 'all'
+                  ? 'Il n\'y a aucune commande dans le système pour le moment.'
+                  : `Aucune commande correspondant au filtre "${filter}" n'a été trouvée.`}
+              </p>
+              <Button 
+                variant="outline" 
+                className="mt-6 border-white/20 text-gray-300 hover:bg-white/10"
+                onClick={() => {
+                  setFilter('all');
+                  setSearch('');
+                }}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" />
+                Réinitialiser les filtres
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {paginatedOrders.map((order) => (
+              <motion.div
+                key={order.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                whileHover={{ y: -2, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)' }}
+              >
+                <Card className="glass-card border border-white/10 bg-white/5 backdrop-blur-xl rounded-2xl overflow-hidden transition-all duration-300 hover:border-cyan-500/30 hover:shadow-2xl hover:shadow-cyan-500/10">
+                  <CardHeader className="border-b border-white/5 pb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="flex items-start gap-4">
+                        <div className="p-3 bg-gradient-to-br from-cyan-500/15 to-blue-500/15 rounded-xl">
+                          <User className="w-6 h-6 text-cyan-400" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-xl font-bold text-white">
+                              {order.profiles?.full_name}
+                            </CardTitle>
+                            {getStatusBadge(order.status)}
+                          </div>
+                          <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:gap-4 text-sm">
+                            <div className="flex items-center gap-1.5 text-cyan-300">
+                              <Mail className="w-4 h-4" />
+                              <span>{order.profiles?.email}</span>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-gray-400 mt-1 sm:mt-0">
+                              <span className="hidden sm:inline">•</span>
+                              <span>@{order.profiles?.username}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-400 text-sm">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(order.created_at).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="pt-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <div className="flex items-center gap-2 text-gray-400 text-sm mb-1.5">
+                          <Package className="w-4 h-4" />
+                          <span>Quantité</span>
+                        </div>
+                        <div className="text-xl font-bold text-white">{order.quantity} carte(s)</div>
+                      </div>
+                      
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <div className="flex items-center gap-2 text-gray-400 text-sm mb-1.5">
+                          <MapPin className="w-4 h-4" />
+                          <span>Adresse de livraison</span>
+                        </div>
+                        <div className="text-white font-medium line-clamp-2">
+                          {order.shipping_address || <span className="text-gray-500">Non spécifiée</span>}
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <div className="flex items-center gap-2 text-gray-400 text-sm mb-1.5">
+                          <Truck className="w-4 h-4" />
+                          <span>Statut actuel</span>
+                        </div>
+                        <div className="font-medium">
+                          {getStatusBadge(order.status)}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* 🔹 Actions contextuelles avec feedback visuel */}
+                    <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-white/5">
+                      {/* ✅ PENDING → PROCESSING */}
+                      {order.status === 'pending' && (
+                        <Button
+                          onClick={() => updateOrderStatus(order.id, 'processing', 'Validation')}
+                          disabled={updatingOrderId === order.id}
+                          className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-md shadow-emerald-500/20"
+                        >
+                          {updatingOrderId === order.id ? (
+                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                          )}
+                          Valider la commande
+                        </Button>
+                      )}
+                      
+                      {/* ✅ PROCESSING → SHIPPED + ANNULER */}
+                      {order.status === 'processing' && (
+                        <>
+                          <Button
+                            onClick={() => updateOrderStatus(order.id, 'shipped', 'Expédition')}
+                            disabled={updatingOrderId === order.id}
+                            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-md shadow-cyan-500/20"
+                          >
+                            {updatingOrderId === order.id ? (
+                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                              <Truck className="w-4 h-4 mr-2" />
+                            )}
+                            Marquer comme expédiée
+                          </Button>
+                          <Button
+                            onClick={() => updateOrderStatus(order.id, 'cancelled', 'Annulation')}
+                            disabled={updatingOrderId === order.id}
+                            variant="outline"
+                            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+                          >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Annuler la commande
+                          </Button>
+                        </>
+                      )}
+                      
+                      {/* ✅ SHIPPED → DELIVERED */}
+                      {order.status === 'shipped' && (
+                        <Button
+                          onClick={() => updateOrderStatus(order.id, 'delivered', 'Confirmation de livraison')}
+                          disabled={updatingOrderId === order.id}
+                          className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-md shadow-purple-500/20"
+                        >
+                          {updatingOrderId === order.id ? (
+                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                          )}
+                          Confirmer la livraison
+                        </Button>
+                      )}
+                      
+                      {/* ✅ DELIVERED → Lecture seule */}
+                      {order.status === 'delivered' && (
+                        <div className="px-4 py-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-300 font-medium flex items-center gap-2">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>Livraison confirmée ✅</span>
+                        </div>
+                      )}
+                      
+                      {/* ✅ CANCELLED → Lecture seule */}
+                      {order.status === 'cancelled' && (
+                        <div className="px-4 py-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-red-300 font-medium flex items-center gap-2">
+                          <XCircle className="w-4 h-4" />
+                          <span>Commande annulée ❌</span>
+                        </div>
+                      )}
+                      
+                      {/* 🔁 RESET à PENDING (admin uniquement) */}
+                      {['processing', 'shipped', 'delivered', 'cancelled'].includes(order.status) && (
+                        <Button
+                          onClick={() => updateOrderStatus(order.id, 'pending', 'Réinitialisation')}
+                          disabled={updatingOrderId === order.id}
+                          variant="ghost"
+                          className="text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-1.5" />
+                          <span className="hidden sm:inline">Réinitialiser</span>
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* 🔹 Pagination moderne et fluide */}
+        {totalPages > 1 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+          >
+            <div className="text-sm text-gray-400">
+              Page <span className="font-medium text-white">{currentPage}</span> sur{' '}
+              <span className="font-medium text-white">{totalPages}</span> •{' '}
+              <span className="font-medium text-cyan-400">{filteredAndSorted.length}</span> commandes
+            </div>
+            
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="w-10 h-10 rounded-xl border-white/15 bg-white/5 hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              
+              {getPageNumbers().map(page => (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "default" : "outline"}
+                  size="icon"
+                  onClick={() => setCurrentPage(page)}
+                  className={`
+                    w-10 h-10 rounded-xl font-medium transition-all
+                    ${
+                      page === currentPage
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20'
+                        : 'border-white/15 bg-white/5 text-gray-300 hover:bg-white/15 hover:text-white'
+                    }
+                  `}
+                >
+                  {page}
+                </Button>
+              ))}
+              
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="w-10 h-10 rounded-xl border-white/15 bg-white/5 hover:bg-white/15 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ArrowLeft className="w-4 h-4 rotate-180" />
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

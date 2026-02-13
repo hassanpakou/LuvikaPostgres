@@ -841,7 +841,13 @@
       "request_enterprise": "Convertir en compte Business"
     },
     "nfc": {
-      "status": "Statut",
+      "status": {
+        "active": "Active",
+        "lost": "Perdue",
+        "blocked": "Bloquée",
+        "inactive": "Inactive",
+        "status": "Statut"
+      },
       "created": "Créée le",
       "no_cards": "Aucune carte NFC pour le moment.",
       "block_card": "Bloquer la carte",

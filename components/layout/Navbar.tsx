@@ -115,7 +115,6 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full">
       <div className="mx-4 mt-4 rounded-2xl border border-white/15 backdrop-blur-xl bg-white/5 shadow-lg">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          {/* Logo */}
           {/* 🔹 Logo LUVIKA */}
 <Link
   href={isAdmin ? '/admin' : isUser ? '/dashboard' : '/'}
