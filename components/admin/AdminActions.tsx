@@ -76,9 +76,10 @@ export default function AdminActions() {
     fetchStats();
   }, []);
 console.log('📧 Utilisateur sélectionné:', selectedUser);
-  const handleSendWelcomeEmail = async () => {
+  
+const handleSendWelcomeEmail = async () => {
   if (!selectedUser?.email) {
-    setToast({ type: 'error', message: t('admin.actions.email_error') });
+    setToast({ type: 'error', message: 'Veuillez sélectionner un utilisateur' });
     return;
   }
 
@@ -90,15 +91,28 @@ console.log('📧 Utilisateur sélectionné:', selectedUser);
       body: JSON.stringify({ email: selectedUser.email }),
     });
 
-    if (res.ok) {
-      setToast({ type: 'success', message: t('admin.actions.email_success') });
-    } else {
-      const err = await res.json();
-      throw new Error(err.error || 'Échec envoi');
+    const result = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(result.error || 'Échec de l\'envoi');
     }
+
+    setToast({ 
+      type: 'success', 
+      message: `Email de bienvenue envoyé à ${selectedUser.email}` 
+    });
+    
+    // ✅ Optionnel : Reset après 3 secondes
+    setTimeout(() => {
+      setToast(null);
+      setSelectedUser(null);
+    }, 3000);
   } catch (err: any) {
-    console.error('📧 Erreur email:', err);
-    setToast({ type: 'error', message: t('admin.actions.email_error') });
+    console.error('📧 Erreur envoi email:', err);
+    setToast({ 
+      type: 'error', 
+      message: err.message || 'Erreur lors de l\'envoi de l\'email' 
+    });
   } finally {
     setIsSending(false);
   }
