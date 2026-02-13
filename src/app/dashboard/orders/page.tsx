@@ -4,9 +4,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Save } from 'lucide-react';
 import { createServerClient } from '@supabase/ssr';
 import { Package, Clock, Truck, CheckCircle, AlertTriangle, X, Loader2 } from 'lucide-react';
+import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
 // 🔹 Composant statut
 const StatusBadge = ({ status }: { status: string }) => {
@@ -135,11 +136,37 @@ export default function UserOrdersPage() {
       setConfirmModal({ open: false, orderId: '' });
     }
   };
-
+// Quick actions menu
+  const quickActions = [
+    {
+      id: 'save',
+      label: 'Enregistrer',
+      icon: <Save className="w-4 h-4" />,
+      color: 'from-emerald-500 to-teal-500',
+    },
+    {
+      id: 'refresh',
+      label: 'Actualiser',
+      icon: <RefreshCw className="w-4 h-4" />,
+      color: 'from-blue-500 to-cyan-500',
+    },
+    {
+      id: 'back',
+      label: 'Retour',
+      icon: <ArrowLeft className="w-4 h-4" />,
+      color: 'from-gray-500 to-gray-600',
+    },
+  ];
   // 🔹 Traduction produit
   const productLabels: Record<string, string> = {
     nfc_premium: 'Carte NFC Premium',
     nfc_enterprise: 'Pack NFC Entreprise',
+  };
+
+    const handleQuickAction = (actionId: string) => {
+    if (actionId === 'save') handleSave();
+    if (actionId === 'refresh') fetchProfile();
+    if (actionId === 'back') router.push('/dashboard');
   };
 
   return (
@@ -274,6 +301,21 @@ export default function UserOrdersPage() {
           <Package className="w-6 h-6 text-white" />
         </a>
       </div>
+
+      
+        {/* Quick Menu */}
+            <DashboardQuickMenu 
+              onAction={handleQuickAction} 
+              actions={quickActions} 
+            />
     </div>
   );
 }
+
+function handleSave() {
+  throw new Error('Function not implemented.');
+}
+function fetchProfile() {
+  throw new Error('Function not implemented.');
+}
+

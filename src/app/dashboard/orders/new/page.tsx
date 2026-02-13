@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Save } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
@@ -12,6 +12,7 @@ import { Input } from '../../../../../components/ui/input';
 import { Textarea } from '../../../../../components/ui/textarea';
 import { Badge } from '../../../../../components/ui/badge';
 import { Loader2, Package, MapPin, QrCode } from 'lucide-react';
+import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
 export default function NewOrderPage() {
   const t = useTranslations('dashboard.orders');
@@ -51,6 +52,10 @@ export default function NewOrderPage() {
       setLoading(false);
     }
   };
+
+  function handleQuickAction(id: string): void {
+    throw new Error('Function not implemented.');
+  }
 
   return (
       <div className="max-w-2xl mx-auto space-y-6">
@@ -159,6 +164,7 @@ export default function NewOrderPage() {
           </form>
         </CardContent>
       </Card>
+
     </div>
   );
 }

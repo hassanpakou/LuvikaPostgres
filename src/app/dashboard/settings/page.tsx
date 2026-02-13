@@ -10,7 +10,8 @@ import {
   Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings, Crown,
   AlertTriangle, CheckCircle, X, RotateCcw, Cake, Tag, Link as LinkIcon,
   Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck,
-  Wifi, WifiOff, RefreshCw, Bell, BellOff, Smartphone as SmartphoneIcon, AlertCircle
+  Wifi, WifiOff, RefreshCw, Bell, BellOff, Smartphone as SmartphoneIcon, AlertCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ import { Badge } from '../../../../components/ui/badge';
 import { Progress } from '../../../../components/ui/progress';
 import { createClient } from '../../../../src/lib/supabase/client';
 import { supabase } from '../../../../lib/supabase';
+import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
 // 🔹 Icônes manquantes (définies avant utilisation)
 const Copy = ({ className }: { className?: string }) => (
@@ -150,44 +152,64 @@ export default function SettingsPage() {
   const [lastSync, setLastSync] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [profileBackup, setProfileBackup] = useState<Profile | null>(null);
-
+// Quick actions menu
+  const quickActions = [
+    {
+      id: 'save',
+      label: 'Enregistrer',
+      icon: <Save className="w-4 h-4" />,
+      color: 'from-emerald-500 to-teal-500',
+    },
+    {
+      id: 'refresh',
+      label: 'Actualiser',
+      icon: <RefreshCw className="w-4 h-4" />,
+      color: 'from-blue-500 to-cyan-500',
+    },
+    {
+      id: 'back',
+      label: 'Retour',
+      icon: <ArrowLeft className="w-4 h-4" />,
+      color: 'from-gray-500 to-gray-600',
+    },
+  ];
   // 🔹 Fetch profil
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/auth/sign-in');
-        return;
-      }
+  const fetchProfile = async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/auth/sign-in');
+      return;
+    }
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
-      if (error) {
-        console.error('❌ Erreur chargement profil:', error);
-        setMessage({ type: 'error', text: t('load_error') });
-        return;
-      }
+    if (error) {
+      console.error('❌ Erreur chargement profil:', error);
+      setMessage({ type: 'error', text: t('load_error') });
+      return;
+    }
 
-      // 🔹 Valeurs par défaut pour les nouveaux champs
-      const defaults = {
-        hide_birth_year: false,
-        disable_birthday_icon: false,
-        verified: false,
-        skills: [],
-        ...data,
-      };
-
-      setProfile(defaults as Profile);
-      setAvatarPreview(data.avatar_url);
-      setCoverPreview(data.cover_url);
-      setLoading(false);
+    // 🔹 Valeurs par défaut pour les nouveaux champs
+    const defaults = {
+      hide_birth_year: false,
+      disable_birthday_icon: false,
+      verified: false,
+      skills: [],
+      ...data,
     };
 
+    setProfile(defaults as Profile);
+    setAvatarPreview(data.avatar_url);
+    setCoverPreview(data.cover_url);
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchProfile();
   }, [router, t]);
 
@@ -249,21 +271,8 @@ export default function SettingsPage() {
     };
   }, []);
 
-  // 🔹 Sauvegarde automatique
-  useEffect(() => {
-    if (!profile || !profileBackup) return;
-    
-    const hasChanges = JSON.stringify(profile) !== JSON.stringify(profileBackup);
-    setHasUnsavedChanges(hasChanges);
-
-    if (hasChanges && isOnline) {
-      const timer = setTimeout(() => {
-        handleSave();
-      }, 2000); // Sauvegarde automatique après 2 secondes d'inactivité
-
-      return () => clearTimeout(timer);
-    }
-  }, [profile, profileBackup, isOnline]);
+  // 🔹 Sauvegarde automatique désactivée
+  // Ne sauvegarde que lorsqu'on clique sur le bouton Enregistrer
 
   // 🔹 Backup initial
   useEffect(() => {
@@ -467,6 +476,12 @@ export default function SettingsPage() {
 
   if (!profile) return null;
 
+  function handleQuickAction(id: string): void {
+    if (id === 'save') handleSave();
+    if (id === 'refresh') fetchProfile();
+    if (id === 'back') router.push('/dashboard');
+  }
+
   return (
     <div className="space-y-8 pb-24">
       {/* 🔹 En-tête */}
@@ -527,6 +542,8 @@ export default function SettingsPage() {
           </Button>
         </div>
       </motion.div>
+
+ 
 
       {/* 🔹 Message feedback */}
       <AnimatePresence>
@@ -939,7 +956,11 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
-
+ {/* Quick Menu */}
+      <DashboardQuickMenu 
+        onAction={handleQuickAction} 
+        actions={quickActions} 
+      />
       {/* 🔹 Contacts */}
       <Card className="glass-border">
         <CardHeader>
