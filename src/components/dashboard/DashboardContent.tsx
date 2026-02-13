@@ -39,7 +39,8 @@ import {
   BellRing,
   Search as SearchIcon,
   CheckCircle,
-  BarChart3
+  BarChart3,
+  Leaf
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -60,6 +61,7 @@ import CertificatesModal from '../../../src/components/dashboard/CertificatesMod
 import CreateEventForm from '../events/CreateEventForm';
 import { createClient } from '../../../src/lib/supabase/client';
 import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -3404,112 +3406,249 @@ const handleToggleFollow = async (profileId: string) => {
       {/* 🔹 Menu flottant - reste en overlay */}
       <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
 
-{/* 🔹 Modal Événements — ajoute ceci */}
+        {/* 🔹 MODAL ÉVÉNEMENTS - Scroll fluide et sans débordement */}
+        <AnimatePresence>
+          {isEventModalOpen && (
+            <motion.div
+              key="event-modal"
+              initial={{ opacity: 0 }}
+              animate={{ 
+                opacity: 1,
+                transition: { duration: 0.25, ease: "easeOut" }
+              }}
+              exit={{ 
+                opacity: 0,
+                transition: { duration: 0.2, ease: "easeIn" }
+              }}
+              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+              onClick={() => setIsEventModalOpen(false)}
+            >
+              <motion.div
+                initial={{ 
+                  scale: 0.95, 
+                  opacity: 0,
+                  y: 20 
+                }}
+                animate={{ 
+                  scale: 1, 
+                  opacity: 1,
+                  y: 0,
+                  transition: { 
+                    type: "spring", 
+                    damping: 25, 
+                    stiffness: 300,
+                    mass: 0.5
+                  }
+                }}
+                exit={{ 
+                  scale: 0.95, 
+                  opacity: 0,
+                  y: 20,
+                  transition: { duration: 0.2 }
+                }}
+                className="relative w-full max-w-4xl h-[90vh] flex flex-col bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl shadow-cyan-500/10"
+                onClick={e => e.stopPropagation()}
+              >
+                {/* 🔘 Bouton fermeture (toujours visible) */}
+                <button
+                  onClick={() => setIsEventModalOpen(false)}
+                  className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all duration-300 shadow-lg shadow-black/50 backdrop-blur-sm"
+                  aria-label="Fermer la fenêtre"
+                >
+                  <X className="w-5 h-5" strokeWidth={2.5} />
+                </button>
+
+                {/* 📱 CONTENEUR SCROLL PRINCIPAL - Structure optimale */}
+                <div className="flex-1 min-h-0 overflow-y-auto ">
+
+                  {/* 🔹 HEADER FIXE (ne scroll pas) */}
+                  <div className="sticky top-0 z-40 bg-gradient-to-b from-gray-900/95 to-transparent backdrop-blur-sm border-b border-white/10 py-4 px-6">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-cyan-500/10 rounded-xl">
+                        <Calendar className="w-6 h-6 text-cyan-400" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
+                          Gestion des événements
+                        </h2>
+                        <p className="mt-1.5 text-sm text-gray-400 max-w-2xl">
+                          Visualisez les participants, scannez des QR codes et gérez vos événements en temps réel
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 🔹 CONTENU SCROLLABLE (zone principale) */}
+                  <div className="flex-grow overflow-y-auto overscroll-contain py-4 px-4 sm:px-6 md:px-8">
+                    {/* ✅ Contenu principal avec gestion de scroll */}
+                    <div className="space-y-6">
+                      <EventAttendeesSection plan={profile.plan ?? null} />
+                      
+                      {/* 🔹 Espacement en bas pour le footer */}
+                      <div className="h-6" />
+                    </div>
+                  </div>
+
+                  {/* 🔹 FOOTER FIXE (ne scroll pas) */}
+                  <div className="sticky bottom-0 z-40 bg-gradient-to-t from-gray-900/95 to-transparent backdrop-blur-sm border-t border-white/10 py-4 px-6">
+                    <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></div>
+                      <span>Données mises à jour en temps réel</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - Design responsive premium */}
 <AnimatePresence>
-{isEventModalOpen && (
-  <motion.div
-    key="event-modal"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 bg-black/40 backdrop-blur flex items-center justify-center p-4"
-    onClick={() => setIsEventModalOpen(false)}
-  >
+  {isEventFormOpen && (
     <motion.div
-      initial={{ scale: 0.95, y: 20 }}
-      animate={{ scale: 1, y: 0 }}
-      exit={{ scale: 0.95, y: 20 }}
-      className="glass-border w-full max-w-4xl h-[85vh] overflow-auto rounded-2xl border border-white/15 bg-black/30 backdrop-blur-xl"
-      onClick={e => e.stopPropagation()}
+      key="event-form-modal"
+      initial={{ opacity: 0 }}
+      animate={{ 
+        opacity: 1,
+        transition: { duration: 0.25, ease: "easeOut" }
+      }}
+      exit={{ 
+        opacity: 0,
+        transition: { duration: 0.2, ease: "easeIn" }
+      }}
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+      onClick={() => setIsEventFormOpen(false)}
     >
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-white">📅 Gestion des événements</h2>
-          <Button variant="ghost" size="sm" onClick={() => setIsEventModalOpen(false)}>
-            <X className="h-5 w-5" />
-          </Button>
+      <motion.div
+        initial={{ 
+          scale: 0.95, 
+          opacity: 0,
+          y: 20 
+        }}
+        animate={{ 
+          scale: 1, 
+          opacity: 1,
+          y: 0,
+          transition: { 
+            type: "spring", 
+            damping: 25, 
+            stiffness: 300,
+            mass: 0.5
+          }
+        }}
+        exit={{ 
+          scale: 0.95, 
+          opacity: 0,
+          y: 20,
+          transition: { duration: 0.2 }
+        }}
+        className="relative w-full max-w-3xl max-h-[95vh] bg-gradient-to-br from-green-900/30 to-emerald-900/10 backdrop-blur-2xl rounded-3xl border border-emerald-500/20 shadow-2xl shadow-emerald-500/20 overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* 🔘 Bouton fermeture premium (toujours visible) */}
+        <button
+          onClick={() => setIsEventFormOpen(false)}
+          className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all duration-300 shadow-lg shadow-black/50 backdrop-blur-sm"
+          aria-label="Fermer la fenêtre"
+        >
+          <X className="w-5 h-5" strokeWidth={2.5} />
+        </button>
+
+        {/* 🌿 Décorations de fond animées */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Radial gradient subtil */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(16,185,129,0.15),transparent_70%)]" />
+          
+          {/* Particules flottantes */}
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full bg-emerald-400/20 backdrop-blur-sm"
+              style={{
+                width: `${Math.random() * 80 + 20}px`,
+                height: `${Math.random() * 80 + 20}px`,
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.5, 0.3],
+                rotate: [0, 180, 360],
+              }}
+              transition={{
+                duration: Math.random() * 10 + 15,
+                repeat: Infinity,
+                ease: "linear",
+                delay: i * 0.5,
+              }}
+            />
+          ))}
         </div>
-        <EventAttendeesSection plan={profile.plan ?? null} />
-      </div>
+
+        {/* 📱 Contenu scrollable avec padding responsive */}
+        <div className="relative z-10 h-full overflow-y-auto overscroll-contain">
+          {/* Header avec dégradé */}
+          <div className="sticky top-0 z-40 bg-gradient-to-b from-green-900/50 to-transparent backdrop-blur-sm border-b border-emerald-500/20 py-5 px-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-emerald-500/20 rounded-xl">
+                <Plus className="w-7 h-7 text-emerald-400" />
+              </div>
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-300">
+                  Créer un nouvel événement
+                </h2>
+                <p className="mt-1 text-sm text-emerald-200/80">
+                  Configurez votre événement en quelques étapes simples
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Contenu principal avec padding responsive */}
+          <div className="p-4 sm:p-6">
+            <CreateEventForm
+              onSubmit={async (data) => {
+                try {
+                  const response = await fetch('/api/events/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                  });
+                  
+                  if (!response.ok) throw new Error('Erreur création événement');
+                  
+                  const eventData = await response.json();
+                  console.log('✅ Événement créé:', eventData);
+                  
+                  setIsEventFormOpen(false);
+                  toast.success('🎉 Événement créé avec succès !', {
+                    description: 'Votre événement est prêt à recevoir des participants',
+                    duration: 5000,
+                  });
+                } catch (error) {
+                  console.error('❌ Erreur:', error);
+                  toast.error('❌ Erreur lors de la création', {
+                    description: "Une erreur est survenue. Veuillez réessayer.",
+                    duration: 5000,
+                  });
+                }
+              }}
+              onClose={() => setIsEventFormOpen(false)}
+              isLoading={false}
+            />
+          </div>
+
+          {/* Footer décoratif */}
+          <div className="sticky bottom-0 z-40 bg-gradient-to-t from-green-900/50 to-transparent backdrop-blur-sm border-t border-emerald-500/20 py-4 px-6 mt-6">
+            <div className="flex items-center justify-center gap-2 text-xs text-emerald-300/70">
+              <Leaf className="w-3 h-3" />
+              <span>Événement éco-responsable • Zéro papier</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
-  </motion.div>
-)}
-</AnimatePresence>
-{/* 🔹 Modal Création Événement */}
-<AnimatePresence>
-{isEventFormOpen && (
-  <motion.div
-    key="event-form-modal"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="fixed inset-0 z-50 bg-black/50 backdrop-blur-md flex items-start justify-center p-4 overflow-auto"
-    onClick={() => setIsEventFormOpen(false)}
-  >
-    <motion.div
-      initial={{ scale: 0.95, y: 20, opacity: 0 }}
-      animate={{ scale: 1, y: 0, opacity: 1 }}
-      exit={{ scale: 0.95, y: 20, opacity: 0 }}
-      transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className="relative w-full max-w-4xl mt-8 overflow-hidden rounded-3xl border border-white/15 bg-black/40 backdrop-blur-2xl shadow-2xl shadow-green-500/20"
-      onClick={e => e.stopPropagation()}
-    >
-      {/* 🔵 Overlay radial */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-green-500/10 via-transparent to-transparent" />
-      
-      {/* 📱 Contenu */}
-      <div className="relative z-10">
-        <CreateEventForm
-          onSubmit={async (data) => {
-            try {
-              // 🔹 Appel API pour créer l'événement
-              const response = await fetch('/api/events/create', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-              });
-              
-              if (!response.ok) throw new Error('Erreur création événement');
-              
-              const eventData = await response.json();
-              console.log('✅ Événement créé:', eventData);
-              
-              // 🔹 Fermer le modal et afficher notification
-              setIsEventFormOpen(false);
-              // Optionnel: afficher toast de succès ici
-            } catch (error) {
-              console.error('❌ Erreur:', error);
-              // Optionnel: afficher toast d'erreur ici
-            }
-          }}
-          onClose={() => setIsEventFormOpen(false)}
-          isLoading={false}
-        />
-      </div>
-      
-      {/* ✨ Particules vertes d'arrière-plan */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full"
-            
-            animate={{
-              scale: [1, 1.4, 1],
-              opacity: [0.4, 0.8, 0.4],
-            }}
-            transition={{
-              duration: 5 + Math.random() * 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.7
-            }}
-          />
-        ))}
-      </div>
-    </motion.div>
-  </motion.div>
-)}
+  )}
 </AnimatePresence>
 
       <AnimatePresence>
@@ -3651,7 +3790,7 @@ const handleToggleFollow = async (profileId: string) => {
         initial={{ scale: 0.9, y: 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.9, y: 20, opacity: 0 }}
-        className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-2xl p-6 border border-white/15 max-h-[90vh] overflow-y-auto"
+        className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-2xl p-6 border border-white/15 h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 🔹 En-tête du modal */}
