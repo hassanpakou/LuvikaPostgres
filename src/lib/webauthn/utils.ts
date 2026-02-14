@@ -1,61 +1,75 @@
-/**
- * Détermine si on est en environnement de production
- */
-export function isProduction(): boolean {
-  // Vérifie plusieurs indicateurs de production
-  return (
-    process.env.NODE_ENV === 'production' ||
-    process.env.VERCEL === '1' ||
-    (typeof window !== 'undefined' && window.location.hostname !== 'localhost')
-  );
-}
+// src/lib/webauthn/utils.ts
 
 /**
- * Nettoie le RP ID pour WebAuthn
- */
-export function cleanRpId(rpId: string): string {
-  return rpId
-    .replace(/^https?:\/\//, '') // Supprime http:// ou https://
-    .replace(/:\d+$/, '')        // Supprime le port (:3000)
-    .replace(/\/$/, '')          // Supprime le slash final
-    .trim();                     // Supprime les espaces
-}
-
-/**
- * Récupère le RP ID correct selon l'environnement
+ * Nettoye le RP ID pour correspondre exactement au domaine courant
+ * Ex: "https://luvika.me:3000" → "luvika.me"
  */
 export function getRpId(): string {
-  const isProd = isProduction();
-  
-  // En production : utilise la variable d'environnement ou fallback sur le domaine
-  if (isProd) {
-    const envRpId = process.env.NEXT_PUBLIC_WEBAUTHN_RP_ID;
-    if (envRpId) return cleanRpId(envRpId);
+  if (typeof window === 'undefined') {
+    // Environnement serveur
+    const raw = process.env.NEXT_PUBLIC_WEBAUTHN_RP_ID || 
+                process.env.NEXT_PUBLIC_SITE_URL || 
+                'localhost';
     
-    // Fallback : utilise le domaine courant
-    if (typeof window !== 'undefined') {
-      return window.location.hostname;
-    }
-    return 'luvika.vercel.app';
+    return raw
+      .replace(/^https?:\/\//, '')
+      .replace(/:\d+$/, '')
+      .replace(/\/+$/, '')
+      .trim();
   }
   
-  // En développement : toujours localhost
-  return 'localhost';
+  // Environnement client (fallback)
+  return window.location.hostname;
 }
 
 /**
- * Récupère l'origin correct selon l'environnement
+ * ✅ AJOUTÉ : Retourne l'origin complet (scheme + hostname + port)
+ * Utilisé pour les assertions WebAuthn (doit correspondre EXACTEMENT à l'origin enregistré)
  */
 export function getOrigin(): string {
-  if (isProduction()) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-    if (appUrl) return appUrl;
-    
-    // Fallback : construit l'URL depuis le RP ID
-    const rpId = getRpId();
-    return `https://${rpId}`;
+  if (typeof window !== 'undefined') {
+    // Client-side : utilise l'origin natif
+    return window.location.origin;
   }
   
-  // En développement : toujours localhost:3000
-  return 'http://localhost:3000';
+  // Server-side : utilise la variable d'environnement
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    try {
+      // Parse proprement l'URL pour extraire l'origin
+      const url = new URL(siteUrl);
+      return url.origin;
+    } catch {
+      // Fallback robuste si URL invalide
+      const match = siteUrl.match(/^(https?:\/\/[^\/:]+)(?::\d+)?/);
+      return match ? match[1] : 'http://localhost:3000';
+    }
+  }
+  
+  // Fallback développement
+  return process.env.NODE_ENV === 'production' 
+    ? 'https://luvika.me' 
+    : 'http://localhost:3000';
+}
+
+/**
+ * Convertit un Buffer en base64url (requis par WebAuthn)
+ */
+export function bufferToBase64url(buffer: Buffer | Uint8Array): string {
+  return Buffer.from(buffer)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
+
+/**
+ * Convertit base64url en Buffer
+ */
+export function base64urlToBuffer(base64url: string): Buffer {
+  const base64 = base64url
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+  const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
+  return Buffer.from(padded, 'base64');
 }

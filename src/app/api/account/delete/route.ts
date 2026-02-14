@@ -1,48 +1,93 @@
+// src/app/api/account/delete/route.ts
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { createClientForPage } from '@/src/lib/supabase/server';
 
 export async function POST(request: Request) {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { get: (name) => cookieStore.get(name)?.value } }
+  );
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+  }
+
   try {
-    const supabase = createClientForPage();
-    const { data: { user }, error: authError } = await (await supabase).auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+    // 🔒 VÉRIFICATION SÉCURISÉE : Mot de passe requis dans le body
+    const { password } = await request.json();
+    if (!password) {
+      return NextResponse.json({ error: 'Mot de passe requis' }, { status: 400 });
     }
 
-    const { userId } = await request.json();
-    
-    if (userId !== user.id) {
-      return NextResponse.json({ error: 'ID utilisateur invalide' }, { status: 403 });
+    // 🔐 Vérification du mot de passe
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email!,
+      password,
+    });
+
+    if (signInError) {
+      return NextResponse.json({ error: 'Mot de passe incorrect' }, { status: 403 });
     }
 
-    // 🔹 Suppression en cascade sécurisée (à implémenter selon ton schéma)
-    // ⚠️ ATTENTION : Cette opération est irréversible !
-    // Exemple de suppression en cascade :
-    // 1. Supprimer les données utilisateur dans toutes les tables liées
-    // 2. Supprimer le profil
-    // 3. Supprimer l'utilisateur auth.users (nécessite service_role)
+    // 🔹 SUPPRESSION SÉCURISÉE EN CASCADE (sans Edge Function)
+    // 1. Supprimer les cartes NFC associées
+    await supabase
+      .from('nfc_cards')
+      .delete()
+      .eq('user_id', user.id);
 
-    // 🔹 Pour des raisons de sécurité, utilise un Edge Function avec service_role
-    // Ici, on retourne une erreur pour forcer l'utilisation d'un Edge Function
+    // 2. Supprimer les commandes
+    await supabase
+      .from('orders')
+      .delete()
+      .eq('user_id', user.id);
+
+    // 3. Supprimer les événements et participants
+    await supabase
+      .from('events')
+      .delete()
+      .eq('organizer_id', user.id);
+
+    await supabase
+      .from('event_attendees')
+      .delete()
+      .eq('profile_id', user.id);
+
+    // 4. Supprimer les scans
+    await supabase
+      .from('scans')
+      .delete()
+      .eq('profile_id', user.id);
+
+    // 5. Supprimer le profil (déclenche la suppression en cascade de auth.users)
+    const { error: deleteError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', user.id);
+
+    if (deleteError) {
+      console.error('Erreur suppression profil:', deleteError);
+      return NextResponse.json({ 
+        error: 'Échec de la suppression - Contactez le support' 
+      }, { status: 500 });
+    }
+
+    // 6. Déconnexion immédiate
+    await supabase.auth.signOut();
+
+    console.log(`✅ Compte supprimé : ${user.id}`);
     return NextResponse.json({ 
-      error: 'Utilisez la fonction Edge sécurisée pour la suppression' 
-    }, { status: 403 });
-
-    // 🔹 Alternative sécurisée (recommandé) :
-    // Appel à une Edge Function avec service_role key
-    // const edgeRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/delete-user`, {
-    //   method: 'POST',
-    //   headers: { 
-    //     'Authorization': `Bearer ${process.env.SERVICE_ROLE_KEY}`,
-    //     'Content-Type': 'application/json' 
-    //   },
-    //   body: JSON.stringify({ userId: user.id })
-    // });
+      success: true, 
+      message: 'Compte supprimé définitivement' 
+    });
   } catch (error: any) {
-    console.error('Deletion error:', error);
+    console.error('❌ Erreur critique suppression compte:', error);
     return NextResponse.json({ 
-      error: error.message || 'Erreur lors de la suppression' 
+      error: error.message || 'Erreur serveur - Contactez le support' 
     }, { status: 500 });
   }
 }

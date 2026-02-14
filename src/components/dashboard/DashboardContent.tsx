@@ -63,6 +63,7 @@ import { createClient } from '../../../src/lib/supabase/client';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import NFCManagementModal from './Modals/NFCManagementModal';
+import NFCModal from './Modals/NFCModal';
 import { NFCCard } from '../../types/nfc';
 import { normalizeNfcCard } from '@/src/lib/utils/nfc';
 const formatDistance = (dateString: string, t: any): string => {
@@ -168,251 +169,6 @@ const SuccessModal = ({
         </div>
       </motion.div>
     </>
-  );
-};
-
-// 🔹 ✅ Modal : Visibilité
-const VisibilityModal = ({
-  sectionsVisibility,
-  onClose,
-  onSave,
-}: {
-  sectionsVisibility: Record<string, boolean>;
-  onClose: () => void;
-  onSave: (newVisibility: Record<string, boolean>) => void;
-}) => {
-  const [localSections, setLocalSections] = useState(sectionsVisibility);
-  const t = useTranslations('dashboard.visibility');
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-white/15"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Eye size={20} className="text-purple-400" />
-            {t('title')}
-          </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X size={18} />
-          </Button>
-        </div>
-        <div className="space-y-4">
-          {(['bio', 'contact', 'social', 'portfolio', 'certificates'] as const).map(section => (
-            <label key={section} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
-              <span className="text-gray-300 capitalize">{section}</span>
-              <input
-                type="checkbox"
-                checked={localSections[section] !== false}
-                onChange={e => setLocalSections(prev => ({ ...prev, [section]: e.target.checked }))}
-                className="rounded text-cyan-500 focus:ring-cyan-500"
-              />
-            </label>
-          ))}
-        </div>
-        <div className="flex gap-3 mt-6">
-          <Button variant="outline" className="flex-1" onClick={onClose}>
-            Annuler
-          </Button>
-          <Button
-            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-500"
-            onClick={() => {
-              onSave(localSections);
-              onClose();
-            }}
-          >
-            Sauvegarder
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// 🔹 ✅ Modal : Réception des messages
-const ContactToggleModal = ({
-  enabled,
-  onToggle,
-  onClose,
-}: {
-  enabled: boolean;
-  onToggle: () => void;
-  onClose: () => void;
-}) => {
-  const t = useTranslations('dashboard.contact_requests');
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-white/15"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Bell size={20} className="text-cyan-400" />
-            {t('title')}
-          </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X size={18} />
-          </Button>
-        </div>
-        <p className="text-gray-300 mb-4">{t('description')}</p>
-        <div className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 mb-6">
-          <div>
-            <h3 className="font-medium text-white">{t('label')}</h3>
-            <p className="text-sm text-gray-400 mt-1">
-              {enabled ? t('enabled') : t('disabled')}
-            </p>
-          </div>
-          <Button
-            variant={enabled ? "destructive" : "default"}
-            size="sm"
-            onClick={onToggle}
-            className={`flex items-center gap-2 ${
-              enabled
-                ? 'bg-red-500/20 text-red-300 border-red-500/30'
-                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-            }`}
-          >
-            {enabled ? (
-              <>
-                <X size={16} />
-                {t('disable')}
-              </>
-            ) : (
-              <>
-                <Check size={16} />
-                {t('enable')}
-              </>
-            )}
-          </Button>
-        </div>
-        <div className="text-center">
-          <Button variant="outline" className="text-gray-300" onClick={onClose}>
-            Fermer
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// 🔹 ✅ Modal : Signalement carte
-const ReportCardModal = ({
-  reportReason,
-  setReportReason,
-  customReason,
-  setCustomReason,
-  onSubmit,
-  onClose,
-}: {
-  reportReason: string;
-  setReportReason: (v: string) => void;
-  customReason: string;
-  setCustomReason: (v: string) => void;
-  onSubmit: () => void;
-  onClose: () => void;
-}) => {
-  const t = useTranslations('dashboard.other_features');
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-center justify-center p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-white/15"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <AlertTriangle size={20} className="text-yellow-400" />
-            {t('report_card')}
-          </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X size={18} />
-          </Button>
-        </div>
-        <div className="space-y-3 mb-4">
-          {[
-            { value: 'lost', label: t('reasons.lost') },
-            { value: 'stolen', label: t('reasons.stolen') },
-            { value: 'damaged', label: t('reasons.damaged') },
-            { value: 'no_longer_needed', label: t('reasons.no_longer_needed') },
-            { value: 'other', label: t('reasons.other') },
-          ].map(reason => (
-            <div key={reason.value} className="flex items-start gap-3">
-              <input
-                type="radio"
-                id={`reason-${reason.value}`}
-                name="report-reason"
-                checked={reportReason === reason.value}
-                onChange={() => setReportReason(reason.value)}
-                className="mt-1.5 rounded text-cyan-500 focus:ring-cyan-500"
-              />
-              <label
-                htmlFor={`reason-${reason.value}`}
-                className="text-gray-300 cursor-pointer"
-              >
-                {reason.label}
-              </label>
-            </div>
-          ))}
-        </div>
-        {reportReason === 'other' && (
-          <div className="mb-4">
-            <label htmlFor="custom-reason" className="text-sm text-gray-400 mb-1 block">
-              {t('custom_reason')}
-            </label>
-            <Textarea
-              id="custom-reason"
-              value={customReason}
-              onChange={e => setCustomReason(e.target.value)}
-              placeholder={t('custom_reason_placeholder')}
-              className="bg-white/10 border-white/20 text-white placeholder:text-gray-500"
-              rows={2}
-            />
-          </div>
-        )}
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onClose}>
-            Annuler
-          </Button>
-          <Button
-            variant="destructive"
-            className="flex-1"
-            disabled={!reportReason || (reportReason === 'other' && !customReason.trim())}
-            onClick={onSubmit}
-          >
-            <AlertTriangle className="w-4 h-4 mr-2" />
-            {t('submit_report')}
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
   );
 };
 
@@ -665,175 +421,6 @@ const QRModal = ({
   );
 };
 
-// 🔹 ✅ Modal : NFC
-const NFCModal = ({
-  isOpen,
-  onClose,
-  cards,
-  onAdd,
-  onManageCard,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  cards: NFCCard[];
-  onAdd: () => void;
-  onManageCard?: (card: NFCCard) => void;
-}) => {
-  if (!isOpen) return null;
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-white/15"
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <span className="bg-gradient-to-r from-amber-500 to-orange-500 w-6 h-6 rounded-full flex items-center justify-center">
-                <span className="text-black text-xs">N</span>
-              </span>
-              Cartes NFC
-            </h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X size={18} />
-            </Button>
-          </div>
-          {cards.length === 0 ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto bg-amber-500/20 rounded-full flex items-center justify-center mb-4">
-                <AlertTriangle className="text-amber-400" size={28} />
-              </div>
-              <p className="text-gray-400">Aucune carte NFC.</p>
-            </div>
-          ) : (
-            <div className="space-y-3 mb-6">
-              {cards.map(card => (
-                <div 
-                  key={card.id} 
-                  className="glass-border bg-white/5 p-4 rounded-lg cursor-pointer hover:border-purple-500/30 hover:bg-purple-500/5 transition-all"
-                  onClick={() => onManageCard?.(card)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="font-mono text-sm text-blue-300">{card.card_id}</p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(card.created_at).toLocaleDateString('fr-FR')}
-                      </p>
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded ${
-                      card.status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
-                      card.status === 'lost' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                      card.status === 'blocked' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                      'bg-gray-500/20 text-gray-300 border-gray-500/30'
-                    }`}>
-                      {card.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <Button
-            className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-black"
-            onClick={() => {
-              onAdd();
-              onClose();
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" /> Ajouter une carte
-          </Button>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
-
-// 🔹 ✅ Modal : Commandes
-const OrdersModal = ({
-  isOpen,
-  onClose,
-  isAdmin,
-  router,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  isAdmin: boolean;
-  router: ReturnType<typeof useRouter>;
-}) => {
-  if (!isOpen) return null;
-  return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-        onClick={onClose}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.9, opacity: 0, y: 20 }}
-          className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-white/15"
-          onClick={e => e.stopPropagation()}
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <Package size={20} className="text-violet-400" />
-              Commandes
-            </h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X size={18} />
-            </Button>
-          </div>
-          <div className="space-y-4 mb-6">
-            <div className="glass-border bg-white/5 p-4 rounded-lg">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-white">Carte NFC Pro</p>
-                  <p className="text-sm text-gray-400">Livraison estimée $ 5 : 48 heures</p>
-                </div>
-                <span className="px-2 py-1 text-xs bg-violet-500/20 text-violet-300 rounded">
-                  En attente
-                </span>
-              </div>
-            </div>
-          </div>
-          <Button
-            className="w-full mb-3 border-white/20 text-white hover:bg-white/10"
-            onClick={async () => {
-              const res = await fetch('/api/orders', { method: 'POST' });
-              if (res.ok) {
-                router.push('/dashboard/orders?success=1');
-                onClose();
-              }
-            }}
-          >
-            <Plus className="w-4 h-4 mr-1" /> Commander une carte NFC
-          </Button>
-          <Button
-            className="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500"
-            onClick={() => {
-              window.location.href = isAdmin ? '/admin/orders' : '/dashboard/orders';
-              onClose();
-            }}
-          >
-            Voir toutes les commandes <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
-  );
-};
 
 // 🔹 ✅ Modal : Déconnexion - Confirmation
 const SignOutConfirmSheet = ({
@@ -1288,6 +875,15 @@ const handleManageCards = () => {
   router.push('/dashboard/nfc');
 };
 
+useEffect(() => {
+  console.log('🔍 Modaux actifs:', {
+    activeModal,
+    isPortfolioModalOpen,
+    isCertificatesModalOpen,
+    isContactModalOpen,
+    showSignOutConfirm
+  });
+}, [activeModal, isPortfolioModalOpen, isCertificatesModalOpen, isContactModalOpen, showSignOutConfirm]);
 // 🔹 Rediriger vers la page de commande de carte
 const handleOrderCard = () => {
   router.push('/dashboard/orders');
@@ -3421,22 +3017,17 @@ const handleToggleFollow = async (profileId: string) => {
       <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
 
         {/* 🔹 MODAL ÉVÉNEMENTS - Scroll fluide et sans débordement */}
-        <AnimatePresence>
-          {isEventModalOpen && (
-            <motion.div
-              key="event-modal"
-              initial={{ opacity: 0 }}
-              animate={{ 
-                opacity: 1,
-                transition: { duration: 0.25, ease: "easeOut" }
-              }}
-              exit={{ 
-                opacity: 0,
-                transition: { duration: 0.2, ease: "easeIn" }
-              }}
-              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-              onClick={() => setIsEventModalOpen(false)}
-            >
+<AnimatePresence>
+  {/* 🔹 MODAL ÉVÉNEMENTS */}
+  {isEventModalOpen && (
+    <motion.div
+      key="event-modal"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 0.25, ease: "easeOut" } }}
+      exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={() => setIsEventModalOpen(false)}
+    >
               <motion.div
                 initial={{ 
                   scale: 0.95, 
@@ -3514,22 +3105,14 @@ const handleToggleFollow = async (profileId: string) => {
               </motion.div>
             </motion.div>
           )}
-        </AnimatePresence>
 
-{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - Design responsive premium */}
-<AnimatePresence>
+  {/* 🔹 MODAL CRÉATION ÉVÉNEMENT */}
   {isEventFormOpen && (
     <motion.div
       key="event-form-modal"
       initial={{ opacity: 0 }}
-      animate={{ 
-        opacity: 1,
-        transition: { duration: 0.25, ease: "easeOut" }
-      }}
-      exit={{ 
-        opacity: 0,
-        transition: { duration: 0.2, ease: "easeIn" }
-      }}
+      animate={{ opacity: 1, transition: { duration: 0.25, ease: "easeOut" } }}
+      exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
       className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
       onClick={() => setIsEventFormOpen(false)}
     >
@@ -3663,152 +3246,92 @@ const handleToggleFollow = async (profileId: string) => {
       </motion.div>
     </motion.div>
   )}
-</AnimatePresence>
+  {/* 🔹 MODAUX INDÉPENDANTS - CLÉS STATIQUES (pas de Date.now !) */}
+  {isPortfolioModalOpen && (
+    <PortfolioModal
+      key="portfolio-modal" // ✅ STATIQUE (pas de Date.now)
+      isOpen={true}
+      onClose={() => setIsPortfolioModalOpen(false)}
+      profileId={profile.id}
+    />
+  )}
+  {isCertificatesModalOpen && (
+    <CertificatesModal
+      key="certificates-modal" // ✅ STATIQUE
+      isOpen={true}
+      onClose={() => setIsCertificatesModalOpen(false)}
+      profileId={profile.id}
+    />
+  )}
+  {activeModal === 'upgrade' && profile.plan !== 'entreprise' && (
+    <UpgradeModal
+      key="modal-upgrade"
+      isOpen={true}
+      onClose={closeModal}
+      onConfirm={handleUpgradeRequest}
+      isSubmitting={isSubmitting}
+    />
+  )}
+  {activeModal === 'followers' && (
+    <FollowersModal
+      key="modal-followers"
+      isOpen={true}
+      onClose={closeModal}
+      profileId={profile.id}
+      totalFollowers={totalFollowers || 0}
+    />
+  )}
+  {isContactModalOpen && (
+    <ContactRequestsSection
+      key="contact-requests-modal" // ✅ STATIQUE
+      isOpen={true}
+      onClose={() => setIsContactModalOpen(false)}
+    />
+  )}
+  {showSignOutConfirm && (
+    <SignOutConfirmSheet
+      key="signout-confirm-modal" // ✅ STATIQUE
+      isOpen={true}
+      onClose={() => setShowSignOutConfirm(false)}
+      onConfirm={handleLogout}
+      t={t}
+      tNavbar={tNavbar}
+    />
+  )}
 
-      <AnimatePresence>
-        {activeModal === 'visibility' && (
-          <VisibilityModal
-            key="modal-visibility"
-            sectionsVisibility={sectionsVisibility}
-            onClose={closeModal}
-            onSave={(newVisibility) => {
-              setSectionsVisibility(newVisibility);
-              saveSectionsVisibility(newVisibility);
-            }}
-          />
-        )}
-        {activeModal === 'contact' && (
-          <ContactToggleModal
-            key="modal-contact"
-            enabled={acceptsContactRequests}
-            onToggle={toggleContactRequests}
-            onClose={closeModal}
-          />
-        )}
-        {isPortfolioModalOpen && (
-          <PortfolioModal
-            key="portfolio-modal"
-            isOpen={true}
-            onClose={() => setIsPortfolioModalOpen(false)}
-            profileId={profile.id}
-          />
-        )}
-        {isCertificatesModalOpen && (
-          <CertificatesModal
-            key="certificates-modal"
-            isOpen={true}
-            onClose={() => setIsCertificatesModalOpen(false)}
-            profileId={profile.id}
-          />
-        )}
-        {activeModal === 'report' && (
-          <ReportCardModal
-            key="modal-report"
-            reportReason={reportReason}
-            setReportReason={setReportReason}
-            customReason={customReason}
-            setCustomReason={setCustomReason}
-            onSubmit={handleReportCard}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'message' && (
-          <CustomMessageModal
-            key="modal-message"
-            value={customMessage}
-            onChange={setCustomMessage}
-            onSubmit={handleSendCustomMessage}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'upgrade' && profile.plan !== 'entreprise' && (
-          <UpgradeModal
-            key="modal-upgrade"
-            isOpen={true}
-            onClose={closeModal}
-            onConfirm={handleUpgradeRequest}
-            isSubmitting={isSubmitting}
-          />
-        )}
-        {activeModal === 'qr' && (
-          <QRModal
-            key="modal-qr"
-            isOpen={true}
-            onClose={closeModal}
-            profileUrl={profileUrl}
-            username={profile.username}
-          />
-        )}
-        {activeModal === 'orders' && (
-          <OrdersModal
-            key="modal-orders"
-            isOpen={true}
-            onClose={closeModal}
-            isAdmin={isAdmin}
-            router={router}
-          />
-        )}
-        {activeModal === 'search' && (
-          <SearchModal
-            key="modal-search"
-            isOpen={true}
-            onClose={closeModal}
-          />
-        )}
-        {activeModal === 'followers' && (
-          <FollowersModal
-            key="modal-followers"
-            isOpen={true}
-            onClose={closeModal}
-            profileId={profile.id}
-            totalFollowers={totalFollowers || 0}
-          />
-        )}
-        {isContactModalOpen && (
-          <ContactRequestsSection
-            key="modal-contact-requests"
-            isOpen={true}
-            onClose={() => setIsContactModalOpen(false)}
-          />
-        )}
-        {showSignOutConfirm && (
-          <SignOutConfirmSheet
-            key="modal-signout-confirm"
-            isOpen={true}
-            onClose={() => setShowSignOutConfirm(false)}
-            onConfirm={handleLogout}
-            t={t}
-            tNavbar={tNavbar}
-          />
-        )}
-{/* ✅ NFCModal avec onManageCard */}
-<NFCModal
-  isOpen={isNFCModalOpen}
-  onClose={() => setIsNFCModalOpen(false)}
-  cards={nfcCards}
-  onAdd={() => {/* Logique ajouter carte */}}
-  onManageCard={(card) => { // ✅ Typage automatique
-    setSelectedCardForManagement(card);
-    setIsNFCModalOpen(false);
-    setIsManagementModalOpen(true);
-  }}
-/>
-
-{/* ✅ NFCManagementModal avec card typé */}
-<NFCManagementModal
-  isOpen={isManagementModalOpen}
-  onClose={() => {
-    setIsManagementModalOpen(false);
-    setSelectedCardForManagement(null);
-  }}
-  card={selectedCardForManagement} // ✅ Compatible NFCCard | null
-  onActionComplete={() => {
-    loadNfcCards();
-    toast.success('✅ Action effectuée avec succès');
-  }}
-/>
+  {/* 🔹 MODAUX NFC - CONDITIONNELS AVEC CLÉS EXPLICITES */}
+  {isNFCModalOpen && ( // ✅ Conditionnel + key explicite
+    <NFCModal
+      key="nfc-modal" // 🔑 CLÉ MANQUANTE AJOUTÉE
+      isOpen={true}
+      onClose={() => setIsNFCModalOpen(false)}
+      cards={nfcCards}
+      onManageCard={(card) => {
+        setSelectedCardForManagement(card);
+        setIsNFCModalOpen(false);
+        setIsManagementModalOpen(true);
+      }}
+    />
+  )}
+  {isManagementModalOpen && ( // ✅ Conditionnel + key explicite
+    <NFCManagementModal
+      key="nfc-management-modal" // 🔑 CLÉ MANQUANTE AJOUTÉE
+      isOpen={true}
+      onClose={() => {
+        setIsManagementModalOpen(false);
+        setSelectedCardForManagement(null);
+      }}
+      card={selectedCardForManagement}
+      onActionComplete={() => {
+        loadNfcCards();
+        toast.success('✅ Action effectuée avec succès');
+      }}
+    />
+  )}
+ {/* 🔹 MODAL RECHERCHE - AJOUT DE key */}
   {isSearchModalOpen && (
     <motion.div
+      key="search-modal" // 🔑 CLÉ MANQUANTE AJOUTÉE
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -3883,11 +3406,12 @@ const handleToggleFollow = async (profileId: string) => {
         {/* 🔹 Résultats de recherche */}
         {searchQuery && !isSearching && searchResults.length > 0 && (
           <div className="space-y-3">
-            {searchResults.map((result) => (
-              <div
-                key={result.id}
-                className="p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/5 group"
-              >
+            {searchResults.map((result, index) => (
+  <div
+    key={result.id ?? result.username ?? `search-${index}`}
+    className="p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/5 group"
+  >
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
                     {/* Avatar */}

@@ -13,6 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { NFCCard } from '@/src/types/nfc';
+import { ScrollArea } from '@/components/ui/scroll-area'; // ✅ IMPORT AJOUTÉ
+
 
 type NFC_Card = {
   id: string;
@@ -197,231 +199,233 @@ export default function NFCManagementModal({
     ? ['block', 'lost', 'reset', 'report', 'modify_qr']
     : ['reactivate', 'report'];
 
-  return (
-    <AnimatePresence>
+return (
+  <AnimatePresence>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-        onClick={onClose}
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
       >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative w-full max-w-2xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden"
-          onClick={e => e.stopPropagation()}
+        {/* 🔘 Bouton fermeture */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all duration-300"
+          aria-label="Fermer"
         >
-          {/* 🔘 Bouton fermeture */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all duration-300"
-            aria-label="Fermer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <X className="w-5 h-5" />
+        </button>
 
-          <div className="flex flex-col h-full">
-            {/* 🔹 Header */}
-            <div className="sticky top-0 z-40 bg-gradient-to-b from-gray-900/95 to-transparent backdrop-blur-sm border-b border-white/10 py-5 px-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-blue-500/15 rounded-2xl">
-                  <Key className="w-7 h-7 text-blue-400" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
-                    Gestion de la carte NFC
-                  </h2>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <Badge variant="secondary" className="bg-white/10 border-white/20">
-                      <span className="font-mono text-sm">{card.card_id}</span>
-                    </Badge>
-                    <Badge className={
-                      card.status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
-                      card.status === 'lost' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-                      card.status === 'blocked' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 
-                      'bg-gray-500/20 text-gray-300 border-gray-500/30'
-                    }>
-                      {card.status === 'active' && <Check className="w-3 h-3 mr-1" />}
-                      {card.status === 'lost' && <AlertTriangle className="w-3 h-3 mr-1" />}
-                      {card.status === 'blocked' && <Lock className="w-3 h-3 mr-1" />}
-                      {card.status}
-                    </Badge>
-                    {card.matricule && (
-                      <div className="flex items-center gap-1.5 text-sm text-blue-300/80">
-                        <ShieldCheck className="w-4 h-4" />
-                        <span className="font-mono">{maskedMatricule}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
+        <div className="flex flex-col h-full min-h-0">
+
+          {/* 🔹 Header STICKY */}
+          <div className="sticky top-0 z-40 bg-gradient-to-b from-gray-900/95 to-transparent backdrop-blur-sm border-b border-white/10 py-5 px-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-blue-500/15 rounded-2xl">
+                <Key className="w-7 h-7 text-blue-400" />
               </div>
-            </div>
-
-            {/* 🔹 Contenu scrollable */}
-            <div className="flex-grow overflow-y-auto overscroll-contain py-6 px-4 sm:px-6 md:px-8">
-              {!selectedAction ? (
-                // 🔹 Sélection de l'action
-                <div className="space-y-4">
-                  <p className="text-gray-400 text-center mb-6">
-                    Sélectionnez une action à effectuer sur cette carte. 
-                    <span className="block mt-1 font-medium text-amber-400">
-                      {isCardActive ? '⚠️ Actions irréversibles pour les cartes actives' : '✅ Carte actuellement désactivée'}
-                    </span>
-                  </p>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {availableActions.map((action) => {
-                      const config = ACTION_CONFIG[action];
-                      const Icon = config.icon;
-                      
-                      return (
-                        <button
-                          key={action}
-                          onClick={() => handleActionSelect(action)}
-                          className={`p-5 rounded-2xl border transition-all ${
-                            isCardActive 
-                              ? 'border-white/10 hover:border-blue-500/30 hover:bg-blue-500/5' 
-                              : 'border-white/10 hover:border-emerald-500/30 hover:bg-emerald-500/5'
-                          } text-left group`}
-                        >
-                          <div className={`w-12 h-12 rounded-xl ${config.bg} ${config.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                            <Icon className="w-6 h-6" />
-                          </div>
-                          <h3 className="font-bold text-white text-lg mb-1 flex items-center gap-2">
-                            {config.label}
-                            {config.requiresMatricule && (
-                              <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-blue-500/30 text-blue-300">
-                                Matricule requis
-                              </Badge>
-                            )}
-                          </h3>
-                          <p className="text-gray-400 text-sm">{config.description}</p>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-                    <p className="text-xs text-amber-200 flex items-start gap-2">
-                      <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                      <span>
-                        <span className="font-bold">Sécurité renforcée :</span> Les actions sensibles (bloquer, déclarer perdue, réinitialiser) 
-                        nécessitent la saisie du <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded">matricule</span> visible sur votre carte physique. 
-                        Cela garantit que seul le propriétaire légitime peut effectuer ces actions.
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                // 🔹 Formulaire de confirmation
-                <div className="space-y-6 max-w-2xl mx-auto">
-                  <div className="text-center">
-                    <div className={`w-16 h-16 rounded-2xl ${ACTION_CONFIG[selectedAction].bg} ${ACTION_CONFIG[selectedAction].color} flex items-center justify-center mx-auto mb-4`}>
-                      {(() => {
-                        const Icon = ACTION_CONFIG[selectedAction].icon;
-                        return <Icon className="w-8 h-8" />;
-                      })()}
-                    </div>
-                    <h3 className="text-2xl font-bold text-white mb-2">
-                      {ACTION_CONFIG[selectedAction].label}
-                    </h3>
-                    <p className="text-gray-400">
-                      {ACTION_CONFIG[selectedAction].description}
-                    </p>
-                  </div>
-
-                  {/* 🔹 Saisie matricule si requis */}
-                  {ACTION_CONFIG[selectedAction].requiresMatricule && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-                        <Key className="w-4 h-4" />
-                        Matricule de la carte (visible sur la carte physique)
-                      </label>
-                      <Input
-                        value={matriculeInput}
-                        onChange={(e) => setMatriculeInput(e.target.value)}
-                        placeholder="Ex: NFC-AB123-XYZ"
-                        className="font-mono bg-white/5 border-white/15 focus:border-blue-500/50"
-                        maxLength={20}
-                      />
-                      <p className="text-xs text-blue-300/80">
-                        Format: Lettres majuscules et chiffres uniquement • Exemple: {card.matricule?.slice(0, 8)}...
-                      </p>
+              <div>
+                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-cyan-300">
+                  Gestion de la carte NFC
+                </h2>
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  <Badge variant="secondary" className="bg-white/10 border-white/20">
+                    <span className="font-mono text-sm">{card.card_id}</span>
+                  </Badge>
+                  <Badge className={
+                    card.status === 'active' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
+                    card.status === 'lost' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                    card.status === 'blocked' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 
+                    'bg-gray-500/20 text-gray-300 border-gray-500/30'
+                  }>
+                    {card.status === 'active' && <Check className="w-3 h-3 mr-1" />}
+                    {card.status === 'lost' && <AlertTriangle className="w-3 h-3 mr-1" />}
+                    {card.status === 'blocked' && <Lock className="w-3 h-3 mr-1" />}
+                    {card.status}
+                  </Badge>
+                  {card.matricule && (
+                    <div className="flex items-center gap-1.5 text-sm text-blue-300/80">
+                      <ShieldCheck className="w-4 h-4" />
+                      <span className="font-mono">{maskedMatricule}</span>
                     </div>
                   )}
-
-                  {/* 🔹 Raison si requise */}
-                  {ACTION_CONFIG[selectedAction].requiresReason && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
-                        <AlertTriangle className="w-4 h-4" />
-                        Motif de l'action
-                      </label>
-                      <Textarea
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder={selectedAction === 'lost' 
-                          ? 'Où et quand avez-vous perdu la carte ?' 
-                          : 'Décrivez le problème ou l\'abus observé'}
-                        className="min-h-[100px] bg-white/5 border-white/15 focus:border-amber-500/50"
-                        maxLength={500}
-                      />
-                      <p className="text-right text-xs text-gray-500">{reason.length}/500</p>
-                    </div>
-                  )}
-
-                  {/* 🔹 Confirmation */}
-                  <div className="pt-4 border-t border-white/10">
-                    <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
-                      <Button
-                        variant="outline"
-                        onClick={() => setSelectedAction(null)}
-                        className="border-white/20 text-gray-300 hover:bg-white/10"
-                      >
-                        ← Retour aux actions
-                      </Button>
-                      <Button
-                        onClick={() => setShowConfirmation(true)}
-                        disabled={isSubmitting || 
-                          (ACTION_CONFIG[selectedAction].requiresMatricule && !matriculeInput.trim()) ||
-                          (ACTION_CONFIG[selectedAction].requiresReason && !reason.trim())}
-                        className={`${
-                          selectedAction === 'block' || selectedAction === 'lost' 
-                            ? 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600' 
-                            : selectedAction === 'reactivate'
-                            ? 'bg-gradient-to-r from-emerald-600 to-cyan-700 hover:from-emerald-500 hover:to-cyan-600'
-                            : 'bg-gradient-to-r from-blue-600 to-cyan-700 hover:from-blue-500 hover:to-cyan-600'
-                        } text-white`}
-                      >
-                        {isSubmitting ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Traitement...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="w-4 h-4 mr-2" />
-                            {ACTION_CONFIG[selectedAction].confirmText}
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
                 </div>
-              )}
-            </div>
-
-            {/* 🔹 Footer */}
-            <div className="sticky bottom-0 z-40 bg-gradient-to-t from-gray-900/95 to-transparent backdrop-blur-sm border-t border-white/10 py-4 px-6">
-              <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-                <span>Toutes les actions sont journalisées et sécurisées</span>
               </div>
             </div>
           </div>
-        </motion.div>
+
+          {/* 🔹 CONTENU SCROLLABLE OPTIMISÉ - CORRECTION CRITIQUE */}
+<ScrollArea className="flex-1 overflow-y-auto py-6 px-4 sm:px-6 md:px-8 overscroll-contain min-h-0">
+            {!selectedAction ? (
+              // 🔹 Sélection de l'action
+              <div className="space-y-4">
+                <p className="text-gray-400 text-center mb-6">
+                  Sélectionnez une action à effectuer sur cette carte. 
+                  <span className="block mt-1 font-medium text-amber-400">
+                    {isCardActive ? '⚠️ Actions irréversibles pour les cartes actives' : '✅ Carte actuellement désactivée'}
+                  </span>
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {availableActions.map((action) => {
+                    const config = ACTION_CONFIG[action];
+                    const Icon = config.icon;
+                    
+                    return (
+                      <button
+                        key={action}
+                        onClick={() => handleActionSelect(action)}
+                        className={`p-5 rounded-2xl border transition-all ${
+                          isCardActive 
+                            ? 'border-white/10 hover:border-blue-500/30 hover:bg-blue-500/5' 
+                            : 'border-white/10 hover:border-emerald-500/30 hover:bg-emerald-500/5'
+                        } text-left group`}
+                      >
+                        <div className={`w-12 h-12 rounded-xl ${config.bg} ${config.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                          <Icon className="w-6 h-6" />
+                        </div>
+                        <h3 className="font-bold text-white text-lg mb-1 flex items-center gap-2">
+                          {config.label}
+                          {config.requiresMatricule && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-blue-500/30 text-blue-300">
+                              Matricule requis
+                            </Badge>
+                          )}
+                        </h3>
+                        <p className="text-gray-400 text-sm">{config.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <div className="mt-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                  <p className="text-xs text-amber-200 flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <span>
+                      <span className="font-bold">Sécurité renforcée :</span> Les actions sensibles (bloquer, déclarer perdue, réinitialiser) 
+                      nécessitent la saisie du <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded">matricule</span> visible sur votre carte physique. 
+                      Cela garantit que seul le propriétaire légitime peut effectuer ces actions.
+                    </span>
+                  </p>
+                </div>
+              </div>
+            ) : (
+              // 🔹 Formulaire de confirmation
+              <div className="space-y-6 max-w-2xl mx-auto">
+                <div className="text-center">
+                  <div className={`w-16 h-16 rounded-2xl ${ACTION_CONFIG[selectedAction].bg} ${ACTION_CONFIG[selectedAction].color} flex items-center justify-center mx-auto mb-4`}>
+                    {(() => {
+                      const Icon = ACTION_CONFIG[selectedAction].icon;
+                      return <Icon className="w-8 h-8" />;
+                    })()}
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-2">
+                    {ACTION_CONFIG[selectedAction].label}
+                  </h3>
+                  <p className="text-gray-400">
+                    {ACTION_CONFIG[selectedAction].description}
+                  </p>
+                </div>
+
+                {/* 🔹 Saisie matricule si requis */}
+                {ACTION_CONFIG[selectedAction].requiresMatricule && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                      <Key className="w-4 h-4" />
+                      Matricule de la carte (visible sur la carte physique)
+                    </label>
+                    <Input
+                      value={matriculeInput}
+                      onChange={(e) => setMatriculeInput(e.target.value)}
+                      placeholder="Ex: NFC-AB123-XYZ"
+                      className="font-mono bg-white/5 border-white/15 focus:border-blue-500/50"
+                      maxLength={20}
+                    />
+                    <p className="text-xs text-blue-300/80">
+                      Format: Lettres majuscules et chiffres uniquement • Exemple: {card.matricule?.slice(0, 8)}...
+                    </p>
+                  </div>
+                )}
+
+                {/* 🔹 Raison si requise */}
+                {ACTION_CONFIG[selectedAction].requiresReason && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-300 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4" />
+                      Motif de l'action
+                    </label>
+                    <Textarea
+                      value={reason}
+                      onChange={(e) => setReason(e.target.value)}
+                      placeholder={selectedAction === 'lost' 
+                        ? 'Où et quand avez-vous perdu la carte ?' 
+                        : 'Décrivez le problème ou l\'abus observé'}
+                      className="min-h-[100px] bg-white/5 border-white/15 focus:border-amber-500/50"
+                      maxLength={500}
+                    />
+                    <p className="text-right text-xs text-gray-500">{reason.length}/500</p>
+                  </div>
+                )}
+
+                {/* 🔹 Confirmation */}
+                <div className="pt-4 border-t border-white/10">
+                  <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={() => setSelectedAction(null)}
+                      className="border-white/20 text-gray-300 hover:bg-white/10"
+                    >
+                      ← Retour aux actions
+                    </Button>
+                    <Button
+                      onClick={() => setShowConfirmation(true)}
+                      disabled={isSubmitting || 
+                        (ACTION_CONFIG[selectedAction].requiresMatricule && !matriculeInput.trim()) ||
+                        (ACTION_CONFIG[selectedAction].requiresReason && !reason.trim())}
+                      className={`${
+                        selectedAction === 'block' || selectedAction === 'lost' 
+                          ? 'bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600' 
+                          : selectedAction === 'reactivate'
+                          ? 'bg-gradient-to-r from-emerald-600 to-cyan-700 hover:from-emerald-500 hover:to-cyan-600'
+                          : 'bg-gradient-to-r from-blue-600 to-cyan-700 hover:from-blue-500 hover:to-cyan-600'
+                      } text-white`}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Traitement...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 mr-2" />
+                          {ACTION_CONFIG[selectedAction].confirmText}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </ScrollArea> {/* ✅ FERMETURE CRITIQUE - ScrollArea remplace le div */}
+
+          {/* 🔹 Footer STICKY */}
+<div className="sticky top-0 z-40 bg-gradient-to-b from-gray-900/95 to-transparent backdrop-blur-sm border-b border-white/10 py-5 px-6 will-change-transform">
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+              <span>Toutes les actions sont journalisées et sécurisées</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
 
         {/* 🔹 Modal de confirmation finale */}
         <AnimatePresence>

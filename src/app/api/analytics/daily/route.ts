@@ -6,12 +6,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const profile_id = request.nextUrl.searchParams.get('profile_id');
+    const daysParam = request.nextUrl.searchParams.get('days');
+    const days = daysParam ? parseInt(daysParam, 10) : 30;
+
     if (!profile_id) {
       return NextResponse.json({ error: 'profile_id requis' }, { status: 400 });
     }
 
     const cookieStore = await cookies();
-
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,28 +28,57 @@ export async function GET(request: NextRequest) {
 
     // ✅ AUTH SÉCURISÉE
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-
     if (authError || !user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // ✅ CONTRÔLE D’ACCÈS
-    if (user.id !== profile_id) {
+    // ✅ CONTRÔLE D'ACCÈS ÉLARGI (admin peut accéder)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id, role')
+      .eq('id', profile_id)
+      .single();
+
+    const isAdmin = user.user_metadata?.role === 'admin';
+    const isOwner = user.id === profile_id;
+    
+    if (!isAdmin && !isOwner) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    // 🔹 Récupère les scans
-    const daysParam = request.nextUrl.searchParams.get('days');
-    const days = daysParam ? parseInt(daysParam, 10) : 30;
+    // 🔹 Requête directe sur la table scans
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
 
-    const { data, error } = await supabase.rpc('get_daily_scans', {
-      p_profile_id: profile_id,
-      p_days: days,
-    });
+    const { data: scans, error } = await supabase
+      .from('scans')
+      .select('created_at, scan_type')
+      .eq('profile_id', profile_id)
+      .gte('created_at', startDate.toISOString())
+      .order('created_at', { ascending: true });
 
     if (error) throw error;
 
-    return NextResponse.json(data ?? []);
+    // 🔹 Agréger les données par jour
+    const dailyCounts = scans.reduce((acc: any, scan: any) => {
+      const date = new Date(scan.created_at).toISOString().split('T')[0];
+      if (!acc[date]) {
+        acc[date] = { date, scan_count: 0, qr_count: 0, nfc_count: 0 };
+      }
+      acc[date].scan_count++;
+      if (scan.scan_type === 'nfc') {
+        acc[date].nfc_count++;
+      } else {
+        acc[date].qr_count++;
+      }
+      return acc;
+    }, {});
+
+    const result = Object.values(dailyCounts).sort((a: any, b: any) => 
+      a.date.localeCompare(b.date)
+    );
+
+    return NextResponse.json(result);
   } catch (err) {
     console.error('❌ Erreur analytics:', err);
     return NextResponse.json({ error: 'Échec du chargement' }, { status: 500 });
