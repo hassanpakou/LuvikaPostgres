@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MapPin } from 'lucide-react';
 import { 
   BarChart3, 
   Users, 
@@ -39,6 +40,14 @@ ChartJS.register(
   Filler
 );
 
+type CountryData = {
+  country: string;
+  city: string;
+  pageViews: number;
+  users: number;
+  newUsers: number;
+};
+
 type AnalyticsData = {
   configured: boolean;
   summary?: {
@@ -56,6 +65,7 @@ type AnalyticsData = {
     bounceRate: number;
     newUsers: number;
   }>;
+  byCountry?: CountryData[];
   error?: string;
 };
 
@@ -69,7 +79,7 @@ export function GoogleAnalyticsCard() {
     setError(null);
     try {
       const res = await fetch('/api/admin/analytics/google', {
-        next: { revalidate: 3600 }, // Cache 1h
+        next: { revalidate: 3600 },
       });
       
       if (!res.ok) {
@@ -90,7 +100,6 @@ export function GoogleAnalyticsCard() {
 
   useEffect(() => {
     fetchAnalytics();
-    // Rafraîchissement automatique toutes les 2h
     const interval = setInterval(fetchAnalytics, 7200000);
     return () => clearInterval(interval);
   }, []);
@@ -167,7 +176,7 @@ export function GoogleAnalyticsCard() {
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         tension: 0.3,
         fill: true,
-        borderDash: [5, 5],
+        borderDash: [5, 5], // ✅ Valide pour Line chart
       },
     ],
   };
@@ -177,12 +186,105 @@ export function GoogleAnalyticsCard() {
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'top' as const, labels: { color: '#cbd5e1' } },
-      tooltip: { backgroundColor: 'rgba(30, 41, 59, 0.9)', titleColor: '#f1f5f9', bodyColor: '#cbd5e1' },
+      tooltip: { 
+        backgroundColor: 'rgba(30, 41, 59, 0.9)', 
+        titleColor: '#f1f5f9', 
+        bodyColor: '#cbd5e1' 
+      },
     },
     scales: {
       x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
       y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true },
     },
+  };
+
+  // ✅ CORRECTION CRITIQUE : Bar chart configuration sécurisée
+  const countryChartData = {
+    labels: data.byCountry?.map(item => item.country) || [],
+    datasets: [
+      {
+        label: 'Pages vues',
+        data: data.byCountry?.map(item => item.pageViews) || [],
+        backgroundColor: 'rgba(245, 158, 11, 0.6)',
+        borderColor: 'rgba(245, 158, 11, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        // ❌ SUPPRIMÉ : borderDash (non valide pour Bar chart)
+      },
+      {
+        label: 'Utilisateurs uniques',
+        data: data.byCountry?.map(item => item.users) || [],
+        backgroundColor: 'rgba(14, 165, 233, 0.6)',
+        borderColor: 'rgba(14, 165, 233, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        // ❌ SUPPRIMÉ : borderDash (non valide pour Bar chart)
+      }
+    ],
+  };
+
+  const countryChartOptions = {
+    indexAxis: 'y' as const,
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { 
+        position: 'top' as const, 
+        labels: { 
+          color: '#cbd5e1',
+          padding: 20,
+          font: { size: 12 }
+        } 
+      },
+      tooltip: {
+        backgroundColor: 'rgba(30, 41, 59, 0.9)',
+        titleColor: '#f1f5f9',
+        bodyColor: '#cbd5e1',
+        borderColor: 'rgba(56, 189, 248, 0.5)',
+        borderWidth: 1,
+        padding: 12,
+        callbacks: {
+          label: (context: any) => {
+            // ✅ GESTION SÉCURISÉE DES VALEURS NULL
+            if (!data?.byCountry || !context.parsed?.x) return [];
+            
+            const countryData = data.byCountry[context.dataIndex];
+            if (!countryData) return [];
+            
+            const value = typeof context.parsed.x === 'number' 
+              ? context.parsed.x.toLocaleString('fr-FR') 
+              : '0';
+            
+            return [
+              `${context.dataset.label}: ${value}`,
+              `Nouveaux: ${countryData.newUsers.toLocaleString('fr-FR')}`,
+              ...(countryData.city ? [`Ville principale: ${countryData.city}`] : [])
+            ];
+          }
+        }
+      },
+    },
+    scales: {
+      x: {
+        ticks: { 
+          color: '#94a3b8',
+          callback: (value: string | number) => {
+            const num = typeof value === 'number' ? value : parseFloat(value);
+            return num >= 1000 ? `${(num / 1000).toFixed(1)}k` : value.toString();
+          }
+        },
+        grid: { color: 'rgba(255,255,255,0.05)' },
+        beginAtZero: true,
+      },
+      y: {
+        ticks: { color: '#cbd5e1', padding: 10 },
+        grid: { display: false },
+      }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index' as const,
+    }
   };
 
   return (
@@ -243,7 +345,7 @@ export function GoogleAnalyticsCard() {
         </div>
 
         {/* 🔹 Graphique d'activité */}
-        <div className="h-80">
+        <div className="h-80 mb-8">
           {data.daily && data.daily.length > 0 ? (
             <Line data={chartData} options={chartOptions} />
           ) : (
@@ -252,6 +354,55 @@ export function GoogleAnalyticsCard() {
             </div>
           )}
         </div>
+
+        {/* 🔹 SECTION VUES PAR PAYS - CORRIGÉE ET POSITIONNÉE */}
+        {data.byCountry && data.byCountry.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-amber-400" />
+                Vues par pays (7 derniers jours)
+              </h3>
+              <span className="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded">
+                TOP {data.byCountry.length}
+              </span>
+            </div>
+            
+            <div className="h-80 mb-4">
+              <Bar data={countryChartData} options={countryChartOptions} />
+            </div>
+            
+            {/* 🔹 LÉGENDE SUPPLÉMENTAIRE */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              {data.byCountry.slice(0, 4).map((item, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center gap-2 p-2 bg-white/5 rounded-lg border border-white/5"
+                >
+                  <div className="w-3 h-3 rounded-full" style={{ 
+                    backgroundColor: i === 0 ? '#f59e0b' : 
+                                   i === 1 ? '#0ea5e9' : 
+                                   i === 2 ? '#8b5cf6' : '#10b981' 
+                  }} />
+                  <div>
+                    <div className="font-medium text-white">{item.country}</div>
+                    <div className="text-gray-300">{item.pageViews.toLocaleString('fr-FR')} vues</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 🔹 MESSAGE SI AUCUNE DONNÉE PAYS */}
+        {data.byCountry && data.byCountry.length === 0 && (
+          <div className="mt-8 pt-6 border-t border-white/10 text-center py-8">
+            <MapPin className="w-12 h-12 text-gray-500/30 mx-auto mb-3" />
+            <p className="text-gray-400">
+              Aucune donnée géographique disponible pour la période sélectionnée
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

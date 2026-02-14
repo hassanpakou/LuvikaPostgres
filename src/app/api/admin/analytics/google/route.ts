@@ -39,8 +39,8 @@ export async function GET() {
       endDate: 'today',
     };
 
-    // 📈 Requête des métriques principales
-    const [response] = await analyticsDataClient.runReport({
+    // 📈 Requête 1 : Métriques principales + données quotidiennes
+    const [mainResponse] = await analyticsDataClient.runReport({
       property: `properties/${propertyId}`,
       dateRanges: [dateRange],
       dimensions: [{ name: 'date' }],
@@ -55,8 +55,28 @@ export async function GET() {
       limit: 50,
     });
 
-    // 🔍 Extraction et transformation des données
-    const metrics = response.rows?.map(row => ({
+    // 🌍 Requête 2 : Données par pays (TOP 10)
+    const [countryResponse] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dateRanges: [dateRange],
+      dimensions: [
+        { name: 'country' },
+        { name: 'city' } // Optionnel : pour plus de détails
+      ],
+      metrics: [
+        { name: 'screenPageViews' },
+        { name: 'activeUsers' },
+        { name: 'newUsers' }
+      ],
+      orderBys: [{
+        metric: { metricName: 'screenPageViews' },
+        desc: true
+      }],
+      limit: 10, // TOP 10 pays
+    });
+
+    // 🔍 Extraction données quotidiennes
+    const dailyMetrics = mainResponse.rows?.map(row => ({
       date: row.dimensionValues?.[0].value || '',
       activeUsers: parseInt(row.metricValues?.[0].value || '0'),
       pageViews: parseInt(row.metricValues?.[1].value || '0'),
@@ -65,40 +85,58 @@ export async function GET() {
       newUsers: parseInt(row.metricValues?.[4].value || '0'),
     })) || [];
 
+    // 🌍 Extraction données par pays
+    const byCountry = countryResponse.rows?.map(row => {
+      const country = row.dimensionValues?.[0].value || 'Unknown';
+      // Normalisation des noms de pays (ex: "United States" → "États-Unis")
+      const normalizedCountry = country === 'United States' ? 'États-Unis' : 
+                               country === 'United Kingdom' ? 'Royaume-Uni' : 
+                               country === 'Congo (Democratic Republic)' ? 'RDC' : country;
+      
+      return {
+        country: normalizedCountry,
+        city: row.dimensionValues?.[1].value || '',
+        pageViews: parseInt(row.metricValues?.[0].value || '0'),
+        users: parseInt(row.metricValues?.[1].value || '0'),
+        newUsers: parseInt(row.metricValues?.[2].value || '0'),
+      };
+    }) || [];
+
     // 📊 Calculs agrégés
-    const totalUsers = metrics.reduce((sum, m) => sum + m.activeUsers, 0);
-    const totalPageViews = metrics.reduce((sum, m) => sum + m.pageViews, 0);
-    const avgBounceRate = metrics.length > 0 
-      ? metrics.reduce((sum, m) => sum + m.bounceRate, 0) / metrics.length 
+    const totalUsers = dailyMetrics.reduce((sum, m) => sum + m.activeUsers, 0);
+    const totalPageViews = dailyMetrics.reduce((sum, m) => sum + m.pageViews, 0);
+    const avgSessionDuration = dailyMetrics.length > 0 
+      ? dailyMetrics.reduce((sum, m) => sum + m.avgSessionDuration, 0) / dailyMetrics.length 
+      : 0;
+    const avgBounceRate = dailyMetrics.length > 0 
+      ? dailyMetrics.reduce((sum, m) => sum + m.bounceRate, 0) / dailyMetrics.length 
       : 0;
 
-    // ✅ Retour des données formatées
+    // ✅ Retour des données complètes
     return NextResponse.json({
       configured: true,
       summary: {
         totalUsers,
         totalPageViews,
-        avgSessionDuration: metrics.reduce((sum, m) => sum + m.avgSessionDuration, 0) / metrics.length || 0,
+        avgSessionDuration,
         avgBounceRate,
         period: '7 derniers jours',
       },
-      daily: metrics,
+      daily: dailyMetrics,
+      byCountry, // ✅ NOUVEAU : Données par pays
       propertyId,
     });
   } catch (error: any) {
     console.error('❌ Erreur Google Analytics API:', {
       message: error.message,
       code: error.code,
-      details: error.details,
     });
 
-    // 🔒 Ne jamais exposer les détails sensibles en production
     return NextResponse.json({ 
       error: process.env.NODE_ENV === 'development' 
         ? error.message 
         : 'Erreur lors de la récupération des données Analytics',
       configured: false,
-      details: process.env.NODE_ENV === 'development' ? error : undefined
     }, { status: 500 });
   }
 }

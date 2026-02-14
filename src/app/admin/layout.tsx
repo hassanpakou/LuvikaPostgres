@@ -1,4 +1,4 @@
-// src/app/admin/layout.tsx
+// src/app/admin/admin/layout.tsx
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -6,7 +6,12 @@ import { Toaster } from 'sonner';
 import { AdminHeader } from '../../components/admin/AdminHeader';
 import { AdminLayoutProvider } from '../../contexts/AdminLayoutContext';
 import { NetworkWatcher } from '../../components/system/NetworkWatcher';
-import Head from 'next/head';
+
+// 🔹 METADATA ADMIN SPÉCIFIQUE
+export const metadata = {
+  title: 'Admin Panel • LUVIKA',
+  description: 'Espace administrateur - Gestion des utilisateurs, abonnements, commandes NFC et statistiques',
+};
 
 export default async function AdminLayout({
   children,
@@ -32,31 +37,24 @@ export default async function AdminLayout({
   }
 
   return (
-    <>
-      <Head>
-        {/* Google tag (gtag.js) */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-RYQBRH3CZC"></script>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-RYQBRH3CZC');
-            `
-          }}
-        />
-      </Head>
-      <AdminLayoutProvider>
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-950 text-white">
-          <AdminHeader />
+    <AdminLayoutProvider>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-950 text-white">
+        <AdminHeader />
+        <main className="pt-20">
           {children}
-          <Toaster position="top-right" richColors closeButton />
-          <Toaster position="top-right" richColors />
-          {/* ← Obligatoire pour voir les toasts & pour surveiller la connexion globale*/}
-          <NetworkWatcher/>
-        </div>
-      </AdminLayoutProvider>
-    </>
+        </main>
+        
+        {/* 🔹 Toaster optimisé - UN SEUL */}
+        <Toaster 
+          position="top-right" 
+          richColors 
+          closeButton
+          duration={5000}
+          visibleToasts={3}
+        />
+        
+        <NetworkWatcher />
+      </div>
+    </AdminLayoutProvider>
   );
 }
