@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '../../../../../src/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
+import { GoogleAnalyticsCard } from '../../../../../src/components/admin/GoogleAnalyticsCard';
 import {
   ArrowLeft,
   Users,
@@ -564,6 +565,9 @@ export default function AnalyticsPage() {
           </CardContent>
         </Card>
       </div>
+{/* 🔹 Google Analytics (nouvelle section) */}
+<GoogleAnalyticsCard />
+
 
       {/* 🔹 Activité récente */}
       <Card className="glass-border">

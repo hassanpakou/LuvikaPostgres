@@ -33,6 +33,7 @@ const menu = [
   { name: 'Événements', icon: FileText, href: '/admin/admin/events', badge: null },
   { name: 'Messages', icon: MessageSquare, href: '/admin/admin/contact-requests', badge: 'unread_count' },
   { name: 'Blog', icon: FileText, href: '/dashboard/blog', badge: null },
+  { name: 'Analytics', icon: Sparkle, href: '/admin/admin/analytics', badge: null },
 ];
 
 export function AdminSidebar() {
