@@ -111,7 +111,7 @@ export function ReviewPrompt() {
     if (action === 'accept') {
       toast.success('🙏 Merci pour votre soutien !', {
         description: 'Votre avis nous aide à améliorer LUVIKA pour tous.',
-        duration: 5000,
+        duration: 9000,
       });
     }
   };

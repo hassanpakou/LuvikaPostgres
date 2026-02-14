@@ -26,7 +26,7 @@ export function NetworkWatcher() {
       if (!online) {
         toast.error(t('system.connection_lost'), { id: toastId, duration: Infinity });
       } else {
-        toast.success(t('system.connection_back'), { id: toastId, duration: 5000 });
+        toast.success(t('system.connection_back'), { id: toastId, duration: 9000 });
       }
 
       prevStatus.current = online;

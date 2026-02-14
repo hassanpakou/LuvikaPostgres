@@ -1,3 +1,5 @@
+// src/app/events/[id]/page.tsx
+
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
