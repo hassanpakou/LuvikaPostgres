@@ -32,7 +32,7 @@ const menu = [
   { name: 'Cartes NFC', icon: CreditCardIcon, href: '/admin/admin/nfc', badge: null },
   { name: 'Événements', icon: FileText, href: '/admin/admin/events', badge: null },
   { name: 'Messages', icon: MessageSquare, href: '/admin/admin/contact-requests', badge: 'unread_count' },
-  { name: 'Blog', icon: FileText, href: '/admin/admin/blog', badge: null },
+  { name: 'Blog', icon: FileText, href: '/dashboard/blog', badge: null },
 ];
 
 export function AdminSidebar() {
