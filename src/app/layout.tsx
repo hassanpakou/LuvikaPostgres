@@ -10,7 +10,7 @@ import InstallModal from '../components/layout/InstallModal';
 import SessionGuard from '../components/SessionGuard';
 import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutProvider';
 import { ReviewPrompt } from '../components/system/ReviewPrompt';
-import Script from 'next/script'; // ✅ IMPORT OBLIGATOIRE
+import Script from 'next/script';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -18,48 +18,27 @@ const inter = Inter({
   adjustFontFallback: false,
 });
 
-// 🔹 METADATA CORRIGÉE (ESPACES SUPPRIMÉS PARTOUT)
 export const metadata: Metadata = {
-  metadataBase: new URL('https://luvika.vercel.app'), // ✅ ESPACES SUPPRIMÉS
-  
-  title: {
-    default: 'LUVIKA — Révèle qui tu es',
-    template: '%s | LUVIKA'
-  },
+  metadataBase: new URL('https://luvika.vercel.app'),
+  title: { default: 'LUVIKA — Révèle qui tu es', template: '%s | LUVIKA' },
   description: 'Carte de visite intelligente NFC · QR Code · Abonnements · Événements · Identité numérique africaine',
-  
-  keywords: [
-    'carte visite numérique', 'NFC', 'QR code', 'identité numérique', 
-    'réseau professionnel', 'Afrique', 'Kinshasa', 'LUVIKA'
-  ],
-
+  keywords: ['carte visite numérique', 'NFC', 'QR code', 'identité numérique', 'réseau professionnel', 'Afrique', 'Kinshasa', 'LUVIKA'],
   icons: {
     icon: [
       { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
       { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
     ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
-
   openGraph: {
     title: 'LUVIKA — Révèle qui tu es',
     description: 'Carte de visite intelligente NFC · QR Code · Abonnements · Événements · Identité numérique africaine',
-    url: 'https://luvika.vercel.app', // ✅ ESPACES SUPPRIMÉS
+    url: 'https://luvika.vercel.app',
     siteName: 'LUVIKA',
     locale: 'fr_FR',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'LUVIKA - Votre identité numérique africaine',
-      },
-    ],
+    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'LUVIKA - Votre identité numérique africaine' }],
   },
-
   twitter: {
     card: 'summary_large_image',
     title: 'LUVIKA — Révèle qui tu es',
@@ -67,7 +46,6 @@ export const metadata: Metadata = {
     images: ['/og-image.jpg'],
     creator: '@luvika',
   },
-  
   robots: {
     index: true,
     follow: true,
@@ -79,54 +57,36 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  
-  verification: {
-    google: 'your-google-verification-code', // ✅ À remplacer
-  },
-  
+  verification: { google: 'your-google-verification-code' },
   alternates: {
-    canonical: 'https://luvika.vercel.app', // ✅ ESPACES SUPPRIMÉS
-    languages: {
-      'fr-FR': 'https://luvika.vercel.app/fr', // ✅ ESPACES SUPPRIMÉS
-      'en-US': 'https://luvika.vercel.app/en', // ✅ ESPACES SUPPRIMÉS
-    },
+    canonical: 'https://luvika.vercel.app',
+    languages: { 'fr-FR': 'https://luvika.vercel.app/fr', 'en-US': 'https://luvika.vercel.app/en' },
   },
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
 
   return (
-    <html 
-      lang={locale} 
-      suppressHydrationWarning
-      className="scroll-smooth"
-    >
+    <html lang={locale} suppressHydrationWarning className="scroll-smooth">
+      {/* 🔹 HEAD SANS COMMENTAIRES NI ESPACES EXTERNES */}
       <head>
-        {/* 🔹 PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="LUVIKA" />
-        <meta name="theme-color" content="#06b6d4" media="(prefers-color-scheme: light)" />
-        <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
-        
-        {/* 🔹 Préchargement des ressources critiques - ESPACES SUPPRIMÉS */}
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#06b6d4" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />
         <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" /> {/* ✅ ESPACES SUPPRIMÉS */}
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" /> {/* ✅ ESPACES SUPPRIMÉS */}
-        
-        {/* 🔹 Favicon optimisé */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
+      
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white relative overflow-x-hidden antialiased`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>
@@ -141,48 +101,30 @@ export default async function RootLayout({
           </ClientProviders>
         </NextIntlClientProvider>
         
-        {/* 🔹 Script de performance */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (window.performance && window.performance.getEntriesByType) {
-                const paintEntries = performance.getEntriesByType('paint');
-                if (paintEntries.length > 0) {
-                  console.log('🎨 First Paint:', paintEntries[0].startTime.toFixed(2) + 'ms');
-                  if (paintEntries[1]) {
-                    console.log('🚀 First Contentful Paint:', paintEntries[1].startTime.toFixed(2) + 'ms');
-                  }
-                }
-              }
-              if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.documentElement.style.setProperty('--animation-speed', '0.01ms');
-              }
-            `
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: `
+          if (window.performance?.getEntriesByType) {
+            const paint = performance.getEntriesByType('paint');
+            paint[0] && console.log('🎨 FP:', paint[0].startTime.toFixed(0)+'ms');
+            paint[1] && console.log('🚀 FCP:', paint[1].startTime.toFixed(0)+'ms');
+          }
+          if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.documentElement.style.setProperty('--animation-speed', '0.01ms');
+          }
+        ` }} />
       </body>
       
-      {/* 🔹 GOOGLE ANALYTICS - CORRIGÉ AVEC next/script */}
-      <Script
-        src="https://www.googletagmanager.com/gtag/js?id=G-RYQBRH3CZC"
-        strategy="afterInteractive"
-      />
-      <Script
-        id="gtag-init"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-RYQBRH3CZC', {
-              page_path: window.location.pathname,
-              anonymize_ip: true,
-              send_page_view: true
-            });
-          `,
-        }}
-      />
+      {/* 🔹 SCRIPTS APRÈS </body> - CORRECT */}
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-RYQBRH3CZC" strategy="afterInteractive" />
+      <Script id="gtag-init" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-RYQBRH3CZC', {
+          page_path: window.location.pathname,
+          anonymize_ip: true,
+          send_page_view: true
+        });
+      ` }} />
     </html>
   );
 }
