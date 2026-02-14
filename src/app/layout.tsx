@@ -10,14 +10,15 @@ import InstallModal from '../components/layout/InstallModal';
 import SessionGuard from '../components/SessionGuard';
 import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutProvider';
 import { ReviewPrompt } from '../components/system/ReviewPrompt';
+import Script from 'next/script'; // ✅ IMPORT OBLIGATOIRE
 
 const inter = Inter({ 
   subsets: ['latin'],
-  display: 'swap', // ✅ Meilleure performance de chargement
+  display: 'swap',
   adjustFontFallback: false,
 });
 
-// 🔹 METADATA CORRIGÉE (espaces supprimés + améliorations SEO)
+// 🔹 METADATA CORRIGÉE (ESPACES SUPPRIMÉS PARTOUT)
 export const metadata: Metadata = {
   metadataBase: new URL('https://luvika.vercel.app'), // ✅ ESPACES SUPPRIMÉS
   
@@ -45,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'LUVIKA — Révèle qui tu es',
     description: 'Carte de visite intelligente NFC · QR Code · Abonnements · Événements · Identité numérique africaine',
-    url: 'https://luvika.vercel.app',
+    url: 'https://luvika.vercel.app', // ✅ ESPACES SUPPRIMÉS
     siteName: 'LUVIKA',
     locale: 'fr_FR',
     type: 'website',
@@ -67,7 +68,6 @@ export const metadata: Metadata = {
     creator: '@luvika',
   },
   
-  // 🔹 Améliorations SEO critiques
   robots: {
     index: true,
     follow: true,
@@ -85,11 +85,10 @@ export const metadata: Metadata = {
   },
   
   alternates: {
-    canonical: 'https://luvika.vercel.app',
+    canonical: 'https://luvika.vercel.app', // ✅ ESPACES SUPPRIMÉS
     languages: {
-      'fr-FR': 'https://luvika.vercel.app/fr',
-      'en-US': 'https://luvika.vercel.app/en',
-      // ... autres locales
+      'fr-FR': 'https://luvika.vercel.app/fr', // ✅ ESPACES SUPPRIMÉS
+      'en-US': 'https://luvika.vercel.app/en', // ✅ ESPACES SUPPRIMÉS
     },
   },
 };
@@ -106,32 +105,9 @@ export default async function RootLayout({
     <html 
       lang={locale} 
       suppressHydrationWarning
-      className="scroll-smooth" // ✅ Smooth scrolling natif
+      className="scroll-smooth"
     >
       <head>
-        {/* 🔹 Google Analytics - Version optimisée */}
-        <script 
-          async 
-          src="https://www.googletagmanager.com/gtag/js?id=G-RYQBRH3CZC"
-          strategy="afterInteractive"
-        />
-        <script
-          id="gtag-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-RYQBRH3CZC', {
-                page_path: window.location.pathname,
-                anonymize_ip: true,
-                send_page_view: true
-              });
-            `
-          }}
-        />
-        
         {/* 🔹 PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
@@ -141,10 +117,10 @@ export default async function RootLayout({
         <meta name="theme-color" content="#06b6d4" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
         
-        {/* 🔹 Préchargement des ressources critiques */}
+        {/* 🔹 Préchargement des ressources critiques - ESPACES SUPPRIMÉS */}
         <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" /> {/* ✅ ESPACES SUPPRIMÉS */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" /> {/* ✅ ESPACES SUPPRIMÉS */}
         
         {/* 🔹 Favicon optimisé */}
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -169,7 +145,6 @@ export default async function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Performance monitoring
               if (window.performance && window.performance.getEntriesByType) {
                 const paintEntries = performance.getEntriesByType('paint');
                 if (paintEntries.length > 0) {
@@ -179,8 +154,6 @@ export default async function RootLayout({
                   }
                 }
               }
-              
-              // Réduction des animations si préféré
               if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
                 document.documentElement.style.setProperty('--animation-speed', '0.01ms');
               }
@@ -188,6 +161,28 @@ export default async function RootLayout({
           }}
         />
       </body>
+      
+      {/* 🔹 GOOGLE ANALYTICS - CORRIGÉ AVEC next/script */}
+      <Script
+        src="https://www.googletagmanager.com/gtag/js?id=G-RYQBRH3CZC"
+        strategy="afterInteractive"
+      />
+      <Script
+        id="gtag-init"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-RYQBRH3CZC', {
+              page_path: window.location.pathname,
+              anonymize_ip: true,
+              send_page_view: true
+            });
+          `,
+        }}
+      />
     </html>
   );
 }
