@@ -5,8 +5,8 @@ const urlsToCache = [
   '/',
   '/static/css/main.css',
   '/static/js/main.js',
-  '/icons/lo.jpeg',
-  '/lo.jpeg',
+  '/icons/lo.png',
+  '/lo.png',
   '/favicon.ico',
   '/manifest.json'
 ];
@@ -52,8 +52,8 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   const options = {
     body: 'LUVIKA : Nouvelle mise à jour disponible !',
-    icon: '/icons/lo.jpeg',
-    badge: '/icons/lo.jpeg',
+    icon: '/icons/lo.png',
+    badge: '/icons/lo.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -63,12 +63,12 @@ self.addEventListener('push', event => {
       {
         action: 'open',
         title: 'Ouvrir LUVIKA',
-        icon: '/icons/lo.jpeg'
+        icon: '/icons/lo.png'
       },
       {
         action: 'close',
         title: 'Fermer',
-        icon: '/icons/lo.jpeg'
+        icon: '/icons/lo.png'
       }
     ]
   };
