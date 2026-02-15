@@ -12,6 +12,7 @@ import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutPr
 import { ReviewPrompt } from '../components/system/ReviewPrompt';
 import Script from 'next/script';
 
+
 const inter = Inter({ 
   subsets: ['latin'],
   display: 'swap',
@@ -73,18 +74,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       {/* 🔹 HEAD SANS COMMENTAIRES NI ESPACES EXTERNES */}
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+        <link rel="apple-touch-icon" href="/lo.png" sizes="180x180" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="LUVIKA" />
         <meta name="theme-color" media="(prefers-color-scheme: light)" content="#06b6d4" />
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0f172a" />
         <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/lo.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/lo.png" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="mask-icon" href="/icons/lo.png" color="#06b6d4" />
+        <meta name="msapplication-TileColor" content="#06b6d4" />
+        <meta name="msapplication-TileImage" content="/icons/lo.png" />
       </head>
       
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white relative overflow-x-hidden antialiased`}>
@@ -100,7 +104,36 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </SessionTimeoutProvider>
           </ClientProviders>
         </NextIntlClientProvider>
-        
+<script
+  dangerouslySetInnerHTML={{
+    __html: `
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(registration => {
+              console.log('✅ Service Worker enregistré avec scope:', registration.scope);
+              
+              // 🔁 Mise à jour automatique quand une nouvelle version est disponible
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    // Afficher une notification de mise à jour
+                    if (confirm('🆕 Nouvelle version de LUVIKA disponible ! Recharger pour mettre à jour ?')) {
+                      window.location.reload();
+                    }
+                  }
+                });
+              });
+            })
+            .catch(error => {
+              console.error('❌ Erreur enregistrement Service Worker:', error);
+            });
+        });
+      }
+    `
+  }}
+/>
         <script dangerouslySetInnerHTML={{ __html: `
           if (window.performance?.getEntriesByType) {
             const paint = performance.getEntriesByType('paint');
