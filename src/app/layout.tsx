@@ -38,13 +38,13 @@ export const metadata: Metadata = {
     siteName: 'LUVIKA',
     locale: 'fr_FR',
     type: 'website',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'LUVIKA - Votre identité numérique africaine' }],
+    images: [{ url: '/lo.png', width: 1200, height: 630, alt: 'LUVIKA - Votre identité numérique africaine' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'LUVIKA — Révèle qui tu es',
     description: 'Carte de visite intelligente NFC · QR Code · Abonnements · Événements',
-    images: ['/og-image.jpg'],
+    images: ['/lo.png'],
     creator: '@luvika',
   },
   robots: {

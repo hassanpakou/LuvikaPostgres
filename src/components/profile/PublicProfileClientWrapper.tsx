@@ -6,6 +6,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import PublicProfileClient from '../../components/profile/PublicProfileClient';
+import { toast } from 'sonner';
+import { QrCode } from 'lucide-react';
 
 export default function PublicProfileClientWrapper({
   profile: initialProfile,
@@ -121,6 +123,40 @@ export default function PublicProfileClientWrapper({
         console.log('🔄 Profil mis à jour en temps réel');
       })
       .subscribe();
+
+    // 🔸 Canal : mises à jour des card_configs (CORRECTION ULTIME)
+const cardConfigsChannel = supabase.current
+  .channel(`card-configs-${profileId}-${Date.now()}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'card_configs',
+    filter: `profile_id=eq.${profileId}`,
+  }, async () => {
+    try {
+      // 🔹 RÉCUPÉRATION COMPLÈTE DU TABLEAU (pas d'objet !)
+      const { data, error } = await supabase.current
+        .from('card_configs')
+        .select('*') // ✅ '*' pour avoir tous les champs nécessaires
+        .eq('profile_id', profileId);
+      
+      if (error) throw error;
+      
+      // ✅ MISE À JOUR DE L'ÉTAT AVEC LE TABLEAU COMPLET
+      setCardConfigs(data || []);
+      setLastUpdate(new Date());
+      
+      console.log('🔄 Card configs mis à jour en temps réel | Count:', data?.length || 0);
+      
+      // 🔹 Feedback utilisateur subtil (optionnel)
+      if (typeof window !== 'undefined' && document.hasFocus()) {
+        // toast.success('✅ Configuration carte mise à jour', { duration: 1500 });
+      }
+    } catch (err) {
+      console.error('❌ Erreur mise à jour card_configs:', err);
+    }
+  })
+  .subscribe();
 
     // 🔸 Canal : changements de follows
     const followChannel = supabase.current
@@ -253,7 +289,8 @@ export default function PublicProfileClientWrapper({
       scansChannel,
       likesChannel,
       nfcChannel,
-      portfolioChannel
+      portfolioChannel,
+      cardConfigsChannel,
     ];
 
     console.log('✅ Realtime channels subscribed');
@@ -337,21 +374,21 @@ export default function PublicProfileClientWrapper({
 
       <div className="container mx-auto pb-20 relative z-10">
 
-        {/* ✅ PASSER cardConfigs AU CLIENT */}
-        <PublicProfileClient
-          profile={profileData}
-          cardConfigs={initialCardConfigs} // 🔑 CORRECTION CLÉ
-          followers={optimisticFollowers}
-          following={following}
-          isOwner={currentUser?.id === profileData.id}
-          isInitiallyFollowing={isFollowing}
-          currentUserId={currentUser?.id || null}
-          onFollowChange={(newCount: number, isNowFollowing: boolean) => {
-            setFollowers(newCount);
-            setIsFollowing(isNowFollowing);
-          }}
-          lastUpdate={lastUpdate} // Optionnel pour le badge
-        />
+        {/* ✅ APRÈS - Utilise l'état React (mis à jour en temps réel) */}
+<PublicProfileClient
+  profile={profileData}
+  cardConfigs={cardConfigs} // ← CORRECT : mis à jour par Realtime
+  followers={optimisticFollowers}
+  following={following}
+  isOwner={currentUser?.id === profileData.id}
+  isInitiallyFollowing={isFollowing}
+  currentUserId={currentUser?.id || null}
+  onFollowChange={(newCount: number, isNowFollowing: boolean) => {
+    setFollowers(newCount);
+    setIsFollowing(isNowFollowing);
+  }}
+  lastUpdate={lastUpdate}
+/>
       </div>
     </div>
   );

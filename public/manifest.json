@@ -80,7 +80,7 @@
       "name": "Scanner ma carte",
       "short_name": "Scanner",
       "description": "Scanner votre carte NFC ou QR Code",
-      "url": "/dashboard/nfc",
+      "url": "/dashboard/card-config",
       "icons": [{ "src": "/icons/lo-192.png", "sizes": "192x192" }]
     },
     {

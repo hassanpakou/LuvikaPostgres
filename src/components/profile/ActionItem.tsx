@@ -1,72 +1,55 @@
 // src/components/profile/ActionItem.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Tooltip } from '../../../components/ui/tooltip';
+import { ArrowUpRight } from 'lucide-react';
 
 interface ActionItemProps {
   icon: React.ReactNode;
   label: string;
-  href?: string;
-    value?: string; // <-- ajoute ça
-  gradient?: string;  // <-- ajoute cette ligne
-SocialCard?: React.ReactNode; // Optionnel pour les cartes sociales
-  onClick?: () => void;
-  className?: string; // ✅ On ajoute className ici
+  value: string;
+  href: string;
+    gradient?: string;  // <-- ajoute cette ligne
+  className?: string;
 }
 
 export default function ActionItem({
   icon,
   label,
-  href,
-  onClick,
   value,
-  SocialCard,
+  href,
   gradient,
-  className,
+  className = '',
 }: ActionItemProps) {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
-  }, []);
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onClick) onClick();
-    else if (href) window.open(href, '_blank');
-  };
-
-  const baseClasses =
-    'flex flex-col items-center p-2 gap-1 rounded-lg bg-white/5 hover:bg-white/10 transition-all border border-transparent hover:border-white/10';
-
-  const combinedClasses = className ? `${baseClasses} ${className}` : baseClasses;
-
-  return isMobile ? (
-    <Tooltip content={label} side="top" delayDuration={200}>
-      <motion.button
-        whileHover={{ y: -2, scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleClick}
-        className={combinedClasses}
-        aria-label={label}
-      >
-        <span className="text-gray-300 hover:text-white">{icon}</span>
-      </motion.button>
-    </Tooltip>
-  ) : (
-    <motion.button
-      whileHover={{ y: -2, scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={handleClick}
-      className={combinedClasses}
+  return (
+    <motion.div
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="group"
     >
-      <span className="text-gray-300 hover:text-white">{icon}</span>
-      <span className="text-[11px] text-gray-400 whitespace-nowrap">{label}</span>
-    </motion.button>
+      <a
+        href={href}
+        className={`block rounded-xl p-4 transition-all duration-300 ${className}`}
+        target={href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:') ? '_blank' : '_self'}
+        rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+        aria-label={`${label}: ${value}`}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex-shrink-0">
+            {icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-white text-sm">{label}</span>
+              <ArrowUpRight 
+                className="w-4 h-4 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" 
+                aria-hidden="true"
+              />
+            </div>
+            <p className="text-xs text-gray-300 mt-1 truncate">{value}</p>
+          </div>
+        </div>
+      </a>
+    </motion.div>
   );
 }
