@@ -40,7 +40,10 @@ export default function ActionItem({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
-              <span className="font-medium text-white text-sm">{label}</span>
+              {/* 🔑 CORRECTION CRITIQUE : Labels cachés sur mobile */}
+              <span className="font-medium text-white text-sm hidden sm:block">
+                {label}
+              </span>
               <ArrowUpRight 
                 className="w-4 h-4 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity" 
                 aria-hidden="true"
