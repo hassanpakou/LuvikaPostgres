@@ -124,7 +124,7 @@ export default function PublicProfileClientWrapper({
       })
       .subscribe();
 
-    // 🔸 Canal : mises à jour des card_configs (CORRECTION ULTIME)
+// ✅ CANAL REALTIME CORRECT DANS LE WRAPPER (déjà dans votre code)
 const cardConfigsChannel = supabase.current
   .channel(`card-configs-${profileId}-${Date.now()}`)
   .on('postgres_changes', {
@@ -134,30 +134,22 @@ const cardConfigsChannel = supabase.current
     filter: `profile_id=eq.${profileId}`,
   }, async () => {
     try {
-      // 🔹 RÉCUPÉRATION COMPLÈTE DU TABLEAU (pas d'objet !)
       const { data, error } = await supabase.current
         .from('card_configs')
-        .select('*') // ✅ '*' pour avoir tous les champs nécessaires
+        .select('*')
         .eq('profile_id', profileId);
       
       if (error) throw error;
       
-      // ✅ MISE À JOUR DE L'ÉTAT AVEC LE TABLEAU COMPLET
-      setCardConfigs(data || []);
+      setCardConfigs(data || []); // ✅ Met à jour l'état du wrapper
       setLastUpdate(new Date());
-      
-      console.log('🔄 Card configs mis à jour en temps réel | Count:', data?.length || 0);
-      
-      // 🔹 Feedback utilisateur subtil (optionnel)
-      if (typeof window !== 'undefined' && document.hasFocus()) {
-        // toast.success('✅ Configuration carte mise à jour', { duration: 1500 });
-      }
+      console.log('✅ Card configs mises à jour en temps réel | Count:', data?.length || 0);
     } catch (err) {
       console.error('❌ Erreur mise à jour card_configs:', err);
     }
   })
   .subscribe();
-
+  
     // 🔸 Canal : changements de follows
     const followChannel = supabase.current
       .channel(`follows-${profileId}-${Date.now()}`)
