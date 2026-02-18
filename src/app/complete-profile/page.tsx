@@ -34,7 +34,7 @@ type FormData = {
 const t = (key: string) => {
   const translations = {
     'auth.complete.error_full_name_required': 'Veuillez saisir votre nom complet',
-    'auth.complete.error_username_too_short': 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
+    'auth.complete.error_username_too_short': 'Le nom d\'utilisateur doit contenir au moins 3 caractères et tout doit être en minuscule',
     'auth.complete.username_taken': 'Ce nom d\'utilisateur est déjà pris',
     'auth.complete.error_generic': 'Erreur lors de la mise à jour du profil',
     'auth.complete.success': 'Profil mis à jour avec succès !',
