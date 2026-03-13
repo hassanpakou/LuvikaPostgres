@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, MapPin, Users, Hash, Link as LinkIcon, QrCode, Send, RotateCcw,
-  Locate, Clock, Tag, AlertCircle, Loader2, ChevronRight, ChevronLeft, Globe, Shield, CheckCircle
+  Locate, Clock, Tag, AlertCircle, Loader2, ChevronRight, ChevronLeft, Globe, Shield, CheckCircle, ScanLine
 } from 'lucide-react';
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
@@ -36,7 +36,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
   const now = new Date();
   
   // États du formulaire
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -64,7 +64,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
 
   // --- VALIDATIONS PAR ÉTAPE ---
 
-  // Étape 1 : Champs critiques
+  // Étape 1 : Bases (Titre, Dates)
   const isStep1Valid = useMemo(() => {
     if (!title.trim() || title.length < 3) return false;
     if (!startsAt) return false;
@@ -72,17 +72,19 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     return true;
   }, [title, startsAt]);
 
-  // Étape 2 : Champs secondaires (optionnels mais validés si remplis)
+  // Étape 2 : Détails (Lieu, Max, Description)
   const isStep2Valid = useMemo(() => {
-    if (endsAt && new Date(endsAt) <= new Date(startsAt)) return false;
     if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) return false;
     return true;
-  }, [endsAt, startsAt, maxParticipants]);
+  }, [maxParticipants]);
 
-  // Validation Globale (pour soumission finale)
+  // Étape 3 : Options (Public/Privé) - Toujours valide car switch
+  const isStep3Valid = true;
+
+  // Validation Globale
   const isFormValid = useMemo(() => {
-    return isStep1Valid && isStep2Valid;
-  }, [isStep1Valid, isStep2Valid]);
+    return isStep1Valid && isStep2Valid && isStep3Valid;
+  }, [isStep1Valid, isStep2Valid, isStep3Valid]);
 
   // URL Prévisualisation
   const previewUrl = useMemo(() => {
@@ -91,14 +93,14 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     return `/${currentLocale}/events/${slug}-${Date.now().toString(36)}`;
   }, [title, currentLocale]);
 
-  // Génération QR Code (Uniquement étape 3 ou pré-génération silencieuse)
+  // Génération QR Code (Uniquement étape 4 ou pré-génération silencieuse)
   useEffect(() => {
     if (!title || !startsAt) return;
     setIsGeneratingQR(true);
     const timer = setTimeout(() => {
       try {
         const payload = encodeURIComponent(JSON.stringify({ title, starts_at: startsAt, location, is_public: isPublic }).replace(/\s+/g, ''));
-        setQrDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${payload}`);
+        setQrDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${payload}`);
       } catch (e) { console.warn(e); }
       finally { setIsGeneratingQR(false); }
     }, 400);
@@ -133,6 +135,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     else if (title.length < 3) e.title = '3 chars min';
     if (!startsAt) e.startsAt = 'Requis';
     else if (new Date(startsAt) <= new Date()) e.startsAt = 'Futur requis';
+    if (endsAt && new Date(endsAt) <= new Date(startsAt)) e.endsAt = 'Après début';
     
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -140,7 +143,6 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
 
   const validateStep2 = () => {
     const e: Record<string, string> = {};
-    if (endsAt && new Date(endsAt) <= new Date(startsAt)) e.endsAt = 'Après début';
     if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) e.maxParticipants = '1-10000';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -149,12 +151,14 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
   const handleNext = () => {
     if (step === 1 && validateStep1()) setStep(2);
     else if (step === 2 && validateStep2()) setStep(3);
+    else if (step === 3) setStep(4);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleBack = () => {
     if (step === 2) setStep(1);
     else if (step === 3) setStep(2);
+    else if (step === 4) setStep(3);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -177,7 +181,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
       <Card className="glass-border bg-black/40 backdrop-blur-xl border-white/10 w-full shadow-2xl overflow-hidden">
         
-        {/* Header avec Indicateur d'Étapes (3 steps) */}
+        {/* Header avec Indicateur d'Étapes (4 steps) */}
         <div className="p-5 border-b border-white/5 bg-white/5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -186,17 +190,21 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
               </div>
               <div>
                 <h2 className="text-lg font-bold text-white">
-                  {step === 1 ? "Informations de base" : step === 2 ? "Détails & Options" : "Aperçu & Validation"}
+                  {step === 1 ? "Informations de base" : 
+                   step === 2 ? "Détails & Lieu" : 
+                   step === 3 ? "Options de visibilité" : "Votre QR Code Intelligent"}
                 </h2>
                 <p className="text-xs text-gray-400">
-                  {step === 1 ? "L'essentiel pour commencer" : step === 2 ? "Personnalisez votre événement" : "Vérifiez et créez"}
+                  {step === 1 ? "L'essentiel pour commencer" : 
+                   step === 2 ? "Personnalisez votre événement" : 
+                   step === 3 ? "Qui peut voir cet événement ?" : "Prêt à partager"}
                 </p>
               </div>
             </div>
             
             {/* Badges d'étapes */}
             <div className="flex gap-1.5">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
                   step === i 
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 scale-105' 
@@ -215,7 +223,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             <motion.div 
               className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500"
               initial={{ width: "0%" }}
-              animate={{ width: step === 1 ? "33%" : step === 2 ? "66%" : "100%" }}
+              animate={{ width: step === 1 ? "25%" : step === 2 ? "50%" : step === 3 ? "75%" : "100%" }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             />
           </div>
@@ -250,18 +258,8 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   <div className="col-span-2 sm:col-span-1">
                     <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Fin (Optionnel)</label>
                     <Input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-10" min={startsAt} />
+                    {errors.endsAt && <p className="text-red-400 text-[10px] mt-1">{errors.endsAt}</p>}
                   </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Lieu</label>
-                  <div className="flex gap-2">
-                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Adresse ou 'En ligne'" className="bg-white/5 border-white/10 text-sm h-10" />
-                    <Button type="button" size="icon" variant="ghost" className="h-10 w-10 text-cyan-400 hover:bg-cyan-500/10 shrink-0" onClick={getCurrentLocation} disabled={isLocating}>
-                      {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Locate className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                  {errors.location && <p className="text-red-400 text-[10px] mt-1">{errors.location}</p>}
                 </div>
 
                 <div className="pt-4 flex justify-end">
@@ -282,9 +280,14 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                 className="space-y-5"
               >
                 <div>
-                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" /> Description</label>
-                  <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} className="bg-white/5 border-white/10 text-sm resize-none" placeholder="Détails, programme, objectifs..." />
-                  <p className="text-right text-[10px] text-gray-500 mt-1">{description.length} caractères</p>
+                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Lieu</label>
+                  <div className="flex gap-2">
+                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Adresse ou 'En ligne'" className="bg-white/5 border-white/10 text-sm h-10" />
+                    <Button type="button" size="icon" variant="ghost" className="h-10 w-10 text-cyan-400 hover:bg-cyan-500/10 shrink-0" onClick={getCurrentLocation} disabled={isLocating}>
+                      {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Locate className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                  {errors.location && <p className="text-red-400 text-[10px] mt-1">{errors.location}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -295,12 +298,49 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   </div>
                   
                   <div className="flex flex-col justify-end pb-1">
-                     <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        {isPublic ? <Globe className="w-4 h-4 text-green-400" /> : <Shield className="w-4 h-4 text-gray-400" />}
+                     <div className="p-3 rounded-xl bg-white/5 border border-white/10">
+                      <label className="text-xs font-medium text-gray-300 block mb-1">Description courte</label>
+                      <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="bg-black/20 border-white/5 text-sm resize-none h-20" placeholder="Détails..." />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
+                    <ChevronLeft className="w-4 h-4 mr-2" /> Retour
+                  </Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
+                    Suivant <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ================= ÉTAPE 3 : OPTIONS ================= */}
+            {step === 3 && (
+              <motion.div
+                key="step3"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/20">
+                  <h3 className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
+                    <Shield className="w-4 h-4" /> Visibilité de l'événement
+                  </h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+                      <div className="flex items-start gap-3">
+                        <div className={`p-2 rounded-lg ${isPublic ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                          {isPublic ? <Globe className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
+                        </div>
                         <div>
-                          <p className="text-sm font-bold text-white">Public</p>
-                          <p className="text-[10px] text-gray-400">{isPublic ? "Visible par tous" : "Sur invitation"}</p>
+                          <label className="text-sm font-bold text-white block">Événement Public</label>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {isPublic ? "Visible par tous sur votre profil et dans la recherche." : "Seules les personnes avec le lien peuvent voir l'événement."}
+                          </p>
                         </div>
                       </div>
                       <Switch checked={isPublic} onCheckedChange={setIsPublic} className="data-[state=checked]:bg-green-500" />
@@ -312,38 +352,75 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
                     <ChevronLeft className="w-4 h-4 mr-2" /> Retour
                   </Button>
-                  <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
-                    Voir l'aperçu <ChevronRight className="w-4 h-4 ml-2" />
+                  <Button type="button" onClick={handleNext} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
+                    Voir le QR Code <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </motion.div>
             )}
 
-            {/* ================= ÉTAPE 3 : APERÇU & QR ================= */}
-            {step === 3 && (
+            {/* ================= ÉTAPE 4 : QR CODE INTELLIGENT ================= */}
+            {step === 4 && (
               <motion.div
-                key="step3"
+                key="step4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/20">
-                  <h3 className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4" /> Récapitulatif
-                  </h3>
-                  <div className="grid grid-cols-2 gap-y-3 text-xs">
-                    <div className="text-gray-400">Titre:</div>
-                    <div className="text-white font-medium truncate">{title}</div>
+                <div className="text-center mb-6">
+                  <h3 className="text-xl font-bold text-white mb-2">Votre QR Code Intelligent</h3>
+                  <p className="text-sm text-gray-400">Scannez pour un check-in automatique et instantané</p>
+                </div>
+
+                <div className="flex flex-col items-center justify-center space-y-6">
+                  {/* Conteneur QR Principal */}
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
+                    <div className="relative bg-white p-4 rounded-2xl shadow-2xl shadow-cyan-500/20 border-4 border-white/10">
+                      {isGeneratingQR ? (
+                        <div className="w-64 h-64 flex items-center justify-center">
+                          <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                        </div>
+                      ) : qrDataUrl ? (
+                        <div className="relative">
+                          <img src={qrDataUrl} alt="QR Code Intelligent" className="w-64 h-64 object-contain mix-blend-multiply" />
+                          
+                          {/* Overlay au hover */}
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center backdrop-blur-sm rounded-xl">
+                            <ScanLine className="w-12 h-12 text-white mb-2 animate-pulse" />
+                            <span className="text-white font-bold text-lg tracking-wider">SCAN ME</span>
+                            <span className="text-cyan-300 text-xs mt-1">Check-in auto</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-64 h-64 flex items-center justify-center text-gray-400">
+                          Erreur de génération
+                        </div>
+                      )}
+                    </div>
                     
-                    <div className="text-gray-400">Date:</div>
-                    <div className="text-white font-medium">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR') : '...'}</div>
-                    
-                    <div className="text-gray-400">Lieu:</div>
-                    <div className="text-white font-medium truncate">{location || 'Non défini'}</div>
-                    
-                    <div className="text-gray-400">Visibilité:</div>
-                    <div className="text-white font-medium">
+                    {/* Badge LUVIKA */}
+                    <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-2">
+                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                        luvika.me
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info Bulle Récap */}
+                  <div className="w-full max-w-sm bg-white/5 rounded-xl p-4 border border-white/10 text-left space-y-2">
+                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                      <span className="text-gray-400 text-xs">Titre:</span> 
+                      <span className="text-white font-medium text-sm truncate max-w-[200px]">{title}</span>
+                    </div>
+                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
+                      <span className="text-gray-400 text-xs">Date:</span> 
+                      <span className="text-white font-medium text-sm">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR') : '...'}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400 text-xs">Visibilité:</span> 
                       <Badge variant={isPublic ? "default" : "secondary"} className="text-[10px] h-5">
                         {isPublic ? 'Public' : 'Privé'}
                       </Badge>
@@ -351,42 +428,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                    <QrCode className="w-4 h-4 text-purple-400" /> Votre QR Code Intelligent
-                  </h3>
-                  
-                  <div className="flex flex-col sm:flex-row gap-4 items-center bg-black/20 rounded-xl p-5 border border-white/5">
-                    <div className="shrink-0 relative group">
-                      <div className="w-32 h-32 bg-white rounded-xl p-2 shadow-xl shadow-cyan-500/10 flex items-center justify-center relative overflow-hidden">
-                        {isGeneratingQR ? (
-                          <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-                        ) : qrDataUrl ? (
-                          <>
-                            <img src={qrDataUrl} alt="QR" className="w-full h-full object-contain mix-blend-multiply" />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm">
-                              <span className="text-white text-[10px] font-bold">SCAN ME</span>
-                            </div>
-                          </>
-                        ) : (
-                          <span className="text-[10px] text-gray-400 text-center px-2">Génération...</span>
-                        )}
-                      </div>
-                      <p className="text-center text-[10px] text-gray-500 mt-2">Scan → Check-in auto</p>
-                    </div>
-
-                    <div className="flex-1 w-full space-y-2 text-xs">
-                       <div className="p-2.5 bg-cyan-500/10 rounded border border-cyan-500/20 break-all">
-                        <span className="text-cyan-300 font-mono text-[10px]">luvika.me{previewUrl}</span>
-                      </div>
-                      <p className="text-gray-400 italic">
-                        Ce QR code sera actif dès la création. Vous pourrez le télécharger et l'imprimer pour vos affiches.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 flex gap-3">
+                <div className="pt-6 flex gap-3">
                   <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
                     <ChevronLeft className="w-4 h-4 mr-2" /> Modifier
                   </Button>
@@ -401,9 +443,9 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
         </form>
       </Card>
 
-      {/* Toast Erreur Global (Uniquement si étape 1 ou 2) */}
+      {/* Toast Erreur Global */}
       <AnimatePresence>
-        {Object.keys(errors).length > 0 && step < 3 && (
+        {Object.keys(errors).length > 0 && step < 4 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-6 right-6 max-w-xs z-[200]">
             <div className="bg-red-950/90 backdrop-blur border border-red-500/50 text-red-100 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
