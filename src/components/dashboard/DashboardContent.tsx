@@ -3106,7 +3106,7 @@ const handleToggleFollow = async (profileId: string) => {
             </motion.div>
           )}
 
-{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - SCROLL GARANTI */}
+{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - SCROLL EXTERNE GARANTI */}
 {isEventFormOpen && (
   <motion.div
     key="event-form-modal"
@@ -3120,7 +3120,7 @@ const handleToggleFollow = async (profileId: string) => {
       initial={{ scale: 0.95, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0, transition: { type: "spring", damping: 25, stiffness: 300 } }}
       exit={{ scale: 0.95, opacity: 0, y: 20 }}
-      // 1️⃣ PARENT : max-h défini, overflow-hidden pour contenir le scroll
+      // 1️⃣ PARENT : max-h défini + overflow-hidden (contient le scroll)
       className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900 via-green-900/20 to-gray-900 backdrop-blur-xl rounded-3xl border border-emerald-500/20 shadow-2xl shadow-emerald-900/50 overflow-hidden"
       onClick={e => e.stopPropagation()}
     >
@@ -3138,10 +3138,10 @@ const handleToggleFollow = async (profileId: string) => {
         <X className="w-5 h-5" />
       </button>
 
-      {/* 📱 STRUCTURE FLEX COL SANS h-full CONFLICTUEL */}
-      <div className="flex flex-col relative z-10 w-full">
+      {/* 📱 STRUCTURE FLEX COL (Gère la hauteur) */}
+      <div className="flex flex-col relative z-10 w-full h-full">
         
-        {/* HEADER FIXE */}
+        {/* HEADER FIXE (ne scroll pas) */}
         <div className="flex-shrink-0 p-6 border-b border-white/10 bg-gradient-to-r from-gray-900/90 to-green-900/20 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
@@ -3149,29 +3149,29 @@ const handleToggleFollow = async (profileId: string) => {
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Créer un nouvel événement</h2>
-              <p className="text-xs text-emerald-200/70 mt-0.5">Remplissez les détails ci-dessous</p>
+              <p className="text-xs text-emerald-200/70 mt-0.5">Configuration rapide et sécurisée</p>
             </div>
           </div>
         </div>
 
-        {/* 2️⃣ ZONE DE SCROLL UNIQUE : 
-            - Pas de height fixe ici.
-            - max-h calculé dynamiquement par le parent flex.
-            - overflow-y-auto active le scroll SI le contenu dépasse.
-        */}
+        {/* 2️⃣ ZONE DE SCROLL UNIQUE (Prend tout l'espace restant) */}
+        {/* C'est ICI que le scroll se fait. Le formulaire à l'intérieur est "fluide". */}
         <div className="flex-grow overflow-y-auto overscroll-contain p-6 custom-scrollbar min-h-0">
           <CreateEventForm
             onSubmit={async (data) => {
               try {
+                // ✅ URL Corrigée
                 const response = await fetch('/api/events', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(data),
                 });
+                
                 if (!response.ok) {
                   const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
                   throw new Error(errorData.error || 'Échec de la création');
                 }
+                
                 const eventData = await response.json();
                 console.log('✅ Événement créé:', eventData);
                 setIsEventFormOpen(false);
@@ -3189,7 +3189,7 @@ const handleToggleFollow = async (profileId: string) => {
           />
         </div>
 
-        {/* FOOTER FIXE */}
+        {/* FOOTER FIXE (Optionnel, ne scroll pas) */}
         <div className="flex-shrink-0 p-4 border-t border-white/10 bg-gray-900/50 backdrop-blur-sm text-center">
           <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
