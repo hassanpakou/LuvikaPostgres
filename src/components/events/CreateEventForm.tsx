@@ -3,34 +3,17 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Calendar,
-  MapPin,
-  Users,
-  Hash,
-  Link as LinkIcon,
-  QrCode,
-  Send,
-  RotateCcw,
-  Locate,
-  Clock,
-  Tag,
-  AlertCircle,
-  Loader2,
+  Calendar, MapPin, Users, Hash, Link as LinkIcon, QrCode, Send, RotateCcw,
+  Locate, Clock, Tag, AlertCircle, Loader2
 } from 'lucide-react';
-
 import { Button } from '../../../components/ui/button';
 import { Input } from '../../../components/ui/input';
 import { Textarea } from '../../../components/ui/textarea';
 import { Card } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 
-// Helper pour formater les dates
-const formatDateForInput = (dateStr: string): string => {
-  const d = new Date(dateStr);
-  return d.toISOString().slice(0, 16);
-};
+const formatDateForInput = (dateStr: string): string => new Date(dateStr).toISOString().slice(0, 16);
 
-// Types
 type EventData = {
   title: string;
   description?: string;
@@ -48,180 +31,90 @@ type Props = {
   isLoading?: boolean;
 };
 
-export default function CreateEventForm({
-  onSubmit,
-  onCancel,
-  onClose,
-  isLoading = false,
-}: Props) {
+export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading = false }: Props) {
   const now = new Date();
-  const startsAtDefault = formatDateForInput(
-    new Date(now.getTime() + 15 * 60000).toISOString()
-  );
-  const endsAtDefault = formatDateForInput(
-    new Date(now.getTime() + 2 * 3600000).toISOString()
-  );
-
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [startsAt, setStartsAt] = useState(startsAtDefault);
-  const [endsAt, setEndsAt] = useState(endsAtDefault);
+  const [startsAt, setStartsAt] = useState(formatDateForInput(new Date(now.getTime() + 15 * 60000).toISOString()));
+  const [endsAt, setEndsAt] = useState(formatDateForInput(new Date(now.getTime() + 2 * 3600000).toISOString()));
   const [maxParticipants, setMaxParticipants] = useState<number | ''>('');
   const [isPublic, setIsPublic] = useState(true);
   const [isLocating, setIsLocating] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  // Récupération de la locale
-  const [currentLocale, setCurrentLocale] = useState<string>('fr');
+  const [currentLocale, setCurrentLocale] = useState('fr');
 
   useEffect(() => {
-    const storedLocale = localStorage.getItem('NEXT_LOCALE');
-    if (storedLocale) {
-      setCurrentLocale(storedLocale);
-    } else {
-      const browserLocale = navigator.language.split('-')[0];
-      const supportedLocales = ['fr', 'en', 'sw', 'ln', 'pt', 'ar', 'es', 'ko', 'nl'];
-      if (supportedLocales.includes(browserLocale)) {
-        setCurrentLocale(browserLocale);
-      }
+    const stored = localStorage.getItem('NEXT_LOCALE');
+    if (stored) setCurrentLocale(stored);
+    else {
+      const browser = navigator.language.split('-')[0];
+      if (['fr', 'en', 'sw', 'ln', 'pt', 'ar', 'es', 'ko', 'nl'].includes(browser)) setCurrentLocale(browser);
     }
-    setIsMounted(true);
   }, []);
 
-  // Validation du formulaire
   const isFormValid = useMemo(() => {
-    const isTitleInvalid = !title.trim() || title.length < 3;
-    const isStartAtMissing = !startsAt;
-    let isPastDate = false;
-
-    if (startsAt) {
-      const startDate = new Date(startsAt);
-      const nowWithTolerance = new Date(Date.now() - 120000);
-      isPastDate = startDate <= nowWithTolerance;
-    }
-
-    return !(isTitleInvalid || isStartAtMissing || isPastDate);
+    if (!title.trim() || title.length < 3 || !startsAt) return false;
+    return new Date(startsAt) > new Date(Date.now() - 120000);
   }, [title, startsAt]);
 
-  // Prévisualisation URL
   const previewUrl = useMemo(() => {
     if (!title) return '';
-    const slug = title
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+    const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
     return `/${currentLocale}/events/${slug}-${Date.now().toString(36)}`;
   }, [title, currentLocale]);
 
-  // Génération QR Code
   useEffect(() => {
-    if (!isMounted || !title || !startsAt) return;
-
+    if (!title || !startsAt) return;
     setIsGeneratingQR(true);
     const timer = setTimeout(() => {
       try {
-        const payload = JSON.stringify({
-          title,
-          starts_at: startsAt,
-          location,
-          is_public: isPublic,
-        });
-        const cleanPayload = encodeURIComponent(payload.replace(/\s+/g, ''));
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanPayload}`;
-        setQrDataUrl(qrUrl);
-      } catch (err) {
-        console.warn('QR generation error:', err);
-        setQrDataUrl(null);
-      } finally {
-        setIsGeneratingQR(false);
-      }
-    }, 500);
-
+        const payload = encodeURIComponent(JSON.stringify({ title, starts_at: startsAt, location, is_public: isPublic }).replace(/\s+/g, ''));
+        setQrDataUrl(`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${payload}`);
+      } catch (e) { console.warn(e); }
+      finally { setIsGeneratingQR(false); }
+    }, 400);
     return () => clearTimeout(timer);
-  }, [isMounted, title, startsAt, location, isPublic]);
+  }, [title, startsAt, location, isPublic]);
 
-  // Géolocalisation
   const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setErrors((prev) => ({
-        ...prev,
-        location: 'Géolocalisation non supportée',
-      }));
-      return;
-    }
-
+    if (!navigator.geolocation) return setErrors(p => ({ ...p, location: 'Non supporté' }));
     setIsLocating(true);
-    setErrors((prev) => {
-      const { location: _, ...rest } = prev;
-      return rest;
-    });
-
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const { latitude, longitude } = pos.coords;
         try {
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${currentLocale}`
-          );
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=${currentLocale}`);
           const data = await res.json();
-          const address = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
-          setLocation(address);
-        } catch {
-          setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
-        } finally {
-          setIsLocating(false);
-        }
+          setLocation(data.display_name || `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
+        } catch { setLocation('Position inconnue'); }
+        finally { setIsLocating(false); }
       },
       (err) => {
-        let message = 'Impossible d’accéder à la localisation';
-        if (err.code === 1) message = 'Autorisation refusée';
-        else if (err.code === 2) message = 'Position indisponible';
-        else if (err.code === 3) message = 'Délai dépassé';
-
-        setErrors((prev) => ({ ...prev, location: message }));
+        setErrors(p => ({ ...p, location: err.code === 1 ? 'Refusé' : 'Erreur' }));
         setIsLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
-  // Validation complète
   const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!title.trim()) newErrors.title = 'Le titre est obligatoire';
-    else if (title.length < 3) newErrors.title = '3 caractères minimum';
-
-    if (!startsAt) newErrors.startsAt = 'La date de début est obligatoire';
-    else {
-      const start = new Date(startsAt);
-      if (start <= new Date()) newErrors.startsAt = 'Doit être dans le futur';
-    }
-
-    if (endsAt) {
-      const end = new Date(endsAt);
-      const start = new Date(startsAt);
-      if (end <= start) newErrors.endsAt = 'Doit être après le début';
-    }
-
-    if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) {
-      newErrors.maxParticipants = 'Entre 1 et 10 000';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const e: Record<string, string> = {};
+    if (!title.trim()) e.title = 'Requis';
+    else if (title.length < 3) e.title = '3 chars min';
+    if (!startsAt) e.startsAt = 'Requis';
+    else if (new Date(startsAt) <= new Date()) e.startsAt = 'Futur requis';
+    if (endsAt && new Date(endsAt) <= new Date(startsAt)) e.endsAt = 'Après début';
+    if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) e.maxParticipants = '1-10000';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  // Soumission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
     if (!validate()) return;
-
-    const data: EventData = {
+    await onSubmit({
       title,
       description: description.trim() || undefined,
       location: location.trim() || undefined,
@@ -229,313 +122,132 @@ export default function CreateEventForm({
       ends_at: endsAt || undefined,
       is_public: isPublic,
       max_participants: maxParticipants ? Number(maxParticipants) : undefined,
-    };
-
-    await onSubmit(data);
+    });
   };
 
   return (
-    <motion.div
-      key="create-event-form"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="w-full" 
-    >
-      {/* 
-        ⚠️ CORRECTION CRITIQUE : 
-        - Suppression de "h-full" et "flex flex-col" ici pour éviter les conflits de hauteur.
-        - Ce composant doit simplement s'étendre verticalement selon son contenu.
-      */}
-      
-      <Card className="glass-border bg-black/20 backdrop-blur-xl border-white/10 w-full">
-        <div className="p-6 border-b border-white/5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-white">Créer un événement</h2>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
+      <Card className="glass-border bg-black/40 backdrop-blur-xl border-white/10 w-full shadow-2xl">
+        {/* Header Compact */}
+        <div className="p-5 border-b border-white/5 flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30">
+            <Calendar className="w-5 h-5 text-cyan-400" />
           </div>
-          <p className="text-gray-400 text-sm">
-            Générez un QR Code intelligent pour gérer les présences en temps réel.
-          </p>
+          <div>
+            <h2 className="text-lg font-bold text-white">Créer un événement</h2>
+            <p className="text-xs text-gray-400">Configuration rapide</p>
+          </div>
         </div>
 
-        {/* 
-          ⚠️ CORRECTION CRITIQUE : 
-          - Suppression de "overflow-y-auto" et "custom-scrollbar".
-          - Le scroll doit être géré par le MODAL PARENT, pas par ce formulaire.
-        */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Titre */}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          
+          {/* Ligne 1: Titre */}
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-              <Hash className="w-4 h-4" /> Titre *
+            <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5">
+              <Hash className="w-3.5 h-3.5" /> Titre *
             </label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Conférence Tech, Atelier NFC..."
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-              maxLength={100}
-            />
-            {errors.title && (
-              <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" /> {errors.title}
-              </p>
-            )}
+            <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Conférence Tech" className="bg-white/5 border-white/10 text-sm h-9" maxLength={80} />
+            {errors.title && <p className="text-red-400 text-[10px] mt-1">{errors.title}</p>}
           </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-              <Tag className="w-4 h-4" /> Description
-            </label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Détails, programme, objectifs..."
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 min-h-[80px]"
-              maxLength={500}
-            />
-            <p className="text-gray-500 text-xs text-right mt-1">
-              {description.length}/500
-            </p>
-          </div>
-
-          {/* Lieu */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-              <MapPin className="w-4 h-4" /> Lieu (optionnel)
-            </label>
-            <Input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Kinshasa, Hôtel Pullman, en ligne, etc."
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-            />
-
-            {location.trim() === '' && (
-              <Button
-                type="button"
-                variant="link"
-                size="sm"
-                className="mt-2 h-auto p-0 text-cyan-400 hover:text-cyan-300 flex items-center gap-2"
-                onClick={getCurrentLocation}
-                disabled={isLocating}
-              >
-                {isLocating ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    Recherche...
-                  </>
-                ) : (
-                  <>
-                    <Locate className="w-3 h-3" />
-                    Utiliser ma position actuelle
-                  </>
-                )}
-              </Button>
-            )}
-
-            {errors.location && (
-              <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" /> {errors.location}
-              </p>
-            )}
-          </div>
-
-          {/* Dates */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Ligne 2: Dates (Compactes) */}
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Début *
-              </label>
-              <Input
-                type="datetime-local"
-                value={startsAt}
-                onChange={(e) => setStartsAt(e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
-                min={new Date().toISOString().slice(0, 16)}
-              />
-              {errors.startsAt && (
-                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> {errors.startsAt}
-                </p>
-              )}
+              <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Début *</label>
+              <Input type="datetime-local" value={startsAt} onChange={e => setStartsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-9" />
+              {errors.startsAt && <p className="text-red-400 text-[10px] mt-1">{errors.startsAt}</p>}
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                <Clock className="w-4 h-4" /> Fin
-              </label>
-              <Input
-                type="datetime-local"
-                value={endsAt}
-                onChange={(e) => setEndsAt(e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
-                min={startsAt || undefined}
-              />
-              {errors.endsAt && (
-                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> {errors.endsAt}
-                </p>
-              )}
+              <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Fin</label>
+              <Input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-9" min={startsAt} />
+              {errors.endsAt && <p className="text-red-400 text-[10px] mt-1">{errors.endsAt}</p>}
             </div>
           </div>
 
-          {/* Options */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                <Users className="w-4 h-4" /> Max. participants
-              </label>
-              <Input
-                type="number"
-                value={maxParticipants}
-                onChange={(e) =>
-                  setMaxParticipants(e.target.value ? Number(e.target.value) : '')
-                }
-                placeholder="100"
-                className="bg-white/5 border-white/10 text-white"
-                min="1"
-                max="10000"
-              />
-              {errors.maxParticipants && (
-                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" /> {errors.maxParticipants}
-                </p>
-              )}
+          {/* Ligne 3: Lieu & Participants */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Lieu</label>
+              <div className="flex gap-2">
+                <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="En ligne ou adresse" className="bg-white/5 border-white/10 text-sm h-9" />
+                <Button type="button" size="icon" variant="ghost" className="h-9 w-9 text-cyan-400 hover:bg-cyan-500/10" onClick={getCurrentLocation} disabled={isLocating}>
+                  {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Locate className="w-4 h-4" />}
+                </Button>
+              </div>
+              {errors.location && <p className="text-red-400 text-[10px] mt-1">{errors.location}</p>}
             </div>
+            <div>
+              <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Max</label>
+              <Input type="number" value={maxParticipants} onChange={e => setMaxParticipants(e.target.value ? Number(e.target.value) : '')} placeholder="Illimité" className="bg-white/5 border-white/10 text-sm h-9" />
+              {errors.maxParticipants && <p className="text-red-400 text-[10px] mt-1">{errors.maxParticipants}</p>}
+            </div>
+          </div>
 
-            <div className="flex items-end pb-2">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={isPublic}
-                  onChange={(e) => setIsPublic(e.target.checked)}
-                  className="rounded text-cyan-500 focus:ring-cyan-500 bg-white/5 border-white/20"
-                />
-                <span className="text-gray-300 text-sm">Événement public</span>
+          {/* Ligne 4: Description & Options */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="md:col-span-2">
+              <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" /> Description</label>
+              <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="bg-white/5 border-white/10 text-sm resize-none" placeholder="Détails..." />
+            </div>
+            <div className="flex flex-col justify-end pb-1">
+              <label className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-white/5 transition-colors">
+                <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} className="rounded text-cyan-500 focus:ring-cyan-500/50" />
+                <span className="text-sm text-gray-300 select-none">Événement public</span>
               </label>
             </div>
           </div>
 
-          {/* Prévisualisation QR Code */}
-          <div className="mt-8 pt-6 border-t border-white/5">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <QrCode className="text-cyan-400" /> Prévisualisation
-            </h3>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="glass-border bg-white/5 border-white/10">
-                <div className="p-4 space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Titre</span>
-                    <span className="text-white font-medium truncate max-w-[150px]">
-                      {title || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Début</span>
-                    <span className="text-white font-medium">
-                      {startsAt ? new Date(startsAt).toLocaleString('fr-FR') : '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Lieu</span>
-                    <span className="text-white font-medium truncate max-w-[120px]">
-                      {location || '—'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Public</span>
-                    <Badge variant={isPublic ? 'default' : 'secondary'} className="text-xs">
-                      {isPublic ? 'Oui' : 'Non'}
-                    </Badge>
-                  </div>
-                  
-                  <div className="mt-4 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
-                    <p className="text-cyan-300 text-xs flex items-center gap-1 break-all">
-                      <LinkIcon className="w-3 h-3 flex-shrink-0" /> 
-                      luvika.me{previewUrl}
-                    </p>
-                  </div>
+          {/* Section QR Code (Compacte) */}
+          <div className="mt-2 pt-4 border-t border-white/5">
+            <div className="flex items-center gap-2 mb-3">
+              <QrCode className="w-4 h-4 text-cyan-400" />
+              <h3 className="text-sm font-semibold text-white">Aperçu</h3>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-center bg-white/5 rounded-xl p-4 border border-white/5">
+              {/* Info Bulle */}
+              <div className="flex-1 w-full space-y-2 text-xs">
+                <div className="flex justify-between"><span className="text-gray-400">Titre:</span> <span className="text-white font-medium truncate max-w-[120px]">{title || '...'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Date:</span> <span className="text-white font-medium">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR') : '...'}</span></div>
+                <div className="p-2 bg-cyan-500/10 rounded border border-cyan-500/20 break-all">
+                  <span className="text-cyan-300 font-mono text-[10px]">luvika.me{previewUrl}</span>
                 </div>
-              </Card>
-
-              <div className="flex flex-col items-center justify-center">
-                <div className="w-40 h-40 bg-white p-2 rounded-xl flex items-center justify-center shadow-lg">
-                  {isGeneratingQR ? (
-                    <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-                  ) : qrDataUrl ? (
-                    <img
-                      src={qrDataUrl}
-                      alt="QR Code"
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="text-gray-400 text-center text-xs px-4">
-                      Remplissez le titre et la date pour générer le QR
-                    </div>
-                  )}
+              </div>
+              
+              {/* QR Image */}
+              <div className="shrink-0">
+                <div className="w-24 h-24 bg-white rounded-lg p-1.5 shadow-lg flex items-center justify-center">
+                  {isGeneratingQR ? <Loader2 className="w-6 h-6 text-gray-400 animate-spin" /> : qrDataUrl ? <img src={qrDataUrl} alt="QR" className="w-full h-full object-contain" /> : <span className="text-[10px] text-gray-400 text-center">Remplir titre & date</span>}
                 </div>
-                <p className="text-gray-400 text-xs mt-3 text-center">
-                  Scan → Check-in automatique
-                </p>
               </div>
             </div>
           </div>
 
-          {/* Boutons d'action */}
-          <div className="pt-6 mt-6 border-t border-white/5 flex flex-col sm:flex-row gap-3">
+          {/* Boutons d'action (Toujours visibles en bas du flux) */}
+          <div className="pt-4 mt-2 border-t border-white/5 flex gap-3">
             {(onCancel || onClose) && (
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 border-white/20 text-gray-300 hover:bg-white/10"
-                onClick={onClose || onCancel}
-              >
+              <Button type="button" variant="outline" onClick={onClose || onCancel} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-10">
                 <RotateCcw className="w-4 h-4 mr-2" /> Annuler
               </Button>
             )}
-
-            <Button
-              type="submit"
-              disabled={isLoading || !isFormValid || isGeneratingQR}
-              className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Création...
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4 mr-2" /> Créer l’événement
-                </>
-              )}
+            <Button type="submit" disabled={isLoading || !isFormValid || isGeneratingQR} className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white h-10 shadow-lg shadow-cyan-900/20">
+              {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+              Créer l'événement
             </Button>
           </div>
         </form>
       </Card>
 
-      {/* Tooltip erreurs global */}
+      {/* Toast Erreur Global */}
       <AnimatePresence>
         {Object.keys(errors).length > 0 && (
-          <motion.div
-            key="error-tooltip"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-6 right-6 max-w-xs p-4 bg-red-900/90 backdrop-blur border border-red-500/50 rounded-xl text-red-100 text-sm z-[200] shadow-2xl"
-          >
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" />
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-6 right-6 max-w-xs z-[200]">
+            <div className="bg-red-950/90 backdrop-blur border border-red-500/50 text-red-100 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold mb-1">Corrigez les erreurs :</p>
-                <ul className="space-y-1 list-disc list-inside opacity-90">
-                  {Object.entries(errors).map(([key, msg]) => (
-                    <li key={key}>{msg}</li>
-                  ))}
+                <p className="font-bold text-sm">Erreurs détectées</p>
+                <ul className="text-xs space-y-1 mt-1 list-disc list-inside opacity-90">
+                  {Object.values(errors).map((msg, i) => <li key={i}>{msg}</li>)}
                 </ul>
               </div>
             </div>
