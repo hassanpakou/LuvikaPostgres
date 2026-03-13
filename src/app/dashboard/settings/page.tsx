@@ -248,73 +248,76 @@ export default function SettingsPage() {
       [section]: !prev[section]
     }));
   };
-// 🔹🔹🔹 AJOUTEZ LA FONCTION ICI (juste avant handleSave) 🔹🔹🔹
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>, 
-    type: 'avatar' | 'cover'
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
+// 🔹 Fonction d'upload d'image (CORRIGÉE POUR VOS BUCKETS)
+const handleImageUpload = async (
+  e: React.ChangeEvent<HTMLInputElement>, 
+  type: 'avatar' | 'cover'
+) => {
+  const file = e.target.files?.[0];
+  if (!file || !profile) return;
 
-    // Vérification taille
-    const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error(`Fichier trop lourd (max ${type === 'avatar' ? '5MB' : '10MB'})`);
-      return;
-    }
+  // 1️⃣ Déterminer le bon bucket et la taille max
+  const bucketName = type === 'avatar' ? 'avatars' : 'covers';
+  const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
 
-    // Vérification format
-    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      toast.error('Format non supporté (utilisez JPG, PNG, WebP ou GIF)');
-      return;
-    }
+  // Vérification taille
+  if (file.size > maxSize) {
+    toast.error(`Fichier trop lourd (max ${type === 'avatar' ? '5MB' : '10MB'})`);
+    return;
+  }
 
-    try {
-      const supabase = createClient();
-      const fileExt = file.name.split('.').pop();
-      // On ajoute un préfixe pour éviter les conflits de noms
-      const fileName = `${profile.id}-${type}-${Date.now()}.${fileExt}`;
-      const bucket = 'profiles';
+  // Vérification format
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!validTypes.includes(file.type)) {
+    toast.error('Format non supporté (utilisez JPG, PNG, WebP ou GIF)');
+    return;
+  }
 
-      // 1️⃣ Upload vers Storage
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(fileName, file, { 
-          upsert: true,
-          contentType: file.type,
-        });
+  try {
+    const supabase = createClient();
+    const fileExt = file.name.split('.').pop();
+    
+    // 2️⃣ Nom du fichier unique : user-id-type-timestamp.ext
+    const fileName = `${profile.id}-${type}-${Date.now()}.${fileExt}`;
 
-      if (uploadError) {
-        console.error('Erreur upload:', uploadError);
-        throw uploadError;
-      }
-
-      // 2️⃣ Récupérer l'URL publique
-      const { data: urlData } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(fileName);
-
-      if (!urlData?.publicUrl) {
-        throw new Error('Impossible de récupérer l\'URL publique');
-      }
-
-      // 3️⃣ Mettre à jour l'état local (optimistic UI)
-      setProfile({
-        ...profile,
-        [type === 'avatar' ? 'avatar_url' : 'cover_url']: urlData.publicUrl,
+    // 3️⃣ Upload vers le BON bucket (avatars ou covers)
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, file, { 
+        upsert: true,
+        contentType: file.type,
       });
 
-      toast.success(`${type === 'avatar' ? '✅ Avatar' : '✅ Couverture'} téléchargé avec succès !`);
-
-      // 4️⃣ Reset input pour permettre le re-upload du même fichier
-      e.target.value = '';
-
-    } catch (err: any) {
-      console.error('❌ Erreur upload:', err);
-      toast.error(`Échec de l'upload: ${err.message || 'Erreur inconnue'}`);
+    if (uploadError) {
+      console.error('Erreur upload:', uploadError);
+      throw uploadError;
     }
-  };
+
+    // 4️⃣ Récupérer l'URL publique
+    const {  urlData } = supabase.storage
+      .from(bucketName)
+      .getPublicUrl(fileName);
+
+    if (!urlData?.publicUrl) {
+      throw new Error('Impossible de récupérer l\'URL publique');
+    }
+
+    // 5️⃣ Mettre à jour l'état local
+    setProfile({
+      ...profile,
+      [type === 'avatar' ? 'avatar_url' : 'cover_url']: urlData.publicUrl,
+    });
+
+    toast.success(`${type === 'avatar' ? '✅ Avatar' : '✅ Couverture'} téléchargé avec succès !`);
+
+    // 6️⃣ Reset input
+    e.target.value = '';
+
+  } catch (err: any) {
+    console.error('❌ Erreur upload:', err);
+    toast.error(`Échec de l'upload: ${err.message || 'Erreur inconnue'}`);
+  }
+};
     
   // 🔹 Sauvegarde
   const handleSave = async () => {
