@@ -3106,7 +3106,7 @@ const handleToggleFollow = async (profileId: string) => {
             </motion.div>
           )}
 
-{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - CORRIGÉ */}
+{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - STRUCTURE DE SCROLL OPTIMISÉE */}
 {isEventFormOpen && (
   <motion.div
     key="event-form-modal"
@@ -3120,16 +3120,17 @@ const handleToggleFollow = async (profileId: string) => {
       initial={{ scale: 0.95, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0, transition: { type: "spring", damping: 25, stiffness: 300 } }}
       exit={{ scale: 0.95, opacity: 0, y: 20 }}
+      // 1️⃣ PARENT : Hauteur max définie, overflow hidden pour contenir le scroll
       className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900 via-green-900/20 to-gray-900 backdrop-blur-xl rounded-3xl border border-emerald-500/20 shadow-2xl shadow-emerald-900/50 overflow-hidden"
       onClick={e => e.stopPropagation()}
     >
-      {/* 🌿 Décorations de fond */}
+      {/* 🌿 Décorations (inchangé) */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl" />
       </div>
 
-      {/* 🔘 Bouton fermeture */}
+      {/* 🔘 Bouton fermeture (inchangé) */}
       <button
         onClick={() => setIsEventFormOpen(false)}
         className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all"
@@ -3137,10 +3138,10 @@ const handleToggleFollow = async (profileId: string) => {
         <X className="w-5 h-5" />
       </button>
 
-      {/* 📱 Structure Flex Col pour gérer le scroll correctement */}
+      {/* 📱 CONTENEUR PRINCIPAL FLEX COL (Gère la hauteur) */}
       <div className="flex flex-col h-full relative z-10">
         
-        {/* HEADER FIXE */}
+        {/* 2️⃣ HEADER FIXE : flex-shrink-0 (ne rétrécit jamais) */}
         <div className="flex-shrink-0 p-6 border-b border-white/10 bg-gradient-to-r from-gray-900/90 to-green-900/20 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
@@ -3153,29 +3154,25 @@ const handleToggleFollow = async (profileId: string) => {
           </div>
         </div>
 
-        {/* CONTENU SCROLLABLE (Prend tout l'espace restant) */}
+        {/* 3️⃣ ZONE DE SCROLL UNIQUE : flex-grow + overflow-y-auto */}
+        {/* C'est ICI que le scroll se produit. Le formulaire à l'intérieur ne doit PAS avoir de scroll. */}
         <div className="flex-grow overflow-y-auto overscroll-contain p-6 custom-scrollbar">
           <CreateEventForm
             onSubmit={async (data) => {
               try {
-                // ✅ CORRECTION 1 : URL correcte (/api/events et non /api/events/create)
-                const response = await fetch('/api/events', { 
+                const response = await fetch('/api/events', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(data),
                 });
-
                 if (!response.ok) {
                   const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
                   throw new Error(errorData.error || 'Échec de la création');
                 }
-
                 const eventData = await response.json();
                 console.log('✅ Événement créé:', eventData);
-                
                 setIsEventFormOpen(false);
                 toast.success('🎉 Événement créé avec succès !');
-                
               } catch (error: any) {
                 console.error('❌ Erreur création:', error);
                 toast.error('❌ Erreur lors de la création', {
@@ -3189,7 +3186,7 @@ const handleToggleFollow = async (profileId: string) => {
           />
         </div>
 
-        {/* FOOTER FIXE (Optionnel) */}
+        {/* 4️⃣ FOOTER FIXE : flex-shrink-0 (ne rétrécit jamais) */}
         <div className="flex-shrink-0 p-4 border-t border-white/10 bg-gray-900/50 backdrop-blur-sm text-center">
           <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
