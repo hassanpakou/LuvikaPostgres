@@ -248,7 +248,74 @@ export default function SettingsPage() {
       [section]: !prev[section]
     }));
   };
+// 🔹🔹🔹 AJOUTEZ LA FONCTION ICI (juste avant handleSave) 🔹🔹🔹
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    type: 'avatar' | 'cover'
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
 
+    // Vérification taille
+    const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error(`Fichier trop lourd (max ${type === 'avatar' ? '5MB' : '10MB'})`);
+      return;
+    }
+
+    // Vérification format
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Format non supporté (utilisez JPG, PNG, WebP ou GIF)');
+      return;
+    }
+
+    try {
+      const supabase = createClient();
+      const fileExt = file.name.split('.').pop();
+      // On ajoute un préfixe pour éviter les conflits de noms
+      const fileName = `${profile.id}-${type}-${Date.now()}.${fileExt}`;
+      const bucket = 'profiles';
+
+      // 1️⃣ Upload vers Storage
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(fileName, file, { 
+          upsert: true,
+          contentType: file.type,
+        });
+
+      if (uploadError) {
+        console.error('Erreur upload:', uploadError);
+        throw uploadError;
+      }
+
+      // 2️⃣ Récupérer l'URL publique
+      const { data: urlData } = supabase.storage
+        .from(bucket)
+        .getPublicUrl(fileName);
+
+      if (!urlData?.publicUrl) {
+        throw new Error('Impossible de récupérer l\'URL publique');
+      }
+
+      // 3️⃣ Mettre à jour l'état local (optimistic UI)
+      setProfile({
+        ...profile,
+        [type === 'avatar' ? 'avatar_url' : 'cover_url']: urlData.publicUrl,
+      });
+
+      toast.success(`${type === 'avatar' ? '✅ Avatar' : '✅ Couverture'} téléchargé avec succès !`);
+
+      // 4️⃣ Reset input pour permettre le re-upload du même fichier
+      e.target.value = '';
+
+    } catch (err: any) {
+      console.error('❌ Erreur upload:', err);
+      toast.error(`Échec de l'upload: ${err.message || 'Erreur inconnue'}`);
+    }
+  };
+    
   // 🔹 Sauvegarde
   const handleSave = async () => {
     if (!profile) return;
@@ -615,12 +682,13 @@ export default function SettingsPage() {
                           <div className="flex-1 space-y-2">
                             <Label className="text-gray-300 font-medium">Photo de profil</Label>
                             <div className="flex gap-2">
-                              <Input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                accept="image/*" 
-                                className="hidden" 
-                              />
+                              <Input
+  type="file"
+  ref={fileInputRef}
+  accept="image/*"
+  className="hidden"
+  onChange={(e) => handleImageUpload(e, 'avatar')} // <--- AJOUTER CECI
+/>
                               <Button 
                                 variant="outline" 
                                 onClick={() => fileInputRef.current?.click()}
@@ -676,12 +744,13 @@ export default function SettingsPage() {
                               </Button>
                             </div>
                           </div>
-                          <Input 
-                            type="file" 
-                            ref={coverInputRef} 
-                            accept="image/*" 
-                            className="hidden" 
-                          />
+                          <Input
+  type="file"
+  ref={coverInputRef}
+  accept="image/*"
+  className="hidden"
+  onChange={(e) => handleImageUpload(e, 'cover')} // <--- AJOUTER CECI
+/>
                           <p className="text-xs text-gray-400">
                             Format: JPG, PNG • Taille max: 10 Mo • Dimensions recommandées: 1200x400px
                           </p>
