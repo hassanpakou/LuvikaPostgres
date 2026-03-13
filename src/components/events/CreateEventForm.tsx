@@ -359,76 +359,90 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
               </motion.div>
             )}
 
-            {/* ================= ÉTAPE 4 : QR CODE INTELLIGENT ================= */}
+                        {/* ================= ÉTAPE 4 : APERÇU & QR (COMPACT) ================= */}
             {step === 4 && (
               <motion.div
                 key="step4"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="space-y-5" // Réduit de space-y-6 à 5
               >
-                <div className="text-center mb-6">
-                  <h3 className="text-xl font-bold text-white mb-2">Votre QR Code Intelligent</h3>
-                  <p className="text-sm text-gray-400">Scannez pour un check-in automatique et instantané</p>
+                <div className="text-center mb-2">
+                  <h3 className="text-lg font-bold text-white mb-1">Votre QR Code Intelligent</h3>
+                  <p className="text-xs text-gray-400">Scannez pour un check-in automatique</p>
                 </div>
 
-                <div className="flex flex-col items-center justify-center space-y-6">
-                  {/* Conteneur QR Principal */}
-                  <div className="relative group">
+                {/* Layout Compact : QR à gauche, Infos à droite (ou empilé sur mobile) */}
+                <div className="flex flex-col sm:flex-row items-center gap-6 bg-white/5 rounded-2xl p-5 border border-white/10">
+                  
+                  {/* QR Code Réduit (w-40 au lieu de w-64) */}
+                  <div className="shrink-0 relative group">
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-                    <div className="relative bg-white p-4 rounded-2xl shadow-2xl shadow-cyan-500/20 border-4 border-white/10">
+                    <div className="relative bg-white p-2.5 rounded-2xl shadow-2xl shadow-cyan-500/20 border-2 border-white/10">
                       {isGeneratingQR ? (
-                        <div className="w-64 h-64 flex items-center justify-center">
-                          <Loader2 className="w-12 h-12 text-cyan-500 animate-spin" />
+                        <div className="w-40 h-40 flex items-center justify-center"> {/* Taille réduite */}
+                          <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
                         </div>
                       ) : qrDataUrl ? (
                         <div className="relative">
-                          <img src={qrDataUrl} alt="QR Code Intelligent" className="w-64 h-64 object-contain mix-blend-multiply" />
+                          <img src={qrDataUrl} alt="QR Code" className="w-40 h-40 object-contain mix-blend-multiply" /> {/* Taille réduite */}
                           
                           {/* Overlay au hover */}
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center backdrop-blur-sm rounded-xl">
-                            <ScanLine className="w-12 h-12 text-white mb-2 animate-pulse" />
-                            <span className="text-white font-bold text-lg tracking-wider">SCAN ME</span>
-                            <span className="text-cyan-300 text-xs mt-1">Check-in auto</span>
+                            <ScanLine className="w-8 h-8 text-white mb-1 animate-pulse" />
+                            <span className="text-white font-bold text-xs tracking-wider">SCAN ME</span>
                           </div>
                         </div>
                       ) : (
-                        <div className="w-64 h-64 flex items-center justify-center text-gray-400">
+                        <div className="w-40 h-40 flex items-center justify-center text-gray-400 text-xs text-center px-2">
                           Erreur de génération
                         </div>
                       )}
                     </div>
                     
-                    {/* Badge LUVIKA */}
-                    <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-white/20 flex items-center gap-2">
-                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                    {/* Badge LUVIKA plus petit */}
+                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
                         luvika.me
                       </div>
                     </div>
                   </div>
 
-                  {/* Info Bulle Récap */}
-                  <div className="w-full max-w-sm bg-white/5 rounded-xl p-4 border border-white/10 text-left space-y-2">
-                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                      <span className="text-gray-400 text-xs">Titre:</span> 
-                      <span className="text-white font-medium text-sm truncate max-w-[200px]">{title}</span>
+                  {/* Info Bulle Récap (Prend l'espace restant) */}
+                  <div className="flex-1 w-full space-y-3 text-xs">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-gray-400 block mb-0.5">Titre:</span> 
+                        <span className="text-white font-medium truncate block">{title}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block mb-0.5">Date:</span> 
+                        <span className="text-white font-medium block">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR', {day:'numeric', month:'short'}) : '...'}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block mb-0.5">Lieu:</span> 
+                        <span className="text-white font-medium truncate block">{location || 'Non défini'}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400 block mb-0.5">Visibilité:</span> 
+                        <Badge variant={isPublic ? "default" : "secondary"} className="text-[9px] h-5 mt-0.5">
+                          {isPublic ? 'Public' : 'Privé'}
+                        </Badge>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center border-b border-white/5 pb-2">
-                      <span className="text-gray-400 text-xs">Date:</span> 
-                      <span className="text-white font-medium text-sm">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR') : '...'}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400 text-xs">Visibilité:</span> 
-                      <Badge variant={isPublic ? "default" : "secondary"} className="text-[10px] h-5">
-                        {isPublic ? 'Public' : 'Privé'}
-                      </Badge>
+                    
+                    <div className="pt-2 border-t border-white/5">
+                       <div className="p-2 bg-cyan-500/10 rounded border border-cyan-500/20 break-all">
+                        <span className="text-cyan-300 font-mono text-[10px]">luvika.me{previewUrl}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-6 flex gap-3">
+                {/* Boutons d'action (Toujours visibles grâce au gain de place) */}
+                <div className="pt-2 flex gap-3">
                   <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
                     <ChevronLeft className="w-4 h-4 mr-2" /> Modifier
                   </Button>
