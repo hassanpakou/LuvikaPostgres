@@ -248,7 +248,8 @@ export default function SettingsPage() {
       [section]: !prev[section]
     }));
   };
-// 🔹 Fonction d'upload d'image (CORRIGÉE POUR VOS BUCKETS)
+
+    // 🔹 Fonction d'upload d'image (CORRIGÉE POUR VOS BUCKETS)
 const handleImageUpload = async (
   e: React.ChangeEvent<HTMLInputElement>, 
   type: 'avatar' | 'cover'
@@ -318,7 +319,7 @@ const handleImageUpload = async (
     toast.error(`Échec de l'upload: ${err.message || 'Erreur inconnue'}`);
   }
 };
-    
+  
   // 🔹 Sauvegarde
   const handleSave = async () => {
     if (!profile) return;
