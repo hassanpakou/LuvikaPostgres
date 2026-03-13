@@ -3106,146 +3106,100 @@ const handleToggleFollow = async (profileId: string) => {
             </motion.div>
           )}
 
-  {/* 🔹 MODAL CRÉATION ÉVÉNEMENT */}
-  {isEventFormOpen && (
+{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - CORRIGÉ */}
+{isEventFormOpen && (
+  <motion.div
+    key="event-form-modal"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1, transition: { duration: 0.25, ease: "easeOut" } }}
+    exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
+    className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+    onClick={() => setIsEventFormOpen(false)}
+  >
     <motion.div
-      key="event-form-modal"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1, transition: { duration: 0.25, ease: "easeOut" } }}
-      exit={{ opacity: 0, transition: { duration: 0.2, ease: "easeIn" } }}
-      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
-      onClick={() => setIsEventFormOpen(false)}
+      initial={{ scale: 0.95, opacity: 0, y: 20 }}
+      animate={{ scale: 1, opacity: 1, y: 0, transition: { type: "spring", damping: 25, stiffness: 300 } }}
+      exit={{ scale: 0.95, opacity: 0, y: 20 }}
+      className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900 via-green-900/20 to-gray-900 backdrop-blur-xl rounded-3xl border border-emerald-500/20 shadow-2xl shadow-emerald-900/50 overflow-hidden"
+      onClick={e => e.stopPropagation()}
     >
-      <motion.div
-        initial={{ 
-          scale: 0.95, 
-          opacity: 0,
-          y: 20 
-        }}
-        animate={{ 
-          scale: 1, 
-          opacity: 1,
-          y: 0,
-          transition: { 
-            type: "spring", 
-            damping: 25, 
-            stiffness: 300,
-            mass: 0.5
-          }
-        }}
-        exit={{ 
-          scale: 0.95, 
-          opacity: 0,
-          y: 20,
-          transition: { duration: 0.2 }
-        }}
-        className="relative w-full max-w-3xl max-h-[95vh] bg-gradient-to-br from-green-900/30 to-emerald-900/10 backdrop-blur-2xl rounded-3xl border border-emerald-500/20 shadow-2xl shadow-emerald-500/20 overflow-hidden"
-        onClick={e => e.stopPropagation()}
+      {/* 🌿 Décorations de fond */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl" />
+      </div>
+
+      {/* 🔘 Bouton fermeture */}
+      <button
+        onClick={() => setIsEventFormOpen(false)}
+        className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all"
       >
-        {/* 🔘 Bouton fermeture premium (toujours visible) */}
-        <button
-          onClick={() => setIsEventFormOpen(false)}
-          className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-black/40 hover:bg-black/60 border border-white/10 text-gray-300 hover:text-white transition-all duration-300 shadow-lg shadow-black/50 backdrop-blur-sm"
-          aria-label="Fermer la fenêtre"
-        >
-          <X className="w-5 h-5" strokeWidth={2.5} />
-        </button>
+        <X className="w-5 h-5" />
+      </button>
 
-        {/* 🌿 Décorations de fond animées */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Radial gradient subtil */}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(16,185,129,0.15),transparent_70%)]" />
-          
-          {/* Particules flottantes */}
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full bg-emerald-400/20 backdrop-blur-sm"
-              style={{
-                width: `${Math.random() * 80 + 20}px`,
-                height: `${Math.random() * 80 + 20}px`,
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.5, 0.3],
-                rotate: [0, 180, 360],
-              }}
-              transition={{
-                duration: Math.random() * 10 + 15,
-                repeat: Infinity,
-                ease: "linear",
-                delay: i * 0.5,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* 📱 Contenu scrollable avec padding responsive */}
-        <div className="relative z-10 h-full overflow-y-auto overscroll-contain">
-          {/* Header avec dégradé */}
-          <div className="sticky top-0 z-40 bg-gradient-to-b from-green-900/50 to-transparent backdrop-blur-sm border-b border-emerald-500/20 py-5 px-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-500/20 rounded-xl">
-                <Plus className="w-7 h-7 text-emerald-400" />
-              </div>
-              <div>
-                <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-300">
-                  Créer un nouvel événement
-                </h2>
-                <p className="mt-1 text-sm text-emerald-200/80">
-                  Configurez votre événement en quelques étapes simples
-                </p>
-              </div>
+      {/* 📱 Structure Flex Col pour gérer le scroll correctement */}
+      <div className="flex flex-col h-full relative z-10">
+        
+        {/* HEADER FIXE */}
+        <div className="flex-shrink-0 p-6 border-b border-white/10 bg-gradient-to-r from-gray-900/90 to-green-900/20 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
+              <Plus className="w-6 h-6 text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">Créer un nouvel événement</h2>
+              <p className="text-xs text-emerald-200/70 mt-0.5">Remplissez les détails ci-dessous</p>
             </div>
           </div>
+        </div>
 
-          {/* Contenu principal avec padding responsive */}
-          <div className="p-4 sm:p-6">
-            <CreateEventForm
-              onSubmit={async (data) => {
-                try {
-                  const response = await fetch('/api/events/create', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                  });
-                  
-                  if (!response.ok) throw new Error('Erreur création événement');
-                  
-                  const eventData = await response.json();
-                  console.log('✅ Événement créé:', eventData);
-                  
-                  setIsEventFormOpen(false);
-                  toast.success('🎉 Événement créé avec succès !', {
-                    description: 'Votre événement est prêt à recevoir des participants',
-                    duration: 5000,
-                  });
-                } catch (error) {
-                  console.error('❌ Erreur:', error);
-                  toast.error('❌ Erreur lors de la création', {
-                    description: "Une erreur est survenue. Veuillez réessayer.",
-                    duration: 5000,
-                  });
+        {/* CONTENU SCROLLABLE (Prend tout l'espace restant) */}
+        <div className="flex-grow overflow-y-auto overscroll-contain p-6 custom-scrollbar">
+          <CreateEventForm
+            onSubmit={async (data) => {
+              try {
+                // ✅ CORRECTION 1 : URL correcte (/api/events et non /api/events/create)
+                const response = await fetch('/api/events', { 
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                  const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
+                  throw new Error(errorData.error || 'Échec de la création');
                 }
-              }}
-              onClose={() => setIsEventFormOpen(false)}
-              isLoading={false}
-            />
-          </div>
 
-          {/* Footer décoratif */}
-          <div className="sticky bottom-0 z-40 bg-gradient-to-t from-green-900/50 to-transparent backdrop-blur-sm border-t border-emerald-500/20 py-4 px-6 mt-6">
-            <div className="flex items-center justify-center gap-2 text-xs text-emerald-300/70">
-              <Leaf className="w-3 h-3" />
-              <span>Événement éco-responsable • Zéro papier</span>
-            </div>
-          </div>
+                const eventData = await response.json();
+                console.log('✅ Événement créé:', eventData);
+                
+                setIsEventFormOpen(false);
+                toast.success('🎉 Événement créé avec succès !');
+                
+              } catch (error: any) {
+                console.error('❌ Erreur création:', error);
+                toast.error('❌ Erreur lors de la création', {
+                  description: error.message || "Vérifiez vos informations et réessayez.",
+                  duration: 5000,
+                });
+              }
+            }}
+            onClose={() => setIsEventFormOpen(false)}
+            isLoading={false}
+          />
         </div>
-      </motion.div>
+
+        {/* FOOTER FIXE (Optionnel) */}
+        <div className="flex-shrink-0 p-4 border-t border-white/10 bg-gray-900/50 backdrop-blur-sm text-center">
+          <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Données sécurisées et chiffrées
+          </p>
+        </div>
+      </div>
     </motion.div>
-  )}
+  </motion.div>
+)}
   {/* 🔹 MODAUX INDÉPENDANTS - CLÉS STATIQUES (pas de Date.now !) */}
   {isPortfolioModalOpen && (
     <PortfolioModal
