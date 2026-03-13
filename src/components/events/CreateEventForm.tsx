@@ -130,7 +130,6 @@ export default function CreateEventForm({
           location,
           is_public: isPublic,
         });
-        // Correction: suppression des espaces inutiles dans l'URL
         const cleanPayload = encodeURIComponent(payload.replace(/\s+/g, ''));
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanPayload}`;
         setQrDataUrl(qrUrl);
@@ -165,7 +164,6 @@ export default function CreateEventForm({
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-          // Correction: suppression des espaces dans l'URL
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${currentLocale}`
           );
@@ -241,17 +239,16 @@ export default function CreateEventForm({
       key="create-event-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full h-full flex flex-col"
+      className="w-full" 
     >
       {/* 
-        NOTE IMPORTANTE : 
-        J'ai supprimé le wrapper "overflow-y-auto" ici. 
-        C'est le MODAL PARENT (DashboardContent) qui doit gérer le scroll 
-        pour éviter que le bouton ne soit caché.
+        ⚠️ CORRECTION CRITIQUE : 
+        - Suppression de "h-full" et "flex flex-col" ici pour éviter les conflits de hauteur.
+        - Ce composant doit simplement s'étendre verticalement selon son contenu.
       */}
       
-      <Card className="glass-border bg-black/20 backdrop-blur-xl border-white/10 w-full flex flex-col">
-        <div className="p-6 border-b border-white/5 flex-shrink-0">
+      <Card className="glass-border bg-black/20 backdrop-blur-xl border-white/10 w-full">
+        <div className="p-6 border-b border-white/5">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
               <Calendar className="w-5 h-5 text-white" />
@@ -263,7 +260,12 @@ export default function CreateEventForm({
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+        {/* 
+          ⚠️ CORRECTION CRITIQUE : 
+          - Suppression de "overflow-y-auto" et "custom-scrollbar".
+          - Le scroll doit être géré par le MODAL PARENT, pas par ce formulaire.
+        */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           {/* Titre */}
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
@@ -484,7 +486,7 @@ export default function CreateEventForm({
             </div>
           </div>
 
-          {/* Boutons d'action - Toujours visibles en bas du flux */}
+          {/* Boutons d'action */}
           <div className="pt-6 mt-6 border-t border-white/5 flex flex-col sm:flex-row gap-3">
             {(onCancel || onClose) && (
               <Button
