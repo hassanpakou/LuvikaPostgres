@@ -35,8 +35,8 @@ type Props = {
 export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading = false }: Props) {
   const now = new Date();
   
-  // États du formulaire
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  // États du formulaire (1 à 5)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
@@ -64,7 +64,6 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
 
   // --- VALIDATIONS PAR ÉTAPE ---
 
-  // Étape 1 : Bases (Titre, Dates)
   const isStep1Valid = useMemo(() => {
     if (!title.trim() || title.length < 3) return false;
     if (!startsAt) return false;
@@ -72,19 +71,18 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     return true;
   }, [title, startsAt]);
 
-  // Étape 2 : Détails (Lieu, Max, Description)
   const isStep2Valid = useMemo(() => {
     if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) return false;
     return true;
   }, [maxParticipants]);
 
-  // Étape 3 : Options (Public/Privé) - Toujours valide car switch
-  const isStep3Valid = true;
+  const isStep3Valid = true; // Switch toujours valide
+  const isStep4Valid = !isGeneratingQR && !!qrDataUrl; // QR généré
 
   // Validation Globale
   const isFormValid = useMemo(() => {
-    return isStep1Valid && isStep2Valid && isStep3Valid;
-  }, [isStep1Valid, isStep2Valid, isStep3Valid]);
+    return isStep1Valid && isStep2Valid && isStep3Valid && isStep4Valid;
+  }, [isStep1Valid, isStep2Valid, isStep3Valid, isStep4Valid]);
 
   // URL Prévisualisation
   const previewUrl = useMemo(() => {
@@ -93,7 +91,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     return `/${currentLocale}/events/${slug}-${Date.now().toString(36)}`;
   }, [title, currentLocale]);
 
-  // Génération QR Code (Uniquement étape 4 ou pré-génération silencieuse)
+  // Génération QR Code
   useEffect(() => {
     if (!title || !startsAt) return;
     setIsGeneratingQR(true);
@@ -136,7 +134,6 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     if (!startsAt) e.startsAt = 'Requis';
     else if (new Date(startsAt) <= new Date()) e.startsAt = 'Futur requis';
     if (endsAt && new Date(endsAt) <= new Date(startsAt)) e.endsAt = 'Après début';
-    
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -152,6 +149,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     if (step === 1 && validateStep1()) setStep(2);
     else if (step === 2 && validateStep2()) setStep(3);
     else if (step === 3) setStep(4);
+    else if (step === 4) setStep(5);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -159,6 +157,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     if (step === 2) setStep(1);
     else if (step === 3) setStep(2);
     else if (step === 4) setStep(3);
+    else if (step === 5) setStep(4);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -181,7 +180,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
       <Card className="glass-border bg-black/40 backdrop-blur-xl border-white/10 w-full shadow-2xl overflow-hidden">
         
-        {/* Header avec Indicateur d'Étapes (4 steps) */}
+        {/* Header avec Indicateur d'Étapes (5 steps) */}
         <div className="p-5 border-b border-white/5 bg-white/5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -192,19 +191,21 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                 <h2 className="text-lg font-bold text-white">
                   {step === 1 ? "Informations de base" : 
                    step === 2 ? "Détails & Lieu" : 
-                   step === 3 ? "Options de visibilité" : "Votre QR Code Intelligent"}
+                   step === 3 ? "Options de visibilité" :
+                   step === 4 ? "Votre QR Code" : "Validation Finale"}
                 </h2>
                 <p className="text-xs text-gray-400">
                   {step === 1 ? "L'essentiel pour commencer" : 
                    step === 2 ? "Personnalisez votre événement" : 
-                   step === 3 ? "Qui peut voir cet événement ?" : "Prêt à partager"}
+                   step === 3 ? "Qui peut voir cet événement ?" :
+                   step === 4 ? "Génération automatique" : "Vérifiez et créez"}
                 </p>
               </div>
             </div>
             
             {/* Badges d'étapes */}
             <div className="flex gap-1.5">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <div key={i} className={`flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-bold transition-all ${
                   step === i 
                     ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 scale-105' 
@@ -223,7 +224,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             <motion.div 
               className="h-full bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500"
               initial={{ width: "0%" }}
-              animate={{ width: step === 1 ? "25%" : step === 2 ? "50%" : step === 3 ? "75%" : "100%" }}
+              animate={{ width: step === 1 ? "20%" : step === 2 ? "40%" : step === 3 ? "60%" : step === 4 ? "80%" : "100%" }}
               transition={{ duration: 0.5, ease: "easeInOut" }}
             />
           </div>
@@ -234,51 +235,33 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             
             {/* ================= ÉTAPE 1 : BASES ================= */}
             {step === 1 && (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
+              <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5">
-                    <Hash className="w-3.5 h-3.5" /> Titre de l'événement *
-                  </label>
-                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Conférence Tech Kinshasa" className="bg-white/5 border-white/10 text-sm h-10" maxLength={80} autoFocus />
+                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" /> Titre *</label>
+                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Conférence Tech" className="bg-white/5 border-white/10 text-sm h-10" autoFocus />
                   {errors.title && <p className="text-red-400 text-[10px] mt-1">{errors.title}</p>}
                 </div>
-
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="col-span-2 sm:col-span-1">
+                  <div>
                     <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Début *</label>
                     <Input type="datetime-local" value={startsAt} onChange={e => setStartsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-10" />
                     {errors.startsAt && <p className="text-red-400 text-[10px] mt-1">{errors.startsAt}</p>}
                   </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Fin (Optionnel)</label>
+                  <div>
+                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Fin</label>
                     <Input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-10" min={startsAt} />
                     {errors.endsAt && <p className="text-red-400 text-[10px] mt-1">{errors.endsAt}</p>}
                   </div>
                 </div>
-
                 <div className="pt-4 flex justify-end">
-                  <Button type="button" onClick={handleNext} disabled={!isStep1Valid} className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
-                    Suivant <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep1Valid} className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Suivant <ChevronRight className="w-4 h-4 ml-2" /></Button>
                 </div>
               </motion.div>
             )}
 
             {/* ================= ÉTAPE 2 : DÉTAILS ================= */}
             {step === 2 && (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
+              <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
                   <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Lieu</label>
                   <div className="flex gap-2">
@@ -287,16 +270,13 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                       {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Locate className="w-4 h-4" />}
                     </Button>
                   </div>
-                  {errors.location && <p className="text-red-400 text-[10px] mt-1">{errors.location}</p>}
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Max participants</label>
                     <Input type="number" value={maxParticipants} onChange={e => setMaxParticipants(e.target.value ? Number(e.target.value) : '')} placeholder="Illimité" className="bg-white/5 border-white/10 text-sm h-10" />
                     {errors.maxParticipants && <p className="text-red-400 text-[10px] mt-1">{errors.maxParticipants}</p>}
                   </div>
-                  
                   <div className="flex flex-col justify-end pb-1">
                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
                       <label className="text-xs font-medium text-gray-300 block mb-1">Description courte</label>
@@ -304,144 +284,123 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                     </div>
                   </div>
                 </div>
-
                 <div className="pt-4 flex gap-3">
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
-                    <ChevronLeft className="w-4 h-4 mr-2" /> Retour
-                  </Button>
-                  <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
-                    Suivant <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11"><ChevronLeft className="w-4 h-4 mr-2" /> Retour</Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Suivant <ChevronRight className="w-4 h-4 ml-2" /></Button>
                 </div>
               </motion.div>
             )}
 
             {/* ================= ÉTAPE 3 : OPTIONS ================= */}
             {step === 3 && (
+              <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/20">
+                  <h3 className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2"><Shield className="w-4 h-4" /> Visibilité</h3>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-lg ${isPublic ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                        {isPublic ? <Globe className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
+                      </div>
+                      <div>
+                        <label className="text-sm font-bold text-white block">Événement Public</label>
+                        <p className="text-xs text-gray-400 mt-0.5">{isPublic ? "Visible par tous." : "Sur invitation uniquement."}</p>
+                      </div>
+                    </div>
+                    <Switch checked={isPublic} onCheckedChange={setIsPublic} className="data-[state=checked]:bg-green-500" />
+                  </div>
+                </div>
+                <div className="pt-4 flex gap-3">
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11"><ChevronLeft className="w-4 h-4 mr-2" /> Retour</Button>
+                  <Button type="button" onClick={handleNext} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Voir le QR <ChevronRight className="w-4 h-4 ml-2" /></Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ================= ÉTAPE 4 : QR CODE ================= */}
+            {step === 4 && (
+              <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-bold text-white mb-1">Votre QR Code Intelligent</h3>
+                  <p className="text-xs text-gray-400">Génération automatique basée sur vos infos</p>
+                </div>
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                    <div className="relative bg-white p-3 rounded-2xl shadow-2xl border-2 border-white/10">
+                      {isGeneratingQR ? (
+                        <div className="w-40 h-40 flex items-center justify-center"><Loader2 className="w-8 h-8 text-cyan-500 animate-spin" /></div>
+                      ) : qrDataUrl ? (
+                        <div className="relative">
+                          <img src={qrDataUrl} alt="QR" className="w-40 h-40 object-contain mix-blend-multiply" />
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center backdrop-blur-sm rounded-xl">
+                            <ScanLine className="w-8 h-8 text-white mb-1 animate-pulse" />
+                            <span className="text-white font-bold text-xs">SCAN ME</span>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>luvika.me
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="pt-4 flex gap-3">
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11"><ChevronLeft className="w-4 h-4 mr-2" /> Modifier</Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep4Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Valider les détails <ChevronRight className="w-4 h-4 ml-2" /></Button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ================= ÉTAPE 5 : RÉCAPITULATIF FINAL (NOUVEAU) ================= */}
+            {step === 5 && (
               <motion.div
-                key="step3"
+                key="step5"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/20">
-                  <h3 className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2">
-                    <Shield className="w-4 h-4" /> Visibilité de l'événement
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg ${isPublic ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
-                          {isPublic ? <Globe className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
-                        </div>
-                        <div>
-                          <label className="text-sm font-bold text-white block">Événement Public</label>
-                          <p className="text-xs text-gray-400 mt-0.5">
-                            {isPublic ? "Visible par tous sur votre profil et dans la recherche." : "Seules les personnes avec le lien peuvent voir l'événement."}
-                          </p>
-                        </div>
-                      </div>
-                      <Switch checked={isPublic} onCheckedChange={setIsPublic} className="data-[state=checked]:bg-green-500" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4 flex gap-3">
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
-                    <ChevronLeft className="w-4 h-4 mr-2" /> Retour
-                  </Button>
-                  <Button type="button" onClick={handleNext} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
-                    Voir le QR Code <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-                        {/* ================= ÉTAPE 4 : APERÇU & QR (COMPACT) ================= */}
-            {step === 4 && (
-              <motion.div
-                key="step4"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5" // Réduit de space-y-6 à 5
-              >
                 <div className="text-center mb-2">
-                  <h3 className="text-lg font-bold text-white mb-1">Votre QR Code Intelligent</h3>
-                  <p className="text-xs text-gray-400">Scannez pour un check-in automatique</p>
+                  <h3 className="text-lg font-bold text-white mb-1">Dernière vérification</h3>
+                  <p className="text-xs text-gray-400">Confirmez les informations avant la création</p>
                 </div>
 
-                {/* Layout Compact : QR à gauche, Infos à droite (ou empilé sur mobile) */}
-                <div className="flex flex-col sm:flex-row items-center gap-6 bg-white/5 rounded-2xl p-5 border border-white/10">
-                  
-                  {/* QR Code Réduit (w-40 au lieu de w-64) */}
-                  <div className="shrink-0 relative group">
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-500"></div>
-                    <div className="relative bg-white p-2.5 rounded-2xl shadow-2xl shadow-cyan-500/20 border-2 border-white/10">
-                      {isGeneratingQR ? (
-                        <div className="w-40 h-40 flex items-center justify-center"> {/* Taille réduite */}
-                          <Loader2 className="w-8 h-8 text-cyan-500 animate-spin" />
-                        </div>
-                      ) : qrDataUrl ? (
-                        <div className="relative">
-                          <img src={qrDataUrl} alt="QR Code" className="w-40 h-40 object-contain mix-blend-multiply" /> {/* Taille réduite */}
-                          
-                          {/* Overlay au hover */}
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center backdrop-blur-sm rounded-xl">
-                            <ScanLine className="w-8 h-8 text-white mb-1 animate-pulse" />
-                            <span className="text-white font-bold text-xs tracking-wider">SCAN ME</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-40 h-40 flex items-center justify-center text-gray-400 text-xs text-center px-2">
-                          Erreur de génération
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Badge LUVIKA plus petit */}
-                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2">
-                      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg border border-white/20 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                        luvika.me
+                {/* Info Bulle Récap (Contenu demandé) */}
+                <div className="bg-white/5 rounded-xl p-5 border border-white/10 shadow-lg">
+                  <div className="flex-1 w-full space-y-4 text-xs">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-3 bg-black/20 rounded-lg border border-white/5">
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Titre</span> 
+                        <span className="text-white font-medium truncate block text-sm">{title}</span>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Info Bulle Récap (Prend l'espace restant) */}
-                  <div className="flex-1 w-full space-y-3 text-xs">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <span className="text-gray-400 block mb-0.5">Titre:</span> 
-                        <span className="text-white font-medium truncate block">{title}</span>
+                      <div className="p-3 bg-black/20 rounded-lg border border-white/5">
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Date</span> 
+                        <span className="text-white font-medium block text-sm">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) : '...'}</span>
                       </div>
-                      <div>
-                        <span className="text-gray-400 block mb-0.5">Date:</span> 
-                        <span className="text-white font-medium block">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR', {day:'numeric', month:'short'}) : '...'}</span>
+                      <div className="p-3 bg-black/20 rounded-lg border border-white/5">
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Lieu</span> 
+                        <span className="text-white font-medium truncate block text-sm">{location || 'Non défini'}</span>
                       </div>
-                      <div>
-                        <span className="text-gray-400 block mb-0.5">Lieu:</span> 
-                        <span className="text-white font-medium truncate block">{location || 'Non défini'}</span>
-                      </div>
-                      <div>
-                        <span className="text-gray-400 block mb-0.5">Visibilité:</span> 
+                      <div className="p-3 bg-black/20 rounded-lg border border-white/5">
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Visibilité</span> 
                         <Badge variant={isPublic ? "default" : "secondary"} className="text-[9px] h-5 mt-0.5">
                           {isPublic ? 'Public' : 'Privé'}
                         </Badge>
                       </div>
                     </div>
                     
-                    <div className="pt-2 border-t border-white/5">
-                       <div className="p-2 bg-cyan-500/10 rounded border border-cyan-500/20 break-all">
+                    <div className="pt-3 border-t border-white/5">
+                       <div className="p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/20 break-all flex items-center gap-2">
+                        <LinkIcon className="w-3 h-3 text-cyan-400 shrink-0" />
                         <span className="text-cyan-300 font-mono text-[10px]">luvika.me{previewUrl}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Boutons d'action (Toujours visibles grâce au gain de place) */}
+                {/* Boutons d'action */}
                 <div className="pt-2 flex gap-3">
                   <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
                     <ChevronLeft className="w-4 h-4 mr-2" /> Modifier
@@ -453,13 +412,14 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                 </div>
               </motion.div>
             )}
+
           </AnimatePresence>
         </form>
       </Card>
 
       {/* Toast Erreur Global */}
       <AnimatePresence>
-        {Object.keys(errors).length > 0 && step < 4 && (
+        {Object.keys(errors).length > 0 && step < 5 && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }} className="fixed bottom-6 right-6 max-w-xs z-[200]">
             <div className="bg-red-950/90 backdrop-blur border border-red-500/50 text-red-100 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
