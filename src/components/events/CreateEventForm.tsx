@@ -1,4 +1,3 @@
-// src/components/events/CreateEventForm.tsx
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -8,7 +7,7 @@ import {
   MapPin,
   Users,
   Hash,
-  Link,
+  Link as LinkIcon,
   QrCode,
   Send,
   RotateCcw,
@@ -76,117 +75,63 @@ export default function CreateEventForm({
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // --- CORRECTION DE LA PREVISUALISATION - Récupération de la locale ---
-  // ATTENTION : Cette méthode (localStorage) est un exemple. Pour une intégration parfaite avec next-intl,
-  // la locale devrait être passée via une prop depuis un composant parent qui l'a récupérée avec `useLocale()`.
-  const [currentLocale, setCurrentLocale] = useState<string>('fr'); // Valeur par défaut
+  // Récupération de la locale
+  const [currentLocale, setCurrentLocale] = useState<string>('fr');
 
   useEffect(() => {
-    // Tente de récupérer la locale depuis localStorage (où next-intl la stocke souvent)
     const storedLocale = localStorage.getItem('NEXT_LOCALE');
     if (storedLocale) {
       setCurrentLocale(storedLocale);
     } else {
-      // Sinon, tente de la détecter du navigateur
-      const browserLocale = navigator.language.split('-')[0]; // 'fr-FR' -> 'fr'
-      // Vérifier si c'est une locale supportée
-      const supportedLocales = ['fr', 'en', 'sw', 'ln', 'pt', 'ar', 'es', 'ko', 'nl']; // Adaptez à vos langues
+      const browserLocale = navigator.language.split('-')[0];
+      const supportedLocales = ['fr', 'en', 'sw', 'ln', 'pt', 'ar', 'es', 'ko', 'nl'];
       if (supportedLocales.includes(browserLocale)) {
         setCurrentLocale(browserLocale);
       }
     }
-  }, []); // Exécuté une seule fois au montage
+    setIsMounted(true);
+  }, []);
 
+  // Validation du formulaire
+  const isFormValid = useMemo(() => {
+    const isTitleInvalid = !title.trim() || title.length < 3;
+    const isStartAtMissing = !startsAt;
+    let isPastDate = false;
 
-  // Bouton activé si : titre valide + date de début dans le futur (avec tolérance)
- // Dans CreateEventForm.tsx, remplace temporairement le useMemo pour isFormValid
-const isFormValid = useMemo(() => {
-  const isTitleInvalid = !title.trim() || title.length < 3;
-  const isStartAtMissing = !startsAt;
-  let isPastDate = false;
+    if (startsAt) {
+      const startDate = new Date(startsAt);
+      const nowWithTolerance = new Date(Date.now() - 120000);
+      isPastDate = startDate <= nowWithTolerance;
+    }
 
-  if (startsAt) {
-    const startDate = new Date(startsAt);
-    const nowWithTolerance = new Date(Date.now() - 120000);
-    isPastDate = startDate <= nowWithTolerance;
-  }
+    return !(isTitleInvalid || isStartAtMissing || isPastDate);
+  }, [title, startsAt]);
 
-  console.log("Validation Debug:");
-  console.log("- Title invalid (empty or < 3 chars):", isTitleInvalid);
-  console.log("- StartsAt missing:", isStartAtMissing);
-  console.log("- StartsAt in the past:", isPastDate);
-  console.log("- Overall isFormValid:", !(isTitleInvalid || isStartAtMissing || isPastDate));
-
-  if (isTitleInvalid || isStartAtMissing || isPastDate) {
-    return false;
-  }
-  return true;
-}, [title, startsAt]);
-
-  // Prévisualisation URL - CORRIGÉE pour inclure la locale active
+  // Prévisualisation URL
   const previewUrl = useMemo(() => {
     if (!title) return '';
     const slug = title
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^a-z0-9-]/g, '');
-    // Génère l'URL en fonction de la locale active récupérée
     return `/${currentLocale}/events/${slug}-${Date.now().toString(36)}`;
-  }, [title, currentLocale]); // Ajout de currentLocale aux dépendances
+  }, [title, currentLocale]);
 
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Validation complète à la soumission
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!title.trim()) newErrors.title = 'Le titre est obligatoire';
-    else if (title.length < 3) newErrors.title = '3 caractères minimum';
-
-    if (!startsAt) newErrors.startsAt = 'La date de début est obligatoire';
-    else {
-      const start = new Date(startsAt);
-      if (start <= new Date()) newErrors.startsAt = 'Doit être dans le futur';
-    }
-
-    if (endsAt) {
-      const end = new Date(endsAt);
-      const start = new Date(startsAt);
-      if (end <= start) newErrors.endsAt = 'Doit être après le début';
-    }
-
-    if (
-      maxParticipants &&
-      (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)
-    ) {
-      newErrors.maxParticipants = 'Entre 1 et 10 000';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Génération QR Code (pour la prévisualisation)
+  // Génération QR Code
   useEffect(() => {
     if (!isMounted || !title || !startsAt) return;
 
     setIsGeneratingQR(true);
     const timer = setTimeout(() => {
       try {
-        // Le payload du QR Code peut contenir des infos de prévisualisation
-        // Mais l'URL finale utilisée pour le check-in est générée côté backend et stockée dans la DB
         const payload = JSON.stringify({
           title,
           starts_at: startsAt,
           location,
           is_public: isPublic,
         });
+        // Correction: suppression des espaces inutiles dans l'URL
         const cleanPayload = encodeURIComponent(payload.replace(/\s+/g, ''));
-        // L'URL du QR Code ici est pour la PRÉVISUALISATION uniquement
-        // L'URL réelle du check-in est `${baseUrl}/${locale}/events/${eventId}/check-in` (générée dans l'API)
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${cleanPayload}`;
         setQrDataUrl(qrUrl);
       } catch (err) {
@@ -205,7 +150,7 @@ const isFormValid = useMemo(() => {
     if (!navigator.geolocation) {
       setErrors((prev) => ({
         ...prev,
-        location: 'Géolocalisation non supportée par votre navigateur',
+        location: 'Géolocalisation non supportée',
       }));
       return;
     }
@@ -220,12 +165,12 @@ const isFormValid = useMemo(() => {
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
+          // Correction: suppression des espaces dans l'URL
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=${currentLocale}`
           );
           const data = await res.json();
-          const address =
-            data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+          const address = data.display_name || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
           setLocation(address);
         } catch {
           setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
@@ -244,6 +189,33 @@ const isFormValid = useMemo(() => {
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
     );
+  };
+
+  // Validation complète
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!title.trim()) newErrors.title = 'Le titre est obligatoire';
+    else if (title.length < 3) newErrors.title = '3 caractères minimum';
+
+    if (!startsAt) newErrors.startsAt = 'La date de début est obligatoire';
+    else {
+      const start = new Date(startsAt);
+      if (start <= new Date()) newErrors.startsAt = 'Doit être dans le futur';
+    }
+
+    if (endsAt) {
+      const end = new Date(endsAt);
+      const start = new Date(startsAt);
+      if (end <= start) newErrors.endsAt = 'Doit être après le début';
+    }
+
+    if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) {
+      newErrors.maxParticipants = 'Entre 1 et 10 000';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Soumission
@@ -269,296 +241,282 @@ const isFormValid = useMemo(() => {
       key="create-event-form"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl mx-auto w-full"
+      className="w-full h-full flex flex-col"
     >
-      <div className="max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent pr-2">
-        <Card className="glass-border bg-black/20 backdrop-blur-xl border-white/10">
-          <div className="p-6 border-b border-white/5">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-xl font-bold text-white">Créer un événement</h2>
+      {/* 
+        NOTE IMPORTANTE : 
+        J'ai supprimé le wrapper "overflow-y-auto" ici. 
+        C'est le MODAL PARENT (DashboardContent) qui doit gérer le scroll 
+        pour éviter que le bouton ne soit caché.
+      */}
+      
+      <Card className="glass-border bg-black/20 backdrop-blur-xl border-white/10 w-full flex flex-col">
+        <div className="p-6 border-b border-white/5 flex-shrink-0">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
+              <Calendar className="w-5 h-5 text-white" />
             </div>
-            <p className="text-gray-400 text-sm">
-              Générez un QR Code intelligent pour gérer les présences en temps réel.
+            <h2 className="text-xl font-bold text-white">Créer un événement</h2>
+          </div>
+          <p className="text-gray-400 text-sm">
+            Générez un QR Code intelligent pour gérer les présences en temps réel.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+          {/* Titre */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+              <Hash className="w-4 h-4" /> Titre *
+            </label>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Conférence Tech, Atelier NFC..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+              maxLength={100}
+            />
+            {errors.title && (
+              <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {errors.title}
+              </p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+              <Tag className="w-4 h-4" /> Description
+            </label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Détails, programme, objectifs..."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 min-h-[80px]"
+              maxLength={500}
+            />
+            <p className="text-gray-500 text-xs text-right mt-1">
+              {description.length}/500
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6">
-            <div className="space-y-5">
-              {/* Titre */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                  <Hash className="w-4 h-4" /> Titre *
-                </label>
-                <Input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Conférence Tech, Atelier NFC..."
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                  maxLength={100}
-                />
-                {errors.title && (
-                  <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {errors.title}
-                  </p>
-                )}
-              </div>
+          {/* Lieu */}
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+              <MapPin className="w-4 h-4" /> Lieu (optionnel)
+            </label>
+            <Input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Kinshasa, Hôtel Pullman, en ligne, etc."
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+            />
 
-              {/* Description */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                  <Tag className="w-4 h-4" /> Description
-                </label>
-                <Textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Détails, programme, objectifs..."
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 min-h-[100px]"
-                  maxLength={500}
-                />
-                <p className="text-gray-500 text-xs text-right mt-1">
-                  {description.length}/500
-                </p>
-              </div>
-
-              {/* Lieu */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" /> Lieu (optionnel)
-                </label>
-
-                <Input
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Kinshasa, Hôtel Pullman, en ligne, etc."
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                />
-
-                {location.trim() === '' && (
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="sm"
-                    className="mt-3 text-cyan-400 hover:text-cyan-300 flex items-center gap-2"
-                    onClick={getCurrentLocation}
-                    disabled={isLocating}
-                  >
-                    {isLocating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Recherche de votre position...
-                      </>
-                    ) : (
-                      <>
-                        <Locate className="w-4 h-4" />
-                        Utiliser ma position actuelle
-                      </>
-                    )}
-                  </Button>
-                )}
-
-                {location.trim() !== '' && (
-                  <p className="text-gray-500 text-xs mt-2">
-                    Vous pouvez modifier le lieu ou{' '}
-                    <button
-                      type="button"
-                      onClick={() => setLocation('')}
-                      className="text-cyan-400 hover:underline"
-                    >
-                      effacer
-                    </button>
-                  </p>
-                )}
-
-                {errors.location && (
-                  <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {errors.location}
-                  </p>
-                )}
-              </div>
-
-              {/* Dates */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                    <Clock className="w-4 h-4" /> Début *
-                  </label>
-                  <Input
-                    type="datetime-local"
-                    value={startsAt}
-                    onChange={(e) => setStartsAt(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white"
-                    min={new Date().toISOString().slice(0, 16)}
-                  />
-                  {errors.startsAt && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.startsAt}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                    <Clock className="w-4 h-4" /> Fin
-                  </label>
-                  <Input
-                    type="datetime-local"
-                    value={endsAt}
-                    onChange={(e) => setEndsAt(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white"
-                    min={startsAt || undefined}
-                  />
-                  {errors.endsAt && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.endsAt}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Options */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                    <Users className="w-4 h-4" /> Max. participants
-                  </label>
-                  <Input
-                    type="number"
-                    value={maxParticipants}
-                    onChange={(e) =>
-                      setMaxParticipants(e.target.value ? Number(e.target.value) : '')
-                    }
-                    placeholder="100"
-                    className="bg-white/5 border-white/10 text-white"
-                    min="1"
-                    max="10000"
-                  />
-                  {errors.maxParticipants && (
-                    <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.maxParticipants}
-                    </p>
-                  )}
-                </div>
-
-                <div className="flex items-end">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={isPublic}
-                      onChange={(e) => setIsPublic(e.target.checked)}
-                      className="rounded text-cyan-500 focus:ring-cyan-500"
-                    />
-                    <span className="text-gray-300 text-sm">Événement public</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            {/* Prévisualisation QR Code */}
-            <div className="mt-8 pt-6 border-t border-white/5">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <QrCode className="text-cyan-400" /> Prévisualisation QR Code
-              </h3>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="glass-border bg-white/5 border-white/10">
-                  <div className="p-4">
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Titre</span>
-                        <span className="text-white font-medium truncate max-w-[150px]">
-                          {title || '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Début</span>
-                        <span className="text-white font-medium">
-                          {startsAt ? new Date(startsAt).toLocaleString('fr-FR') : '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Lieu</span>
-                        <span className="text-white font-medium truncate max-w-[120px]">
-                          {location || '—'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-400">Public</span>
-                        <Badge variant={isPublic ? 'default' : 'secondary'}>
-                          {isPublic ? 'Oui' : 'Non'}
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div className="mt-4 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
-                      {/* --- CHANGEMENT ICI - Affichage de l'URL de prévisualisation --- */}
-                      <p className="text-cyan-300 text-xs flex items-center gap-1">
-                        <Link className="w-3 h-3" /> luvika.me{previewUrl} <span className="text-gray-500">(Structure)</span>
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-
-                <div className="flex flex-col items-center">
-                  <div className="w-48 h-48 bg-white p-3 rounded-xl flex items-center justify-center">
-                    {isGeneratingQR ? (
-                      <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-                    ) : qrDataUrl ? (
-                      <img
-                        src={qrDataUrl}
-                        alt="QR Code événement"
-                        className="w-full h-full object-contain"
-                      />
-                    ) : (
-                      <div className="text-gray-400 text-center text-xs">
-                        Remplissez le titre et la date<br />
-                        pour générer le QR
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-gray-400 text-xs mt-2 text-center">
-                    Scan → Check-in automatique
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Boutons d'action */}
-            <div className="mt-8 pb-6 flex flex-col sm:flex-row gap-3">
-              {(onCancel || onClose) && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1 border-white/20 text-gray-300 hover:bg-white/10"
-                  onClick={onClose || onCancel}
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" /> Annuler
-                </Button>
-              )}
-
+            {location.trim() === '' && (
               <Button
-                type="submit"
-                disabled={isLoading || !isFormValid || isGeneratingQR}
-                className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
+                type="button"
+                variant="link"
+                size="sm"
+                className="mt-2 h-auto p-0 text-cyan-400 hover:text-cyan-300 flex items-center gap-2"
+                onClick={getCurrentLocation}
+                disabled={isLocating}
               >
-                {isLoading ? (
+                {isLocating ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Création...
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    Recherche...
                   </>
                 ) : (
                   <>
-                    <Send className="w-4 h-4 mr-2" /> Créer l’événement
+                    <Locate className="w-3 h-3" />
+                    Utiliser ma position actuelle
                   </>
                 )}
               </Button>
-            </div>
-          </form>
-        </Card>
-      </div>
+            )}
 
-      {/* Tooltip erreurs */}
+            {errors.location && (
+              <p className="text-red-400 text-xs mt-2 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> {errors.location}
+              </p>
+            )}
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Début *
+              </label>
+              <Input
+                type="datetime-local"
+                value={startsAt}
+                onChange={(e) => setStartsAt(e.target.value)}
+                className="bg-white/5 border-white/10 text-white"
+                min={new Date().toISOString().slice(0, 16)}
+              />
+              {errors.startsAt && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.startsAt}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" /> Fin
+              </label>
+              <Input
+                type="datetime-local"
+                value={endsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                className="bg-white/5 border-white/10 text-white"
+                min={startsAt || undefined}
+              />
+              {errors.endsAt && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.endsAt}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Options */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
+                <Users className="w-4 h-4" /> Max. participants
+              </label>
+              <Input
+                type="number"
+                value={maxParticipants}
+                onChange={(e) =>
+                  setMaxParticipants(e.target.value ? Number(e.target.value) : '')
+                }
+                placeholder="100"
+                className="bg-white/5 border-white/10 text-white"
+                min="1"
+                max="10000"
+              />
+              {errors.maxParticipants && (
+                <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.maxParticipants}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-end pb-2">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isPublic}
+                  onChange={(e) => setIsPublic(e.target.checked)}
+                  className="rounded text-cyan-500 focus:ring-cyan-500 bg-white/5 border-white/20"
+                />
+                <span className="text-gray-300 text-sm">Événement public</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Prévisualisation QR Code */}
+          <div className="mt-8 pt-6 border-t border-white/5">
+            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+              <QrCode className="text-cyan-400" /> Prévisualisation
+            </h3>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card className="glass-border bg-white/5 border-white/10">
+                <div className="p-4 space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Titre</span>
+                    <span className="text-white font-medium truncate max-w-[150px]">
+                      {title || '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Début</span>
+                    <span className="text-white font-medium">
+                      {startsAt ? new Date(startsAt).toLocaleString('fr-FR') : '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Lieu</span>
+                    <span className="text-white font-medium truncate max-w-[120px]">
+                      {location || '—'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Public</span>
+                    <Badge variant={isPublic ? 'default' : 'secondary'} className="text-xs">
+                      {isPublic ? 'Oui' : 'Non'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                    <p className="text-cyan-300 text-xs flex items-center gap-1 break-all">
+                      <LinkIcon className="w-3 h-3 flex-shrink-0" /> 
+                      luvika.me{previewUrl}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-40 h-40 bg-white p-2 rounded-xl flex items-center justify-center shadow-lg">
+                  {isGeneratingQR ? (
+                    <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                  ) : qrDataUrl ? (
+                    <img
+                      src={qrDataUrl}
+                      alt="QR Code"
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="text-gray-400 text-center text-xs px-4">
+                      Remplissez le titre et la date pour générer le QR
+                    </div>
+                  )}
+                </div>
+                <p className="text-gray-400 text-xs mt-3 text-center">
+                  Scan → Check-in automatique
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Boutons d'action - Toujours visibles en bas du flux */}
+          <div className="pt-6 mt-6 border-t border-white/5 flex flex-col sm:flex-row gap-3">
+            {(onCancel || onClose) && (
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1 border-white/20 text-gray-300 hover:bg-white/10"
+                onClick={onClose || onCancel}
+              >
+                <RotateCcw className="w-4 h-4 mr-2" /> Annuler
+              </Button>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isLoading || !isFormValid || isGeneratingQR}
+              className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Création...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" /> Créer l’événement
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Card>
+
+      {/* Tooltip erreurs global */}
       <AnimatePresence>
         {Object.keys(errors).length > 0 && (
           <motion.div
@@ -566,15 +524,15 @@ const isFormValid = useMemo(() => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
-            className="fixed bottom-6 right-6 max-w-xs p-4 bg-red-900/30 backdrop-blur border border-red-500/30 rounded-xl text-red-200 text-sm z-50"
+            className="fixed bottom-6 right-6 max-w-xs p-4 bg-red-900/90 backdrop-blur border border-red-500/50 rounded-xl text-red-100 text-sm z-[200] shadow-2xl"
           >
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-400" />
               <div>
-                <p className="font-medium">Corrigez les erreurs</p>
-                <ul className="mt-1 space-y-1">
+                <p className="font-bold mb-1">Corrigez les erreurs :</p>
+                <ul className="space-y-1 list-disc list-inside opacity-90">
                   {Object.entries(errors).map(([key, msg]) => (
-                    <li key={key}>• {msg}</li>
+                    <li key={key}>{msg}</li>
                   ))}
                 </ul>
               </div>
