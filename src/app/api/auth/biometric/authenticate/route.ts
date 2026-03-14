@@ -2,7 +2,9 @@ import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import type { AuthenticatorTransport } from '@simplewebauthn/types';
+
+// ✅ CORRECTION : Définir le type localement au lieu de l'importer
+type AuthenticatorTransport = 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'usb';
 
 export async function POST() {
   try {
@@ -24,7 +26,7 @@ export async function POST() {
 
     const { data: { user } } = await supabase.auth.getUser();
     
-    // ✅ CORRECTION ICI : Typage explicite pour éviter l'erreur "implicit any"
+    // ✅ Utilisation du type local ici
     let allowCredentials: {
       id: string;
       type: 'public-key';
@@ -42,6 +44,8 @@ export async function POST() {
         allowCredentials = data.map(cred => ({
           id: cred.credential_id,
           type: 'public-key' as const,
+          // Optionnel : si vous stockez les transports en DB, mappez-les ici
+          // sinon, laissez undefined pour laisser le navigateur décider
         }));
       }
     }
