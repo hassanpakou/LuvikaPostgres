@@ -1,26 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClientForPage } from '@/src/lib/supabase/server';
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const supabase = await createClientForPage();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set({ name, value, ...options })
+            );
+          },
+        },
+      }
+    );
 
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { error: updateError } = await supabase
+    // Désactiver toutes les clés (soft delete) ou les supprimer
+    const { error } = await supabase
       .from('biometric_credentials')
-      .update({ is_active: false, last_used_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .eq('is_active', true);
+      .update({ is_active: false })
+      .eq('user_id', user.id);
+      
+    // Ou pour suppression définitive : .delete().eq('user_id', user.id);
 
-    if (updateError) throw updateError;
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error('Biometric disable error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to disable biometrics' }, { status: 500 });
+  } catch (error) {
+    console.error('Disable error:', error);
+    return NextResponse.json({ error: 'Échec désactivation' }, { status: 500 });
   }
 }
