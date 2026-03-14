@@ -1,102 +1,77 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClientForPage } from '@/src/lib/supabase/server';
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { getRpId } from '@/src/lib/webauthn/utils';
 
-export async function POST(request: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const supabase = await createClientForPage();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const body = await request.json();
+    const body = await req.json();
     const cookieStore = await cookies();
-    const challengeBase64 = (await cookieStore).get('biometric_auth_challenge')?.value;
-
-    if (!challengeBase64) {
-      return NextResponse.json({ error: 'Challenge expired' }, { status: 400 });
+    
+    const challenge = cookieStore.get('webauthn_auth_challenge')?.value;
+    if (!challenge) {
+      return NextResponse.json({ error: 'Challenge expiré' }, { status: 400 });
     }
 
-    const expectedChallenge = challengeBase64;
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set({ name, value, ...options })
+            );
+          },
+        },
+      }
+    );
 
-    const { data: creds, error: fetchError } = await supabase
+    // Récupérer la clé publique depuis la DB
+    const { data: credentialData, error: fetchError } = await supabase
       .from('biometric_credentials')
       .select('*')
-      .eq('user_id', user.id)
       .eq('credential_id', body.id)
       .eq('is_active', true)
       .single();
 
-    if (fetchError || !creds) {
-      return NextResponse.json({ error: 'Credential not found' }, { status: 404 });
+    if (fetchError || !credentialData) {
+      throw new Error('Identifiant biométrique introuvable');
     }
 
-    const rpID = getRpId();
-
+    // Vérifier la signature
     const verification = await verifyAuthenticationResponse({
-      response: {
-        id: body.id,
-        rawId: body.rawId,
-        response: {
-          clientDataJSON: body.response.clientDataJSON,
-          authenticatorData: body.response.authenticatorData,
-          signature: body.response.signature,
-          userHandle: body.response.userHandle,
-        },
-        type: body.type,
-        clientExtensionResults: body.clientExtensionResults || {},
-      },
-      expectedChallenge,
-      expectedOrigin: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-      expectedRPID: rpID,
-      // @ts-ignore - La propriété 'authenticator' est supportée par l'API réelle
-      authenticator: {
-        credentialID: creds.credential_id,
-        credentialPublicKey: Buffer.from(creds.public_key).toString('base64'),
-        counter: creds.sign_count,
-        transports: ['internal'],
+      response: body,
+      expectedChallenge: challenge,
+      expectedOrigin: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      expectedRPID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
+      credential: {
+        id: credentialData.credential_id,
+        publicKey: new Uint8Array(credentialData.public_key), // Conversion Bytea -> Uint8Array
+        counter: Number(credentialData.sign_count),
       },
       requireUserVerification: true,
     });
 
     if (!verification.verified) {
-      return NextResponse.json({ error: 'Authentication failed' }, { status: 401 });
+      throw new Error('Vérification échouée');
     }
 
-    const authenticationInfo = verification.authenticationInfo;
-    
-    if (!authenticationInfo) {
-      return NextResponse.json({ error: 'Authentication info missing' }, { status: 400 });
-    }
-
+    // Mettre à jour le sign_count et last_used_at
     await supabase
       .from('biometric_credentials')
-      .update({ 
-        sign_count: authenticationInfo.newCounter ?? creds.sign_count,
+      .update({
+        sign_count: verification.authenticationInfo.newCounter,
         last_used_at: new Date().toISOString(),
       })
-      .eq('id', creds.id);
+      .eq('credential_id', body.id);
 
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    if (sessionError) throw sessionError;
+    cookieStore.delete('webauthn_auth_challenge');
 
-    const response = NextResponse.json({ 
-      success: true,
-      message: 'Authenticated successfully',
-      session: {
-        access_token: session?.access_token,
-        expires_at: session?.expires_at,
-      }
-    });
-    
-    response.cookies.delete('biometric_auth_challenge');
-    return response;
+    return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error('❌ Biometric auth verify error:', error);
-    return NextResponse.json({ error: error.message || 'Authentication failed' }, { status: 401 });
+    console.error('Auth verify error:', error);
+    return NextResponse.json({ error: error.message || 'Échec authentification' }, { status: 500 });
   }
 }
