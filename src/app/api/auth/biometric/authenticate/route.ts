@@ -2,6 +2,7 @@ import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import type { AuthenticatorTransport } from '@simplewebauthn/types';
 
 export async function POST() {
   try {
@@ -21,15 +22,15 @@ export async function POST() {
       }
     );
 
-    // Optionnel : Si l'utilisateur est déjà connecté, on peut pré-remplir, 
-    // mais souvent on fait cela sur une page de login publique.
-    // Ici, on suppose qu'on cherche les clés pour un utilisateur potentiellement non connecté 
-    // OU on utilise l'ID si déjà connecté pour restreindre.
-    
-    // Pour simplifier dans votre contexte (déjà connecté dans settings) :
     const { data: { user } } = await supabase.auth.getUser();
     
-    let allowCredentials = [];
+    // ✅ CORRECTION ICI : Typage explicite pour éviter l'erreur "implicit any"
+    let allowCredentials: {
+      id: string;
+      type: 'public-key';
+      transports?: AuthenticatorTransport[];
+    }[] = [];
+
     if (user) {
       const { data } = await supabase
         .from('biometric_credentials')
