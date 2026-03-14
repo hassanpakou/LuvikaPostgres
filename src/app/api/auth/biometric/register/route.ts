@@ -1,90 +1,73 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClientForPage } from '@/src/lib/supabase/server';
 import { generateRegistrationOptions } from '@simplewebauthn/server';
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
-// ✅ Helper pour nettoyer le RP ID
-function getCleanRpId(): string {
-  const rawRpId = process.env.NEXT_PUBLIC_WEBAUTHN_RP_ID || 'localhost';
-  return rawRpId
-    .replace(/^https?:\/\//, '') // Supprime http:// ou https://
-    .replace(/:\d+$/, '')        // Supprime le port (:3000)
-    .replace(/\/$/, '')          // Supprime le slash final
-    .trim();                     // Supprime les espaces
-}
-
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
-    const supabase = await createClientForPage();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => cookieStore.getAll(),
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set({ name, value, ...options })
+            );
+          },
+        },
+      }
+    );
 
+    // 1. Vérifier l'utilisateur
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Récupérer les credentials existants pour exclusion
-    const { data: existingCreds, error: fetchError } = await supabase
+    // 2. Récupérer les identifiants existants pour les exclure (éviter les doublons)
+    const { data: existingCredentials } = await supabase
       .from('biometric_credentials')
       .select('credential_id')
       .eq('user_id', user.id)
       .eq('is_active', true);
 
-    if (fetchError) throw fetchError;
+    const excludeCredentials = existingCredentials?.map((cred) => ({
+      id: cred.credential_id,
+      type: 'public-key' as const,
+      transports: ['internal', 'hybrid'], // Supposition raisonnable
+    })) || [];
 
-    // ✅ RP ID nettoyé
-    const rpID = getCleanRpId();
-
-    // 🔍 Debug en développement
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔐 Register - RP ID:', rpID);
-      console.log('🔐 Register - User ID:', user.id);
-    }
-
-    // Options d'enregistrement
+    // 3. Générer les options
     const options = await generateRegistrationOptions({
       rpName: 'LUVIKA',
-      rpID,
-      userID: Uint8Array.from(user.id, c => c.charCodeAt(0)),
-      userName: user.email || user.id,
-      timeout: 60000,
+      rpID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
+      userID: user.id,
+      userName: user.email || '',
       attestationType: 'none',
-      excludeCredentials: existingCreds.map(cred => ({
-        id: cred.credential_id,
-        transports: ['internal'] as const,
-      })),
+      excludeCredentials,
       authenticatorSelection: {
-        authenticatorAttachment: 'platform',
-        userVerification: 'required',
-        requireResidentKey: true,
+        residentKey: 'preferred',
+        userVerification: 'preferred',
+        authenticatorAttachment: 'platform', // Force FaceID/TouchID/Windows Hello
       },
-      supportedAlgorithmIDs: [-7, -257], // ES256, RS256
     });
 
-    const challengeBase64 = Buffer.from(options.challenge).toString('base64');
-    
-    const response = NextResponse.json({ 
-      options: {
-        ...options,
-        challenge: challengeBase64,
-        user: {
-          ...options.user,
-          id: Buffer.from(options.user.id).toString('base64'),
-        },
-      }
-    });
-    
-    response.cookies.set('biometric_challenge', challengeBase64, {
+    // 4. Stocker le challenge temporairement dans un cookie sécurisé (valable 5 min)
+    // Note: En prod, utilisez Redis ou une table DB temporaire avec expiration.
+    cookieStore.set('webauthn_challenge', options.challenge, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 300, // 5 minutes
       path: '/',
-      sameSite: 'strict',
     });
 
-    return response;
-  } catch (error: any) {
-    console.error('❌ Biometric register init error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Failed to init registration' 
-    }, { status: 500 });
+    return NextResponse.json({ options });
+  } catch (error) {
+    console.error('Registration init error:', error);
+    return NextResponse.json({ error: 'Échec initialisation' }, { status: 500 });
   }
 }
