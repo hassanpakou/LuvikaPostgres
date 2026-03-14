@@ -27,7 +27,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // 2. Récupérer les identifiants existants pour les exclure (éviter les doublons)
+    // 2. Récupérer les identifiants existants pour les exclure
     const { data: existingCredentials } = await supabase
       .from('biometric_credentials')
       .select('credential_id')
@@ -37,31 +37,34 @@ export async function POST() {
     const excludeCredentials = existingCredentials?.map((cred) => ({
       id: cred.credential_id,
       type: 'public-key' as const,
-      transports: ['internal', 'hybrid'], // Supposition raisonnable
+      transports: ['internal', 'hybrid'],
     })) || [];
+
+    // 🔹 CORRECTION ICI : Conversion de l'ID (string) vers Uint8Array
+    // On encode la string en UTF-8 puis on la convertit en tableau d'octets
+    const userIdBytes = new TextEncoder().encode(user.id);
 
     // 3. Générer les options
     const options = await generateRegistrationOptions({
       rpName: 'LUVIKA',
       rpID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
-      userID: user.id,
+      userID: userIdBytes, // ✅ Utiliser la variable convertie ici
       userName: user.email || '',
       attestationType: 'none',
       excludeCredentials,
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',
-        authenticatorAttachment: 'platform', // Force FaceID/TouchID/Windows Hello
+        authenticatorAttachment: 'platform',
       },
     });
 
-    // 4. Stocker le challenge temporairement dans un cookie sécurisé (valable 5 min)
-    // Note: En prod, utilisez Redis ou une table DB temporaire avec expiration.
+    // 4. Stocker le challenge temporairement dans un cookie sécurisé
     cookieStore.set('webauthn_challenge', options.challenge, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 300, // 5 minutes
+      maxAge: 300,
       path: '/',
     });
 
