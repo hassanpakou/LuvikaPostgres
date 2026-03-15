@@ -96,68 +96,75 @@ function useBiometricAuth() {
     return bytes.buffer;
   };
 
-  useEffect(() => {
-    const checkSupport = async () => {
-      try {
-        // 1. Vérifier si l'API WebAuthn est disponible dans le navigateur
-        if (!window.PublicKeyCredential) {
-          setStatus('unsupported');
-          setIsSupported(false);
-          setDeviceInfo('Navigateur non compatible');
-          return;
-        }
+  // Dans src/app/dashboard/parameters/page.tsx, inside useBiometricAuth hook
 
-         // 2. Vérifier si l'appareil supporte l'authentification locale (biométrie)
-        // isUserVerifyingPlatformAuthenticatorAvailable() retourne une Promesse<boolean>
-        const isAvailable = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-
-        if (!isAvailable) {
-          setStatus('unsupported');
-          setIsSupported(false);
-          setDeviceInfo('Biométrie non disponible sur cet appareil');
-          return;
-        }
-
-        // 3. Si disponible, on détermine le type d'appareil pour l'affichage
-        const userAgent = navigator.userAgent;
-        let deviceName = 'Biométrie';
-        
-        if (/iPhone|iPad|iPod/i.test(userAgent)) {
-          deviceName = 'Face ID / Touch ID';
-        } else if (/Android/i.test(userAgent)) {
-          deviceName = 'Empreinte digitale / Face Unlock';
-        } else if (/Windows/i.test(userAgent)) {
-          deviceName = 'Windows Hello';
-        } else if (/Macintosh/i.test(userAgent)) {
-          deviceName = 'Touch ID';
-        }
-
-        setDeviceInfo(deviceName);
-        setIsSupported(true);
-        setStatus('available'); // ✅ C'est cette ligne qui débloque le bouton !
-
-        // 4. (Optionnel) Vérifier si l'utilisateur a DÉJÀ enregistré une clé
-        // Cela nécessiterait un appel API pour récupérer les IDs existants, 
-        // mais pour l'instant, on considère qu'il faut configurer.
-        // Si vous voulez vérifier l'état "enabled", faites un appel API ici :
-        /*
-        const res = await fetch('/api/auth/biometric/status');
-        if (res.ok && (await res.json()).enabled) {
-           setStatus('enabled');
-        } else {
-           setStatus('available');
-        }
-        */
-       
-      } catch (error) {
-        console.error('Error checking biometric support:', error);
-        setStatus('error');
+useEffect(() => {
+  const checkSupport = async () => {
+    try {
+      // 1. Vérifier si l'API WebAuthn est disponible dans le navigateur
+      if (!window.PublicKeyCredential) {
+        setStatus('unsupported');
         setIsSupported(false);
+        setDeviceInfo('Navigateur non compatible');
+        return;
       }
-    };
 
-    checkSupport();
-  }, []);
+      // 2. Vérifier si l'appareil supporte l'authentification locale (biométrie)
+      // isUserVerifyingPlatformAuthenticatorAvailable() retourne une Promesse<boolean>
+      const isAvailable = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+
+      if (!isAvailable) {
+        setStatus('unsupported');
+        setIsSupported(false);
+        setDeviceInfo('Biométrie non disponible sur cet appareil');
+        return;
+      }
+
+      // 3. Si disponible, on détermine le type d'appareil pour l'affichage
+      const userAgent = navigator.userAgent;
+      let deviceName = 'Biométrie';
+      
+      if (/iPhone|iPad|iPod/i.test(userAgent)) {
+        deviceName = 'Face ID / Touch ID';
+      } else if (/Android/i.test(userAgent)) {
+        deviceName = 'Empreinte digitale / Face Unlock';
+      } else if (/Windows/i.test(userAgent)) {
+        deviceName = 'Windows Hello';
+      } else if (/Macintosh/i.test(userAgent)) {
+        deviceName = 'Touch ID';
+      }
+
+      setDeviceInfo(deviceName);
+      setIsSupported(true);
+      
+      // 4. Vérifier si l'utilisateur a DÉJÀ enregistré une clé (Optionnel mais recommandé)
+      // On appelle l'API de statut que vous avez créée
+      try {
+        const res = await fetch('/api/auth/biometric/status', { method: 'GET' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.enabled) {
+            setStatus('enabled');
+            return; // Sortie précoce si déjà activé
+          }
+        }
+      } catch (err) {
+        console.warn('Impossible de vérifier le statut biométrique, on suppose "available"');
+      }
+
+      // Si pas encore activé, on reste sur 'available'
+      setStatus('available'); 
+
+    } catch (error) {
+      console.error('Error checking biometric support:', error);
+      setStatus('error');
+      setIsSupported(false);
+      setDeviceInfo('Erreur de vérification');
+    }
+  };
+
+  checkSupport();
+}, []);
 
   const setupBiometricAuth = async () => {
     if (status !== 'available') return;
