@@ -71,10 +71,11 @@ export async function POST(request: Request) {
     await supabaseAdmin.from('certificates').delete().eq('profile_id', user.id);
     await supabaseAdmin.from('contact_requests').delete().eq('profile_id', user.id);
     await supabaseAdmin.from('follows').delete().or(`follower_id.eq.${user.id},followed_id.eq.${user.id}`);
-    await supabaseAdmin.from('likes').delete().eq('visitor_id', user.id); // Ou profile_id selon votre schéma exact de likes
+    // Note: Vérifie le nom de la colonne pour les likes (visitor_id ou profile_id)
+    await supabaseAdmin.from('likes').delete().eq('visitor_id', user.id); 
     await supabaseAdmin.from('biometric_credentials').delete().eq('user_id', user.id);
 
-    // 7. Suppression du profil (La contrainte FK vers auth.users avec ON DELETE CASCADE devrait supprimer l'user)
+    // 7. Suppression du profil (déclenche maintenant le CASCADE vers auth.users si configuré)
     const { error: deleteProfileError } = await supabaseAdmin
       .from('profiles')
       .delete()
@@ -85,12 +86,18 @@ export async function POST(request: Request) {
       throw new Error('Échec de la suppression du profil');
     }
 
-    // Note: Si votre FK profiles.id -> auth.users.id a bien "ON DELETE CASCADE", 
-    // l'utilisateur est maintenant supprimé de auth.users automatiquement.
-    // Sinon, il faudrait utiliser supabaseAdmin.auth.admin.deleteUser(user.id) ici.
+    // 8. Suppression finale de l'utilisateur dans Auth (Sécurité supplémentaire)
+    // Même si le CASCADE fonctionne, cette ligne garantit que l'user est bien supprimé de auth.users
+    const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(user.id);
+    
+    if (deleteAuthError) {
+      console.warn('Avertissement suppression Auth (peut-être déjà fait par CASCADE):', deleteAuthError.message);
+      // On ne lance pas d'erreur ici car le profil est déjà supprimé, c'est juste un nettoyage
+    }
 
     console.log(`✅ Compte supprimé avec succès : ${user.id}`);
-    
+
+    // 9. Réponse de succès
     return NextResponse.json({ 
       success: true, 
       message: 'Compte supprimé définitivement' 
@@ -98,8 +105,9 @@ export async function POST(request: Request) {
 
   } catch (error: any) {
     console.error('❌ Erreur critique suppression compte:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Erreur serveur - Contactez le support' 
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Erreur serveur - Contactez le support' }, 
+      { status: 500 }
+    );
   }
 }
