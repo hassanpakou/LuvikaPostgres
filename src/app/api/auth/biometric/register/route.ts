@@ -26,39 +26,35 @@ export async function POST() {
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
-
     // 2. Récupérer les identifiants existants pour les exclure
     const { data: existingCredentials } = await supabase
       .from('biometric_credentials')
-      .select('credential_id')
+      .select('credential_id, device_type') // On récupère aussi device_type si besoin
       .eq('user_id', user.id)
       .eq('is_active', true);
 
+    // 🔹 CORRECTION ICI : Cast explicite des transports
     const excludeCredentials = existingCredentials?.map((cred) => ({
       id: cred.credential_id,
       type: 'public-key' as const,
-      transports: ['internal', 'hybrid'],
+      // On cast le tableau de string vers le type attendu par simplewebauthn
+      transports: ['internal', 'hybrid'] as AuthenticatorTransportFuture[], 
     })) || [];
-
-    // 🔹 CORRECTION ICI : Conversion de l'ID (string) vers Uint8Array
-    // On encode la string en UTF-8 puis on la convertit en tableau d'octets
-    const userIdBytes = new TextEncoder().encode(user.id);
 
     // 3. Générer les options
     const options = await generateRegistrationOptions({
       rpName: 'LUVIKA',
       rpID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
-      userID: userIdBytes, // ✅ Utiliser la variable convertie ici
+      userID: userIdBytes, // Assurez-vous d'utiliser la variable convertie (Uint8Array)
       userName: user.email || '',
       attestationType: 'none',
-      excludeCredentials,
+      excludeCredentials, // ✅ Maintenant compatible
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',
         authenticatorAttachment: 'platform',
       },
     });
-
     // 4. Stocker le challenge temporairement dans un cookie sécurisé
     cookieStore.set('webauthn_challenge', options.challenge, {
       httpOnly: true,
