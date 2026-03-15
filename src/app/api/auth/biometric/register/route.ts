@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
+// ✅ CORRECTION : Définir le type localement pour éviter l'erreur d'import
+type AuthenticatorTransportFuture = 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'usb';
+
 export async function POST() {
   try {
     const cookieStore = await cookies();
@@ -26,18 +29,18 @@ export async function POST() {
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
+
     // 2. Récupérer les identifiants existants pour les exclure
     const { data: existingCredentials } = await supabase
       .from('biometric_credentials')
-      .select('credential_id, device_type') // On récupère aussi device_type si besoin
+      .select('credential_id')
       .eq('user_id', user.id)
       .eq('is_active', true);
 
-    // 🔹 CORRECTION ICI : Cast explicite des transports
+    // ✅ Utilisation du type local ici pour le cast
     const excludeCredentials = existingCredentials?.map((cred) => ({
       id: cred.credential_id,
       type: 'public-key' as const,
-      // On cast le tableau de string vers le type attendu par simplewebauthn
       transports: ['internal', 'hybrid'] as AuthenticatorTransportFuture[], 
     })) || [];
 
@@ -45,17 +48,18 @@ export async function POST() {
     const options = await generateRegistrationOptions({
       rpName: 'LUVIKA',
       rpID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
-      userID: userIdBytes, // Assurez-vous d'utiliser la variable convertie (Uint8Array)
+      userID: new TextEncoder().encode(user.id), // ✅ N'oubliez pas la conversion Uint8Array ici aussi !
       userName: user.email || '',
       attestationType: 'none',
-      excludeCredentials, // ✅ Maintenant compatible
+      excludeCredentials,
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',
         authenticatorAttachment: 'platform',
       },
     });
-    // 4. Stocker le challenge temporairement dans un cookie sécurisé
+
+    // 4. Stocker le challenge temporairement
     cookieStore.set('webauthn_challenge', options.challenge, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
