@@ -7,23 +7,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import ProfileCard3D from '../../../components/cards/ProfileCard3D';
 import { 
   ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3, 
-  Layers, QrCode, Sparkle, Zap, CheckCircle, Star, 
-  ChevronRight, Trophy, Briefcase, GraduationCap
-} from 'lucide-react';
-import { 
-  ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3, 
-  Layers, QrCode, Sparkle, Zap, CheckCircle, Star, 
+  Layers, QrCode, Sparkles, Zap, CheckCircle, Star, // ✅ Correction: Sparkles (avec un 's')
   ChevronRight, Trophy, Briefcase, GraduationCap,
-  // 👇 AJOUTE CES ICÔNES ICI 👇
+  // Icônes nécessaires pour le Footer
   Github, Twitter, Linkedin, Mail, MapPin, Heart, Globe, User, Gavel, ChevronUp
 } from 'lucide-react';
-
-// Assure-toi d'avoir aussi les réseaux sociaux si tu veux les mêmes que le footer
-import { SiSocialblade, SiInstagram, SiFacebook, SiSnapchat, SiTelegram, SiWhatsapp, SiTiktok } from 'react-icons/si';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
-import { SiSocialblade } from 'react-icons/si';
+import { SiSocialblade, SiInstagram, SiFacebook, SiSnapchat, SiTelegram, SiWhatsapp, SiTiktok } from 'react-icons/si';
 
 // 🔑 Fonction déterministe pour le pattern QR
 const getQrBlockClass = (index: number): string => {
