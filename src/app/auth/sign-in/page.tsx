@@ -495,32 +495,7 @@ export default function SignInPage() {
                     {t('auth.welcome.message') || 'Heureux de vous revoir parmi nous.'}
                   </motion.p>
                   
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="flex flex-col sm:flex-row gap-3 justify-center"
-                  >
-                    <Button 
-                      onClick={() => setShowWelcomeModal(false)}
-                      className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium px-6 py-3 rounded-xl"
-                    >
-                      Commencer
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                    
-                    <Button 
-                      variant="outline"
-                      onClick={() => {
-                        setShowWelcomeModal(false);
-                        router.push('/dashboard/settings');
-                      }}
-                      className="border-white/20 text-gray-300 hover:bg-white/10 font-medium px-6 py-3 rounded-xl"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Paramètres
-                    </Button>
-                  </motion.div>
+                
                   
                   <div className="mt-8 pt-6 border-t border-white/10">
                     <div className="flex flex-wrap justify-center gap-4 text-[11px] text-gray-400">
