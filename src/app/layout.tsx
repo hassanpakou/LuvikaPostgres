@@ -58,12 +58,16 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: { google: 'your-google-verification-code' },
-  alternates: {
-    canonical: 'https://luvika.vercel.app',
-    languages: { 'fr-FR': 'https://luvika.vercel.app/fr', 'en-US': 'https://luvika.vercel.app/en' },
+  verification: {
+  google: 'StrToXBAcUOqWud04cCkAjsXw8jWQEHe8BluylfOEAU'
+},
+alternates: {
+  canonical: 'https://luvika.vercel.app',
+  languages: {
+    'fr-FR': 'https://luvika.vercel.app/fr',
+    'en-US': 'https://luvika.vercel.app/en'
   },
-};
+},
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
