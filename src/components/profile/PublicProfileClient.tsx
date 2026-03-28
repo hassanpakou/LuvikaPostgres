@@ -974,27 +974,7 @@ const showLinksSection =
 {isSectionEnabled('profile', localCardConfigs) && (
 <div className="-mt-6 md:mt-4 max-w-4xl mx-auto px-4">
     <div className="flex flex-wrap justify-center items-center gap-2.5 md:gap-3">
-      {/* 👤 Nickname - Badge premium */}
-      {localProfile.nickname && (
-        <IdentityBadge
-          icon={<User className="w-4 h-4 text-cyan-400" />}
-          label={localProfile.nickname}
-          gradient="from-cyan-500/15 to-blue-500/10"
-          borderColor="border-cyan-500/20"
-          textColor="text-cyan-300"
-        />
-      )}
-
-      {/* 🌈 Pronouns - Badge premium */}
-      {localProfile.pronouns && (
-        <IdentityBadge
-          icon={<Users className="w-4 h-4 text-purple-400" />}
-          label={localProfile.pronouns}
-          gradient="from-purple-500/15 to-fuchsia-500/10"
-          borderColor="border-purple-500/20"
-          textColor="text-purple-300"
-        />
-      )}
+    
 
       {/* 💼 Job Title & Company - Badge premium */}
       {(localProfile.job_title || localProfile.company) && (
