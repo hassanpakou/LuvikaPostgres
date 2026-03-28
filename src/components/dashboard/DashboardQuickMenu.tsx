@@ -64,7 +64,7 @@ export default function DashboardQuickMenu({
   const startYRef = useRef(0);
   
   // 🔊 Sons de clic (avec fallback silencieux)
-  const playClickSound = useSound('/sounds/click-subtle.mp3');
+  const playClickSound = useSound('');
 
   // 🔹 Détection responsive améliorée
   useEffect(() => {
