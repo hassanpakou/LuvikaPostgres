@@ -10,7 +10,7 @@ import {
   Settings, AlertTriangle, MessageSquare, Send,
   Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight,
   ShoppingBag,
-  Moon, UserPlus, UserMinus,
+  Moon, UserPlus, UserMinus,Layers,
   Sun,CreditCard,XCircle ,
   User,
   Globe,
@@ -79,6 +79,7 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
+// 🔹 Fonction pour fermer tous les modaux contrôlés par activeModal
 
 // 🔹 Modal de succès
 const SuccessModal = ({
@@ -263,8 +264,8 @@ const UpgradeModal = ({
         exit={{ scale: 0.9, opacity: 0, y: 20 }}
         className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md p-6"
       >
-        <Card className="glass-border bg-gradient-to-b relative overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+<Card className="glass-border bg-gradient-to-b relative overflow-hidden">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
             {[...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
@@ -723,7 +724,16 @@ type Profile = {
   likes_count?: number;
   // 🔹 Ajouter avatar_url
   avatar_url?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  bio?: string; // ou bio_short seulement
+  skills?: string[] | any[]; // à affiner
+  links?: { url: string; title: string }[];
+  certificates?: any[]; // selon structure réelle
+  portfolio?: any[];
 };
+
 type Action = {
   id: string;
   label: string;
@@ -756,6 +766,7 @@ type Props = {
   planColors: Record<string, string>;
   isAdmin: boolean;
   totalFollowers: number;
+  refreshProfile: () => Promise<void>;
 };
 type EventData = {
   title: string;
@@ -769,7 +780,7 @@ type EventData = {
 
 export default function DashboardContent({
   user, profile, cards, recentScans,
-  totalScans, qrBase64, profileUrl, planColors, isAdmin, totalFollowers,
+  totalScans, qrBase64, profileUrl, planColors, isAdmin, totalFollowers, refreshProfile,
 }: Props) {
   const t = useTranslations('dashboard');
   const tNavbar = useTranslations('navbar');
@@ -794,7 +805,7 @@ const [isNFCModalOpen, setIsNFCModalOpen] = useState(false);
 const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
 const [selectedCardForManagement, setSelectedCardForManagement] = useState<NFCCard | null>(null);
 const [nfcCards, setNfcCards] = useState<NFCCard[]>([]);
-
+const [isTransparent, setIsTransparent] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -819,7 +830,10 @@ const [nfcCards, setNfcCards] = useState<NFCCard[]>([]);
 const [activeCardStats, setActiveCardStats] = useState<{ scans: number; unique_visitors: number } | null>(null);
 const [loadingCards, setLoadingCards] = useState(true);
 const [loadingMessagesCount, setLoadingMessagesCount] = useState(true);
-  
+  // 🔹 Fonction pour fermer les modaux contrôlés par activeModal
+const closeModal = () => {
+  setActiveModal(null);
+};
   // 🔹 Références pour les canaux realtime
   const channelsRef = useRef<any>({});
   const subscription = useMemo(() => {
@@ -1543,35 +1557,39 @@ const calculateProfileCompletion = (profile: any) => {
   let score = 0;
   const totalPoints = 10;
 
-  // Photo de profil (+2 points)
   if (profile.avatar_url) score += 2;
-
-  // Bio (+1 point)
-  if (profile.bio_short || profile.bio) score += 1;
-
-  // Email (+1 point)
+  if (profile.bio_short || profile.bio_long) score += 1;
   if (profile.email) score += 1;
-
-  // Téléphone (+1 point)
   if (profile.phone) score += 1;
-
-  // Adresse (+1 point)
   if (profile.address) score += 1;
-
-  // Compétences (+1 point)
+  
+  // Skills (array dans profiles)
   if (profile.skills && profile.skills.length > 0) score += 1;
 
-  // Liens professionnels (+1 point)
-  if (profile.links && profile.links.length > 0) score += 1;
+  // Links : au moins un lien social renseigné
+  const hasLinks = !!(
+    profile.website ||
+    profile.linkedin ||
+    profile.github ||
+    profile.instagram ||
+    profile.tiktok ||
+    profile.snapchat ||
+    profile.behance ||
+    profile.dribbble ||
+    profile.gitlab ||
+    profile.portfolio_url
+  );
+  if (hasLinks) score += 1;
 
-  // Certificats (+1 point)
+  // Certificates (table jointe)
   if (profile.certificates && profile.certificates.length > 0) score += 1;
 
-  // Portfolio (+1 point)
-  if (profile.portfolio && profile.portfolio.length > 0) score += 1;
+  // Portfolio (table jointe)
+  if (profile.portfolios && profile.portfolios.length > 0) score += 1;
 
   return Math.round((score / totalPoints) * 100);
 };
+
 // 🔹 ✅ NOUVEAU : Mettre à jour la complétion quand le profil change
 useEffect(() => {
   if (profile) {
@@ -1583,8 +1601,8 @@ useEffect(() => {
 const { theme, setTheme } = useTheme();
 
 // 🔹 Toggle thème
-const toggleTheme = () => {
-  setTheme(theme === 'dark' ? 'light' : 'dark');
+const toggleTransparency = () => {
+  setIsTransparent(prev => !prev);
 };
 
 // 🔹 Recherche d'utilisateurs
@@ -1812,45 +1830,32 @@ const handleToggleFollow = async (profileId: string) => {
   <div className="absolute inset-0 rounded-xl sm:rounded-full bg-red-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
 </Button>
 
-    {/* 🌗 Thème - JAUNE/BLANC */}
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTheme}
-      className={`
-        h-11 w-11 sm:h-12 sm:w-12
-        rounded-xl sm:rounded-full
-        bg-white/8 hover:bg-white/15
-        border border-white/15
-        transition-all duration-300
-        group
-        relative
-        shadow-md
-        ${theme === 'dark' 
-          ? 'shadow-yellow-500/10 hover:shadow-yellow-500/20' 
-          : 'shadow-blue-500/10 hover:shadow-blue-500/20'
-        }
-      `}
-      aria-label={theme === 'dark' ? 'Activer le mode clair' : 'Activer le mode sombre'}
-    >
-      {theme === 'dark' ? (
-        <Sun className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-300 group-hover:scale-110 transition-transform" />
-      ) : (
-        <Moon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-200 group-hover:scale-110 transition-transform" />
-      )}
-      <div className="absolute inset-0 rounded-xl sm:rounded-full bg-white/15 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-      
-      {/* 🔹 Badge indicateur thème */}
-      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 hidden sm:block">
-        <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[10px] font-medium ${
-          theme === 'dark'
-            ? 'bg-yellow-500/20 text-yellow-200 border-yellow-500/30'
-            : 'bg-blue-500/20 text-blue-200 border-blue-500/30'
-        }`}>
-          {theme === 'dark' ? '☀️' : '🌙'}
-        </div>
-      </div>
-    </Button>
+    {/* 🌫️ Transparence des sections */}
+<Button
+  variant="ghost"
+  size="icon"
+  onClick={toggleTransparency}
+  className={`
+    h-11 w-11 sm:h-12 sm:w-12
+    rounded-xl sm:rounded-full
+    bg-white/8 hover:bg-white/15
+    border border-white/15
+    transition-all duration-300
+    group relative
+    shadow-md
+    ${isTransparent 
+      ? 'shadow-purple-500/10 hover:shadow-purple-500/20' 
+      : 'shadow-blue-500/10 hover:shadow-blue-500/20'
+    }
+  `}
+  aria-label={isTransparent ? 'Mode opaque' : 'Mode transparent'}
+>
+  {isTransparent ? (
+    <EyeOff className="h-5 w-5 sm:h-6 sm:w-6 text-purple-300 group-hover:scale-110 transition-transform" />
+  ) : (
+    <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-blue-200 group-hover:scale-110 transition-transform" />
+  )}
+</Button>
   </div>
 </div>
 
@@ -1867,7 +1872,7 @@ const handleToggleFollow = async (profileId: string) => {
     transition-all duration-300
     flex items-center gap-4
     group
-    overflow-hidden
+    overflow-visible
     rounded-2xl
     bg-gradient-to-br 
     ${
@@ -2439,8 +2444,11 @@ const handleToggleFollow = async (profileId: string) => {
   {/* ========================================
    SECTION: Gestion des Cartes NFC
    ======================================== */}
-<Card className="glass-section border border-white/15 rounded-xl bg-white/5 backdrop-blur-sm w-full shadow-lg shadow-black/20">
-  <CardHeader className="border-b border-white/10 pb-4">
+<Card className={`glass-section border border-white/15 rounded-xl ${
+  isTransparent 
+    ? 'bg-transparent backdrop-blur-none' 
+    : 'bg-white/5 backdrop-blur-sm'
+}`}>  <CardHeader className="border-b border-white/10 pb-4">
     <CardTitle className="flex items-center flex-wrap gap-3">
       {/* Icône NFC */}
       <div className="p-2 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-lg">
@@ -2675,7 +2683,7 @@ const handleToggleFollow = async (profileId: string) => {
     w-full
     shadow-2xl
     shadow-black/50
-    overflow-hidden
+    overflow-visible
     group
     transition-all duration-500
     hover:border-cyan-500/30
@@ -3106,7 +3114,7 @@ const handleToggleFollow = async (profileId: string) => {
             </motion.div>
           )}
 
-{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - SCROLL EXTERNE GARANTI */}
+{/* 🔹 MODAL CRÉATION ÉVÉNEMENT - SCROLL FONCTIONNEL ET COULEURS CORRIGÉES */}
 {isEventFormOpen && (
   <motion.div
     key="event-form-modal"
@@ -3120,14 +3128,13 @@ const handleToggleFollow = async (profileId: string) => {
       initial={{ scale: 0.95, opacity: 0, y: 20 }}
       animate={{ scale: 1, opacity: 1, y: 0, transition: { type: "spring", damping: 25, stiffness: 300 } }}
       exit={{ scale: 0.95, opacity: 0, y: 20 }}
-      // 1️⃣ PARENT : max-h défini + overflow-hidden (contient le scroll)
-      className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-gradient-to-br from-gray-900 via-green-900/20 to-gray-900 backdrop-blur-xl rounded-3xl border border-emerald-500/20 shadow-2xl shadow-emerald-900/50 overflow-hidden"
+      className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-gray-900 via-blue-900/20 to-gray-900 backdrop-blur-xl rounded-3xl border border-cyan-500/20 shadow-2xl shadow-cyan-900/50"
       onClick={e => e.stopPropagation()}
     >
       {/* 🌿 Décorations */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute -top-20 -right-20 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
       </div>
 
       {/* 🔘 Bouton fermeture */}
@@ -3138,61 +3145,55 @@ const handleToggleFollow = async (profileId: string) => {
         <X className="w-5 h-5" />
       </button>
 
-      {/* 📱 STRUCTURE FLEX COL (Gère la hauteur) */}
-      <div className="flex flex-col relative z-10 w-full h-full">
-        
-        {/* HEADER FIXE (ne scroll pas) */}
-        <div className="flex-shrink-0 p-6 border-b border-white/10 bg-gradient-to-r from-gray-900/90 to-green-900/20 backdrop-blur-sm">
+      <div className="relative z-10 p-6">
+        {/* HEADER */}
+        <div className="mb-6 border-b border-white/10 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
-              <Plus className="w-6 h-6 text-emerald-400" />
+            <div className="p-2.5 bg-cyan-500/20 rounded-xl border border-cyan-500/30">
+              <Plus className="w-6 h-6 text-cyan-400" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Créer un nouvel événement</h2>
-              <p className="text-xs text-emerald-200/70 mt-0.5">Configuration rapide et sécurisée</p>
+              <p className="text-xs text-cyan-200/70 mt-0.5">Configuration rapide et sécurisée</p>
             </div>
           </div>
         </div>
 
-        {/* 2️⃣ ZONE DE SCROLL UNIQUE (Prend tout l'espace restant) */}
-        {/* C'est ICI que le scroll se fait. Le formulaire à l'intérieur est "fluide". */}
-        <div className="flex-grow overflow-y-auto overscroll-contain p-6 custom-scrollbar min-h-0">
-          <CreateEventForm
-            onSubmit={async (data) => {
-              try {
-                // ✅ URL Corrigée
-                const response = await fetch('/api/events', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify(data),
-                });
-                
-                if (!response.ok) {
-                  const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
-                  throw new Error(errorData.error || 'Échec de la création');
-                }
-                
-                const eventData = await response.json();
-                console.log('✅ Événement créé:', eventData);
-                setIsEventFormOpen(false);
-                toast.success('🎉 Événement créé avec succès !');
-              } catch (error: any) {
-                console.error('❌ Erreur création:', error);
-                toast.error('❌ Erreur lors de la création', {
-                  description: error.message || "Vérifiez vos informations et réessayez.",
-                  duration: 5000,
-                });
+        {/* FORMULAIRE */}
+        <CreateEventForm
+          onSubmit={async (data) => {
+            try {
+              const response = await fetch('/api/events', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+              });
+              
+              if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Erreur inconnue' }));
+                throw new Error(errorData.error || 'Échec de la création');
               }
-            }}
-            onClose={() => setIsEventFormOpen(false)}
-            isLoading={false}
-          />
-        </div>
+              
+              const eventData = await response.json();
+              console.log('✅ Événement créé:', eventData);
+              setIsEventFormOpen(false);
+              toast.success('🎉 Événement créé avec succès !');
+            } catch (error: any) {
+              console.error('❌ Erreur création:', error);
+              toast.error('❌ Erreur lors de la création', {
+                description: error.message || "Vérifiez vos informations et réessayez.",
+                duration: 5000,
+              });
+            }
+          }}
+          onClose={() => setIsEventFormOpen(false)}
+          isLoading={false}
+        />
 
-        {/* FOOTER FIXE (Optionnel, ne scroll pas) */}
-        <div className="flex-shrink-0 p-4 border-t border-white/10 bg-gray-900/50 backdrop-blur-sm text-center">
+        {/* FOOTER */}
+        <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
             Données sécurisées et chiffrées
           </p>
         </div>
@@ -3203,21 +3204,23 @@ const handleToggleFollow = async (profileId: string) => {
   
   {/* 🔹 MODAUX INDÉPENDANTS - CLÉS STATIQUES (pas de Date.now !) */}
   {isPortfolioModalOpen && (
-    <PortfolioModal
-      key="portfolio-modal" // ✅ STATIQUE (pas de Date.now)
-      isOpen={true}
-      onClose={() => setIsPortfolioModalOpen(false)}
-      profileId={profile.id}
-    />
-  )}
-  {isCertificatesModalOpen && (
-    <CertificatesModal
-      key="certificates-modal" // ✅ STATIQUE
-      isOpen={true}
-      onClose={() => setIsCertificatesModalOpen(false)}
-      profileId={profile.id}
-    />
-  )}
+  <PortfolioModal
+    key="portfolio-modal"
+    isOpen={true}
+    onClose={() => setIsPortfolioModalOpen(false)}
+    profileId={profile.id}
+    onSuccess={refreshProfile}   // 👈 callback après sauvegarde
+  />
+)}
+{isCertificatesModalOpen && (
+  <CertificatesModal
+    key="certificates-modal"
+    isOpen={true}
+    onClose={() => setIsCertificatesModalOpen(false)}
+    profileId={profile.id}
+    onSuccess={refreshProfile}
+  />
+)}
   {activeModal === 'upgrade' && profile.plan !== 'entreprise' && (
     <UpgradeModal
       key="modal-upgrade"
@@ -3475,6 +3478,3 @@ const handleToggleFollow = async (profileId: string) => {
   );
 }
 
-function closeModal() {
-  throw new Error('Function not implemented.');
-}

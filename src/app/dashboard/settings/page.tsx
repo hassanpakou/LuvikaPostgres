@@ -154,6 +154,9 @@ export default function SettingsPage() {
     privacy: true,
     account: false,
   });
+const [isRealtimeActive, setIsRealtimeActive] = useState(false);
+const [lastRealtimeUpdate, setLastRealtimeUpdate] = useState<Date | null>(null);
+const [realtimeError, setRealtimeError] = useState<string | null>(null);
 
   // 🔹 Quick actions menu
   const quickActions = [
@@ -211,6 +214,41 @@ export default function SettingsPage() {
     setProfile(defaults as Profile);
     setLoading(false);
   };
+
+  useEffect(() => {
+  if (!profile?.id) return;
+  
+  const supabase = createClient();
+  
+  const channel = supabase
+    .channel(`profile-settings-${profile.id}`)
+    .on(
+      'postgres_changes',
+      {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${profile.id}`,
+      },
+      (payload) => {
+        // 🔹 Mise à jour silencieuse du profil si modifié ailleurs
+        setProfile((prev) => prev ? { ...prev, ...payload.new } : prev);
+        setLastRealtimeUpdate(new Date());
+        console.log('🔄 Profil mis à jour depuis un autre appareil');
+        toast.info('🔄 Profil synchronisé depuis un autre appareil', { duration: 2000 });
+      }
+    )
+    .subscribe((status) => {
+      setIsRealtimeActive(status === 'SUBSCRIBED');
+      if (status === 'CHANNEL_ERROR') setRealtimeError('Erreur de connexion');
+      else if (status === 'TIMED_OUT') setRealtimeError('Délai de connexion dépassé');
+      else setRealtimeError(null);
+    });
+
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [profile?.id]);
 
   useEffect(() => {
     fetchProfile();
@@ -319,82 +357,93 @@ const handleImageUpload = async (
     toast.error(`Échec de l'upload: ${err.message || 'Erreur inconnue'}`);
   }
 };
-  // 🔹 Sauvegarde
-  const handleSave = async () => {
-    if (!profile) return;
-    setSaving(true);
+ const handleSave = async () => {
+  if (!profile) return;
 
-    try {
-      const supabase = createClient();
-      const updates = {
-        full_name: profile.full_name?.trim() || null,
-        username: profile.username?.trim().toLowerCase() || null,
-        avatar_url: profile.avatar_url,
-        cover_url: profile.cover_url,
-        bio_short: profile.bio_short,
-        bio_long: profile.bio_long,
-        job_title: profile.job_title,
-        company: profile.company,
-        email: profile.email,
-        phone: profile.phone,
-        whatsapp: profile.whatsapp,
-        instagram: profile.instagram?.replace(/^@/, '') || null,
-        // 🔹 ✅ Tous les nouveaux champs
-        tiktok: profile.tiktok?.replace(/^@/, '') || null,
-        linkedin: profile.linkedin?.replace(/^https?:\/\//, '') || null,
-        snapchat: profile.snapchat?.replace(/^@/, '') || null,
-        telegram: profile.telegram?.replace(/^@/, '') || null,
-        github: profile.github?.replace(/^https?:\/\//, '') || null,
-        gitlab: profile.gitlab?.replace(/^https?:\/\//, '') || null,
-        behance: profile.behance?.replace(/^https?:\/\//, '') || null,
-        dribbble: profile.dribbble?.replace(/^https?:\/\//, '') || null,
-        calendly: profile.calendly?.replace(/^https?:\/\//, '') || null,
-        portfolio_url: profile.portfolio_url?.replace(/^https?:\/\//, '') || null,
-        cv_url: profile.cv_url?.replace(/^https?:\/\//, '') || null,
-        nickname: profile.nickname,
-        pronouns: profile.pronouns,
-        birth_day: profile.birth_day,
-        birth_month: profile.birth_month,
-        birth_year: profile.birth_year,
-        city: profile.city,
-        country: profile.country,
-        timezone: profile.timezone,
-        availability: profile.availability,
-        skills: profile.skills,
-        professional_status: profile.professional_status,
-        website: profile.website,
-        address: profile.address,
-        theme: profile.theme,
-        is_public: profile.is_public,
-        sections_visibility: profile.sections_visibility,
-        accepts_contact_requests: profile.accepts_contact_requests,
-        hide_birth_year: profile.hide_birth_year,
-        disable_birthday_icon: profile.disable_birthday_icon,
-        verified: profile.verified,
-        enable_connection_alerts: profile.enable_connection_alerts,
-      };
+  if (!isRealtimeActive) {
+    toast.warning('⚠️ Mode hors ligne - Les modifications seront synchronisées à la reconnexion', {
+      duration: 4000,
+    });
+  }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', profile.id)
-        .select();
+  setSaving(true);
 
-      if (error) throw error;
+  try {
+    const supabase = createClient();
+    
+    // 🔹 Préparer les updates avec valeurs par défaut sûres
+    const updates = {
+      full_name: profile.full_name?.trim() || null,
+      username: profile.username?.trim().toLowerCase() || null,
+      avatar_url: profile.avatar_url || null,
+      cover_url: profile.cover_url || null,
+      bio_short: profile.bio_short || null,
+      bio_long: profile.bio_long || null,
+      job_title: profile.job_title || null,
+      company: profile.company || null,
+      email: profile.email || null,
+      phone: profile.phone || null,
+      whatsapp: profile.whatsapp || null,
+      instagram: profile.instagram?.replace(/^@/, '') || null,
+      tiktok: profile.tiktok?.replace(/^@/, '') || null,
+      linkedin: profile.linkedin?.replace(/^https?:\/\//, '') || null,
+      snapchat: profile.snapchat?.replace(/^@/, '') || null,
+      telegram: profile.telegram?.replace(/^@/, '') || null,
+      github: profile.github?.replace(/^https?:\/\//, '') || null,
+      gitlab: profile.gitlab?.replace(/^https?:\/\//, '') || null,
+      behance: profile.behance?.replace(/^https?:\/\//, '') || null,
+      dribbble: profile.dribbble?.replace(/^https?:\/\//, '') || null,
+      calendly: profile.calendly?.replace(/^https?:\/\//, '') || null,
+      portfolio_url: profile.portfolio_url?.replace(/^https?:\/\//, '') || null,
+      cv_url: profile.cv_url?.replace(/^https?:\/\//, '') || null,
+      nickname: profile.nickname || null,
+      pronouns: profile.pronouns || null,
+      birth_day: profile.birth_day || null,
+      birth_month: profile.birth_month || null,
+      birth_year: profile.birth_year || null,
+      city: profile.city || null,
+      country: profile.country || null,
+      timezone: profile.timezone || null,
+      availability: profile.availability || null,
+      skills: profile.skills || [], // ✅ tableau vide par défaut
+      professional_status: profile.professional_status || null,
+      website: profile.website || null,
+      address: profile.address || null,
+      theme: profile.theme || { primary: '#0ea5e9', background: '#0f172a' },
+      is_public: profile.is_public ?? true,
+      sections_visibility: profile.sections_visibility || {},
+      accepts_contact_requests: profile.accepts_contact_requests ?? true,
+      hide_birth_year: profile.hide_birth_year ?? false,
+      disable_birthday_icon: profile.disable_birthday_icon ?? false,
+      // ❌ verified: profile.verified, // Ne pas inclure
+      enable_connection_alerts: profile.enable_connection_alerts ?? true,
+    };
 
-      toast.success('✅ Profil mis à jour avec succès !', {
-        duration: 3000,
-      });
+    console.log('📤 Sauvegarde du profil:', updates);
 
-      // Rafraîchir les données serveur
-      router.refresh();
-    } catch (err: any) {
-      console.error('❌ Erreur sauvegarde:', err);
-      toast.error(err.message || t('contact.save_error'));
-    } finally {
-      setSaving(false);
+    const { error } = await supabase
+      .from('profiles')
+      .update(updates)
+      .eq('id', profile.id);
+
+    if (error) {
+      console.error('❌ Erreur Supabase:', error);
+      throw error;
     }
-  };
+
+    toast.success('✅ Profil mis à jour avec succès !', {
+      duration: 3000,
+    });
+
+    router.refresh();
+  } catch (err: any) {
+    console.error('❌ Erreur sauvegarde:', err);
+    const message = err?.message || err?.error_description || err?.details || 'Erreur inconnue';
+    toast.error(`❌ Échec de la sauvegarde : ${message}`);
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (loading) {
     return (
@@ -475,6 +524,36 @@ const handleImageUpload = async (
         >
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
+              <div className="flex items-center gap-2">
+  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
+    isRealtimeActive
+      ? realtimeError 
+        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+      : 'bg-red-500/20 text-red-300 border border-red-500/30'
+  }`}>
+    <div className={`w-2 h-2 rounded-full ${
+      isRealtimeActive ? (realtimeError ? 'bg-amber-400' : 'bg-emerald-400') : 'bg-red-400'
+    } animate-pulse`} />
+    <span>{isRealtimeActive ? (realtimeError ? 'Instable' : 'Temps réel') : 'Hors ligne'}</span>
+    {lastRealtimeUpdate && isRealtimeActive && !realtimeError && (
+      <span className="text-[10px] opacity-70">
+        ({Math.floor((Date.now() - lastRealtimeUpdate.getTime()) / 1000)}s)
+      </span>
+    )}
+  </div>
+  {!isRealtimeActive && (
+    <Button
+      size="sm"
+      variant="ghost"
+      onClick={() => window.location.reload()}
+      className="h-7 text-xs text-cyan-300 hover:text-cyan-200"
+    >
+      <RefreshCw className="w-3 h-3 mr-1" />
+      Reconnecter
+    </Button>
+  )}
+</div>
               <div className="flex items-center gap-3 mb-2">
                 <div className="p-2 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl">
                   <Settings className="w-6 h-6 text-cyan-400" />

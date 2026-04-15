@@ -110,20 +110,28 @@ export default function PublicProfileClientWrapper({
     if (!supabase.current) return;
 
     // 🔸 Canal : mises à jour du profil
-    const profileChannel = supabase.current
-      .channel(`profile-${profileId}-${Date.now()}`)
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'profiles',
-        filter: `id=eq.${profileId}`,
-      }, (payload: { new: any }) => {
-        setProfileData((prev: any) => ({ ...prev, ...payload.new }));
-        setLastUpdate(new Date());
-        console.log('🔄 Profil mis à jour en temps réel');
-      })
-      .subscribe();
+    // Canal profil
+const profileChannel = supabase.current
+  .channel(`profile-${profileId}-${Date.now()}`)
+  .on(
+    'postgres_changes',
+    {
+      event: 'UPDATE',
+      schema: 'public',
+      table: 'profiles',
+      filter: `id=eq.${profileId}`,
+    },
+    (payload: { new: Record<string, any>; old: Record<string, any> }) => {
+      console.log('🔄 [REALTIME] Profil mis à jour:', payload.new);
+      setProfileData((prev: any) => ({ ...prev, ...payload.new }));
+      setLastUpdate(new Date());
+    }
+  )
+  .subscribe((status: string) => {
+    console.log(`📡 Profil channel status: ${status}`);
+  });
 
+// ✅ CANAL REALTIME CORRECT DANS LE WRAPPER (déjà dans votre code)
 // ✅ CANAL REALTIME CORRECT DANS LE WRAPPER (déjà dans votre code)
 const cardConfigsChannel = supabase.current
   .channel(`card-configs-${profileId}-${Date.now()}`)

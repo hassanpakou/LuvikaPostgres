@@ -23,10 +23,12 @@ export default function PortfolioModal({
   isOpen,
   onClose,
   profileId,
+  onSuccess,   // 👈 nouvelle prop
 }: {
   isOpen: boolean;
   onClose: () => void;
   profileId: string;
+  onSuccess?: () => void;   // 👈 type optionnel
 }) {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,6 @@ useEffect(() => {
 const savePortfolio = async () => {
   setSaving(true);
   try {
-    // 🔹 Parcourt chaque item et POST un par un
     for (const item of items) {
       const payload = {
         title: item.title,
@@ -90,14 +91,12 @@ const savePortfolio = async () => {
         throw new Error(err.error || 'Échec');
       }
     }
+     onSuccess?.();
     onClose();
   } catch (err) {
-  if (err instanceof Error) {
-    alert(err.message);
-  } else {
-    alert('❌ Une erreur inconnue est survenue');
+   } finally {
+    setSaving(false);
   }
-}
 };
 
   if (!isOpen) return null;

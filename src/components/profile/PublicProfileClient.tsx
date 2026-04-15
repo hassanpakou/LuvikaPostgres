@@ -266,6 +266,7 @@ const BioToggle = ({ bio }: { bio: string }) => {
     }
   }, [expanded, bio]);
   
+  
   return (
     <div className="relative">
       <p ref={contentRef} className="absolute opacity-0 pointer-events-none whitespace-pre-line">
@@ -378,6 +379,10 @@ const profileWithVisibility: PublicProfile = {
   }
   // ❌ SUPPRIMEZ sections_visibility_extended ICI AUSSI
 };
+useEffect(() => {
+    console.log('🔄 [PublicProfileClient] profile mis à jour:', profile.full_name);
+    setLocalProfile(profile);
+  }, [profile]);
   // 🔹 Applique le thème dynamiquement
   useEffect(() => {
     const root = document.documentElement;

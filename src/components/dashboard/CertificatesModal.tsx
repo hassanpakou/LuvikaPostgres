@@ -21,10 +21,12 @@ export default function CertificatesModal({
   isOpen,
   onClose,
   profileId,
+  onSuccess,  
 }: {
   isOpen: boolean;
   onClose: () => void;
   profileId: string;
+  onSuccess?: () => void;
 }) {
   const [items, setItems] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,11 +61,11 @@ export default function CertificatesModal({
     setItems(prev => prev.filter(item => item.id !== id));
   };
 
-  const saveCertificates = async () => {
-    setSaving(true);
-    try {
-      for (const item of items) {
-        await fetch('/api/portfolio', {
+const saveCertificates = async () => {
+  setSaving(true);
+  try {
+    for (const item of items) {
+      await fetch('/api/portfolio', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -78,13 +80,14 @@ export default function CertificatesModal({
           }),
         });
       }
-      onClose();
-    } catch (err) {
-      alert('❌ Échec sauvegarde certifications');
-    } finally {
-      setSaving(false);
-    }
-  };
+    onSuccess?.();  
+    onClose();
+  } catch (err) {
+    alert('❌ Échec sauvegarde certifications');
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (!isOpen) return null;
 

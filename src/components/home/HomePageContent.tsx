@@ -771,120 +771,120 @@ export function HomePageContent() {
       </motion.div>
 
 
-     <footer className="w-full mt-20 relative border-t border-white/5">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-transparent pointer-events-none" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-            
-            {/* 🔸 Brand Section */}
-            <div className="space-y-6 lg:col-span-1">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-                  <SiSocialblade className="w-6 h-6 text-white" />
-                </div>
-                <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
-                  LUVIKA
-                </span>
-              </div>
-              
-              <p className="text-gray-400 leading-relaxed text-sm">
-                La nouvelle génération d'identité numérique pour les créateurs, entrepreneurs et professionnels ambitieux en Afrique et ailleurs.
-              </p>
-              
-              <div className="flex flex-wrap gap-3 pt-2">
-                {[
-                  { Icon: Twitter, href: 'https://twitter.com/luvika', color: 'text-cyan-400', hover: 'hover:bg-cyan-500/10' },
-                  { Icon: SiInstagram, href: 'https://instagram.com/luvika', color: 'text-pink-400', hover: 'hover:bg-pink-500/10' },
-                  { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', color: 'text-blue-400', hover: 'hover:bg-blue-500/10' },
-                  { Icon: Github, href: 'https://github.com/luvika', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
-                ].map(({ Icon, href, color, hover }, i) => (
-                  <Link
-                    key={i}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-2 rounded-lg bg-white/5 ${hover} transition-all duration-300 group`}
-                  >
-                    <Icon className={`w-5 h-5 ${color} group-hover:scale-110 transition-transform`} />
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* 🔸 Links Section (3 colonnes) */}
-            <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
-              {/* Platform */}
-              <div className="space-y-4">
-                <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-cyan-400" />
-                  Produit
-                </h3>
-                <ul className="space-y-3">
-                  {['Fonctionnalités', 'Tarifs', 'Télécharger', 'Documentation'].map((item) => (
-                    <li key={item}>
-                      <Link href="#" className="text-gray-400 hover:text-cyan-300 transition-colors text-sm flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/0 group-hover:bg-cyan-500 transition-all" />
-                        {item}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Company */}
-              <div className="space-y-4">
-                <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-rose-400" />
-                  Entreprise
-                </h3>
-                <ul className="space-y-3">
-                  {['À propos', 'Contact', 'Blog', 'Carrières'].map((item) => (
-                    <li key={item}>
-                      <Link href="#" className="text-gray-400 hover:text-rose-300 transition-colors text-sm flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500/0 group-hover:bg-rose-500 transition-all" />
-                        {item}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Legal */}
-              <div className="space-y-4">
-                <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                  <Gavel className="w-5 h-5 text-amber-400" />
-                  Légal
-                </h3>
-                <ul className="space-y-3">
-                  {['Confidentialité', 'Conditions', 'Cookies', 'Sécurité'].map((item) => (
-                    <li key={item}>
-                      <Link href="#" className="text-gray-400 hover:text-amber-300 transition-colors text-sm flex items-center gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500/0 group-hover:bg-amber-500 transition-all" />
-                        {item}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+     <footer className="w-full -mx-4 mt-20 border-t border-cyan-500/20 bg-black/40 backdrop-blur-sm">
+  {/* Overlay de fond pour contrôler la couleur du haut (plus opaque) */}
+  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-gray-900/95 pointer-events-none" />
+  
+  <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+      
+      {/* 🔸 Brand Section */}
+      <div className="space-y-6 lg:col-span-1">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <SiSocialblade className="w-6 h-6 text-white" />
           </div>
-
-          {/* 🔹 Copyright Bar */}
-          <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Luvika. Fait avec ❤️ en RDC.</p>
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span>Systèmes opérationnels</span>
-              </div>
-              <span className="hidden md:inline">•</span>
-              <a href="mailto:support@luvika.me" className="hover:text-cyan-400 transition-colors">support@luvika.me</a>
-            </div>
-          </div>
+          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
+            LUVIKA
+          </span>
         </div>
-      </footer>
+        
+        <p className="text-gray-400 leading-relaxed text-sm">
+          La nouvelle génération d'identité numérique pour les créateurs, entrepreneurs et professionnels ambitieux en Afrique et ailleurs.
+        </p>
+        
+        <div className="flex flex-wrap gap-3 pt-2">
+          {[
+            { Icon: Twitter, href: 'https://twitter.com/luvika', color: 'text-cyan-400', hover: 'hover:bg-cyan-500/10' },
+            { Icon: SiInstagram, href: 'https://instagram.com/luvika', color: 'text-pink-400', hover: 'hover:bg-pink-500/10' },
+            { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', color: 'text-blue-400', hover: 'hover:bg-blue-500/10' },
+            { Icon: Github, href: 'https://github.com/luvika', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
+          ].map(({ Icon, href, color, hover }, i) => (
+            <Link
+              key={i}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`p-2 rounded-lg bg-white/5 ${hover} transition-all duration-300 group`}
+            >
+              <Icon className={`w-5 h-5 ${color} group-hover:scale-110 transition-transform`} />
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* 🔸 Links Section (3 colonnes) */}
+      <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
+        {/* Platform */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-white text-lg flex items-center gap-2">
+            <Globe className="w-5 h-5 text-cyan-400" />
+            Produit
+          </h3>
+          <ul className="space-y-3">
+            {['Fonctionnalités', 'Tarifs', 'Télécharger', 'Documentation'].map((item) => (
+              <li key={item}>
+                <Link href="#" className="text-gray-400 hover:text-cyan-300 transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/0 group-hover:bg-cyan-500 transition-all" />
+                  {item}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Company */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-white text-lg flex items-center gap-2">
+            <Heart className="w-5 h-5 text-rose-400" />
+            Entreprise
+          </h3>
+          <ul className="space-y-3">
+            {['À propos', 'Contact', 'Blog', 'Carrières'].map((item) => (
+              <li key={item}>
+                <Link href="#" className="text-gray-400 hover:text-rose-300 transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500/0 group-hover:bg-rose-500 transition-all" />
+                  {item}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Legal */}
+        <div className="space-y-4">
+          <h3 className="font-bold text-white text-lg flex items-center gap-2">
+            <Gavel className="w-5 h-5 text-amber-400" />
+            Légal
+          </h3>
+          <ul className="space-y-3">
+            {['Confidentialité', 'Conditions', 'Cookies', 'Sécurité'].map((item) => (
+              <li key={item}>
+                <Link href="#" className="text-gray-400 hover:text-amber-300 transition-colors text-sm flex items-center gap-2 group">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500/0 group-hover:bg-amber-500 transition-all" />
+                  {item}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    {/* 🔹 Copyright Bar */}
+    <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
+      <p>© {new Date().getFullYear()} Luvika. Fait avec ❤️ en RDC.</p>
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span>Systèmes opérationnels</span>
+        </div>
+        <span className="hidden md:inline">•</span>
+        <a href="mailto:support@luvika.me" className="hover:text-cyan-400 transition-colors">support@luvika.me</a>
+      </div>
+    </div>
+  </div>
+</footer>
       {/* 🔹 FIN DU FOOTER */}
 
       
