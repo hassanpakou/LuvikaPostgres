@@ -3239,13 +3239,16 @@ const handleToggleFollow = async (profileId: string) => {
       totalFollowers={totalFollowers || 0}
     />
   )}
-  {isContactModalOpen && (
-    <ContactRequestsSection
-      key="contact-requests-modal" // ✅ STATIQUE
-      isOpen={true}
-      onClose={() => setIsContactModalOpen(false)}
-    />
-  )}
+{isContactModalOpen && (
+  <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-br from-gray-900/95 to-black/95 border border-white/10 shadow-2xl">
+      <ContactRequestsSection
+        isOpen={true}
+        onClose={() => setIsContactModalOpen(false)}
+      />
+    </div>
+  </div>
+)}
   {showSignOutConfirm && (
     <SignOutConfirmSheet
       key="signout-confirm-modal" // ✅ STATIQUE
@@ -3362,85 +3365,91 @@ const handleToggleFollow = async (profileId: string) => {
         )}
 
         {/* 🔹 Résultats de recherche */}
-        {searchQuery && !isSearching && searchResults.length > 0 && (
-          <div className="space-y-3">
-            {searchResults.map((result, index) => (
-  <div
-    key={result.id ?? result.username ?? `search-${index}`}
-    className="p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/5 group"
-  >
+{searchQuery && !isSearching && searchResults.length > 0 && (
+  <div className="space-y-3">
+    {searchResults.map((result, index) => (
+      <div
+        key={result.id ?? result.username ?? `search-${index}`}
+        onClick={() => router.push(`/${locale}/${result.username}`)}
+        className="p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/5 group cursor-pointer"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-1">
+            {/* Avatar */}
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center overflow-hidden">
+              {result.avatar_url ? (
+                <img
+                  src={result.avatar_url}
+                  alt={result.full_name}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <User className="w-6 h-6 text-white" />
+              )}
+            </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    {/* Avatar */}
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-gray-500 to-gray-600 flex items-center justify-center overflow-hidden">
-                      {result.avatar_url ? (
-                        <img
-                          src={result.avatar_url}
-                          alt={result.full_name}
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-6 h-6 text-white" />
-                      )}
-                    </div>
-                    
-                    {/* Infos */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <div className="font-medium text-white truncate">
-                          {result.full_name}
-                        </div>
-                        {result.plan && (
-                          <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
-                            {result.plan}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-sm text-gray-400 truncate">
-                        @{result.username}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Actions */}
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleFollow(result.id)}
-                      className={`h-9 ${
-                        followStatus[result.id]
-                          ? 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'
-                          : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
-                      }`}
-                    >
-                      {followStatus[result.id] ? (
-                        <>
-                          <UserMinus className="w-4 h-4 mr-1" />
-                          <span className="hidden sm:inline">Suivi</span>
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-4 h-4 mr-1" />
-                          <span className="hidden sm:inline">Suivre</span>
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(`/${locale}/${result.username}`, '_blank')}
-                      className="h-9 bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/30"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </Button>
-                  </div>
+            {/* Infos */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <div className="font-medium text-white truncate">
+                  {result.full_name}
                 </div>
+                {result.plan && (
+                  <Badge variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-500/30">
+                    {result.plan}
+                  </Badge>
+                )}
               </div>
-            ))}
+              <div className="text-sm text-gray-400 truncate">
+                @{result.username}
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation(); // Empêche la redirection vers le profil
+                handleToggleFollow(result.id);
+              }}
+              className={`h-9 ${
+                followStatus[result.id]
+                  ? 'bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
+              }`}
+            >
+              {followStatus[result.id] ? (
+                <>
+                  <UserMinus className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Suivi</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Suivre</span>
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(`/${locale}/${result.username}`, '_blank');
+              }}
+              className="h-9 bg-cyan-500/20 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/30"
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
         {/* 🔹 Message "Aucun résultat" */}
         {searchQuery && !isSearching && searchResults.length === 0 && (
