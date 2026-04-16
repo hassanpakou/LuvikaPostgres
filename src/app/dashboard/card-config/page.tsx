@@ -87,34 +87,34 @@ const MAX_RETRY_ATTEMPTS = 5;
       previewIcon: <Globe className="w-5 h-5 text-purple-400" /> 
     },
     { 
-      scan_type: 'event',   
-      enabled: configs.event || false,   
-      label: t('types.event'),       
-      description: t('descriptions.event'),       
-      icon: <Calendar className="w-6 h-6" />,    
-      color: 'from-amber-500 to-orange-500', 
-      previewIcon: <Calendar className="w-5 h-5 text-amber-400" />,
-      premium: true 
-    },
-    { 
-      scan_type: 'custom',  
-      enabled: configs.custom || false,  
-      label: t('types.custom_link'),  
-      description: t('descriptions.custom_link'),  
-      icon: <Link className="w-6 h-6" />,        
-      color: 'from-pink-500 to-rose-500',    
-      previewIcon: <Link className="w-5 h-5 text-pink-400" /> 
-    },
-    { 
-      scan_type: 'cv',      
-      enabled: configs.cv || false,      
-      label: t('types.cv'),          
-      description: t('descriptions.cv'),          
-      icon: <FileText className="w-6 h-6" />,    
-      color: 'from-blue-500 to-cyan-500',    
-      previewIcon: <FileText className="w-5 h-5 text-blue-400" />,
-      premium: true 
-    },
+  scan_type: 'event',   
+  enabled: configs.event || false,   
+  label: 'Événements',       
+  description: 'Affiche vos événements publics à venir',       
+  icon: <Calendar className="w-6 h-6" />,    
+  color: 'from-amber-500 to-orange-500', 
+  previewIcon: <Calendar className="w-5 h-5 text-amber-400" />,
+  premium: true 
+},
+{ 
+  scan_type: 'custom',  
+  enabled: configs.custom || false,  
+  label: 'Lien personnalisé',  
+  description: 'Affiche un lien vers votre site ou ressource externe',  
+  icon: <Link className="w-6 h-6" />,        
+  color: 'from-pink-500 to-rose-500',    
+  previewIcon: <Link className="w-5 h-5 text-pink-400" /> 
+},
+{ 
+  scan_type: 'cv',      
+  enabled: configs.cv || false,      
+  label: 'CV (Curriculum Vitae)',          
+  description: 'Affiche votre CV et documents associés',          
+  icon: <FileText className="w-6 h-6" />,    
+  color: 'from-blue-500 to-cyan-500',    
+  previewIcon: <FileText className="w-5 h-5 text-blue-400" />,
+  premium: true 
+},
     { 
       scan_type: 'business',
       enabled: configs.business || false,
