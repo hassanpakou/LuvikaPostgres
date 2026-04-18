@@ -207,41 +207,45 @@ export default function UserOrdersPage() {
 
       <div className="max-w-5xl mx-auto">
         {/* 🔹 Header avec titre et CTA */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              onClick={() => router.back()} 
-              className="text-gray-300 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour au tableau de bord
-            </Button>
-            
-            <div className="h-8 w-px bg-white/10"></div>
-            
-            <div>
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-300 to-fuchsia-300">
-                Mes commandes
-              </h1>
-              <p className="text-gray-300 mt-1 flex items-center gap-2">
-                <PackageIcon className="w-4 h-4 text-violet-400" />
-                Historique et suivi de vos commandes NFC
-              </p>
-            </div>
-          </div>
-          
-          {orders.length > 0 && (
-            <Button
-              onClick={() => router.push('/dashboard/orders/new')}
-              className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-violet-500/20 transition-all duration-300 group"
-            >
-              <PackageIcon className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-              Nouvelle commande
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          )}
-        </div>
+        <div className="flex flex-col gap-4 mb-8">
+  {/* Ligne supérieure : bouton retour seul */}
+  <div className="flex items-center gap-3">
+    <Button 
+      variant="ghost" 
+      onClick={() => router.back()} 
+      className="text-gray-300 hover:text-white hover:bg-white/10 transition-colors px-3 py-2"
+    >
+      <ArrowLeft className="mr-2 h-4 w-4" />
+      Retour
+    </Button>
+    <div className="h-6 w-px bg-white/10"></div>
+    <span className="text-xs text-gray-400">Mes commandes</span>
+  </div>
+
+  {/* Titre et CTA sur la même ligne sur desktop, empilés sur mobile */}
+  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="space-y-1">
+      <h1 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-300 to-fuchsia-300">
+        Mes commandes
+      </h1>
+      <p className="text-gray-300 text-sm flex items-center gap-2 flex-wrap">
+        <PackageIcon className="w-4 h-4 text-violet-400 shrink-0" />
+        <span className="break-words">Historique et suivi de vos commandes NFC</span>
+      </p>
+    </div>
+    
+    {orders.length > 0 && (
+      <Button
+        onClick={() => router.push('/dashboard/orders/new')}
+        className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-violet-500/20 transition-all duration-300 group shrink-0"
+      >
+        <PackageIcon className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
+        Nouvelle commande
+        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform hidden sm:inline" />
+      </Button>
+    )}
+  </div>
+</div>
 
         {/* 🔹 Contenu principal */}
         {loading ? (
@@ -336,38 +340,42 @@ export default function UserOrdersPage() {
                   
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-3 mb-2">
-                        <div className="flex items-start gap-3">
-                          <div className="p-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-xl flex-shrink-0">
-                            <PackageIcon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-bold text-white">{productLabels[order.product_type] || order.product_type}</h3>
-                              <span className="text-gray-400">×{order.quantity}</span>
-                            </div>
-                            {order.shipping_address && (
-                              <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-400">
-                                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                                <span className="truncate max-w-xs">{order.shipping_address}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <StatusBadge status={order.status} />
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-xs text-gray-400 mt-2">
-                        <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span>
-                          Commandée le {new Date(order.created_at).toLocaleDateString('fr-FR', {
-                            day: '2-digit',
-                            month: 'short',
-                            year: 'numeric',
-                          })}
-                        </span>
-                      </div>
-                    </div>
+  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
+    <div className="flex items-start gap-3">
+      <div className="p-2.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 rounded-xl shrink-0">
+        <PackageIcon className="w-5 h-5 text-white" />
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h3 className="font-bold text-white truncate max-w-[200px] sm:max-w-none">
+            {productLabels[order.product_type] || order.product_type}
+          </h3>
+          <span className="text-gray-400 text-sm shrink-0">×{order.quantity}</span>
+        </div>
+        {order.shipping_address && (
+          <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-400">
+            <MapPin className="w-3.5 h-3.5 shrink-0" />
+            <span className="break-words">{order.shipping_address}</span>
+          </div>
+        )}
+      </div>
+    </div>
+    <div className="shrink-0">
+      <StatusBadge status={order.status} />
+    </div>
+  </div>
+  
+  <div className="flex items-center gap-2 text-xs text-gray-400 mt-2">
+    <Clock className="w-3.5 h-3.5 shrink-0" />
+    <span className="truncate">
+      Commandée le {new Date(order.created_at).toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })}
+    </span>
+  </div>
+</div>
                     
                     {order.status === 'pending' && (
                       <Button
