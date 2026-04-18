@@ -10,7 +10,7 @@ import { Label } from '../../../components/ui/label';
 import { Textarea } from '../../../components/ui/textarea';
 import { 
   User, Phone, Briefcase, Mail, 
-  Check, AlertCircle, X, SkipForward,
+  Check, AlertCircle, X,
   Sparkle, ArrowLeft, ArrowRight, Loader2,
   ShieldCheck, Globe, MapPin
 } from 'lucide-react';
@@ -631,7 +631,7 @@ const isComplete = profile?.onboarding_done === true;
                       className="border-white/20 text-gray-300 hover:bg-white/10 px-5 py-3 rounded-xl font-medium"
                     >
                       <ArrowLeft className="w-4 h-4 mr-1.5" />
-                      
+                      {t('auth.complete.back')}
                     </Button>
                   )}
                 </div>
@@ -681,18 +681,6 @@ const isComplete = profile?.onboarding_done === true;
                     </Button>
                   )}
                   
-                  {step !== 'identity' && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleSkip}
-                      disabled={loading}
-                      className="flex-1 sm:flex-initial border-white/20 text-gray-300 hover:bg-white/10 hover:text-white px-6 py-3.5 rounded-xl font-medium transition-all duration-300"
-                    >
-                      <SkipForward className="w-4 h-4 mr-1.5" />
-                      
-                    </Button>
-                  )}
                 </div>
               </div>
               
