@@ -7,15 +7,15 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Mail, Lock, Eye, EyeOff, X, Sun, Moon, 
-  Sparkle, ShieldCheck, Smartphone, 
-  CheckCircle, AlertCircle, ArrowLeft 
+  Sparkle, ShieldCheck, Smartphone, ArrowRight,
+  CheckCircle, AlertCircle, ArrowLeft, 
+  User
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Badge } from '../../../../components/ui/badge';
 import { createClient } from '../../../../src/lib/supabase/client';
-import { SiSocialblade } from 'react-icons/si';
 
 // 🔹 Server-side translations fallback
 const t = (key: string) => {
@@ -30,46 +30,12 @@ const t = (key: string) => {
     'auth.signin.no_account': 'Vous n\'avez pas de compte ?',
     'auth.signin.sign_up': 'S\'inscrire',
     'auth.signin.error_credentials': 'Email ou mot de passe incorrect.',
-    'auth.welcome.title': 'Bienvenue !',
-    'auth.welcome.message': 'Heureux de vous revoir parmi nous.',
     'navbar.home': 'Accueil',
     'auth.security': 'Sécurité de niveau bancaire',
     'auth.features': 'Accès à toutes vos fonctionnalités'
   };
   return translations[key as keyof typeof translations] || key;
 };
-
-// 🔹 Effet bulles flottantes optimisé
-const FloatingBubbles = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
-    {[...Array(8)].map((_, i) => (
-      <motion.div
-        key={i}
-        className="absolute rounded-full bg-gradient-to-r from-cyan-400/10 to-blue-400/10"
-        style={{
-          width: `${8 + i * 4}px`,
-          height: `${8 + i * 4}px`,
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-        }}
-        animate={{
-          y: [0, -30, 0],
-          x: [0, Math.sin(i) * 15, 0],
-          scale: [0.9, 1.1, 0.9],
-          opacity: [0.2, 0.4, 0.2],
-        }}
-        transition={{
-          duration: 8 + i * 1.5,
-          repeat: Infinity,
-          delay: i * 0.5,
-          ease: "easeInOut"
-        }}
-      />
-    ))}
-  </div>
-);
-
-// 🔹 Carte de sécurité
 const SecurityBadge = () => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
@@ -94,7 +60,6 @@ export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [isDark, setIsDark] = useState(true);
 
   const passwordInputRef = useRef<HTMLInputElement>(null);
@@ -167,7 +132,6 @@ if (profile?.deactivated) {
         } else {
           router.push('/dashboard');
         }
-        setShowWelcomeModal(true);
       }, 800);
 
     } catch (err: any) {
@@ -183,11 +147,9 @@ if (profile?.deactivated) {
 
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-900/10 to-indigo-900/10 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* 🔹 Fond dynamique premium */}
+<div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">      {/* 🔹 Fond dynamique premium */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.08),transparent_70%)]"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.05),transparent_70%)]"></div>
-      <FloatingBubbles />
       
       {/* 🔙 Retour accueil - Design premium */}
       <Link 
@@ -236,9 +198,9 @@ if (profile?.deactivated) {
       >
         <div className="relative">
           {/* 🔹 Effet de brillance sur la carte */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-2xl blur opacity-20 animate-pulse-slow"></div>
+          <div className="absolute bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-2xl blur opacity-20"></div>
           
-          <div className="relative backdrop-blur-2xl bg-white/5 rounded-2xl border border-white/15 shadow-2xl shadow-black/40 overflow-hidden">
+          <div className="relative bg-black/40 bg-white/5 rounded-2xl border border-white/15 shadow-2xl shadow-black/40 overflow-hidden">
             {/* 🔹 Bandeau supérieur décoratif */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
             
@@ -253,9 +215,9 @@ if (profile?.deactivated) {
                 >
                   <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
                   <div className="relative z-10">
-                    <SiSocialblade className="w-8 h-8 text-white drop-shadow-md" />
+                    <User className="w-8 h-8 text-white drop-shadow-md" />
                   </div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-20 blur-xl"></div>
+                  <div className="absolute bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-20 blur-xl"></div>
                 </motion.div>
                 
                 <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300 mb-2">
@@ -298,20 +260,6 @@ if (profile?.deactivated) {
                   </motion.div>
                 )}
                 
-                {success && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mb-5 p-3.5 rounded-xl bg-emerald-900/30 border border-emerald-500/30 flex items-start gap-2.5"
-                  >
-                    <CheckCircle className="w-4.5 h-4.5 text-emerald-300 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-emerald-200 text-sm font-medium mb-0.5">Connexion réussie !</p>
-                      <p className="text-emerald-100/80 text-[13px]">Redirection vers votre tableau de bord...</p>
-                    </div>
-                  </motion.div>
-                )}
               </AnimatePresence>
 
               {/* 🔹 Formulaire premium */}
@@ -391,7 +339,7 @@ if (profile?.deactivated) {
                   disabled={loading || success}
                   className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all duration-300 group relative overflow-hidden"
                 >
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer"></span>
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100"></span>
                   {loading ? (
                     <span className="flex items-center justify-center gap-2">
                       <motion.div
@@ -444,121 +392,22 @@ if (profile?.deactivated) {
             </div>
           </div>
         </div>
-        
-        {/* 🔹 Signature */}
-        <div className="mt-6 text-center text-[11px] text-gray-500 flex items-center justify-center gap-1.5">
-          <Sparkle className="w-3 h-3 text-cyan-400 animate-pulse" />
-          <span>Fait avec ❤️ à Kinshasa • LUVIKA v2.1.0</span>
-        </div>
+    
       </motion.div>
 
-      {/* 🔹 Modal d'accueil premium */}
-      <AnimatePresence>
-        {showWelcomeModal && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
-              onClick={() => setShowWelcomeModal(false)}
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 30 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 30 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-0 z-[101] flex items-center justify-center p-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="relative backdrop-blur-2xl bg-gradient-to-br from-slate-800/95 to-slate-900/95 rounded-2xl border border-white/15 shadow-2xl shadow-black/60 w-full max-w-md overflow-hidden">
-                {/* Décoration intérieure */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(59,130,246,0.1),transparent_70%)]"></div>
-                <FloatingBubbles />
-                
-                <button
-                  onClick={() => setShowWelcomeModal(false)}
-                  aria-label="Fermer"
-                  className="absolute top-4 right-4 text-gray-300 hover:text-white z-10 p-2 rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-
-                <div className="px-7 py-10 text-center relative z-10">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                    className="text-7xl mb-5"
-                  >
-                    🎉
-                  </motion.div>
-                  
-                  <motion.h3
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300 mb-3"
-                  >
-                    {t('auth.welcome.title')}
-                  </motion.h3>
-                  
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-gray-200 text-lg max-w-xs mx-auto mb-6"
-                  >
-                    {t('auth.welcome.message') || 'Heureux de vous revoir parmi nous.'}
-                  </motion.p>
-                  
-                
-                  
-                  <div className="mt-8 pt-6 border-t border-white/10">
-                    <div className="flex flex-wrap justify-center gap-4 text-[11px] text-gray-400">
-                      <div className="flex items-center gap-1.5">
-                        <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                        <span>Sécurité renforcée</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Smartphone className="w-3 h-3 text-cyan-400" />
-                        <span>Multi-plateforme</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Sparkle className="w-3 h-3 text-yellow-400" />
-                        <span>LUVIKA v2.1.0</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-      
       {/* 🔹 Styles globaux */}
       <style jsx global>{`
         @keyframes pulse-slow {
           0%, 100% { opacity: 0.2; }
           50% { opacity: 0.4; }
         }
-        .animate-pulse-slow {
-          animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
         
         @keyframes shimmer {
           0% { background-position: -200% 0; }
           100% { background-position: 200% 0; }
         }
-        .animate-shimmer {
-          animation: shimmer 2s infinite linear;
-          background-size: 200% 100%;
-        }
+
       `}</style>
     </div>
   );
 }
-
-// 🔹 Icônes manquantes
-import { ArrowRight, Settings } from 'lucide-react';

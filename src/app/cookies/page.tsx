@@ -3,7 +3,9 @@
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Shield, Lock, Globe, ArrowLeft, Sparkle } from 'lucide-react';
+import { 
+  Shield, Lock, Globe, ArrowLeft, Sparkle, AlertTriangle 
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -149,6 +151,3 @@ export default function CookiesPage() {
     </div>
   );
 }
-
-// 🔹 Icônes manquantes
-import { AlertTriangle } from 'lucide-react';

@@ -17,8 +17,7 @@ const Tooltip = ({
   children,
 }: TooltipProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
-
+  const [timer, setTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
   const show = () => {
     if (timer) clearTimeout(timer);
     const t = setTimeout(() => setIsOpen(true), delayDuration);

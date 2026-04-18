@@ -65,7 +65,7 @@
     "@tailwindcss/postcss": "^4",
     "@types/chart.js": "^2.9.41",
     "@types/date-fns": "^2.6.3",
-    "@types/node": "^20.19.33",
+    "@types/node": "^20.19.39",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",

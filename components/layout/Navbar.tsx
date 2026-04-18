@@ -8,9 +8,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { 
   Menu, X, LogOut, User as UserIcon, 
-  Globe, Moon, Sun, Shield, Eye, Sparkle, 
-  CreditCard, Crown, AlertCircle,
-  Heart
+  Globe, Moon, Sun, Shield, Eye, Sparkle, Briefcase,
+   Crown, Heart
 } from 'lucide-react';
 import { createClient } from '../../src/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -144,7 +143,7 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-white/10 backdrop-blur-2xl bg-gradient-to-b from-slate-900/80 to-slate-900/50 shadow-2xl shadow-black/40 overflow-hidden"
+          className="rounded-3xl border border-white/10 backdrop-blur-sm bg-gradient-to-b from-slate-900/80 to-slate-900/50 shadow-2xl shadow-lg overflow-hidden"
         >
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             {/* 🔹 Logo LUVIKA - Design Premium */}
@@ -155,13 +154,13 @@ export default function Navbar() {
               <motion.div
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 whileTap={{ scale: 0.95 }}
-                className="relative w-11 h-11 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 shadow-xl overflow-hidden"
+                className="relative w-11 h-11 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 overflow-hidden"
               >
-                <div className="absolute inset-0 bg-white/20 animate-ping rounded-2xl"></div>
+                <div className="absolute inset-0 bg-white/20 rounded-2xl"></div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <SiSocialblade className="w-6 h-6 text-white drop-shadow-md" />
                 </div>
-                <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute -inset-1  from-cyan-400 to-blue-500 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </motion.div>
               
               <div className="flex flex-col">
@@ -237,7 +236,7 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-48 bg-slate-800/90 border border-white/10 backdrop-blur-xl rounded-2xl py-2 shadow-2xl shadow-black/50 z-50 overflow-hidden"
+                      className="absolute right-0 mt-2 w-48 bg-slate-800/90 border border-white/10 backdrop-blur-sm rounded-2xl py-2 shadow-lg shadow-black/50 z-50 overflow-hidden"
                     >
                       {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
                         <motion.button
@@ -276,7 +275,7 @@ export default function Navbar() {
               ) : isUser ? (
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href="/dashboard">
-                    <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-md shadow-cyan-500/30">
+                    <Button className="bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 shadow-md shadow-cyan-500/30">
                       <Sparkle className="w-4 h-4 mr-2" />
                       Tableau de bord
                     </Button>
@@ -326,7 +325,7 @@ export default function Navbar() {
                       <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 flex items-center justify-center">
                         <div className={`w-2.5 h-2.5 rounded-full ${
                           profile.plan === 'premium' ? 'bg-gradient-to-r from-yellow-400 to-amber-500' : 'bg-purple-500'
-                        } animate-pulse`}></div>
+                        } `}></div>
                       </div>
                     )}
                   </motion.button>
@@ -582,6 +581,3 @@ export default function Navbar() {
     </header>
   );
 }
-
-// 🔹 Icône manquante
-import { Briefcase } from 'lucide-react';

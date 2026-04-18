@@ -1,10 +1,11 @@
-// tailwind.config.ts
 import type { Config } from 'tailwindcss';
+import tailwindcssAnimate from 'tailwindcss-animate';
 
 const config: Config = {
   content: [
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: 'class',  // ← à ajouter ici
   theme: {
     extend: {
       colors: {
@@ -43,9 +44,8 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    require('tailwindcss-animate'),
-  ],
+  plugins: [tailwindcssAnimate],  // ← remplace require par la variable importée
+
 };
 
 export default config;

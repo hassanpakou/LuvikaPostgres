@@ -21,8 +21,8 @@ import { toast } from 'sonner';
 import DashboardQuickMenu from '../../../../src/components/dashboard/DashboardQuickMenu';
 
 type Follower = {
-  id: string;
-  follower_id: string;
+  id: string;           // ID de follows
+  follower_id: string;  // ID du profil abonné
   followed_id: string;
   created_at: string;
   full_name: string | null;
@@ -121,20 +121,35 @@ const fetchFollowers = async () => {
     fetchFollowers();
   }, [sortBy, sortOrder]);
 
-  const handleAction = async (followerId: string, action: 'block' | 'unblock') => {
+const handleAction = async (followerId: string, action: 'block' | 'unblock') => {
+  if (!followerId) {
+    toast.error("ID de l'utilisateur manquant");
+    return;
+  }
+
   try {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Non authentifié');
 
     if (action === 'block') {
-      // Insérer un blocage
-      const { error } = await supabase
+      const { data: existing } = await supabase
         .from('user_blocks')
-        .insert({ blocker_id: user.id, blocked_id: followerId });
-      if (error) throw error;
+        .select('id')
+        .eq('blocker_id', user.id)
+        .eq('blocked_id', followerId)
+        .maybeSingle();
+
+      if (!existing) {
+        const { error } = await supabase
+          .from('user_blocks')
+          .insert({ blocker_id: user.id, blocked_id: followerId });
+        if (error) throw error;
+      } else {
+        toast.info('Utilisateur déjà bloqué');
+        return;
+      }
     } else {
-      // Supprimer le blocage
       const { error } = await supabase
         .from('user_blocks')
         .delete()
@@ -143,19 +158,15 @@ const fetchFollowers = async () => {
       if (error) throw error;
     }
 
-    // Mettre à jour l'état local
+    // Met à jour l'état local
     setFollowers(prev =>
-      prev.map(f => f.id === followerId ? { ...f, blocked: action === 'block' } : f)
+      prev.map(f => f.follower_id === followerId ? { ...f, blocked: action === 'block' } : f)
     );
 
-    toast.success(
-      action === 'block'
-        ? '✅ Abonné bloqué avec succès'
-        : '✅ Abonné débloqué avec succès'
-    );
-  } catch (err) {
-    console.error(err);
-    toast.error(`Échec ${action === 'block' ? 'du blocage' : 'du déblocage'}`);
+    toast.success(action === 'block' ? '✅ Abonné bloqué' : '✅ Abonné débloqué');
+  } catch (err: any) {
+    console.error('Erreur détaillée:', err);
+    toast.error(`Échec ${action === 'block' ? 'du blocage' : 'du déblocage'} : ${err.message || ''}`);
   }
 };
 
@@ -533,24 +544,24 @@ const handleRefresh = async () => {
                         <div className="flex gap-2 pt-2 sm:pt-0">
                           {follower.blocked ? (
                             <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleAction(follower.id, 'unblock')}
-                              className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
-                            >
-                              <ShieldCheck className="w-3.5 h-3.5 mr-1" />
-                              Débloquer
-                            </Button>
+  size="sm"
+  variant="outline"
+  onClick={() => handleAction(follower.follower_id, 'unblock')}
+  className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
+>
+  <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+  Débloquer
+</Button>
                           ) : (
                             <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleAction(follower.follower_id, 'block')}
-                              className="border-red-500/30 text-red-300 hover:bg-red-500/10"
-                            >
-                              <Ban className="w-3.5 h-3.5 mr-1" />
-                              Bloquer
-                            </Button>
+  size="sm"
+  variant="outline"
+  onClick={() => handleAction(follower.follower_id, 'block')}
+  className="border-red-500/30 text-red-300 hover:bg-red-500/10"
+>
+  <Ban className="w-3.5 h-3.5 mr-1" />
+  Bloquer
+</Button>
                           )}
                         </div>
                       </div>

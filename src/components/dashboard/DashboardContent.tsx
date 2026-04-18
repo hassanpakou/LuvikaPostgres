@@ -580,117 +580,12 @@ const SignOutConfirmSheet = ({
 
                   </div>
 
-                  {/* Footer signature */}
-                  <div className="pb-6 text-center">
-                    <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full 
-                                   bg-white/5 border border-white/10 text-xs text-gray-300">
-                      <Snowflake className="w-3 h-3 text-cyan-300" />
-                      Luyenga na yo — Votre paix est scellée
-                    </span>
-                  </div>
-
                 </div>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
-
-      <FarewellModal
-        isOpen={showFarewell}
-        onClose={() => setShowFarewell(false)}
-        t={t}
-      />
-    </>
-  );
-};
-
-// 🔹 ✅ Modal : Déconnexion - Au revoir
-const FarewellModal = ({
-  isOpen,
-  onClose,
-  t,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  t: (key: string) => string;
-}) => {
-  useEffect(() => {
-    if (isOpen) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[200]"
-        onClick={onClose}
-      >
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(6)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-3 h-3 rounded-full bg-cyan-300/30"
-              style={{
-                left: `${10 + i * 15}%`,
-                top: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                y: ['-80px', '100vh'],
-                scale: [0, 1.2, 0],
-              }}
-              transition={{
-                duration: 6 + i,
-                repeat: Infinity,
-                ease: 'easeOut',
-              }}
-            />
-          ))}
-        </div>
-      </motion.div>
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0, y: 40 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.8, opacity: 0, y: 40 }}
-        className="fixed inset-0 z-[201] flex items-center justify-center p-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="relative backdrop-blur-2xl bg-white/10 dark:bg-black/20 rounded-2xl border border-white/15 shadow-xl w-full max-w-sm overflow-hidden">
-          <motion.div
-            initial={{ width: '100%' }}
-            animate={{ width: 0 }}
-            transition={{ duration: 4, ease: 'easeOut' }}
-            className="absolute top-0 left-0 h-1 bg-gradient-to-r from-cyan-400 to-blue-500"
-          />
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-gray-300 hover:text-white z-10"
-            aria-label="Fermer"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <div className="px-6 py-8 text-center relative z-10">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <span className="text-2xl">😢</span>
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2 drop-shadow">
-              {t('navbar.farewell_title')}
-            </h3>
-            <p className="text-gray-200 mb-5 drop-shadow-sm">
-              {t('navbar.farewell_message')}
-            </p>
-          </div>
-        </div>
-      </motion.div>
     </>
   );
 };

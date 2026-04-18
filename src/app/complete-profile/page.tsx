@@ -108,18 +108,19 @@ export default function CompleteProfilePage() {
           return router.push('/auth/sign-in');
         }
 
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('onboarding_done, username, full_name')
-          .eq('id', user.id)
-          .single();
+const { data: profile, error: profileError } = await supabase
+  .from('profiles')
+  .select('onboarding_done, username, full_name')
+  .eq('id', user.id)
+  .maybeSingle();
 
-        if (profileError) {
-          console.error('❌ Erreur chargement profil:', profileError);
-          return;
-        }
+if (profileError && profileError.code !== 'PGRST116') {
+  console.error('❌ Erreur chargement profil:', profileError);
+  return;
+}
 
-        const isComplete = profile?.onboarding_done === true;
+// profile peut être null si aucune ligne n'existe encore
+const isComplete = profile?.onboarding_done === true;
         console.log('🔍 CompleteProfile check:', { user_id: user.id, isComplete });
 
         if (isComplete) {
@@ -132,11 +133,10 @@ export default function CompleteProfilePage() {
           // Pré-remplir avec les données du signup si disponibles
           const urlParams = new URLSearchParams(window.location.search);
           setFormData(prev => ({
-            ...prev,
-            full_name: urlParams.get('full_name') || profile?.full_name || '',
-            username: urlParams.get('username') || profile?.username || '',
-          }));
-          
+  ...prev,
+  full_name: urlParams.get('full_name') || profile?.full_name || '',
+  username: urlParams.get('username') || profile?.username || '',
+}));
           // Focus sur le champ username si vide
           if (!profile?.username && usernameInputRef.current) {
             setTimeout(() => usernameInputRef.current?.focus(), 100);
@@ -258,7 +258,6 @@ export default function CompleteProfilePage() {
         address: formData.address.trim(),
         plan: getPlan(),
         onboarding_done: true,
-        role: 'user',
       };
 
       const { error: upsertError } = await supabase
@@ -273,9 +272,7 @@ export default function CompleteProfilePage() {
       setSuccess(true);
       
       // 🔹 ✅ Redirection après succès avec délai
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 2000);
+      router.push('/dashboard');
     } catch (err: any) {
       console.error('❌ Submit error:', err);
       setError(err.message || t('auth.complete.error_generic'));
@@ -303,7 +300,7 @@ export default function CompleteProfilePage() {
           className="text-center max-w-md w-full"
         >
           <div className="relative mb-8">
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur-2xl opacity-20 animate-pulse"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur-2xl opacity-20"></div>
             <div className="relative w-24 h-24 mx-auto rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 flex items-center justify-center">
               <Check className="w-12 h-12 text-white drop-shadow-md" />
             </div>
@@ -350,16 +347,14 @@ export default function CompleteProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <Card className="glass-border backdrop-blur-2xl rounded-3xl border border-white/15 shadow-2xl shadow-black/40 overflow-hidden">
+<Card className="bg-black/60 rounded-3xl border border-white/20 overflow-hidden">
           {/* 🔹 Bandeau supérieur décoratif */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
           
           {/* 🔹 Header avec logo */}
           <div className="p-6 border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent">
             <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 flex items-center justify-center">
-                <Sparkle className="w-6 h-6 text-white" />
-              </div>
+             
               <div className="text-center">
                 <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
                   {t('auth.complete.welcome')}
@@ -380,13 +375,7 @@ export default function CompleteProfilePage() {
                   const gradient = stepConfig[s].gradient;
                   
                   return (
-                    <motion.div
-                      key={s}
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex flex-col items-center flex-1"
-                    >
+                    <div key={s} className="flex flex-col items-center gap-1">
                       <div className={`relative w-10 h-10 rounded-2xl flex items-center justify-center mb-2 ${
                         isCompleted 
                           ? 'bg-emerald-500/20 border border-emerald-500/30' 
@@ -400,7 +389,7 @@ export default function CompleteProfilePage() {
                           <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-cyan-400'}`} />
                         )}
                         {isCompleted && (
-                          <div className="absolute inset-0 rounded-2xl bg-emerald-500 animate-ping opacity-20"></div>
+                          <div className="absolute inset-0 rounded-2xl bg-emerald-500 opacity-20"></div>
                         )}
                       </div>
                       <span className={`text-xs font-medium ${
@@ -408,7 +397,7 @@ export default function CompleteProfilePage() {
                       }`}>
                         {t(`auth.complete.step_${s}`)}
                       </span>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -419,7 +408,6 @@ export default function CompleteProfilePage() {
                   className="h-full bg-gradient-to-r from-cyan-500 to-blue-500"
                   initial={{ width: "0%" }}
                   animate={{ width: `${((currentStepIndex) / 2) * 100}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
                 />
               </div>
             </div>
@@ -509,7 +497,7 @@ export default function CompleteProfilePage() {
                           pattern="^[a-z0-9_-]{3,20}$"
                         />
                         {checkingUsername ? (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-pulse">···</div>
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">···</div>
                         ) : usernameAvailable === true ? (
                           <Check className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400" />
                         ) : usernameAvailable === false ? (
@@ -545,7 +533,7 @@ export default function CompleteProfilePage() {
                         type="tel"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="+243 999 888 777"
+                        placeholder="+242 04 000 00 00"
                         className="pl-4 pr-4 py-3.5 bg-white/5 border border-white/15 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
                       />
                     </div>
@@ -564,7 +552,7 @@ export default function CompleteProfilePage() {
                           name="whatsapp"
                           value={formData.whatsapp}
                           onChange={handleChange}
-                          placeholder="243999888777"
+                          placeholder="2420400000000"
                           className="pl-20 pr-4 py-3.5 bg-white/5 border border-white/15 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
                         />
                       </div>
@@ -643,7 +631,7 @@ export default function CompleteProfilePage() {
                       className="border-white/20 text-gray-300 hover:bg-white/10 px-5 py-3 rounded-xl font-medium"
                     >
                       <ArrowLeft className="w-4 h-4 mr-1.5" />
-                      {t('auth.complete.back')}
+                      
                     </Button>
                   )}
                 </div>
@@ -663,7 +651,7 @@ export default function CompleteProfilePage() {
                       }
                       className="flex-1 sm:flex-initial bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold px-6 py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all duration-300 group relative overflow-hidden"
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer"></span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100"></span>
                       <span className="flex items-center justify-center gap-2">
                         {t('auth.complete.next')}
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -676,7 +664,7 @@ export default function CompleteProfilePage() {
                       disabled={loading}
                       className="flex-1 sm:flex-initial bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-500 hover:to-cyan-500 text-white font-bold px-6 py-3.5 rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300 group relative overflow-hidden"
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer"></span>
+                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100"></span>
                       <span className="flex items-center justify-center gap-2">
                         {loading ? (
                           <>
@@ -702,7 +690,7 @@ export default function CompleteProfilePage() {
                       className="flex-1 sm:flex-initial border-white/20 text-gray-300 hover:bg-white/10 hover:text-white px-6 py-3.5 rounded-xl font-medium transition-all duration-300"
                     >
                       <SkipForward className="w-4 h-4 mr-1.5" />
-                      {t('auth.complete.skip')}
+                      
                     </Button>
                   )}
                 </div>
@@ -720,29 +708,10 @@ export default function CompleteProfilePage() {
         
         {/* 🔹 Signature */}
         <div className="mt-6 text-center text-[13px] text-gray-500 flex items-center justify-center gap-1.5">
-          <Sparkle className="w-3 h-3 text-cyan-400 animate-pulse" />
+          <Sparkle className="w-3 h-3 text-cyan-400" />
           <span>Fait avec ❤️ à Kinshasa • LUVIKA v2.1.0</span>
         </div>
       </motion.div>
-      
-      {/* 🔹 Styles globaux */}
-      <style jsx global>{`
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        .animate-shimmer {
-          animation: shimmer 2s infinite linear;
-          background-size: 200% 100%;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.4; }
-        }
-        .animate-pulse-custom {
-          animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-      `}</style>
     </div>
   );
 }

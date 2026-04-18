@@ -9,7 +9,7 @@ import {
   User, Mail, Lock, ArrowLeft, ArrowRight, 
   Eye, EyeOff, Check, X, CreditCard, AlertCircle, 
   Sun, Moon, Sparkle, ShieldCheck, Smartphone, 
-  CheckCircle, Zap, Crown, Building2, Settings
+  CheckCircle, Zap, Crown, Building2, Settings, Loader2, ArrowUp, Users
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
@@ -18,56 +18,39 @@ import { Badge } from '../../../../components/ui/badge';
 import { createClient } from '../../../lib/supabase/client';
 import { SiSocialblade } from 'react-icons/si';
 
-// 🔹 Server-side translations fallback
 const t = (key: string) => {
   const translations = {
-    'auth.signup.plan_title': 'Choisissez votre plan',
-    'auth.signup.identity_title': 'Informations personnelles',
+    // Titres et descriptions des étapes
     'auth.signup.email_title': 'Adresse email',
     'auth.signup.security_title': 'Sécurité',
-    'auth.signup.plan_desc': 'Choisissez le plan qui correspond à vos besoins',
-    'auth.signup.identity_desc': 'Remplissez vos informations personnelles',
     'auth.signup.email_desc': 'Entrez votre adresse email',
     'auth.signup.security_desc': 'Choisissez un mot de passe sécurisé',
-    'auth.signup.full_name': 'Nom complet',
-    'auth.signup.full_name_placeholder': 'Entrez votre nom complet',
-    'auth.signup.username': 'Nom d\'utilisateur',
-    'auth.signup.username_hint_plain': 'Votre nom d\'utilisateur sera: {username}',
+    
+    // Champs
     'auth.signup.email': 'Email',
     'auth.signup.password': 'Mot de passe',
     'auth.signup.password_confirm': 'Confirmez le mot de passe',
-    'auth.signup.error_name': 'Le nom doit contenir au moins 2 caractères',
-    'auth.signup.error_username': 'Le nom d\'utilisateur doit contenir 3-20 caractères alphanumériques',
-    'auth.signup.error_email_format': 'Format d\'email invalide',
+    
+    // Messages d'erreur et succès
+    'auth.signup.error_email_format': 'Seule une adresse Gmail (@gmail.com) est acceptée',
     'auth.signup.email_exists': 'Cet email est déjà utilisé',
     'auth.signup.check_email': '✅ Compte créé ! Vérifiez votre boîte mail.',
     'auth.signup.error_generic': 'Erreur lors de la création du compte',
+    
+    // Navigation
     'auth.signup.back': 'Retour',
     'auth.signup.next': 'Suivant',
     'auth.signup.create_account': 'Créer le compte',
     'auth.signup.creating': 'Création en cours...',
     'auth.signup.already_have_account': 'Vous avez déjà un compte ?',
     'auth.signup.sign_in': 'Se connecter',
-    'auth.signup.password_length': '8 caractères minimum',
-    'auth.signup.password_uppercase': 'Une lettre majuscule',
-    'auth.signup.password_lowercase': 'Une lettre minuscule',
-    'auth.signup.password_number': 'Un chiffre',
-    'auth.signup.password_special': 'Un caractère spécial',
-    'auth.signup.password_match': 'Les mots de passe correspondent',
+    
+    // Divers
     'auth.signup.2fa_enabled': 'Authentification à deux facteurs activée',
-    'pricing.plans.freemium.title': 'Freemium',
-    'pricing.plans.freemium.desc': 'Pour les particuliers',
-    'pricing.plans.premium.title': 'Professionnel',
-    'pricing.plans.premium.desc': 'Pour les professionnels',
-    'pricing.plans.entreprise.title': 'Entreprise',
-    'pricing.plans.entreprise.desc': 'Pour les grandes entreprises',
-    'pricing.plans.premium.popular': 'POPULAIRE',
     'LUVIKA': 'LUVIKA',
     'tagline': 'Votre identité digitale en un tap NFC',
     'admin.stats.total_users': 'Utilisateurs enregistrés',
     'navbar.home': 'Accueil',
-    'auth.security': 'Sécurité de niveau bancaire',
-    'auth.features': 'Accès à toutes vos fonctionnalités'
   };
   return translations[key as keyof typeof translations] || key;
 };
@@ -112,13 +95,13 @@ const SecurityBadge = () => (
   >
     <ShieldCheck className="w-4.5 h-4.5 text-emerald-400 flex-shrink-0" />
     <div className="flex-1 min-w-0">
-      <p className="text-[12px] font-bold text-emerald-300 flex items-center gap-1.5">
-        <span>Sécurité renforcée</span>
-        <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-500/30 text-[10px] py-0.5 px-1.5">
-          <CheckCircle className="w-2.5 h-2.5 mr-0.5 inline" />
-          AES-256
-        </Badge>
-      </p>
+      <div className="text-[12px] font-bold text-emerald-300 flex items-center gap-1.5">
+  <span>Sécurité renforcée</span>
+  <Badge className="bg-emerald-500/20 text-emerald-200 border-emerald-500/30 text-[10px] py-0.5 px-1.5">
+    <CheckCircle className="w-2.5 h-2.5 mr-0.5 inline" />
+    AES-256
+  </Badge>
+</div>
       <p className="text-[11px] text-emerald-200/80 mt-0.5">
         Chiffrement de bout en bout • Protection anti-phishing • Authentification à deux facteurs
       </p>
@@ -126,27 +109,25 @@ const SecurityBadge = () => (
   </motion.div>
 );
 
-type Step = 'plan' | 'identity' | 'email' | 'security';
+type Step = 'email' | 'security';
 type Plan = 'basic' | 'premium' | 'entreprise';
 
 export default function SignUpPage() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>('plan');
+const [step, setStep] = useState<Step>('email');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showEnterpriseModal, setShowEnterpriseModal] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [isDark, setIsDark] = useState(true);
+const [emailTouched, setEmailTouched] = useState(false);
 
-  const [formData, setFormData] = useState({
-    plan: 'basic' as Plan,
-    full_name: '',
-    username: '',
-    email: '',
-    password: '',
-    passwordConfirm: '',
-  });
+const [formData, setFormData] = useState({
+  email: '',
+  password: '',
+  passwordConfirm: '',
+});
 
   const [emailExists, setEmailExists] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
@@ -177,20 +158,12 @@ export default function SignUpPage() {
   };
 
   // ✅ Validations
-  const isValidName = formData.full_name.trim().length >= 2;
-  const isValidUsername = formData.username.trim().length >= 3 &&
-    /^[a-z0-9_-]+$/.test(formData.username.trim()) &&
-    formData.username.trim().length <= 20;
-  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
-  const passwordRules = {
-    length: formData.password.length >= 8,
-    uppercase: /[A-Z]/.test(formData.password),
-    lowercase: /[a-z]/.test(formData.password),
-    number: /[0-9]/.test(formData.password),
-    special: /[^A-Za-z0-9]/.test(formData.password),
-    match: formData.password === formData.passwordConfirm,
-  };
-  const allPasswordRulesMet = Object.values(passwordRules).every(Boolean);
+ // Validation email plus stricte
+const isValidEmail = /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(formData.email);
+  // Règles simplifiées : longueur minimale 6 caractères et confirmation
+const isPasswordLengthValid = formData.password.length >= 6;
+const doPasswordsMatch = formData.password === formData.passwordConfirm;
+const allPasswordRulesMet = isPasswordLengthValid && doPasswordsMatch;
 
   useEffect(() => {
     if (step === 'email' && emailInputRef.current) {
@@ -240,20 +213,10 @@ export default function SignUpPage() {
       return;
     }
     setFormData(prev => ({ ...prev, plan }));
-    setStep('identity');
-  };
-
-  const handleNextIdentity = () => {
-    if (!isValidName) {
-      setError(t('auth.signup.error_name'));
-      return;
-    }
-    if (!isValidUsername) {
-      setError(t('auth.signup.error_username'));
-      return;
-    }
     setStep('email');
   };
+
+
 
   const handleNextEmail = () => {
     if (!isValidEmail) {
@@ -267,14 +230,9 @@ export default function SignUpPage() {
     setStep('security');
   };
 
-  const handleBack = () => {
-    setStep(prev => {
-      if (prev === 'identity') return 'plan';
-      if (prev === 'email') return 'identity';
-      if (prev === 'security') return 'email';
-      return 'plan';
-    });
-  };
+const handleBack = () => {
+  setStep(prev => (prev === 'security' ? 'email' : 'email'));
+};
 
   const handleSignUp = async () => {
     if (!isValidEmail || !allPasswordRulesMet || emailExists) return;
@@ -289,7 +247,7 @@ export default function SignUpPage() {
         email: formData.email.trim(),
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?plan=${formData.plan}`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
@@ -314,14 +272,13 @@ export default function SignUpPage() {
     }
   };
 
-  const isNextDisabled = () => {
-    if (step === 'identity') return !isValidName || !isValidUsername;
-    if (step === 'email') return !isValidEmail || emailExists || checkingEmail;
-    if (step === 'security') return !allPasswordRulesMet;
-    return false;
-  };
+const isNextDisabled = () => {
+  if (step === 'email') return !isValidEmail || emailExists || checkingEmail;
+  if (step === 'security') return !allPasswordRulesMet;
+  return false;
+};
 
-  const steps = ['plan', 'identity', 'email', 'security'] as Step[];
+const steps = ['email', 'security'] as Step[];
   const currentStepIndex = steps.indexOf(step);
 
   const getPlanColor = (plan: Plan) => {
@@ -343,15 +300,11 @@ export default function SignUpPage() {
   };
 
   const stepIcons = {
-    plan: CreditCard,
-    identity: User,
     email: Mail,
     security: Lock,
   };
 
   const stepTitles = {
-    plan: t('auth.signup.plan_title'),
-    identity: t('auth.signup.identity_title'),
     email: t('auth.signup.email_title'),
     security: t('auth.signup.security_title'),
   };
@@ -416,113 +369,109 @@ export default function SignUpPage() {
                 : 'bg-white/10 text-gray-400';
 
               return (
-                <motion.div
-                  key={s}
-                  className="flex flex-col items-center flex-1"
-                  initial={false}
-                  animate={{ scale: isActive ? 1.05 : 1 }}
-                >
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center ${color} mb-3 relative shadow-lg`}>
-                    <Icon className="w-5.5 h-5.5" />
-                    {isCompleted && (
-                      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border-2 border-emerald-500">
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-sm font-bold text-gray-200">{stepTitles[s]}</span>
-                  <div className={`mt-1.5 h-0.5 w-16 rounded-full ${
-                    isCompleted ? 'bg-emerald-500' : isActive ? 'bg-cyan-500' : 'bg-white/10'
-                  }`} />
-                </motion.div>
+             <motion.div
+  key={s}
+  className="flex flex-col items-center flex-1 relative"
+  initial={false}
+  animate={{ scale: isActive ? 1.08 : 1 }}
+  transition={{ type: "spring", stiffness: 220, damping: 18 }}
+>
+
+  {/* 🔘 Cercle */}
+  <div
+    className={`
+      relative w-12 h-12 rounded-full flex items-center justify-center
+      transition-all duration-300
+      ${isCompleted
+        ? 'bg-gradient-to-br from-emerald-400 to-cyan-500 text-white shadow-lg shadow-emerald-500/30'
+        : isActive
+        ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30'
+        : 'bg-white/5 text-gray-400 backdrop-blur-sm'}
+    `}
+  >
+
+    {/* 💧 Effet actif (pulse doux) */}
+    {isActive && (
+      <span className="absolute inset-0 rounded-full bg-cyan-400/30 animate-ping" />
+    )}
+
+    <Icon className="w-5 h-5 z-10" />
+
+    {/* ✅ Badge completed */}
+    {isCompleted && (
+      <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-black rounded-full flex items-center justify-center border border-emerald-400 shadow">
+        <Check className="w-3.5 h-3.5 text-emerald-400" />
+      </div>
+    )}
+  </div>
+
+  {/* 📝 Titre */}
+  <span
+    className={`
+      mt-3 text-sm font-semibold transition-colors
+      ${isActive
+        ? 'text-white'
+        : isCompleted
+        ? 'text-emerald-300'
+        : 'text-gray-400'}
+    `}
+  >
+    {stepTitles[s]}
+  </span>
+
+  {/* 🔹 Ligne */}
+  <motion.div
+    className="mt-2 h-[3px] w-14 rounded-full"
+    animate={{
+      backgroundColor: isCompleted
+        ? '#34d399'
+        : isActive
+        ? '#22d3ee'
+        : 'rgba(255,255,255,0.1)',
+      scaleX: isActive ? 1.2 : 1
+    }}
+    transition={{ duration: 0.3 }}
+  />
+
+</motion.div>
               );
             })}
           </div>
 
-          {/* 🔹 Barre de progression fluide */}
-          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-            <motion.div 
-              className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500"
-              initial={{ width: '0%' }}
-              animate={{ width: `${((currentStepIndex) / 3) * 100}%` }}
-              transition={{ duration: 0.5 }}
-            />
-          </div>
+          {/* 🔹 Barre de progression fluide - effet eau qui coule */}
+<div className="h-1.5 bg-white/10 rounded-full overflow-hidden relative">
+  <motion.div 
+    className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 relative overflow-hidden"
+    initial={{ width: '0%' }}
+    animate={{ width: `${((currentStepIndex) / 1) * 100}%` }}
+    transition={{ duration: 0.5, ease: "easeOut" }}
+  >
+    {/* Effet de brillance / eau qui coule */}
+    <motion.div
+      className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+      animate={{ x: ['-100%', '100%'] }}
+      transition={{
+        duration: 1.5,
+        repeat: Infinity,
+        ease: "linear",
+        repeatDelay: 0.5
+      }}
+      style={{ skewX: '-20deg' }}
+    />
+  </motion.div>
+</div>
         </div>
 
         {/* 🔹 Formulaire horizontal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* 🔹 Sidebar gauche — info + stats */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-1 space-y-6"
-          >
-            <div className="text-center p-6 glass-border rounded-2xl bg-gradient-to-br from-white/5 to-white/3 backdrop-blur-xl border border-white/15">
-              <div className="w-20 h-20 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-cyan-500/20 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
-                <SiSocialblade className="w-10 h-10 text-white drop-shadow-md" />
-              </div>
-              <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300">
-                {t('LUVIKA')}
-              </h3>
-              <p className="text-gray-300 text-sm mt-2 max-w-xs mx-auto">
-                {t('tagline')}
-              </p>
-              
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
-                <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/25 text-[11px] py-0.5 px-2">
-                  <Smartphone className="w-3 h-3 mr-0.5 inline" />
-                  NFC & QR
-                </Badge>
-                <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/25 text-[11px] py-0.5 px-2">
-                  <CheckCircle className="w-3 h-3 mr-0.5 inline" />
-                  99.9% uptime
-                </Badge>
-              </div>
-            </div>
-
-            <div className="p-5 glass-border rounded-xl bg-white/5 backdrop-blur-sm border border-white/10">
-              <h4 className="font-bold text-cyan-300 mb-3 flex items-center gap-2">
-                <Sparkle className="w-4 h-4 text-yellow-400 animate-pulse" />
-                Pourquoi choisir LUVIKA ?
-              </h4>
-              <ul className="space-y-2.5 text-gray-300 text-sm">
-                {[
-                  { icon: Zap, text: 'Partagez en 1 tap NFC' },
-                  { icon: Smartphone, text: 'Statistiques en temps réel' },
-                  { icon: Crown, text: 'Multi-cartes pour pros' },
-                  { icon: ShieldCheck, text: 'Sécurité de niveau bancaire' }
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2.5 p-2 bg-white/3 rounded-lg hover:bg-white/5 transition-colors">
-                    <item.icon className="w-4 h-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-                    <span>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="p-5 glass-border rounded-xl bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border border-purple-500/20 text-center">
-              <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
-                1,248+
-              </div>
-              <div className="text-gray-300 font-medium mt-1">{t('admin.stats.total_users')}</div>
-              <div className="text-xs text-emerald-400 mt-1 flex items-center justify-center gap-1.5">
-                <ArrowUp className="w-3 h-3" />
-                +12% ce mois
-              </div>
-            </div>
-          </motion.div>
-
-          {/* 🔹 Formulaire principal — droite */}
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="lg:col-span-2"
-          >
+        <div className="flex justify-center">
+  <motion.div
+    key={step}
+    initial={{ opacity: 0, x: 20 }}
+    animate={{ opacity: 1, x: 0 }}
+    exit={{ opacity: 0, x: -20 }}
+    transition={{ duration: 0.3 }}
+    className="w-full max-w-3xl"
+  >
             <div className="relative backdrop-blur-2xl bg-white/5 rounded-2xl border border-white/15 shadow-2xl shadow-black/40 overflow-hidden">
               {/* 🔹 Bandeau supérieur décoratif */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
@@ -539,8 +488,6 @@ export default function SignUpPage() {
                   className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-5 border border-white/10 shadow-lg shadow-cyan-500/10 relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
-                  {step === 'plan' && <CreditCard className="w-8 h-8 text-cyan-300" />}
-                  {step === 'identity' && <User className="w-8 h-8 text-cyan-300" />}
                   {step === 'email' && <Mail className="w-8 h-8 text-cyan-300" />}
                   {step === 'security' && <Lock className="w-8 h-8 text-cyan-300" />}
                 </motion.div>
@@ -549,8 +496,6 @@ export default function SignUpPage() {
                   {stepTitles[step]}
                 </h1>
                 <p className="text-gray-300 text-sm text-center max-w-md mx-auto">
-                  {step === 'plan' && t('auth.signup.plan_desc')}
-                  {step === 'identity' && t('auth.signup.identity_desc')}
                   {step === 'email' && t('auth.signup.email_desc')}
                   {step === 'security' && t('auth.signup.security_desc')}
                 </p>
@@ -592,319 +537,162 @@ export default function SignUpPage() {
               </AnimatePresence>
 
               <div className="space-y-5 px-7 pb-7">
-                {/* 🔹 ÉTAPE 1 : Choix du plan */}
-                {step === 'plan' && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {[
-                        { id: 'basic', title: t('pricing.plans.freemium.title'), desc: t('pricing.plans.freemium.desc'), price: '0', icon: Zap },
-                        { id: 'premium', title: t('pricing.plans.premium.title'), desc: t('pricing.plans.premium.desc'), price: '12', icon: Crown, popular: true },
-                        { id: 'entreprise', title: t('pricing.plans.entreprise.title'), desc: t('pricing.plans.entreprise.desc'), price: '39', icon: Building2 }
-                      ].map((plan) => {
-                        const Icon = plan.icon;
-                        const isSelected = formData.plan === plan.id;
-                        const PlanIcon = getPlanIcon(plan.id as Plan);
-                        
-                        return (
-                          <motion.div
-                            key={plan.id}
-                            whileHover={{ y: -4, scale: 1.01 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="relative overflow-hidden rounded-2xl group"
-                          >
-                            <div className={`absolute inset-0 bg-gradient-to-br ${getPlanColor(plan.id as Plan)} opacity-10 group-hover:opacity-15 transition-opacity`} />
-                            <button
-                              type="button"
-                              onClick={() => handlePlanSelect(plan.id as Plan)}
-                              className={`w-full text-left p-6 rounded-2xl border-2 relative z-10 h-full flex flex-col justify-between transition-all duration-300 ${
-                                isSelected
-                                  ? plan.id === 'basic'
-                                    ? 'border-green-500 bg-green-500/10'
-                                    : plan.id === 'premium'
-                                    ? 'border-cyan-400 bg-cyan-500/10 ring-2 ring-cyan-400/30'
-                                    : 'border-purple-500 bg-purple-500/10'
-                                  : 'border-white/10 hover:border-white/20 bg-white/3 hover:bg-white/5'
-                              }`}
-                            >
-                              <div>
-                                <div className="flex items-center justify-between mb-3">
-                                  <div className="flex items-center gap-2">
-                                    <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${getPlanColor(plan.id as Plan)} flex items-center justify-center`}>
-                                      <PlanIcon className="w-4.5 h-4.5 text-white" />
-                                    </div>
-                                    <h3 className="font-bold text-white text-lg">{plan.title}</h3>
-                                  </div>
-                                  {plan.popular && (
-                                    <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-[10px] py-0.5 px-2 shadow-md shadow-amber-500/30">
-                                      {t('pricing.plans.premium.popular')}
-                                    </Badge>
-                                  )}
-                                </div>
-                                <p className="text-gray-300 text-sm mb-4">{plan.desc}</p>
-                                
-                                <div className="space-y-2 text-[13px] text-gray-300">
-                                  {plan.id === 'basic' && (
-                                    <>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-green-400" />
-                                        <span>1 carte NFC</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-green-400" />
-                                        <span>Profil de base</span>
-                                      </div>
-                                    </>
-                                  )}
-                                  {plan.id === 'premium' && (
-                                    <>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-cyan-400" />
-                                        <span>Cartes NFC illimitées</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-cyan-400" />
-                                        <span>Analytics avancés</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-cyan-400" />
-                                        <span>Support prioritaire</span>
-                                      </div>
-                                    </>
-                                  )}
-                                  {plan.id === 'entreprise' && (
-                                    <>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-purple-400" />
-                                        <span>Gestion d'équipe</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-purple-400" />
-                                        <span>Branding personnalisé</span>
-                                      </div>
-                                      <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-purple-400" />
-                                        <span>API dédiée</span>
-                                      </div>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="text-right mt-4 pt-4 border-t border-white/10">
-                                <div className="text-3xl font-bold text-white">${plan.price}</div>
-                                <div className="text-gray-400 text-sm">/mois</div>
-                              </div>
-                            </button>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
 
-                {/* 🔹 ÉTAPE 2 : Identité */}
-                {step === 'identity' && (
-                  <>
-                    <div>
-                      <Label htmlFor="full_name" className="text-gray-300 mb-2 flex items-center gap-2">
-                        <User className="w-4 h-4 text-cyan-400" />
-                        {t('auth.signup.full_name')}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="full_name"
-                          name="full_name"
-                          value={formData.full_name}
-                          onChange={handleChange}
-                          placeholder={t('auth.signup.full_name_placeholder')}
-                          className="pl-4 pr-4 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
-                        />
-                        {!isValidName && formData.full_name && (
-                          <p className="text-[13px] text-amber-400 mt-1.5 flex items-center gap-1.5">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {t('auth.signup.error_name')}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+{/* 🔹 ÉTAPE 2 : Email */}
+{step === 'email' && (
+  <div>
+    <Label htmlFor="email" className="text-gray-300 mb-2 flex items-center gap-2">
+      <Mail className="w-4 h-4 text-cyan-400" />
+      {t('auth.signup.email')}
+    </Label>
+    <div className="relative">
+      <Input
+  ref={emailInputRef}
+  id="email"
+  name="email"
+  type="email"
+  value={formData.email}
+  onChange={handleChange}
+  onBlur={() => setEmailTouched(true)}
+  placeholder="votre@email.com"
+  className="..."
+/>
+      {/* Indicateur à droite plus visible */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2">
+        {checkingEmail && (
+          <Loader2 className="w-5 h-5 text-cyan-400 animate-spin" />
+        )}
+        {!checkingEmail && emailExists && (
+          <div className="flex items-center gap-1.5">
+            <X className="w-5 h-5 text-rose-400" />
+            <span className="text-[11px] font-medium text-rose-300 hidden sm:inline">Déjà utilisé</span>
+          </div>
+        )}
+        {!checkingEmail && !emailExists && formData.email && isValidEmail && (
+          <Check className="w-5 h-5 text-emerald-400" />
+        )}
+      </div>
+    </div>
+    
+    {/* Messages d’erreur / succès sous le champ */}
+{emailExists && (
+  <motion.p
+    initial={{ opacity: 0, y: -5 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="text-[13px] text-rose-400 mt-2 flex items-center gap-1.5 font-medium"
+  >
+    <AlertCircle className="w-3.5 h-3.5" />
+    {t('auth.signup.email_exists')}
+  </motion.p>
+)}
+{emailTouched && !isValidEmail && formData.email && !emailExists && (
+  <p className="text-[13px] text-amber-400 mt-2 flex items-center gap-1.5">
+    <AlertCircle className="w-3.5 h-3.5" />
+    {t('auth.signup.error_email_format')}
+  </p>
+)}
+{!checkingEmail && !emailExists && isValidEmail && formData.email && (
+  <motion.p
+    initial={{ opacity: 0, y: -5 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="text-[13px] text-emerald-400 mt-2 flex items-center gap-1.5"
+  >
+    <Check className="w-3.5 h-3.5" />
+    Email disponible
+  </motion.p>
+)}
+  </div>
+)}
 
-                    <div>
-                      <Label htmlFor="username" className="text-gray-300 mb-2 flex items-center gap-2">
-                        <User className="w-4 h-4 text-cyan-400" />
-                        {t('auth.signup.username')}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="username"
-                          name="username"
-                          value={formData.username}
-                          onChange={handleChange}
-                          placeholder="votre_nom"
-                          className="pl-4 pr-4 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
-                        />
-                        <p className="text-[13px] text-gray-400 mt-1.5">
-                          {t('auth.signup.username_hint_plain').replace('{username}', formData.username || 'votre_nom')}
-                        </p>
-                        {!isValidUsername && formData.username && (
-                          <p className="text-[13px] text-amber-400 mt-1 flex items-center gap-1.5">
-                            <AlertCircle className="w-3.5 h-3.5" />
-                            {t('auth.signup.error_username')}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
+                {/* 🔹 ÉTAPE 3 : Sécurité (simplifiée) */}
+{step === 'security' && (
+  <>
+    <div>
+      <Label htmlFor="password" className="text-gray-300 mb-2 flex items-center gap-2">
+        <Lock className="w-4 h-4 text-cyan-400" />
+        {t('auth.signup.password')}
+      </Label>
+      <div className="relative">
+        <Input
+          ref={passwordInputRef}
+          id="password"
+          name="password"
+          type={showPassword ? 'text' : 'password'}
+          value={formData.password}
+          onChange={handleChange}
+          placeholder="••••••••"
+          className="pl-4 pr-12 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-300 transition-colors p-1"
+          aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+        >
+          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+        </button>
+      </div>
+      
+      {/* Message simplifié : seulement si trop court */}
+      {formData.password && !isPasswordLengthValid && (
+        <p className="text-[13px] text-amber-400 mt-2 flex items-center gap-1.5">
+          <AlertCircle className="w-3.5 h-3.5" />
+          Le mot de passe doit contenir au moins 6 caractères
+        </p>
+      )}
+    </div>
 
-                {/* 🔹 ÉTAPE 3 : Email */}
-                {step === 'email' && (
-                  <div>
-                    <Label htmlFor="email" className="text-gray-300 mb-2 flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-cyan-400" />
-                      {t('auth.signup.email')}
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        ref={emailInputRef}
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        placeholder="votre@email.com"
-                        className="pl-4 pr-12 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
-                      />
-                      {checkingEmail && (
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
-                          <span className="animate-spin">· · ·</span>
-                        </span>
-                      )}
-                      {emailExists && !checkingEmail && (
-                        <AlertCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-amber-400" />
-                      )}
-                    </div>
-                    {emailExists && (
-                      <p className="text-[13px] text-amber-400 mt-2 flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {t('auth.signup.email_exists')}
-                      </p>
-                    )}
-                    {!isValidEmail && formData.email && !emailExists && (
-                      <p className="text-[13px] text-amber-400 mt-2 flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        {t('auth.signup.error_email_format')}
-                      </p>
-                    )}
-                  </div>
-                )}
+    <div>
+      <Label htmlFor="passwordConfirm" className="text-gray-300 mb-2 flex items-center gap-2">
+        <Lock className="w-4 h-4 text-cyan-400" />
+        {t('auth.signup.password_confirm')}
+      </Label>
+      <div className="relative">
+        <Input
+          id="passwordConfirm"
+          name="passwordConfirm"
+          type={showConfirmPassword ? 'text' : 'password'}
+          value={formData.passwordConfirm}
+          onChange={handleChange}
+          placeholder="••••••••"
+          className="pl-4 pr-12 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
+        />
+        <button
+          type="button"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-300 transition-colors p-1"
+          aria-label={showConfirmPassword ? "Masquer la confirmation" : "Afficher la confirmation"}
+        >
+          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+        </button>
+      </div>
+      {formData.passwordConfirm && !doPasswordsMatch && (
+        <p className="text-[13px] text-amber-400 mt-2 flex items-center gap-1.5">
+          <AlertCircle className="w-3.5 h-3.5" />
+          Les mots de passe ne correspondent pas
+        </p>
+      )}
+    </div>
 
-                {/* 🔹 ÉTAPE 4 : Sécurité */}
-                {step === 'security' && (
-                  <>
-                    <div>
-                      <Label htmlFor="password" className="text-gray-300 mb-2 flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-cyan-400" />
-                        {t('auth.signup.password')}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          ref={passwordInputRef}
-                          id="password"
-                          name="password"
-                          type={showPassword ? 'text' : 'password'}
-                          value={formData.password}
-                          onChange={handleChange}
-                          placeholder="••••••••"
-                          className="pl-4 pr-12 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-300 transition-colors p-1"
-                          aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                        >
-                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                      </div>
-                      
-                      {/* 🔹 Indicateur de force du mot de passe */}
-                      <div className="mt-3 space-y-1.5">
-                        {Object.entries(passwordRules).map(([key, valid]) => (
-                          <div key={key} className="flex items-center gap-2.5">
-                            <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                              valid ? 'bg-emerald-500 scale-110' : 'bg-gray-500'
-                            }`} />
-                            <span className={`text-[13px] transition-colors duration-300 ${
-                              valid ? 'text-emerald-400 font-medium' : 'text-gray-400'
-                            }`}>
-                              {t(`auth.signup.password_${key}`)}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="passwordConfirm" className="text-gray-300 mb-2 flex items-center gap-2">
-                        <Lock className="w-4 h-4 text-cyan-400" />
-                        {t('auth.signup.password_confirm')}
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="passwordConfirm"
-                          name="passwordConfirm"
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          value={formData.passwordConfirm}
-                          onChange={handleChange}
-                          placeholder="••••••••"
-                          className="pl-4 pr-12 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/30 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-300 transition-colors p-1"
-                          aria-label={showConfirmPassword ? "Masquer la confirmation" : "Afficher la confirmation"}
-                        >
-                          {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-3.5 text-[13px] text-blue-200">
-                      <div className="flex items-start gap-2">
-                        <ShieldCheck className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                        <span>
-                          <span className="font-medium">Authentification à deux facteurs activée</span> par défaut pour sécuriser votre compte.
-                        </span>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
+    <div className="bg-blue-900/20 border border-blue-500/30 rounded-xl p-3.5 text-[13px] text-blue-200">
+      <div className="flex items-start gap-2">
+        <ShieldCheck className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <span>
+          <span className="font-medium">Authentification à deux facteurs activée</span> par défaut pour sécuriser votre compte.
+        </span>
+      </div>
+    </div>
+  </>
+)}
+ </div>
 
               {/* 🔹 Navigation */}
               <div className="mt-8 pt-6 border-t border-white/10 px-7 pb-7">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div className="flex gap-3">
-                    {step !== 'plan' && (
-                      <Button
-                        type="button"
-                        onClick={handleBack}
-                        disabled={loading}
-                        variant="outline"
-                        className="border-white/20 text-gray-300 hover:bg-white/10 px-6 py-3 rounded-xl font-medium"
-                      >
-                        <ArrowLeft className="w-4 h-4 mr-1.5" />
-                        {t('auth.signup.back')}
-                      </Button>
-                    )}
-                  </div>
                   
                   <Button
                     type="button"
                     onClick={
-                      step === 'plan' ? () => {} : // Handled by plan selection
-                      step === 'identity' ? handleNextIdentity :
                       step === 'email' ? handleNextEmail :
                       handleSignUp
                     }
@@ -960,106 +748,12 @@ export default function SignUpPage() {
                   </div>
                 </div>
                 
-                <div className="mt-5 pt-4 border-t border-white/10 text-center">
-                  <div className="flex items-center justify-center gap-1.5 text-[11px] text-cyan-300/90">
-                    <Sparkle className="w-3 h-3 text-yellow-400 animate-pulse" />
-                    <span>Chiffrement AES-256 • Données protégées</span>
-                  </div>
-                </div>
               </div>
             </div>
-            
-            {/* 🔹 Signature */}
-            <div className="mt-6 text-center text-[11px] text-gray-500 flex items-center justify-center gap-1.5">
-              <Sparkle className="w-3 h-3 text-cyan-400 animate-pulse" />
-              <span>Fait avec ❤️ à Kinshasa • LUVIKA v2.1.0</span>
-            </div>
+
           </motion.div>
         </div>
       </div>
-
-      {/* 🔹 Modal Entreprise */}
-      <AnimatePresence>
-        {showEnterpriseModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
-            onClick={() => setShowEnterpriseModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative backdrop-blur-2xl bg-gradient-to-br from-slate-800/95 to-slate-900/95 rounded-2xl border border-white/15 shadow-2xl shadow-black/60 w-full max-w-md overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <FloatingBubbles />
-              
-              <button
-                onClick={() => setShowEnterpriseModal(false)}
-                aria-label="Fermer"
-                className="absolute top-4 right-4 text-gray-300 hover:text-white z-10 p-2 rounded-lg hover:bg-white/10 transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-
-              <div className="px-7 py-10 text-center relative z-10">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-purple-500/20">
-                  <Building2 className="w-8 h-8 text-white" />
-                </div>
-                
-                <h3 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-indigo-300 mb-3">
-                  {t('pricing.plans.entreprise.title')}
-                </h3>
-                
-                <p className="text-gray-200 text-lg max-w-xs mx-auto mb-6">
-                  Ce plan n'est disponible que sur commande. Passez d'abord au plan <span className="text-cyan-400 font-bold">Professionnel</span>, puis contactez-nous pour une offre personnalisée.
-                </p>
-                
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowEnterpriseModal(false)}
-                    className="border-white/20 text-gray-300 hover:bg-white/10 px-6 py-3 rounded-xl font-medium"
-                  >
-                    Annuler
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, plan: 'premium' }));
-                      setShowEnterpriseModal(false);
-                      setStep('identity');
-                    }}
-                    className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg shadow-cyan-500/20"
-                  >
-                    <Crown className="w-4 h-4 mr-1.5" />
-                    Choisir Professionnel
-                  </Button>
-                </div>
-                
-                <div className="mt-8 pt-6 border-t border-white/10">
-                  <div className="flex flex-wrap justify-center gap-4 text-[11px] text-gray-400">
-                    <div className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                      <span>Support dédié</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3 h-3 text-cyan-400" />
-                      <span>Gestion d'équipe</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <Sparkle className="w-3 h-3 text-yellow-400" />
-                      <span>Offre personnalisée</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* 🔹 Modal de bienvenue */}
       <AnimatePresence>
@@ -1199,6 +893,3 @@ export default function SignUpPage() {
     </div>
   );
 }
-
-// 🔹 Icônes manquantes
-import { ArrowUp, Users } from 'lucide-react';

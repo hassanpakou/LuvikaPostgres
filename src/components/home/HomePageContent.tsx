@@ -7,15 +7,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import ProfileCard3D from '../../../components/cards/ProfileCard3D';
 import { 
   ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3, 
-  Layers, QrCode, Sparkles, Zap, CheckCircle, Star, // ✅ Correction: Sparkles (avec un 's')
+  Layers, QrCode, Zap, CheckCircle, Star,
   ChevronRight, Trophy, Briefcase, GraduationCap,
-  // Icônes nécessaires pour le Footer
-  Github, Twitter, Linkedin, Mail, MapPin, Heart, Globe, User, Gavel, ChevronUp
+  Github, Twitter, Linkedin, Heart, Globe,
+  Gavel,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
-import { SiSocialblade, SiInstagram, SiFacebook, SiSnapchat, SiTelegram, SiWhatsapp, SiTiktok } from 'react-icons/si';
+import { SiInstagram, SiSocialblade } from 'react-icons/si';
 
 // 🔑 Fonction déterministe pour le pattern QR
 const getQrBlockClass = (index: number): string => {
@@ -29,7 +29,11 @@ export function HomePageContent() {
   const t = useTranslations();
   const locale = useLocale();
   const [isMobile, setIsMobile] = useState(false);
-
+const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
+useEffect(() => {
+  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  setShouldReduceMotion(mediaQuery.matches);
+}, []);
   // 🔹 Détection mobile pour optimiser les animations
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -45,32 +49,6 @@ export function HomePageContent() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.15),transparent_70%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.1),transparent_70%)]"></div>
         
-        {/* Particules flottantes */}
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white/5"
-            style={{
-              width: `${Math.random() * 40 + 10}px`,
-              height: `${Math.random() * 40 + 10}px`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              filter: 'blur(2px)',
-            }}
-            animate={{
-              y: [0, -20, 0],
-              x: [0, Math.sin(i) * 30, 0],
-              scale: [0.8, 1.2, 0.8],
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 15 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: i * 0.5,
-            }}
-          />
-        ))}
       </div>
 
       {/* 🔹 Hero Section - Design Premium */}
@@ -87,7 +65,7 @@ export function HomePageContent() {
           className="inline-block mb-6"
         >
           <Badge className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30 px-4 py-1.5 text-sm font-medium">
-            <SiSocialblade className="w-3.5 h-3.5 mr-1.5 inline animate-pulse" />
+            <SiSocialblade className="w-3.5 h-3.5 mr-1.5 inline" />
             Nouvelle génération d'identité numérique
           </Badge>
         </motion.div>
@@ -133,8 +111,7 @@ export function HomePageContent() {
         transition={{ delay: 0.8, type: 'spring', stiffness: 120, damping: 15 }}
         className="w-full max-w-md mx-auto mb-16 relative"
       >
-        <div className="absolute -inset-4 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl blur-2xl opacity-30 animate-pulse-slow"></div>
-        <ProfileCard3D />
+       {!shouldReduceMotion && <ProfileCard3D />}
         
         {/* 🔹 Badge flottant */}
         <motion.div
@@ -201,19 +178,10 @@ export function HomePageContent() {
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md" />
-              <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-white/40 animate-pulse" />
+              <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-white/40" />
               
               {/* 🔹 Animation onde au clic */}
-              <AnimatePresence>
-                <motion.div
-                  initial={{ scale: 0, opacity: 0.5 }}
-                  animate={{ scale: 1, opacity: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="absolute inset-0 rounded-full bg-white/20"
-                />
-              </AnimatePresence>
-            </motion.button>
+              </motion.button>
           </Link>
 
           <Link href={`/${locale}/pricing`}>
@@ -224,7 +192,7 @@ export function HomePageContent() {
                 group relative flex items-center justify-center
                 w-full sm:w-auto px-8 py-4 rounded-full
                 font-bold text-lg text-gray-200
-                bg-white/5 backdrop-blur-xl
+                bg-black/60
                 border border-white/15
                 hover:bg-white/10 hover:border-cyan-400/30
                 transition-all duration-300
@@ -309,7 +277,7 @@ export function HomePageContent() {
             transition={{ duration: 0.7, ease: "easeOut" }}
             className="inline-flex items-center gap-3 mb-6 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-5 py-2.5 rounded-full border border-cyan-500/30"
           >
-            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></div>
+            <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
             <span className="text-cyan-300 font-medium text-sm tracking-wide uppercase">
               {t('features.title')}
             </span>
@@ -340,27 +308,7 @@ export function HomePageContent() {
         <div className="absolute -z-10 inset-0 overflow-hidden rounded-3xl">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-cyan-900/20 to-indigo-900/30"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(129,230,217,0.08),transparent_70%)]"></div>
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={`glow-${i}`}
-              className="absolute rounded-full bg-cyan-500/10 blur-xl"
-              style={{
-                width: `${30 + i * 10}px`,
-                height: `${30 + i * 10}px`,
-                left: `${10 + i * 12}%`,
-                top: `${20 + i * 8}%`,
-              }}
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3],
-              }}
-              transition={{
-                duration: 4 + i,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+          
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -418,23 +366,24 @@ export function HomePageContent() {
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 
                 {/* 🔹 Icône flottante */}
-                <motion.div
-                  className={`mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl ${item.glow} shadow-lg`}
-                  style={{ 
-                    background: `linear-gradient(135deg, ${item.gradient})` 
-                  }}
-                  animate={{ 
-                    y: [0, -6, 0],
-                    rotate: [0, 2, -2, 0],
-                  }}
-                  transition={{ 
-                    duration: 4 + i, 
-                    repeat: Infinity, 
-                    ease: "easeInOut" 
-                  }}
-                >
-                  {item.icon}
-                </motion.div>
+                {!isMobile && (
+  <motion.div
+    className={`mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl ${item.glow} shadow-lg`}
+    style={{ background: `linear-gradient(135deg, ${item.gradient})` }}
+    animate={{ y: [0, -6, 0] }}
+    transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
+  >
+    {item.icon}
+  </motion.div>
+)}
+{isMobile && (
+  <div
+    className={`mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl ${item.glow} shadow-lg`}
+    style={{ background: `linear-gradient(135deg, ${item.gradient})` }}
+  >
+    {item.icon}
+  </div>
+)}
 
                 <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
                   {item.title}
@@ -500,7 +449,7 @@ export function HomePageContent() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/50 to-blue-900/50 rounded-2xl border border-cyan-500/30 backdrop-blur-sm shadow-2xl shadow-black/40"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/50 to-blue-900/50 rounded-2xl border border-cyan-500/30 backdrop-blur-sm"></div>
                 
                 {/* 🔹 QR Code stylisé */}
                 <div className="absolute inset-6 bg-white rounded-lg flex items-center justify-center p-2">
@@ -522,7 +471,7 @@ export function HomePageContent() {
                 {/* 🔹 Scanner animé */}
                 <motion.div
                   className="absolute top-0 left-1/2 w-1 h-16 -translate-x-0.5 bg-gradient-to-b from-transparent via-cyan-400 to-transparent rounded-full"
-                  animate={{ y: [0, 56, 0] }}
+                  
                   transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
                 />
                 
@@ -615,28 +564,6 @@ export function HomePageContent() {
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-purple-900/40 to-cyan-900/30"></div>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(129,230,217,0.05),transparent_70%)]"></div>
           
-          {/* 🔹 Particules flottantes */}
-          {[...Array(12)].map((_, i) => (
-            <motion.div
-              key={`particle-${i}`}
-              className="absolute w-1.5 h-1.5 rounded-full bg-white/30"
-              style={{
-                left: `${15 + i * 6}%`,
-                top: `${20 + i * 5}%`,
-              }}
-              animate={{
-                y: [0, -10, 0],
-                x: [0, Math.sin(i) * 8, 0],
-                scale: [1, 1.3, 1],
-              }}
-              transition={{
-                duration: 6 + i,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.2,
-              }}
-            />
-          ))}
         </div>
 
         <div className="relative z-10 text-center py-16">
@@ -673,23 +600,6 @@ export function HomePageContent() {
               {t('features.superpro.desc')}
             </motion.p>
 
-            {/* 🔹 Call-to-action premium */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="inline-block"
-            >
-              <Link href={`/${locale}/contact`}>
-                <Button className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold text-lg px-8 py-6 shadow-2xl shadow-cyan-500/30 transition-all duration-300 group">
-                  <span className="flex items-center gap-2">
-                    {t('navbar.contact')}
-                    <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Button>
-              </Link>
-            </motion.div>
             
             {/* 🔹 Badges de confiance */}
             <div className="mt-12 flex flex-wrap justify-center gap-6">
@@ -709,71 +619,14 @@ export function HomePageContent() {
                 </motion.div>
               ))}
             </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* 🔹 Footer CTA - Design Ultime */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-        className="max-w-4xl mx-auto text-center mb-16"
-      >
-        <div className="glass-border rounded-2xl p-8 bg-white/5 backdrop-blur-xl border border-white/10">
-          <motion.h3
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="text-2xl md:text-3xl font-bold text-white mb-4"
-          >
-            Prêt à transformer votre identité numérique ?
-          </motion.h3>
-          
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="text-gray-300 mb-8 max-w-2xl mx-auto"
-          >
-            Rejoignez des milliers de professionnels qui ont déjà adopté LUVIKA pour se démarquer et connecter avec leur audience.
-          </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
-          >
-            <Link href="/auth/sign-up">
-              <Button size="lg" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-bold text-lg px-8 py-6 shadow-2xl shadow-cyan-500/30">
-                Commencer gratuitement
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
             
-            <Link href={`/${locale}/pricing`}>
-              <Button size="lg" variant="outline" className="border-white/20 text-gray-300 hover:bg-white/10 hover:border-cyan-400/30 font-bold text-lg px-8 py-6">
-                Voir les tarifs
-              </Button>
-            </Link>
-          </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.9 }}
-            className="mt-8 text-sm text-gray-500"
-          >
-            <p>🔒 Sécurité de niveau bancaire • 🌍 Disponible dans 9 langues • 📱 Application iOS & Android</p>
           </motion.div>
         </div>
-      </motion.div>
+      </section>     
 
-
-     <footer className="w-full -mx-4 mt-20 border-t border-cyan-500/20 bg-black/40 backdrop-blur-sm">
+     <footer className="w-full -mx-4 mt-20   backdrop-blur-sm">
   {/* Overlay de fond pour contrôler la couleur du haut (plus opaque) */}
-  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/90 to-gray-900/95 pointer-events-none" />
+  <div className="absolute inset-0 pointer-events-none" />
   
   <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
@@ -876,7 +729,7 @@ export function HomePageContent() {
       <p>© {new Date().getFullYear()} Luvika. Fait avec ❤️ en RDC.</p>
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <div className="w-2 h-2 rounded-full bg-green-500" />
           <span>Systèmes opérationnels</span>
         </div>
         <span className="hidden md:inline">•</span>
@@ -898,9 +751,7 @@ export function HomePageContent() {
     0%, 100% { opacity: 0.2; }
     50% { opacity: 0.4; }
   }
-  .animate-pulse-slow {
-    animation: pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
+
   
   @keyframes shimmer {
     0% { background-position: -200% 0; }
@@ -912,7 +763,6 @@ export function HomePageContent() {
   }
   
   @media (prefers-reduced-motion: reduce) {
-    .animate-pulse-slow,
     .animate-shimmer {
       animation: none !important;
     }

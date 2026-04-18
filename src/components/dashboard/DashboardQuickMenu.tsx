@@ -63,32 +63,16 @@ export default function DashboardQuickMenu({
   const [isDragging, setIsDragging] = useState(false);
   const startYRef = useRef(0);
   
-  // 🔊 Sons de clic (avec fallback silencieux)
-  const playClickSound = useSound('');
+useEffect(() => {
+  const checkMobile = () => {
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+  };
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  return () => window.removeEventListener('resize', checkMobile);
+}, []); // plus de dépendances
 
-  // 🔹 Détection responsive améliorée
-  useEffect(() => {
-    const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      
-      // Fermer le menu si changement de viewport pendant ouvert
-      if (isOpen && mobile !== isMobile) {
-        setIsOpen(false);
-      }
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [isOpen, isMobile]);
-
-  // 🔊 Jouer le son quand le menu s'ouvre
-  useEffect(() => {
-    if (isOpen) {
-      playClickSound();
-    }
-  }, [isOpen, playClickSound]);
 
   // 🔹 Gestion du drag optimisée
   const handleStart = (clientY: number) => {
@@ -184,7 +168,6 @@ export default function DashboardQuickMenu({
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => {
-          playClickSound();
           setIsOpen(!isOpen);
         }}
         className={`
@@ -235,11 +218,10 @@ export default function DashboardQuickMenu({
                     }}
                     exit={{ scale: 0, opacity: 0 }}
                     transition={{
-                      delay: i * 0.04,
-                      type: 'spring',
-                      stiffness: 300,
-                      damping: 15,
-                    }}
+  delay: i * 0.01,
+  duration: 0.12,
+  ease: 'easeOut',
+}}
                     style={{
                       position: 'absolute',
                       left: '50%',
@@ -250,7 +232,6 @@ export default function DashboardQuickMenu({
                     }}
                     onClick={() => {
                       if (!action.disabled) {
-                        playClickSound();
                         onAction(action.id);
                         setIsOpen(false);
                       }
@@ -283,7 +264,6 @@ export default function DashboardQuickMenu({
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-end"
             onClick={() => {
-              playClickSound();
               setIsOpen(false);
             }}
             role="dialog"
@@ -342,7 +322,6 @@ export default function DashboardQuickMenu({
                       whileTap={{ scale: action.disabled ? 1 : 0.95 }}
                       onClick={() => {
                         if (!action.disabled) {
-                          playClickSound();
                           onAction(action.id);
                           setIsOpen(false);
                         }
@@ -389,7 +368,6 @@ export default function DashboardQuickMenu({
                     active:bg-white/20 transition-all
                   `}
                   onClick={() => {
-                    playClickSound();
                     setIsOpen(false);
                   }}
                   aria-label="Fermer le menu"
