@@ -493,7 +493,7 @@
     "subscription": {
       "title": "Abonnement",
       "active_indicator": " Actif",
-      "inactive_indicator": "⚠️ Inactif",
+      "inactive_indicator": "Inactif",
       "status_active": "Abonnement actif",
       "plans": {
         "freemium": "Basic",
