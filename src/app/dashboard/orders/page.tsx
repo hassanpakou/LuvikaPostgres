@@ -307,7 +307,7 @@ export default function UserOrdersPage() {
               <div className="grid grid-cols-3 gap-6 text-center">
                 {[
                   { icon: Clock, label: '24h', desc: 'Livraison express' },
-                  { icon: MapPin, label: 'Kinshasa', desc: 'Zone de livraison' },
+                  { icon: MapPin, label: 'Partout', desc: 'Zone de livraison' },
                   { icon: Sparkle, label: 'Premium', desc: 'Qualité garantie' }
                 ].map((item, i) => {
                   const Icon = item.icon;
