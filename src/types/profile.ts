@@ -25,7 +25,6 @@ export type PublicProfile = {
     | 'location',
     boolean
   >;
-  // ... ajoutez les autres champs si besoin
   // 🔹 Ajout : sections supplémentaires pour le nouveau design
   sections_visibility_extended?: Record<
     | 'cv' // ✅ CV

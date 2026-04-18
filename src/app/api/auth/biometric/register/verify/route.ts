@@ -1,14 +1,22 @@
+// api/auth/biometric/register/verify/route.ts
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
+
+// Fonction utilitaire locale pour convertir un Buffer en base64url
+function toBase64Url(buffer: Buffer): string {
+  return buffer.toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+}
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const cookieStore = await cookies();
-    
-    // Récupérer le challenge stocké
     const challenge = cookieStore.get('webauthn_challenge')?.value;
     if (!challenge) {
       return NextResponse.json({ error: 'Challenge expiré ou manquant' }, { status: 400 });
@@ -34,12 +42,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    // Vérifier la réponse cryptographique
+    // 🔥 Conversion FORCÉE de l'ID en base64url
+    if (body.rawId && Array.isArray(body.rawId)) {
+      const buffer = Buffer.from(body.rawId);
+      body.id = toBase64Url(buffer);
+    } else if (body.id) {
+      // Si rawId absent, on tente de convertir body.id
+      let buffer: Buffer;
+      try {
+        buffer = Buffer.from(body.id, 'base64');
+      } catch {
+        buffer = Buffer.from(body.id, 'utf8');
+      }
+      body.id = toBase64Url(buffer);
+    }
+
     const verification = await verifyRegistrationResponse({
       response: body,
       expectedChallenge: challenge,
-      expectedOrigin: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      expectedRPID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
+      expectedOrigin: getOrigin(),
+      expectedRPID: getRpId(),
       requireUserVerification: true,
     });
 
@@ -48,16 +70,13 @@ export async function POST(req: Request) {
     }
 
     const { credential, aaguid } = verification.registrationInfo;
-
-    // Déterminer le type d'appareil
-    const deviceType = aaguid ? 'cross-platform' : 'platform'; 
+    const deviceType = aaguid ? 'cross-platform' : 'platform';
     const displayName = deviceType === 'platform' ? 'Appareil local (FaceID/TouchID)' : 'Clé de sécurité';
 
-    // Sauvegarder dans la table biometric_credentials
     const { error: insertError } = await supabase.from('biometric_credentials').insert({
       user_id: user.id,
       credential_id: credential.id,
-      public_key: Buffer.from(credential.publicKey), // Bytea
+      public_key: Buffer.from(credential.publicKey),
       sign_count: credential.counter,
       device_type: deviceType,
       display_name: displayName,
@@ -66,9 +85,7 @@ export async function POST(req: Request) {
 
     if (insertError) throw insertError;
 
-    // Nettoyer le cookie challenge
     cookieStore.delete('webauthn_challenge');
-
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Registration verify error:', error);

@@ -1,8 +1,9 @@
+//api/auth/biometric/authenticate/verify/route.ts
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-
+import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -44,8 +45,8 @@ export async function POST(req: Request) {
     const verification = await verifyAuthenticationResponse({
       response: body,
       expectedChallenge: challenge,
-      expectedOrigin: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-      expectedRPID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
+        expectedOrigin: getOrigin(),         // ✅
+  expectedRPID: getRpId(),             // ✅
       credential: {
         id: credentialData.credential_id,
         publicKey: new Uint8Array(credentialData.public_key), // Conversion Bytea -> Uint8Array

@@ -10,7 +10,7 @@ import {
   Settings, AlertTriangle, MessageSquare, Send,
   Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight,
   ShoppingBag,
-  Moon, UserPlus, UserMinus,Layers,
+  Moon, UserPlus, UserMinus,Layers,AlertCircle,
   Sun,CreditCard,XCircle ,
   User,
   Globe,
@@ -79,9 +79,6 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
-// 🔹 Fonction pour fermer tous les modaux contrôlés par activeModal
-
-// 🔹 Modal de succès
 const SuccessModal = ({
   isOpen,
   onClose,
@@ -191,7 +188,7 @@ const CustomMessageModal = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/40 backdrop-blur z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
@@ -508,7 +505,7 @@ const SignOutConfirmSheet = ({
               className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[100]"
               onClick={handleBackdropClick}
             >
-              <IceBubbles />
+          
             </motion.div>
 
             {/* Bottom Sheet */}
@@ -528,7 +525,7 @@ const SignOutConfirmSheet = ({
               <div className="mx-4 sm:mx-6 md:mx-10 lg:mx-16 xl:mx-28">
                 <div className="relative rounded-t-[36px] border border-white/15 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.35)] overflow-hidden">
 
-                  <IceBubbles />
+                
 
                   {/* Handle */}
                   <div
@@ -1726,8 +1723,7 @@ const handleToggleFollow = async (profileId: string) => {
       {/* 🔹 Badge indicateur subtil */}
       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 hidden sm:block">
         <div className="flex items-center gap-1 bg-purple-500/20 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full border border-purple-500/30">
-          <span>⌘</span>
-          <span>K</span>
+          <span>Recherche</span>
         </div>
       </div>
     </Button>
@@ -1766,7 +1762,6 @@ const handleToggleFollow = async (profileId: string) => {
           text-white text-[11px] font-bold
           border-2 border-black
           shadow-lg shadow-red-500/40
-          animate-pulse
           z-10
         `}>
           {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
@@ -1821,7 +1816,7 @@ const handleToggleFollow = async (profileId: string) => {
     text-[11px] font-bold
     border-2 border-black
     shadow-lg
-    ${(profile?.likes_count ?? 0) > 0 ? 'shadow-red-500/40 animate-pulse' : ''}
+    ${(profile?.likes_count ?? 0) > 0 ? 'shadow-red-500/40' : ''}
     z-10
   `}>
     {(profile?.likes_count ?? 0) > 99 ? '99+' : (profile?.likes_count ?? 0)}
@@ -1921,9 +1916,7 @@ const handleToggleFollow = async (profileId: string) => {
           ? 'bg-gradient-to-r from-purple-500/20 to-indigo-500/20'
           : 'bg-gradient-to-r from-blue-500/20 to-gray-500/20'
       }
-      opacity-0 group-hover:opacity-100 transition-opacity duration-500
-      animate-ping
-      blur-xl
+      opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl
     `} />
     
     {/* 🔹 Avatar avec effet hover */}
@@ -1963,7 +1956,7 @@ const handleToggleFollow = async (profileId: string) => {
     {/* 🟢 Statut en ligne - AMÉLIORÉ */}
     <div className="absolute -top-1 -right-1 flex items-center justify-center">
       <div className="relative">
-        <div className="absolute inset-0 rounded-full bg-green-500 animate-ping opacity-75" />
+        <div className="absolute inset-0 rounded-full bg-green-500 opacity-75" />
         <div className="relative w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-black shadow-lg shadow-green-500/50" />
       </div>
       <span className="absolute -right-8 -top-1 text-[10px] font-medium text-green-400 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1999,7 +1992,7 @@ const handleToggleFollow = async (profileId: string) => {
       
       {/* 🔹 Étoile scintillante */}
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="w-1 h-1 bg-white rounded-full animate-ping" />
+        <div className="w-1 h-1 bg-white rounded-full" />
       </div>
     </div>
   </div>
@@ -2066,21 +2059,15 @@ const handleToggleFollow = async (profileId: string) => {
           `}>
             <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
             {profileCompletion}%
-            <div className="absolute -right-1 -top-1 w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+            <div className="absolute -right-1 -top-1 w-1.5 h-1.5 bg-white rounded-full" />
           </div>
           
           {/* 🔸 Icône contextuelle avec animation */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            {profileCompletion >= 80 ? (
-              <CheckCircle className="w-5 h-5 text-green-400 drop-shadow-lg" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 text-yellow-400 drop-shadow-lg" />
-            )}
-          </motion.div>
+  initial={{ scale: 0.8, opacity: 0 }}
+  animate={{ scale: 1, opacity: 1 }}
+  transition={{ delay: 0.2 }}
+/>
         </div>
 
         {/* 🔸 Barre de progression ÉLÉGANTE */}
@@ -2110,17 +2097,31 @@ const handleToggleFollow = async (profileId: string) => {
                 {[...Array(5)].map((_, i) => (
                   <div 
                     key={i} 
-                    className="w-1 h-1 bg-white rounded-full animate-pulse"
+                    className="w-1 h-1 bg-white rounded-full"
                     style={{ animationDelay: `${i * 0.2}s` }}
                   />
                 ))}
               </div>
             </motion.div>
           </div>
-          <p className="text-[10px] text-gray-400 mt-1 text-right font-medium">
-            {profileCompletion >= 80 ? 'Profil complet ✨' : 
-             profileCompletion >= 50 ? 'Encore quelques infos' : 'Complétez votre profil'}
-          </p>
+          <p className="text-[11px] mt-1 text-right font-medium flex items-center justify-end gap-1">
+  {profileCompletion >= 80 ? (
+    <>
+      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
+      <span className="text-green-500">Profil complet</span>
+    </>
+  ) : profileCompletion >= 50 ? (
+    <>
+      <AlertCircle className="w-3.5 h-3.5 text-yellow-500" />
+      <span className="text-yellow-500">Encore quelques infos</span>
+    </>
+  ) : (
+    <>
+      <User className="w-3.5 h-3.5 text-gray-400" />
+      <span className="text-gray-400">Complétez votre profil</span>
+    </>
+  )}
+</p>
         </div>
       </div>
     </div>
@@ -2152,18 +2153,7 @@ const handleToggleFollow = async (profileId: string) => {
     </div>
   </div>
 
-  {/* 🔹 Badge angle supérieur droit - OPTIONNEL */}
-  {profileCompletion >= 80 && (
-    <div className="absolute -top-2 -right-2">
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full animate-pulse opacity-75" />
-        <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-yellow-500/50 flex items-center gap-1">
-          <Star className="w-3 h-3 fill-current" />
-          Complet
-        </div>
-      </div>
-    </div>
-  )}
+  
 </motion.div>
 
 {/* 🔹 Styles personnalisés pour les animations */}
@@ -2276,7 +2266,7 @@ const handleToggleFollow = async (profileId: string) => {
       </div>
       
       {/* 🔑 BADGE ICÔNE - Parfaitement visible */}
-      <div className="absolute -top-1 -right-1 bg-yellow-400 border-[1.5px] border-white rounded-full p-0.5 shadow-sm animate-pulse z-20">
+      <div className="absolute -top-1 -right-1 bg-yellow-400 border-[1.5px] border-white rounded-full p-0.5 shadow-sm z-20">
         <Globe className="w-2 h-2 text-amber-900" />
  {/* 🔑 w-2 h-2 */}
       </div>
@@ -2433,7 +2423,7 @@ const handleToggleFollow = async (profileId: string) => {
         </div>
         
         {/* 🔑 BADGE ICÔNE ENTREPRISE - Visible et animé */}
-        <div className="absolute -top-1 -right-1 bg-amber-400 border-[1.5px] border-white rounded-full p-0.5 shadow-sm animate-pulse z-20">
+        <div className="absolute -top-1 -right-1 bg-amber-400 border-[1.5px] border-white rounded-full p-0.5 shadow-sm z-20">
           <Briefcase className="w-2 h-2 text-amber-900 fill-current" />
         </div>
       </Button>
@@ -2459,7 +2449,7 @@ const handleToggleFollow = async (profileId: string) => {
       
       {/* Badge statut - CORRIGÉ */}
       {loadingCards ? (
-        <div className="w-20 h-6 bg-white/10 rounded-lg animate-pulse" />
+        <div className="w-20 h-6 bg-white/10 rounded-lg" />
       ) : hasOrderedCard ? (
         <Badge 
           className={`
@@ -2655,7 +2645,7 @@ const handleToggleFollow = async (profileId: string) => {
     {/* 🔹 Indicateur de chargement */}
     {loadingCards && (
       <div className="flex items-center justify-center py-8">
-        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mr-3" />
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mr-3" />
         <span className="text-gray-400">{'Chargement...'}</span>
       </div>
     )}
@@ -2696,11 +2686,7 @@ const handleToggleFollow = async (profileId: string) => {
     <div className="absolute inset-0 bg-grid-white/3 bg-[size:30px_30px]" />
   </div>
 
-  {/* 🔹 Bordure lumineuse animée */}
-  <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent animate-border-shimmer" />
-  </div>
-
+ 
   <CardHeader className="relative z-10 border-b border-white/5 pb-5">
     <CardTitle className="flex items-center flex-wrap gap-3">
       {/* 🔸 Icône abonnement avec animation */}
@@ -2765,7 +2751,7 @@ const handleToggleFollow = async (profileId: string) => {
         {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
         
         {/* 🔹 Étoile scintillante */}
-        <div className="absolute -right-1 -top-1 w-1.5 h-1.5 bg-white rounded-full animate-ping" />
+        <div className="absolute -right-1 -top-1 w-1.5 h-1.5 bg-white rounded-full" />
       </Badge>
       
       {/* 🔸 Indicateur lumineux - AMÉLIORÉ */}
@@ -2800,16 +2786,14 @@ const handleToggleFollow = async (profileId: string) => {
                   ease: "easeOut" 
                 }}
               />
-              <div className="absolute inset-0 rounded-full bg-white/20 animate-pulse" />
+              <div className="absolute inset-0 rounded-full bg-white/20" />
             </motion.div>
             <div className="flex flex-col">
               <span className="text-green-300 text-sm font-bold flex items-center gap-1.5">
                 <CheckCircle className="w-3.5 h-3.5" />
                 {t('subscription.active')}
               </span>
-              <span className="text-[10px] text-green-400/80 font-medium mt-0.5">
-                ✨ Accès complet
-              </span>
+              
             </div>
           </>
         ) : (
@@ -2823,7 +2807,7 @@ const handleToggleFollow = async (profileId: string) => {
               role="status"
               aria-label={t('subscription.inactive_indicator')}
             >
-              <div className="absolute inset-0 rounded-full bg-yellow-200/30 animate-pulse" />
+              <div className="absolute inset-0 rounded-full bg-yellow-200/30" />
             </div>
             <div className="flex flex-col">
               <span className="text-yellow-300 text-sm font-bold flex items-center gap-1.5">
@@ -2869,18 +2853,15 @@ const handleToggleFollow = async (profileId: string) => {
         </p>
         <p className="text-[13px] text-gray-300 mt-1">
           {subscription.active
-            ? '✅ Votre abonnement est actif et renouvelé automatiquement'
+            ? 'Votre abonnement est actif et renouvelé automatiquement'
             : '💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités'}
         </p>
       </div>
     </div>
     
-    {/* 🔹 Bouton d'upgrade - DESIGN PREMIUM */}
+        {/* 🔹 Bouton d'upgrade - DESIGN PREMIUM */}
     {profile.plan !== 'entreprise' && (
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
+      <div>
         <Button
           size="lg"
           onClick={() => setActiveModal('upgrade')}
@@ -2904,26 +2885,8 @@ const handleToggleFollow = async (profileId: string) => {
             group/btn
           `}
         >
-          {/* 🔹 Fond animé du bouton */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500" />
-          
-          {/* 🔹 Particules scintillantes */}
-          <div className="absolute inset-0 overflow-hidden">
-            {[...Array(5)].map((_, i) => (
-              <div
-                key={i}
-                className="absolute bg-white rounded-full animate-ping"
-                style={{
-                  width: `${Math.random() * 4 + 2}px`,
-                  height: `${Math.random() * 4 + 2}px`,
-                  top: `${Math.random() * 100}%`,
-                  left: `${Math.random() * 100}%`,
-                  animationDelay: `${i * 0.3}s`,
-                  opacity: '0.6'
-                }}
-              />
-            ))}
-          </div>
+          {/* 🔹 Fond animé du bouton - SUPPRIMÉ (allègement) */}
+          {/* 🔹 Particules scintillantes - SUPPRIMÉES */}
           
           <div className="relative z-10 flex items-center justify-center gap-2">
             {profile.plan === 'basic' ? (
@@ -2940,10 +2903,10 @@ const handleToggleFollow = async (profileId: string) => {
             <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
           </div>
           
-          {/* 🔹 Badge angle supérieur droit */}
+          {/* 🔹 Badge angle supérieur droit - SIMPLIFIÉ (sans animation) */}
           <div className="absolute -top-2 -right-2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full animate-pulse opacity-75" />
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75" />
               <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-yellow-500/50">
                 {profile.plan === 'basic' ? '✨' : '🚀'}
               </div>
@@ -2957,45 +2920,49 @@ const handleToggleFollow = async (profileId: string) => {
             ? '💎 Débloquez les fonctionnalités premium dès aujourd\'hui'
             : '🏢 Solution personnalisée pour votre entreprise'}
         </p>
-      </motion.div>
+      </div>
     )}
     
     {/* 🔹 Statut détaillé en bas */}
-    <div className="mt-6 pt-4 border-t border-white/5">
-      <div className="flex items-center justify-between text-[13px]">
-        <span className="text-gray-400">Statut du compte :</span>
-        <span className={`
-          font-semibold px-2.5 py-1 rounded-full text-[12px]
-          ${
-            subscription.active
-              ? 'bg-green-500/15 text-green-300 border border-green-500/20'
-              : 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/20'
-          }
-        `}>
-          {subscription.active ? '✅ Actif' : '⚠️ Inactif'}
-        </span>
-      </div>
-      {subscription.active && (
-        <div className="mt-2 flex items-center justify-between text-[13px]">
-          <span className="text-gray-400">Prochain renouvellement :</span>
-          <span className="text-cyan-300 font-medium">Jamais (à vie)</span>
-        </div>
-      )}
-    </div>
-  </CardContent>
+<div className="mt-6 pt-4 border-t border-white/5">
+  <div className="flex items-center justify-between text-[13px]">
+    <span className="text-gray-400">Statut du compte :</span>
 
-  {/* 🔹 Badge angle inférieur gauche - OPTIONNEL */}
+    <span
+      className={`
+        font-semibold px-2.5 py-1 rounded-full text-[12px] border
+        flex items-center gap-1.5 transition-all duration-200
+        ${
+          subscription.active
+            ? 'bg-green-500/15 text-green-300 border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.35)]'
+            : 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.35)]'
+        }
+      `}
+    >
+      {/* 🔵 Status dot */}
+      <span
+        className={`
+          w-2 h-2 rounded-full animate-pulse
+          ${subscription.active ? 'bg-green-400' : 'bg-yellow-400'}
+        `}
+      />
+
+      {subscription.active ? 'Actif' : 'Inactif'}
+    </span>
+  </div>
+
   {subscription.active && (
-    <div className="absolute -bottom-3 -left-3">
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-cyan-500 rounded-full animate-pulse opacity-75" />
-        <div className="relative bg-gradient-to-r from-emerald-400 to-cyan-500 text-black text-[11px] font-bold px-2.5 py-1 rounded-full shadow-lg shadow-cyan-500/50 flex items-center gap-1">
-          <Star className="w-3 h-3 fill-current" />
-          <span>À VIE</span>
-        </div>
-      </div>
+    <div className="mt-3 flex items-center justify-between text-[13px]">
+      <span className="text-gray-400">Prochain renouvellement :</span>
+      <span className="text-cyan-300 font-medium">
+        Jamais (à vie)
+      </span>
     </div>
   )}
+</div>
+  </CardContent>
+
+
 </motion.div>
 
 {/* 🔹 Styles personnalisés pour les animations */}
@@ -3105,7 +3072,7 @@ const handleToggleFollow = async (profileId: string) => {
                   {/* 🔹 FOOTER FIXE (ne scroll pas) */}
                   <div className="sticky bottom-0 z-40 bg-gradient-to-t from-gray-900/95 to-transparent backdrop-blur-sm border-t border-white/10 py-4 px-6">
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
-                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></div>
+                      <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
                       <span>Données mises à jour en temps réel</span>
                     </div>
                   </div>
@@ -3193,7 +3160,7 @@ const handleToggleFollow = async (profileId: string) => {
         {/* FOOTER */}
         <div className="mt-6 pt-4 border-t border-white/10 text-center">
           <p className="text-xs text-gray-500 flex items-center justify-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
             Données sécurisées et chiffrées
           </p>
         </div>
@@ -3359,7 +3326,7 @@ const handleToggleFollow = async (profileId: string) => {
         {/* 🔹 Indicateur de chargement */}
         {isSearching && searchQuery && (
           <div className="flex items-center justify-center py-8">
-            <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mr-3" />
+            <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mr-3" />
             <span className="text-gray-400 text-lg">Recherche en cours...</span>
           </div>
         )}

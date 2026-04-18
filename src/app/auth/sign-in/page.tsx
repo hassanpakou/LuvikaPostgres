@@ -131,12 +131,26 @@ export default function SignInPage() {
 
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
+  email: email.trim(),
+  password,
+});
 
-      if (authError) throw authError;
+if (authError) throw authError;
 
+// ✅ VÉRIFICATION COMPTE DÉSACTIVÉ
+const { data: { user: loggedUser } } = await supabase.auth.getUser();
+const { data: profile } = await supabase
+  .from('profiles')
+  .select('deactivated')
+  .eq('id', loggedUser?.id)
+  .single();
+
+if (profile?.deactivated) {
+  await supabase.auth.signOut();
+  setError('Ce compte a été désactivé. Contactez le support pour le réactiver.');
+  setLoading(false);
+  return;
+}
       // Simuler un délai pour l'expérience utilisateur
       await new Promise(r => setTimeout(r, 400));
 
@@ -165,6 +179,9 @@ export default function SignInPage() {
     }
   };
 
+
+
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-900/10 to-indigo-900/10 flex items-center justify-center p-4 relative overflow-hidden">
       {/* 🔹 Fond dynamique premium */}

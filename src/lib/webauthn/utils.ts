@@ -2,7 +2,7 @@
 
 /**
  * Nettoye le RP ID pour correspondre exactement au domaine courant
- * Ex: "https://luvika.me:3000" → "luvika.me"
+ * Ex: "https://luvika.vercel.app"
  */
 export function getRpId(): string {
   if (typeof window === 'undefined') {
@@ -55,6 +55,8 @@ export function getOrigin(): string {
 /**
  * Convertit un Buffer en base64url (requis par WebAuthn)
  */
+// src/lib/webauthn/utils.ts (ajout)
+
 export function bufferToBase64url(buffer: Buffer | Uint8Array): string {
   return Buffer.from(buffer)
     .toString('base64')
@@ -63,9 +65,6 @@ export function bufferToBase64url(buffer: Buffer | Uint8Array): string {
     .replace(/=/g, '');
 }
 
-/**
- * Convertit base64url en Buffer
- */
 export function base64urlToBuffer(base64url: string): Buffer {
   const base64 = base64url
     .replace(/-/g, '+')

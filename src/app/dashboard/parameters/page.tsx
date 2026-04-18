@@ -8,21 +8,21 @@ import { toast } from 'sonner';
 import {
   EyeOff,
   Fingerprint,
+  Loader2,
+  XCircle,
+  AlertCircle,
   Calendar,
   Cake,
-  ShieldCheck,
+  CheckCircle,
   Lock,
   Settings,
   Link,
   Copy,
-  Loader2,
-  XCircle,
-  AlertCircle,
-  CheckCircle,
   Shield,
   Timer,
   Smartphone,
   ArrowLeft,
+  ShieldCheck,
   RefreshCw,
   Save,
   Bell,
@@ -76,15 +76,12 @@ function useBiometricAuth() {
   const [isEnabled, setIsEnabled] = useState(false);
   const [deviceInfo, setDeviceInfo] = useState<string | null>(null);
   
-  // 🔹 Helper SÉCURISÉ pour la conversion ArrayBuffer → Base64
-  const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    const len = bytes.byteLength;
-    for (let i = 0; i < len; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
+  // 🔹 Helper pour ArrayBuffer → Base64url
+  const arrayBufferToBase64url = (buffer: ArrayBuffer): string => {
+    return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
   };
 
   const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
@@ -96,8 +93,21 @@ function useBiometricAuth() {
     return bytes.buffer;
   };
 
-  // Dans src/app/dashboard/parameters/page.tsx, inside useBiometricAuth hook
-
+const base64UrlToUint8Array = (base64Url: string): Uint8Array => {
+  // Remplacer les caractères de Base64URL par du Base64 standard
+  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  // Ajouter le padding si nécessaire
+  const pad = base64.length % 4;
+  if (pad) {
+    base64 += '='.repeat(4 - pad);
+  }
+  const binaryString = atob(base64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+};
 useEffect(() => {
   const checkSupport = async () => {
     try {
@@ -176,26 +186,36 @@ useEffect(() => {
       if (!registerRes.ok) throw new Error('Échec de l\'initialisation');
       const { options } = await registerRes.json();
 
+      const challenge = typeof options.challenge === 'string'
+        ? base64UrlToUint8Array(options.challenge)
+        : options.challenge;
+
+      const user = {
+        ...options.user,
+        id: typeof options.user.id === 'string'
+          ? base64UrlToUint8Array(options.user.id)
+          : options.user.id,
+      };
+
+      const excludeCredentials = options.excludeCredentials?.map((cred: any) => ({
+        ...cred,
+        id: typeof cred.id === 'string'
+          ? base64UrlToUint8Array(cred.id)
+          : cred.id,
+      }));
+
       const credential = await navigator.credentials.create({
         publicKey: {
           ...options,
-          challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
-          user: {
-            ...options.user,
-            id: Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0)),
-          },
-          excludeCredentials: options.excludeCredentials?.map((cred: WebAuthnCredential) => ({
-            ...cred,
-            id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)),
-          })),
+          challenge,
+          user,
+          excludeCredentials,
         },
       }) as PublicKeyCredential;
 
       const response = credential.response as AuthenticatorAttestationResponse;
-      
-      // 🔹 CORRECTION CRITIQUE : Conversion SÉCURISÉE sans spread operator
-      const clientDataJSON = arrayBufferToBase64(response.clientDataJSON);
-      const attestationObject = arrayBufferToBase64(response.attestationObject);
+      const clientDataJSON = arrayBufferToBase64url(response.clientDataJSON);
+      const attestationObject = arrayBufferToBase64url(response.attestationObject);
 
       const verifyRes = await fetch('/api/auth/biometric/register/verify', {
         method: 'POST',
@@ -224,8 +244,7 @@ useEffect(() => {
         duration: 5000,
       });
     } catch (error: any) {
-      console.error('Biometric setup error:', error);
-      
+    console.error('Biometric setup error:', error);
       // 🔹 GESTION SPÉCIFIQUE DES ERREURS BIOMÉTRIQUES
       if (error.name === 'InvalidStateError') {
         toast.error('⚠️ Déjà enregistré', {
@@ -258,39 +277,43 @@ useEffect(() => {
     }
   };
 
-  const authenticateWithBiometric = async (): Promise<boolean> => {
+const authenticateWithBiometric = async (): Promise<boolean> => {
   try {
-    // 1. Obtenir les options d'authentification
     const authRes = await fetch('/api/auth/biometric/authenticate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
-
     if (!authRes.ok) throw new Error('Échec de l\'initialisation');
     const { options } = await authRes.json();
 
-    // 2. Appeler WebAuthn pour l'authentification
+    const challenge = typeof options.challenge === 'string'
+      ? base64UrlToUint8Array(options.challenge)
+      : options.challenge;
+
+    const allowCredentials = options.allowCredentials?.map((cred: WebAuthnCredential) => ({
+      ...cred,
+      id: typeof cred.id === 'string'
+        ? base64UrlToUint8Array(cred.id)
+        : cred.id,
+    }));
+
     const assertion = await navigator.credentials.get({
       publicKey: {
         ...options,
-        challenge: Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0)),
-        allowCredentials: options.allowCredentials?.map((cred: WebAuthnCredential) => ({
-          ...cred,
-          id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)),
-        })),
+        challenge,
+        allowCredentials,
       },
     }) as PublicKeyCredential;
 
-    // 🔑 CORRECTION CRITIQUE : Conversion SÉCURISÉE sans double encodage
     const response = assertion.response as AuthenticatorAssertionResponse;
-    const clientDataJSON = arrayBufferToBase64(response.clientDataJSON);
-    const authenticatorData = arrayBufferToBase64(response.authenticatorData);
-    const signature = arrayBufferToBase64(response.signature);
+    // ✅ AJOUTER CES LIGNES :
+    const clientDataJSON = arrayBufferToBase64url(response.clientDataJSON);
+    const authenticatorData = arrayBufferToBase64url(response.authenticatorData);
+    const signature = arrayBufferToBase64url(response.signature);
     const userHandle = response.userHandle 
-      ? arrayBufferToBase64(response.userHandle) 
+      ? arrayBufferToBase64url(response.userHandle) 
       : null;
 
-    // 3. Vérifier auprès du serveur - ENVOYER LES BASE64 DIRECTEMENT
     const verifyRes = await fetch('/api/auth/biometric/authenticate/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -298,10 +321,10 @@ useEffect(() => {
         id: assertion.id,
         rawId: Array.from(new Uint8Array(assertion.rawId)),
         response: {
-          clientDataJSON,    // ✅ Déjà base64 - PAS de btoa(...)
-          authenticatorData, // ✅ Déjà base64
-          signature,         // ✅ Déjà base64
-          userHandle,        // ✅ Déjà base64 ou null
+          clientDataJSON,
+          authenticatorData,
+          signature,
+          userHandle,
         },
         type: assertion.type,
         clientExtensionResults: assertion.getClientExtensionResults(),
@@ -317,14 +340,11 @@ useEffect(() => {
       description: 'Vous êtes connecté avec votre biométrie',
     });
     
-    // Rafraîchir la session Supabase
     const supabase = createClient();
     await supabase.auth.refreshSession();
-    
     return true;
   } catch (error: any) {
     console.error('Biometric auth error:', error);
-    
     if (error.name === 'AbortError') {
       toast.warning('Annulé', { description: 'Authentification biométrique annulée' });
     } else if (error.name === 'NotAllowedError') {
@@ -334,11 +354,10 @@ useEffect(() => {
         description: error.message || 'Impossible de vérifier votre identité biométrique'
       });
     }
-    
     return false;
   }
 };
-  
+
   const disableBiometricAuth = async () => {
     try {
       const res = await fetch('/api/auth/biometric/disable', {
@@ -391,12 +410,12 @@ const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
 const [deactivating, setDeactivating] = useState(false);
 const [deleting, setDeleting] = useState(false);
   // 🔐 Hook biométrique
-  const {
-    status: biometricStatus,
-    deviceInfo,
-    setupBiometricAuth,
-    disableBiometricAuth,
-  } = useBiometricAuth();
+const {
+  status: biometricStatus,
+  deviceInfo,
+  setupBiometricAuth,
+  disableBiometricAuth,
+} = useBiometricAuth();
 
   // Quick actions menu
   const quickActions = [
@@ -427,138 +446,128 @@ const [deleting, setDeleting] = useState(false);
   };
 
   // 🔹 REALTIME - Canal Supabase pour les mises à jour en temps réel
-  useEffect(() => {
-    const setupRealtime = async () => {
-      try {
-        const supabase = createClient();
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+useEffect(() => {
+  let isMounted = true;
+  const supabase = createClient();
+  let profileChannel: any = null;
+  let alertsChannel: any = null;
+  let handleOnline: (() => void) | null = null;
 
-        if (authError || !user) {
-          console.warn('❌ Authentification requise pour le realtime');
-          return;
-        }
+  const setupRealtime = async () => {
+    try {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-        // 🔹 Canal pour les mises à jour du profil
-        const profileChannel = supabase
-          .channel(`realtime-profile-${user.id}`)
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'profiles',
-              filter: `id=eq.${user.id}`
-            },
-            (payload) => {
-              console.log('🔄 Profile update received:', payload.new);
-              
-              // 🔹 Mise à jour optimiste avec toast
-              setProfile(prev => {
-                if (!prev) return prev;
-                
-                const updatedProfile = {
-                  ...prev,
-                  ...payload.new,
-                  enable_connection_alerts: payload.new.enable_connection_alerts ?? prev.enable_connection_alerts
-                };
+      if (authError || !user || !isMounted) {
+        console.warn('❌ Authentification requise pour le realtime');
+        return;
+      }
 
-                // 🔹 Notification de mise à jour en temps réel
-                toast.success('✅ Profil mis à jour en temps réel', {
-                  description: 'Vos paramètres ont été synchronisés automatiquement',
-                  icon: <RefreshCw className="w-4 h-4 text-emerald-400" />,
-                  duration: 2000,
-                });
+      // 🔹 Canal pour les mises à jour du profil
+      profileChannel = supabase
+        .channel(`realtime-profile-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'profiles',
+            filter: `id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('🔄 Profile update received:', payload.new);
+            setProfile(prev => {
+              if (!prev) return prev;
+              const updatedProfile = {
+                ...prev,
+                ...payload.new,
+                enable_connection_alerts: payload.new.enable_connection_alerts ?? prev.enable_connection_alerts
+              };
+              toast.success('✅ Profil mis à jour en temps réel', {
+                description: 'Vos paramètres ont été synchronisés automatiquement',
+                duration: 2000,
+              });
+              return updatedProfile;
+            });
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED' && isMounted) {
+            console.log('✅ Canal realtime profil connecté');
+            setIsRealtimeActive(true);
+            toast.success('📡 Connexion temps réel active', {
+              description: 'Les modifications seront synchronisées instantanément',
+              duration: 3000,
+            });
+          } else if (status === 'CHANNEL_ERROR' && isMounted) {
+            console.warn('⚠️ Erreur canal realtime');
+            toast.warning('⚠️ Connexion temps réel instable', {
+              description: 'Les modifications seront sauvegardées localement',
+              duration: 4000,
+            });
+          }
+        });
 
-                return updatedProfile;
+      // 🔹 Canal pour les alertes de connexion (si activé)
+      alertsChannel = supabase
+        .channel(`realtime-alerts-${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'connection_alerts',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            if (payload.new && isMounted) {
+              const alert = payload.new as any;
+              toast.info('📱 Nouvelle connexion détectée', {
+                description: `Appareil: ${alert.device_info || 'Inconnu'}\nLieu: ${alert.location || 'Non disponible'}`,
+                duration: 6000,
+                action: {
+                  label: 'Voir',
+                  onClick: () => router.push('/dashboard/settings')
+                }
               });
             }
-          )
-          .subscribe(async (status) => {
-            if (status === 'SUBSCRIBED') {
-              console.log('✅ Canal realtime profil connecté');
-              setIsRealtimeActive(true);
-              
-              // 🔹 Notification de connexion realtime
-              toast.success('📡 Connexion temps réel active', {
-                description: 'Les modifications seront synchronisées instantanément',
-                icon: <RefreshCw className="w-4 h-4 text-cyan-400" />,
-                duration: 3000,
-              });
-            } else if (status === 'CHANNEL_ERROR') {
-              console.warn('⚠️ Erreur canal realtime');
-              toast.warning('⚠️ Connexion temps réel instable', {
-                description: 'Les modifications seront sauvegardées localement',
-                duration: 4000,
-              });
-            }
-          });
+          }
+        )
+        .subscribe();
 
-        // 🔹 Canal pour les alertes de connexion (si activé)
-        const alertsChannel = supabase
-          .channel(`realtime-alerts-${user.id}`)
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'connection_alerts',
-              filter: `user_id=eq.${user.id}`
-            },
-            (payload) => {
-              console.log('🔔 Connection alert received:', payload);
-              
-              // 🔹 Notification push pour les nouvelles connexions
-              if (payload.new) {
-                const alert = payload.new as any; // Type assertion pour éviter les erreurs TypeScript
-                toast.info('📱 Nouvelle connexion détectée', {
-                  description: `Appareil: ${alert.device_info || 'Inconnu'}\nLieu: ${alert.location || 'Non disponible'}`,
-                  icon: <Smartphone className="w-4 h-4 text-amber-400" />,
-                  duration: 6000,
-                  action: {
-                    label: 'Voir',
-                    onClick: () => router.push('/dashboard/settings')
-                  }
-                });
-              }
-            }
-          )
-          .subscribe();
-
-        // 🔹 Gestionnaire de reconnexion
-        const handleReconnect = () => {
-          console.log('🔄 Tentative de reconnexion realtime');
+      // 🔹 Gestionnaire de reconnexion réseau
+      handleOnline = () => {
+        console.log('🌐 Connexion réseau restaurée - reconnexion realtime');
+        if (isMounted) {
           toast.info('🔄 Reconnexion en cours...', {
             description: 'Connexion temps réel en cours de rétablissement',
             duration: 2000,
           });
-        };
+        }
+      };
+      window.addEventListener('online', handleOnline);
 
-        // 🔹 Écouteur de connexion réseau
-        const handleOnline = () => {
-          console.log('🌐 Connexion réseau restaurée - reconnexion realtime');
-          handleReconnect();
-        };
-
-        window.addEventListener('online', handleOnline);
-
-        // 🔹 Nettoyage
-        return () => {
-          supabase.removeChannel(profileChannel);
-          supabase.removeChannel(alertsChannel);
-          window.removeEventListener('online', handleOnline);
-          setIsRealtimeActive(false);
-        };
-      } catch (err) {
-        console.error('❌ Erreur realtime setup:', err);
+    } catch (err) {
+      console.error('❌ Erreur realtime setup:', err);
+      if (isMounted) {
         toast.error('❌ Temps réel désactivé', {
           description: 'Impossible de se connecter au service temps réel',
           duration: 4000,
         });
       }
-    };
+    }
+  };
 
-    setupRealtime();
-  }, [router]);
+  setupRealtime();
+
+  // ✅ NETTOYAGE CORRECT
+  return () => {
+    isMounted = false;
+    if (profileChannel) supabase.removeChannel(profileChannel);
+    if (alertsChannel) supabase.removeChannel(alertsChannel);
+    if (handleOnline) window.removeEventListener('online', handleOnline);
+    setIsRealtimeActive(false);
+  };
+}, [router]);
 
 // 🔑 2. Dans la fonction fetchProfile (ajouter le default)
 const fetchProfile = async () => {
@@ -818,165 +827,96 @@ const handleDeleteAccount = async () => {
       </Card>
 
       {/* 🔹 🔐 Confidentialité */}
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <EyeOff className="text-red-400" /> {t('privacy.title')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          {/* 🔸 Biométrie - NOUVEAU */}
-          <div className="space-y-4">
-            <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6 p-4 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <Fingerprint className="w-5 h-5 text-purple-400" />
-                  <Label className="text-gray-300 font-medium">{t('privacy.biometric_auth')}</Label>
-                </div>
-                <p className="text-sm text-gray-300 mb-3">
-                  {t('privacy.biometric_auth_desc')}
-                </p>
-                
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {biometricStatus === 'checking' && (
-                    <Badge variant="secondary" className="bg-gray-800 text-gray-400">
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Vérification...
-                    </Badge>
-                  )}
-                  {biometricStatus === 'unsupported' && (
-                    <Badge variant="secondary" className="bg-red-900/40 text-red-300 border border-red-500/30">
-                      <XCircle className="w-3 h-3 mr-1" /> Non supporté
-                    </Badge>
-                  )}
-                  {biometricStatus === 'available' && (
-                    <Badge variant="secondary" className="bg-yellow-900/40 text-yellow-300 border border-yellow-500/30">
-                      <AlertCircle className="w-3 h-3 mr-1" /> {deviceInfo || 'Disponible'}
-                    </Badge>
-                  )}
-                  {biometricStatus === 'enabled' && (
-                    <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      <CheckCircle className="w-3 h-3 mr-1" /> Activé • {deviceInfo}
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="text-xs text-purple-300/80 space-y-1">
-                  <p>✅ Sécurité de niveau bancaire (FIDO2)</p>
-                  <p>✅ Aucune donnée biométrique stockée sur nos serveurs</p>
-                  <p>✅ Fonctionne avec Face ID, Touch ID et empreintes Android</p>
-                </div>
-              </div>
-              
-              <div className="flex flex-col items-end justify-start mt-4 md:mt-0">
-                {biometricStatus === 'enabled' ? (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={disableBiometricAuth}
-                    className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-                    disabled={biometricStatus !== 'enabled'}
-                  >
-                    <Lock className="w-4 h-4 mr-1" /> Désactiver
-                  </Button>
-                ) : biometricStatus === 'available' ? (
-                  <Button
-                    size="sm"
-                    onClick={setupBiometricAuth}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500"
-                    disabled={biometricStatus !== 'available'}
-                  >
-                    <Fingerprint className="w-4 h-4 mr-1" /> Configurer
-                  </Button>
-                ) : biometricStatus === 'unsupported' ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled
-                    className="border-gray-700 text-gray-500 cursor-not-allowed"
-                  >
-                    <XCircle className="w-4 h-4 mr-1" /> Non disponible
-                  </Button>
-                ) : null}
-                
-                {biometricStatus === 'checking' && (
-                  <div className="mt-2">
-                    <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-            </div>
+<Card className="glass-border">
+  <CardHeader>
+    <CardTitle className="flex items-center gap-2">
+      <EyeOff className="text-red-400" /> Confidentialité
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="space-y-5">
+    {/* Biométrie */}
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6 p-4 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <Fingerprint className="w-5 h-5 text-purple-400" />
+            <Label className="text-gray-300 font-medium">Authentification biométrique</Label>
           </div>
+          <p className="text-sm text-gray-300 mb-3">
+            Utilisez votre empreinte digitale, Face ID ou Windows Hello pour vous connecter rapidement et en toute sécurité.
+          </p>
 
-          {/* 🔸 Masquer l'année de naissance */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div>
-              <Label className="text-gray-300 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-cyan-400" />
-                {t('privacy.hide_birth_year')}
-              </Label>
-              <p className="text-xs text-gray-400 mt-1">{t('privacy.hide_birth_year_desc')}</p>
-            </div>
-            <Switch 
-              checked={profile.hide_birth_year === true} 
-              onCheckedChange={checked => setProfile({ ...profile, hide_birth_year: checked })} 
-            />
-          </div>
-
-          {/* 🔸 Désactiver l'icône anniversaire */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div>
-              <Label className="text-gray-300 flex items-center gap-2">
-                <Cake className="w-4 h-4 text-amber-400" />
-                {t('privacy.disable_birthday_icon')}
-              </Label>
-              <p className="text-xs text-gray-400 mt-1">{t('privacy.disable_birthday_icon_desc')}</p>
-            </div>
-            <Switch 
-              checked={profile.disable_birthday_icon === true} 
-              onCheckedChange={checked => setProfile({ ...profile, disable_birthday_icon: checked })} 
-            />
-          </div>
-
-          {/* 🔸 Badge de vérification — RÉSERVÉ AUX ENTREPRISES */}
-          <div className={`flex items-center justify-between p-3 rounded-xl transition-colors ${
-            profile.plan === 'entreprise' 
-              ? 'bg-white/5 hover:bg-white/10' 
-              : 'bg-gray-800/50 cursor-not-allowed'
-          }`}>
-            <div>
-              <Label className="text-gray-300 flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                {t('privacy.verified_badge')}
-              </Label>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-xs text-gray-400">{t('privacy.verified_badge_desc')}</p>
-                {profile.verified && (
-                  <img 
-                    src="/badge.png"
-                    alt=" Vérifié" 
-                    className="w-5 h-5 rounded-full border border-emerald-400/30"
-                    title={t('privacy.verified_tooltip')}
-                  />
-                )}
-              </div>
-            </div>
-            
-            {profile.plan === 'entreprise' ? (
-              <Switch 
-                checked={profile.verified === true}
-                onCheckedChange={checked => setProfile({ ...profile, verified: checked })}
-              />
-            ) : (
-              <div className="flex items-center gap-2">
-                <Lock className="w-4 h-4 text-yellow-400" />
-                <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-400 border-yellow-500/20 text-xs px-2 py-0.5">
-                  {t('privacy.enterprise_only')}
-                </Badge>
-              </div>
+          <div className="flex flex-wrap gap-2 mb-4">
+            {biometricStatus === 'checking' && (
+              <Badge variant="secondary" className="bg-gray-800 text-gray-400">
+                <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Vérification...
+              </Badge>
+            )}
+            {biometricStatus === 'unsupported' && (
+              <Badge variant="secondary" className="bg-red-900/40 text-red-300 border border-red-500/30">
+                <XCircle className="w-3 h-3 mr-1" /> Non supporté
+              </Badge>
+            )}
+            {biometricStatus === 'available' && (
+              <Badge variant="secondary" className="bg-yellow-900/40 text-yellow-300 border border-yellow-500/30">
+                <AlertCircle className="w-3 h-3 mr-1" /> {deviceInfo || 'Disponible'}
+              </Badge>
+            )}
+            {biometricStatus === 'enabled' && (
+              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <CheckCircle className="w-3 h-3 mr-1" /> Activé • {deviceInfo || 'Biométrie'}
+              </Badge>
             )}
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="text-xs text-purple-300/80 space-y-1">
+            <p>✅ Sécurité de niveau bancaire (FIDO2)</p>
+            <p>✅ Aucune donnée biométrique stockée sur nos serveurs</p>
+            <p>✅ Fonctionne avec Face ID, Touch ID et empreintes Android</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end justify-start mt-4 md:mt-0">
+          {biometricStatus === 'enabled' ? (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={disableBiometricAuth}
+              className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+              disabled={biometricStatus !== 'enabled'}
+            >
+              <Lock className="w-4 h-4 mr-1" /> Désactiver
+            </Button>
+          ) : biometricStatus === 'available' ? (
+            <Button
+              size="sm"
+              onClick={setupBiometricAuth}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500"
+              disabled={biometricStatus !== 'available'}
+            >
+              <Fingerprint className="w-4 h-4 mr-1" /> Configurer
+            </Button>
+          ) : biometricStatus === 'unsupported' ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled
+              className="border-gray-700 text-gray-500 cursor-not-allowed"
+            >
+              <XCircle className="w-4 h-4 mr-1" /> Non disponible
+            </Button>
+          ) : null}
+
+          {biometricStatus === 'checking' && (
+            <div className="mt-2">
+              <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  </CardContent>
+</Card>
 
       {/* 🔹 ⚙️ Options avancées */}
       <Card className="glass-border">
@@ -1124,21 +1064,15 @@ const handleDeleteAccount = async () => {
           onCheckedChange={(checked) => {
             setProfile({ ...profile, enable_connection_alerts: checked });
             
-            // ✅ CORRECTION CRITIQUE : API Sonner correcte (pas de .message)
             toast(
-              checked ? '🔔 Alertes activées' : '🔕 Alertes désactivées',
-              {
-                description: checked 
-                  ? 'Vous recevrez une notification pour chaque nouvelle connexion' 
-                  : 'Aucune notification ne sera envoyée pour les nouvelles connexions',
-                icon: checked ? (
-                  <Bell className="w-5 h-5 text-emerald-400" />
-                ) : (
-                  <BellOff className="w-5 h-5 text-amber-400" />
-                ),
-                duration: 3000,
-              }
-            );
+  checked ? '🔔 Alertes activées' : '🔕 Alertes désactivées',
+  {
+    description: checked 
+      ? 'Vous recevrez une notification pour chaque nouvelle connexion' 
+      : 'Aucune notification ne sera envoyée pour les nouvelles connexions',
+    duration: 3000,
+  }
+);
           }}
           aria-label="Activer/désactiver les alertes de connexion"
         />

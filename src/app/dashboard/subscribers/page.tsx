@@ -121,35 +121,43 @@ const fetchFollowers = async () => {
     fetchFollowers();
   }, [sortBy, sortOrder]);
 
-  // 🔹 Actions sur les abonnés
-  const handleAction = async (id: string, action: 'block' | 'unblock') => {
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('follows')
-        .update({ blocked: action === 'block' })
-        .eq('id', id);
+  const handleAction = async (followerId: string, action: 'block' | 'unblock') => {
+  try {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Non authentifié');
 
+    if (action === 'block') {
+      // Insérer un blocage
+      const { error } = await supabase
+        .from('user_blocks')
+        .insert({ blocker_id: user.id, blocked_id: followerId });
       if (error) throw error;
-      
-      setFollowers(prev => 
-        prev.map(f => f.id === id ? { ...f, blocked: action === 'block' } : f)
-      );
-      
-      toast.success(
-        action === 'block' 
-          ? '✅ Abonné bloqué avec succès' 
-          : '✅ Abonné débloqué avec succès',
-        { duration: 2000 }
-      );
-      
-      // Rafraîchir les stats
-      fetchFollowers();
-    } catch (err: any) {
-      console.error('❌ Erreur action:', err);
-      toast.error(`Échec ${action === 'block' ? 'du blocage' : 'du déblocage'}`);
+    } else {
+      // Supprimer le blocage
+      const { error } = await supabase
+        .from('user_blocks')
+        .delete()
+        .eq('blocker_id', user.id)
+        .eq('blocked_id', followerId);
+      if (error) throw error;
     }
-  };
+
+    // Mettre à jour l'état local
+    setFollowers(prev =>
+      prev.map(f => f.id === followerId ? { ...f, blocked: action === 'block' } : f)
+    );
+
+    toast.success(
+      action === 'block'
+        ? '✅ Abonné bloqué avec succès'
+        : '✅ Abonné débloqué avec succès'
+    );
+  } catch (err) {
+    console.error(err);
+    toast.error(`Échec ${action === 'block' ? 'du blocage' : 'du déblocage'}`);
+  }
+};
 
   // 🔹 Export CSV
   const handleExport = async () => {
@@ -537,7 +545,7 @@ const handleRefresh = async () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleAction(follower.id, 'block')}
+                              onClick={() => handleAction(follower.follower_id, 'block')}
                               className="border-red-500/30 text-red-300 hover:bg-red-500/10"
                             >
                               <Ban className="w-3.5 h-3.5 mr-1" />

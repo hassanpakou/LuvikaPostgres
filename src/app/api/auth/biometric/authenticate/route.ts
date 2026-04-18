@@ -1,7 +1,9 @@
+//api/auth/biometric/authenticate/route.ts
 import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
 
 // ✅ CORRECTION : Définir le type localement au lieu de l'importer
 type AuthenticatorTransport = 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'usb';
@@ -50,11 +52,11 @@ export async function POST() {
       }
     }
 
-    const options = await generateAuthenticationOptions({
-      rpID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
-      allowCredentials,
-      userVerification: 'preferred',
-    });
+const options = await generateAuthenticationOptions({
+  rpID: getRpId(),                    // ✅
+  allowCredentials,
+  userVerification: 'preferred',
+});
 
     // Stocker le challenge
     cookieStore.set('webauthn_auth_challenge', options.challenge, {

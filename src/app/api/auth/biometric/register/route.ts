@@ -1,7 +1,9 @@
+//api/auth/biometric/register/route.ts
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
 
 // ✅ CORRECTION : Définir le type localement pour éviter l'erreur d'import
 type AuthenticatorTransportFuture = 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'usb';
@@ -47,8 +49,8 @@ export async function POST() {
     // 3. Générer les options
     const options = await generateRegistrationOptions({
       rpName: 'LUVIKA',
-      rpID: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').hostname,
-      userID: new TextEncoder().encode(user.id), // ✅ N'oubliez pas la conversion Uint8Array ici aussi !
+      rpID: getRpId(),                 // ✅ Utilisation de la fonction
+      userID: new TextEncoder().encode(user.id),
       userName: user.email || '',
       attestationType: 'none',
       excludeCredentials,

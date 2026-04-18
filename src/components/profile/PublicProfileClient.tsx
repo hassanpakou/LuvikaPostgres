@@ -124,14 +124,10 @@ type Props = {
   isInitiallyFollowing: boolean;
   currentUserId: string | null;
   onFollowChange?: (newCount: number, isNowFollowing: boolean) => void;
-// 🔹 Ajout des props pour le temps réel
   scansCount?: number;
   lastUpdate?: Date;
 };
 
-
-
-// 🔹 Helper SÉCURISÉ : gère les configs undefined
 const isSectionEnabled = (section: string, configs?: CardConfig[]): boolean => {
   if (!Array.isArray(configs) || configs.length === 0) return false;
   return configs.some(cfg => cfg.scan_type === section && cfg.enabled);
@@ -346,9 +342,9 @@ export default function PublicProfileClient({
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
   const [followersCount, setFollowersCount] = useState(initialFollowers);
   const [localProfile, setLocalProfile] = useState<Profile>(profile);
-const [localCardConfigs, setLocalCardConfigs] = useState<CardConfig[]>(cardConfigs);
-// 🔹 Calcul des flags pour birthday et availability (non inclus dans sections_visibility)
-const showBirthday = 
+  const [localCardConfigs, setLocalCardConfigs] = useState<CardConfig[]>(cardConfigs);
+
+  const showBirthday = 
   isSectionEnabled('profile', localCardConfigs) && 
   !localProfile.disable_birthday_icon;
 
@@ -367,7 +363,6 @@ const profileWithVisibility: PublicProfile = {
         || isSectionEnabled('cv', localCardConfigs),
     certificates: isSectionEnabled('certificates', localCardConfigs)
         || isSectionEnabled('cv', localCardConfigs),
-    // ✅ CORRECT : Seulement les clés définies dans PublicProfile
     bio: isSectionEnabled('profile', localCardConfigs),
     identity: isSectionEnabled('profile', localCardConfigs),
     professional: isSectionEnabled('profile', localCardConfigs)
@@ -376,7 +371,6 @@ const profileWithVisibility: PublicProfile = {
     skills: isSectionEnabled('skills', localCardConfigs)
         || isSectionEnabled('cv', localCardConfigs),
   }
-  // ❌ SUPPRIMEZ sections_visibility_extended ICI AUSSI
 };
   // 🔹 Applique le thème dynamiquement
   useEffect(() => {
@@ -736,10 +730,14 @@ const showContactSection = isSectionEnabled('contact', localCardConfigs) && (
 );
 
 const showSkillsSection = 
-  ((isSectionEnabled('portfolio', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (portfolios?.length || 0) > 0) ||
-  ((isSectionEnabled('certificates', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (certificates?.length || 0) > 0) ||
-  ((isSectionEnabled('skills', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (localProfile.skills?.length || 0) > 0) ||
-  (isSectionEnabled('custom', localCardConfigs) && localProfile.custom_link_url?.trim());
+  // Option CV : affiche la section (quel que soit le contenu)
+  isSectionEnabled('cv', localCardConfigs) ||
+  // Sinon, affiche la section si une sous-option est activée ET qu'il y a du contenu
+  ((isSectionEnabled('portfolio', localCardConfigs) && (portfolios?.length || 0) > 0) ||
+   (isSectionEnabled('certificates', localCardConfigs) && (certificates?.length || 0) > 0) ||
+   (isSectionEnabled('skills', localCardConfigs) && (localProfile.skills?.length || 0) > 0));
+
+const showCustomLinkSection = isSectionEnabled('custom', localCardConfigs) && localProfile.custom_link_url?.trim();
 
 const showSocialSection = isSectionEnabled('social', localCardConfigs) && (
   localProfile.instagram?.trim() ||
@@ -755,8 +753,7 @@ const showSocialSection = isSectionEnabled('social', localCardConfigs) && (
 
 const showLinksSection = 
   (isSectionEnabled('link', localCardConfigs) || 
-   isSectionEnabled('custom', localCardConfigs) || 
-   isSectionEnabled('cv', localCardConfigs)) &&
+   isSectionEnabled('cv', localCardConfigs)) &&   // Retirer 'custom'
   (
     // vCard est toujours disponible si la section est activée
     true || 
@@ -764,6 +761,7 @@ const showLinksSection =
     localProfile.calendly?.trim() ||
     localProfile.portfolio_url?.trim()
   );
+
   return (
     <div className="relative min-h-screen dynamic-bg">
       {/* Styles dynamiques */}
@@ -1166,7 +1164,7 @@ const showLinksSection =
 )}
 
     {/* 🔹 BIO - Design premium avec citation et animation subtile */}
-{localProfile.bio_short && (
+{isSectionEnabled('profile', localCardConfigs) && localProfile.bio_short && (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -1195,8 +1193,7 @@ const showLinksSection =
 )}
 
 {/* 🔹 INFOS SUPPLÉMENTAIRES - Design en cartes modernes */}
-{(localProfile.birth_day || localProfile.city || localProfile.country || localProfile.availability) && (
-  <motion.div
+{isSectionEnabled('profile', localCardConfigs) && (localProfile.birth_day || localProfile.city || localProfile.country || localProfile.availability) && (  <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.9 }}
@@ -1529,49 +1526,13 @@ const showLinksSection =
             </div>
           </div>
         </motion.div>
-      )}
-
-      {/* 🔗 Lien personnalisé - DESIGN AMÉLIORÉ */}
-{isSectionEnabled('custom', localCardConfigs) && localProfile.custom_link_url?.trim() && (
-  <motion.div
-    whileHover={{ y: -6, scale: 1.03 }}
-    whileTap={{ scale: 0.98 }}
-    className="group"
-  >
-    <a
-      href={localProfile.custom_link_url.trim()}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block bg-gradient-to-br from-indigo-900/30 to-violet-900/20 border border-indigo-500/20 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/10"
-    >
-      <div className="flex items-center justify-between mb-3">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-          <LinkIcon className="w-5 h-5 text-white" />
-        </div>
-        <ExternalLink className="w-4 h-4 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </div>
-      <h3 className="font-bold text-white mb-1 flex items-center gap-1.5">
-        Lien personnalisé
-        <ArrowUpRight className="w-3 h-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-      </h3>
-      <p className="text-xs text-gray-300 group-hover:text-white transition-colors line-clamp-1">
-        {tryGetDomain(localProfile.custom_link_url.trim()) || localProfile.custom_link_url.trim()}
-      </p>
-      <div className="mt-3 flex items-center gap-1.5">
-        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
-        <div className="w-1.5 h-1.5 rounded-full bg-indigo-300"></div>
-      </div>
-    </a>
-  </motion.div>
-)}  </div>
+      )}</div>
 
     {/* Message si aucune section activée */}
     {[
       ((isSectionEnabled('portfolio', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (portfolios?.length || 0) > 0),
       ((isSectionEnabled('certificates', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (certificates?.length || 0) > 0),
-      ((isSectionEnabled('skills', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (localProfile.skills?.length || 0) > 0),
-      (isSectionEnabled('custom', localCardConfigs) && localProfile.custom_link_url)
+      ((isSectionEnabled('skills', localCardConfigs) || isSectionEnabled('cv', localCardConfigs)) && (localProfile.skills?.length || 0) > 0)
     ].filter(Boolean).length === 0 && (
       <div className="mt-8 py-12 bg-white/5 border border-dashed border-white/10 rounded-2xl">
         <div className="text-center max-w-md mx-auto">
@@ -1861,7 +1822,56 @@ END:VCARD`;
     </div>
   </motion.div>
 )}
-
+{/* 🔹 Section Lien personnalisé indépendante */}
+{showCustomLinkSection && (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 1.5 }}
+    className="w-full px-4 mt-10"
+  >
+    <div className="max-w-5xl mx-auto">
+      <div className="mb-6 text-center">
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <LinkIcon className="w-6 h-6 text-indigo-400" />
+          <h2 className="text-xl font-bold text-white">Lien personnalisé</h2>
+        </div>
+        <p className="text-sm text-gray-400">
+          Découvrez le lien personnalisé de {localProfile.full_name}
+        </p>
+      </div>
+      <div className="grid grid-cols-1">
+        <motion.div whileHover={{ y: -6, scale: 1.03 }} className="group">
+          <a
+            href={localProfile.custom_link_url!.trim()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-gradient-to-br from-indigo-900/30 to-violet-900/20 border border-indigo-500/20 rounded-2xl p-5 cursor-pointer transition-all duration-300 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/10"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <LinkIcon className="w-5 h-5 text-white" />
+              </div>
+              <ExternalLink className="w-4 h-4 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </div>
+            <h3 className="font-bold text-white mb-1 flex items-center gap-1.5">
+              Lien personnalisé
+              <ArrowUpRight className="w-3 h-3 text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </h3>
+            <p className="text-xs text-gray-300 group-hover:text-white transition-colors line-clamp-1">
+              {tryGetDomain(localProfile.custom_link_url!.trim()) || localProfile.custom_link_url!.trim()}
+            </p>
+            <div className="mt-3 flex items-center gap-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-400"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-300"></div>
+            </div>
+          </a>
+        </motion.div>
+      </div>
+    </div>
+  </motion.div>
+)}
         <ScanTracker profileId={localProfile.id} />
 
         {/* 🔹 TOUS LES MODALS - Structure unifiée dans UN SEUL AnimatePresence */}

@@ -1,48 +1,51 @@
-// src/app/api/account/deactivate/route.ts
 import { NextResponse } from 'next/server';
-import { createClientForPage } from '@/src/lib/supabase/server';
+import { cookies } from 'next/headers';
+import { createClient } from '@supabase/supabase-js';
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClientForPage(); // Assurez-vous d'attendre la promesse si c'est une fonction async
+    const cookieStore = cookies();
+    // Créer un client avec les cookies de la requête
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Cookie: cookieStore.toString(),
+          },
+        },
+      }
+    );
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
     if (authError || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
     }
 
-    const { reason, userId } = await request.json();
-    
-    if (userId !== user.id) {
-      return NextResponse.json({ error: 'ID utilisateur invalide' }, { status: 403 });
-    }
+    const { reason } = await request.json();
 
-    // 🔹 CORRECTION : Utiliser uniquement les colonnes existantes
-    // On masque le profil (is_public = false) et on pourrait stocker la raison dans un champ temporaire 
-    // ou simplement la logger côté serveur si nécessaire.
     const { error } = await supabase
       .from('profiles')
-      .update({ 
-        is_public: false, // Masquer le profil immédiatement
-        // Optionnel : Si vous avez ajouté les colonnes via SQL, décommentez les lignes ci-dessous :
-        // deactivated_at: new Date().toISOString(),
-        // deactivation_reason: reason || null,
+      .update({
+        deactivated: true,
+        deactivation_reason: reason || null,
+        deactivated_at: new Date().toISOString(),
+        is_public: false,
       })
       .eq('id', user.id);
 
-    if (error) {
-      console.error('Supabase update error:', error);
-      throw new Error(error.message);
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Compte désactivé temporairement' 
-    });
+    // Déconnexion immédiate
+    await supabase.auth.signOut();
+
+    return NextResponse.json({ success: true, message: 'Compte désactivé' });
   } catch (error: any) {
     console.error('Deactivation error:', error);
-    return NextResponse.json({ 
-      error: error.message || 'Erreur lors de la désactivation' 
-    }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Erreur lors de la désactivation' },
+      { status: 500 }
+    );
   }
 }
