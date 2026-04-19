@@ -19,6 +19,7 @@ type Profile = {
   telegram?: string | null;
   behance?: string | null;
   dribbble?: string | null;
+  youtube?: string | null;   // ← AJOUT
 };
 
 type CardConfig = {
