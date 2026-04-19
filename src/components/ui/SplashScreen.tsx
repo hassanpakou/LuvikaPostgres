@@ -1,14 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
 export default function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true);
   const [progress, setProgress] = useState(0);
+  const hasAnimated = useRef(false); // ← pour éviter double exécution en StrictMode
 
   useEffect(() => {
+    if (hasAnimated.current) return;
+    hasAnimated.current = true;
+
     const duration = 1500;
     const startTime = performance.now();
 
@@ -27,6 +31,14 @@ export default function SplashScreen() {
     return () => cancelAnimationFrame(frame);
   }, []);
 
+  // Ne rien rendre côté serveur pour éviter l’hydratation
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -36,7 +48,7 @@ export default function SplashScreen() {
           transition={{ duration: 0.5, ease: 'easeOut' }}
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white"
         >
-          {/* Logo avec animation */}
+          {/* Logo */}
           <motion.div
             className="relative w-32 h-32 mb-4"
             initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
@@ -46,7 +58,6 @@ export default function SplashScreen() {
               rotate: 0,
               transition: { type: 'spring', stiffness: 200, damping: 15, delay: 0.1 },
             }}
-            whileHover={{ scale: 1.05, rotate: 2 }}
           >
             <Image
               src="/logo-luvika.png"
@@ -57,7 +68,6 @@ export default function SplashScreen() {
             />
           </motion.div>
 
-          {/* Texte LUVIKA avec animation */}
           <motion.h1
             className="text-3xl font-bold text-blue-900 mb-8"
             initial={{ y: 20, opacity: 0 }}
@@ -67,7 +77,6 @@ export default function SplashScreen() {
             LUVIKA
           </motion.h1>
 
-          {/* Barre de progression */}
           <div className="w-64 max-w-[80%] text-center">
             <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
               <motion.div

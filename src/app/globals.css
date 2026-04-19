@@ -17,7 +17,18 @@
   /* Ombres */
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
-
+:root {
+  --bg-primary: #f3f4f6;
+  --text-primary: #111827;
+}
+.dark {
+  --bg-primary: #0f172a;
+  --text-primary: #f9fafb;
+}
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
 /* ✅ 3. Styles globaux */
 @layer base {
   body {
