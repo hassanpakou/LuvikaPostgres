@@ -11,35 +11,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Footer from '../../../components/layout/Footer'; // ✅ Footer fusionné SANS props
 import { useState, useEffect } from 'react';
 
-export default function ProfileLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Scroll to top functionality
+export default function ProfileLayout({ children }: { children: React.ReactNode }) {
+  const [isMounted, setIsMounted] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
-  
+
   useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 300);
-    };
+    setIsMounted(true);
+    const handleScroll = () => setShowScrollTop(window.scrollY > 300);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
-  return (
+    return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 via-black to-gray-900">
-      {/* 🔹 Animated Background - Premium Depth */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
-        {/* Gradient base */}
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/15 via-blue-900/10 to-indigo-900/5 animate-gradient-shift" />
         
-        {/* Floating particles */}
-        {[...Array(15)].map((_, i) => (
+        {/* ✅ Particules affichées uniquement côté client */}
+        {isMounted && [...Array(15)].map((_, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-cyan-500/20"

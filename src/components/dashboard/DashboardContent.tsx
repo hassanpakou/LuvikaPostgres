@@ -6,41 +6,9 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from 'next-themes';
 import {
-  Heart, Download, X, Mail, Check,
-  Settings, AlertTriangle, MessageSquare, Send,
-  Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight,
-  ShoppingBag,
-  Moon, UserPlus, UserMinus,Layers,AlertCircle,
-  Sun,CreditCard,XCircle ,
-  User,
-  Globe,
-  Smartphone,
-  Instagram,
-  Github,
-  Linkedin,
-  Twitter,
-  Facebook,
-  Calendar as CalendarIcon,
-  Briefcase,
-  MapPin,
-  Cake,
-  Tag,
-  Link as LinkIcon,
-  FileText,
-  Shield,
-  Lock,
-  EyeOff,
-  ShieldCheck,
-  LogOut,
-  ShieldAlert,
-  Snowflake,
-  Star,
-  Crown,
-  BellRing,
-  Search as SearchIcon,
-  CheckCircle,
-  BarChart3,
-  Leaf
+  Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight,
+  ShoppingBag, Moon, UserPlus, UserMinus,Layers,AlertCircle, Sun, CreditCard, XCircle, User, Globe, Smartphone, Instagram, Github, Linkedin, Twitter, Facebook, Calendar as CalendarIcon, Briefcase, MapPin, Cake, 
+  Tag, Link as LinkIcon, FileText, Shield, Lock, EyeOff, ShieldCheck, LogOut, ShieldAlert, Snowflake, Star, Crown, BellRing, Search as SearchIcon, CheckCircle, BarChart3, Leaf
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -2159,12 +2127,6 @@ const handleToggleFollow = async (profileId: string) => {
         <Globe className="h-3.5 w-3.5 group-hover:scale-115 transition-transform duration-250" /> {/* 🔑 h-3.5 w-3.5 */}
         <span className="hidden xs:inline whitespace-nowrap">Profil</span> {/* 🔑 Texte court */}
       </div>
-      
-      {/* 🔑 BADGE ICÔNE - Parfaitement visible */}
-      <div className="absolute -top-1 -right-1 bg-yellow-400 border-[1.5px] border-white rounded-full p-0.5 shadow-sm z-20">
-        <Globe className="w-2 h-2 text-amber-900" />
- {/* 🔑 w-2 h-2 */}
-      </div>
     </Button>
   </Link>
 
@@ -2274,11 +2236,6 @@ const handleToggleFollow = async (profileId: string) => {
         <Plus className="h-3.5 w-3.5 group-hover:scale-125 transition-transform duration-250" />
         <span className="hidden xs:inline whitespace-nowrap">Créer</span>
       </div>
-      
-      {/* 🔑 BADGE ICÔNE PREMIUM - Visible et élégant */}
-      <div className="absolute -top-1 -right-1 bg-purple-500 border-[1.5px] border-white rounded-full p-0.5 shadow-sm z-20">
-        <Crown className="w-2 h-2 text-amber-200 fill-current" />
-      </div>
     </Button>
   )}
 
@@ -2315,11 +2272,6 @@ const handleToggleFollow = async (profileId: string) => {
         <div className="relative z-10 flex items-center justify-center gap-1">
           <Building className="h-3.5 w-3.5 group-hover:scale-115 transition-transform duration-250" />
           <span className="hidden xs:inline whitespace-nowrap">Business</span>
-        </div>
-        
-        {/* 🔑 BADGE ICÔNE ENTREPRISE - Visible et animé */}
-        <div className="absolute -top-1 -right-1 bg-amber-400 border-[1.5px] border-white rounded-full p-0.5 shadow-sm z-20">
-          <Briefcase className="w-2 h-2 text-amber-900 fill-current" />
         </div>
       </Button>
     </Link>

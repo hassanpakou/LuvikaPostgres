@@ -13,7 +13,7 @@ import {
   Wifi, WifiOff, RefreshCw, Bell, BellOff, AlertCircle, ArrowLeft, ChevronRight,
   ChevronDown, ChevronUp, Check, Sparkles, Star, Zap, Gift, Trophy, Award,
   XCircle,
-  Menu
+  Menu, Youtube
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { toast } from 'sonner';
@@ -93,6 +93,7 @@ type Profile = {
   behance: string | null;
   dribbble: string | null;
   calendly: string | null;
+  youtube: string | null;
   portfolio_url: string | null;
   cv_url: string | null;
   // 🔹 ✅ Identité personnelle
@@ -394,6 +395,7 @@ const handleImageUpload = async (
       behance: profile.behance?.replace(/^https?:\/\//, '') || null,
       dribbble: profile.dribbble?.replace(/^https?:\/\//, '') || null,
       calendly: profile.calendly?.replace(/^https?:\/\//, '') || null,
+      youtube: profile.youtube?.replace(/^https?:\/\//, '') || null,
       portfolio_url: profile.portfolio_url?.replace(/^https?:\/\//, '') || null,
       cv_url: profile.cv_url?.replace(/^https?:\/\//, '') || null,
       nickname: profile.nickname || null,
@@ -1075,6 +1077,8 @@ const handleImageUpload = async (
                       { key: 'github', label: 'GitHub', icon: Github, color: 'text-gray-400' },
                       { key: 'gitlab', label: 'GitLab', icon: Gitlab, color: 'text-orange-400' },
                       { key: 'behance', label: 'Behance', icon: BehanceIcon, color: 'text-blue-400' },
+                      // Dans la liste des réseaux, ajoutez :
+{ key: 'youtube', label: 'YouTube', icon: Youtube, prefix: '@', color: 'text-red-400' },
                       { key: 'dribbble', label: 'Dribbble', icon: DribbbleIcon, color: 'text-pink-400' },
                     ].map(({ key, label, icon: Icon, prefix = '', color }) => (
                       <div key={key} className="space-y-1">

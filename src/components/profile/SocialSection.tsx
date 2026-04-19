@@ -2,7 +2,8 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Share2, Instagram, Linkedin, Github, Gitlab } from 'lucide-react';
+import { Share2, Instagram, Linkedin, Github, Gitlab, Youtube } from 'lucide-react';
+
 import { SiTiktok } from "react-icons/si";
 import SocialCard from './SocialCard';
 import { isSectionEnabled } from '../../lib/utils/profileHelpers';
@@ -32,17 +33,18 @@ export default function SocialSection({
   profile: Profile; 
   cardConfigs: CardConfig[]; 
 }) {
-  const showSocialSection = isSectionEnabled('social', cardConfigs) && (
-    profile.instagram?.trim() ||
-    profile.linkedin?.trim() ||
-    profile.github?.trim() ||
-    profile.gitlab?.trim() ||
-    profile.tiktok?.trim() ||
-    profile.snapchat?.trim() ||
-    profile.telegram?.trim() ||
-    profile.behance?.trim() ||
-    profile.dribbble?.trim()
-  );
+const showSocialSection = isSectionEnabled('social', cardConfigs) && (
+  profile.instagram?.trim() ||
+  profile.linkedin?.trim() ||
+  profile.github?.trim() ||
+  profile.gitlab?.trim() ||
+  profile.tiktok?.trim() ||
+  profile.snapchat?.trim() ||
+  profile.telegram?.trim() ||
+  profile.behance?.trim() ||
+  profile.dribbble?.trim() ||
+  profile.youtube?.trim()
+);
 
   if (!showSocialSection) return null;
 
@@ -143,7 +145,15 @@ export default function SocialSection({
               icon={<TelegramIcon className="w-5 h-5 text-white" />}
             />
           )}
-          
+          {profile.youtube && (
+  <SocialCard
+    platform="youtube"
+    label="YouTube"
+    handle={profile.youtube.replace(/^@/, '')}
+    href={profile.youtube.startsWith('http') ? profile.youtube : `https://youtube.com/@${profile.youtube.replace(/^@/, '')}`}
+    icon={<Youtube className="w-5 h-5" />}
+  />
+)}
           {/* Behance */}
           {profile.behance?.trim() && (
             <SocialCard

@@ -1,23 +1,24 @@
-// src/components/providers/SessionTimeoutProvider.tsx
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createClient } from '../../lib/supabase/client';
 import { LogOut, AlertTriangle } from 'lucide-react';
 
 const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
-const WARNING_TIME = 60 * 1000; // Avertissement 1 minute avant
+const WARNING_TIME = 60 * 1000; // 1 minute avant
 
 export function SessionTimeoutProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  // ✅ CORRECTION TYPESCRIPT : Initialisation explicite avec null + type number (navigateur)
-  const timeoutRef = useRef<number | null>(null);
-  const warningRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const warningRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastActivityRef = useRef(Date.now());
+  const isSigningOutRef = useRef(false);
 
-  const handleSignOut = async () => {
+  const handleSignOut = useCallback(async () => {
+    if (isSigningOutRef.current) return;
+    isSigningOutRef.current = true;
     try {
       const supabase = createClient();
       await supabase.auth.signOut();
@@ -30,24 +31,17 @@ export function SessionTimeoutProvider({ children }: { children: React.ReactNode
     } catch (error) {
       console.error('Erreur déconnexion timeout:', error);
       router.push('/auth/sign-in?reason=error');
+    } finally {
+      isSigningOutRef.current = false;
     }
-  };
+  }, [router]);
 
-  const resetTimers = () => {
-    // ✅ Nettoyage sécurisé avec vérification null
-    if (timeoutRef.current !== null) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    if (warningRef.current !== null) {
-      clearTimeout(warningRef.current);
-      warningRef.current = null;
-    }
-
+  const resetTimers = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    if (warningRef.current) clearTimeout(warningRef.current);
     lastActivityRef.current = Date.now();
 
-    // Timer d'avertissement (14 min)
-    warningRef.current = window.setTimeout(() => {
+    warningRef.current = setTimeout(() => {
       const elapsed = Date.now() - lastActivityRef.current;
       if (elapsed >= INACTIVITY_TIMEOUT - WARNING_TIME) {
         toast.warning('⚠️ Session inactive', {
@@ -56,30 +50,26 @@ export function SessionTimeoutProvider({ children }: { children: React.ReactNode
           duration: 10000,
         });
       }
-    }, INACTIVITY_TIMEOUT - WARNING_TIME) as unknown as number;
+    }, INACTIVITY_TIMEOUT - WARNING_TIME);
 
-    // Timer de déconnexion (15 min)
-    timeoutRef.current = window.setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       const elapsed = Date.now() - lastActivityRef.current;
       if (elapsed >= INACTIVITY_TIMEOUT) {
         handleSignOut();
       }
-    }, INACTIVITY_TIMEOUT) as unknown as number;
-  };
+    }, INACTIVITY_TIMEOUT);
+  }, [handleSignOut]);
 
   useEffect(() => {
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
     resetTimers();
-    
-    events.forEach(event => window.addEventListener(event as any, resetTimers));
-    
+    events.forEach(event => window.addEventListener(event, resetTimers));
     return () => {
-      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
-      if (warningRef.current !== null) clearTimeout(warningRef.current);
-      events.forEach(event => window.removeEventListener(event as any, resetTimers));
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (warningRef.current) clearTimeout(warningRef.current);
+      events.forEach(event => window.removeEventListener(event, resetTimers));
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+  }, [resetTimers]);
 
   return <>{children}</>;
 }

@@ -24,7 +24,8 @@ import {
   MoreHorizontal,
   PenTool,
   Search,
-  Star
+  Star,
+  Youtube
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { Button } from '@/components/ui/button';
@@ -78,7 +79,7 @@ type Profile = {
   calendly: string | null;
   portfolio_url: string | null;
   cv_url: string | null;
-  custom_link_url: string | null; // 🔹 Ajout du champ pour le lien personnalisé
+  custom_link_url: string | null;
   nickname: string | null;
   pronouns: string | null;
   birth_day: number | null;
@@ -103,6 +104,7 @@ type Profile = {
   events?: boolean;
   business?: boolean;
   articles?: boolean;
+  youtube: string | null;
 };
 
 type CardConfig = {
@@ -135,7 +137,7 @@ const isSectionEnabled = (section: string, configs?: CardConfig[]): boolean => {
 
 // 🔹 Composant SocialCard - SÉCURISÉ pour Tailwind (pas de classes dynamiques)
 const SocialCard: React.FC<{
-  platform: 'instagram' | 'linkedin' | 'github' | 'gitlab' | 'tiktok' | 'snapchat' | 'telegram' | 'behance' | 'dribbble';
+  platform: 'instagram' | 'linkedin' | 'github' | 'gitlab' | 'tiktok' | 'snapchat' | 'telegram' | 'behance' | 'dribbble' | 'youtube';
   label: string;
   handle: string;
   href: string;
@@ -198,6 +200,12 @@ const SocialCard: React.FC<{
       hover: 'hover:border-pink-500/40 hover:shadow-pink-500/10',
       text: 'text-pink-400'
     },
+    youtube: {
+    bg: 'from-red-600 to-rose-600',
+    border: 'border-red-500/20',
+    hover: 'hover:border-red-500/40 hover:shadow-red-500/10',
+    text: 'text-red-400',
+  },
   };
 
   const styles = platformStyles[platform];
@@ -748,12 +756,13 @@ const showSocialSection = isSectionEnabled('social', localCardConfigs) && (
   localProfile.snapchat?.trim() ||
   localProfile.telegram?.trim() ||
   localProfile.behance?.trim() ||
-  localProfile.dribbble?.trim()
+  localProfile.dribbble?.trim() ||
+  localProfile.youtube?.trim()
 );
 
 const showLinksSection = 
   (isSectionEnabled('link', localCardConfigs) || 
-   isSectionEnabled('cv', localCardConfigs)) &&   // Retirer 'custom'
+   isSectionEnabled('cv', localCardConfigs)) &&
   (
     // vCard est toujours disponible si la section est activée
     true || 

@@ -78,6 +78,24 @@ export default function SignInPage() {
     
     passwordInputRef.current?.focus();
   }, []);
+  
+useEffect(() => {
+  const checkExistingSession = async () => {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+      // Une session existe déjà → rediriger directement vers le dashboard
+      router.push('/dashboard');
+      return;
+    }
+
+    // Aucune session valide → nettoyer les éventuels tokens expirés ou corrompus
+    await supabase.auth.signOut();
+  };
+
+  checkExistingSession();
+}, [router]);
 
   const toggleTheme = () => {
     const newTheme = isDark ? 'light' : 'dark';
@@ -156,12 +174,6 @@ if (profile?.deactivated) {
         href="/" 
         className="absolute top-6 left-6 flex items-center gap-2.5 text-gray-300 hover:text-cyan-300 transition-all group z-10"
       >
-        <motion.div
-          whileHover={{ x: -3 }}
-          className="p-2 rounded-xl bg-white/5 border border-white/10 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/30 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </motion.div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-medium">← {t('navbar.home')}</span>
           <span className="text-[10px] text-cyan-400/80 hidden sm:block">Retour à l'accueil</span>
@@ -227,21 +239,7 @@ if (profile?.deactivated) {
                   {t('auth.signin.subtitle') || 'Connectez-vous à votre compte LUVIKA pour accéder à toutes vos fonctionnalités.'}
                 </p>
                 
-                {/* 🔹 Badges de confiance */}
-                <div className="flex flex-wrap justify-center gap-2 mt-4">
-                  <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/25 text-[11px] py-0.5 px-2">
-                    <Smartphone className="w-3 h-3 mr-0.5 inline" />
-                    Multi-plateforme
-                  </Badge>
-                  <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/25 text-[11px] py-0.5 px-2">
-                    <CheckCircle className="w-3 h-3 mr-0.5 inline" />
-                    99.9% de disponibilité
-                  </Badge>
-                </div>
               </div>
-
-              {/* 🔹 Badge sécurité */}
-              <SecurityBadge />
 
               {/* 🔹 Messages d'état */}
               <AnimatePresence mode="wait">
@@ -383,13 +381,6 @@ if (profile?.deactivated) {
               </div>
             </div>
             
-            {/* 🔹 Footer carte */}
-            <div className="px-7 py-4 bg-white/3 border-t border-white/10">
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-cyan-300/90">
-                <Sparkle className="w-3 h-3 text-yellow-400 animate-pulse" />
-                <span>Connexion sécurisée • Données chiffrées</span>
-              </div>
-            </div>
           </div>
         </div>
     

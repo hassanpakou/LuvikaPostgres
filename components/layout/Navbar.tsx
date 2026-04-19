@@ -275,8 +275,7 @@ export default function Navbar() {
               ) : isUser ? (
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link href="/dashboard">
-                    <Button className="bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 shadow-md shadow-cyan-500/30">
-                      <Sparkle className="w-4 h-4 mr-2" />
+                    <Button className="bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 to-blue-500">
                       Tableau de bord
                     </Button>
                   </Link>

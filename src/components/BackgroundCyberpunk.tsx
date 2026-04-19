@@ -29,10 +29,6 @@ export default function BackgroundCyberpunk() {
     };
   }, []);
 
-  // ❌ Suppression de la condition qui cachait tout sur mobile
-  // if (isMobile || prefersReducedMotion) {
-  //   return null;
-  // }
 
   // ✅ Désactiver uniquement si prefers-reduced-motion
   if (prefersReducedMotion) {

@@ -321,12 +321,6 @@ const steps = ['email', 'security'] as Step[];
         href="/" 
         className="absolute top-6 left-6 flex items-center gap-2.5 text-gray-300 hover:text-cyan-300 transition-all group z-10"
       >
-        <motion.div
-          whileHover={{ x: -3 }}
-          className="p-2 rounded-xl bg-white/5 border border-white/10 group-hover:bg-cyan-500/10 group-hover:border-cyan-500/30 transition-all"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </motion.div>
         <div className="flex flex-col items-start">
           <span className="text-xs font-medium">← {t('navbar.home')}</span>
           <span className="text-[10px] text-cyan-400/80 hidden sm:block">Retour à l'accueil</span>
