@@ -11,6 +11,7 @@ import SessionGuard from '../components/SessionGuard';
 import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutProvider';
 import { ReviewPrompt } from '../components/system/ReviewPrompt';
 import Script from 'next/script';
+import SplashScreen from '../components/ui/SplashScreen';
 
 
 const inter = Inter({ 
@@ -112,6 +113,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${inter.className} min-h-screen bg-slate-950 text-white relative overflow-x-hidden antialiased`}>
 
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <SplashScreen />
           <ClientProviders>
             <SessionTimeoutProvider>
               <SessionGuard>
