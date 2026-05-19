@@ -1,6 +1,6 @@
 // src/components/layout/Navbar.tsx
 'use client';
-
+import { useTheme } from 'next-themes';
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -8,13 +8,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { 
   Menu, X, LogOut, User as UserIcon, 
-  Globe, Moon, Sun, Shield, Eye, Sparkle, Briefcase,
-   Crown, Heart
+  Globe, Shield, Eye, Sparkle, Briefcase,
+  Crown, Heart
 } from 'lucide-react';
 import { createClient } from '../../src/lib/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { SiSocialblade } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from './ThemeToggle';
 
 type Locale = 'ar' | 'en' | 'es' | 'fr' | 'kg' | 'ln' | 'nl' | 'pt' | 'sw';
 
@@ -40,7 +41,6 @@ export default function Navbar() {
     plan: string | null;
     likes_count?: number;
   } | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
@@ -48,17 +48,6 @@ export default function Navbar() {
   const locale = useLocale() as Locale;
   const t = useTranslations();
   const router = useRouter();
-
-  // 🔹 Chargement thème
-  useEffect(() => {
-    const saved = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    if (saved) setTheme(saved);
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('theme', theme);
-    document.documentElement.classList.toggle('dark', theme === 'dark');
-  }, [theme]);
 
   // 🔹 Chargement utilisateur + profil
   useEffect(() => {
@@ -143,7 +132,8 @@ export default function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-white/10 backdrop-blur-sm bg-gradient-to-b from-slate-900/80 to-slate-900/50 shadow-2xl shadow-lg">
+          className="rounded-3xl border border-white/10 backdrop-blur-sm bg-gradient-to-b from-slate-900/80 to-slate-900/50 shadow-2xl shadow-lg"
+        >
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             {/* 🔹 Logo LUVIKA - Design Premium */}
             <Link
@@ -198,95 +188,85 @@ export default function Navbar() {
             </nav>
 
             <div className="hidden md:flex items-center space-x-2">
-  {/* 🔹 Thème */}
-  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-      className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 rounded-xl transition-all duration-300"
-      aria-label="Toggle theme"
-    >
-      {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5 text-yellow-300" />}
-    </Button>
-  </motion.div>
+              {/* 🔹 Thème - Utilise le composant centralisé */}
+              <ThemeToggle />
 
-  {/* 🔹 Langue */}
-  <div className="relative">
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setShowLangDropdown(prev => !prev)}
-        className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 rounded-xl transition-all duration-300"
-      >
-        <Globe className="h-5 w-5" />
-      </Button>
-    </motion.div>
+              {/* 🔹 Langue */}
+              <div className="relative">
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowLangDropdown(prev => !prev)}
+                    className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 rounded-xl transition-all duration-300"
+                  >
+                    <Globe className="h-5 w-5" />
+                  </Button>
+                </motion.div>
 
-    <AnimatePresence>
-      {showLangDropdown && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 10 }}
-          className="absolute right-0 top-full mt-2 w-48 bg-slate-800/90 border border-white/10 backdrop-blur-sm rounded-2xl py-2 shadow-lg shadow-black/50 z-50"
-        >
-          {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
-            <motion.button
-              key={lang}
-              whileHover={{ x: 5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => changeLanguage(lang)}
-              className={`w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-white/10 transition-colors ${
-                locale === lang ? 'bg-gradient-to-r from-cyan-500/15 to-blue-500/15 text-cyan-200 font-medium' : 'text-gray-300'
-              }`}
-            >
-              <span className="text-xl">{languages[lang].flag}</span>
-              <span className="font-medium">{languages[lang].name}</span>
-              {locale === lang && (
-                <Badge className="ml-auto bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] py-0.5 px-2">
-                  Actif
-                </Badge>
+                <AnimatePresence>
+                  {showLangDropdown && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-slate-800/90 border border-white/10 backdrop-blur-sm rounded-2xl py-2 shadow-lg shadow-black/50 z-50"
+                    >
+                      {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
+                        <motion.button
+                          key={lang}
+                          whileHover={{ x: 5 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => changeLanguage(lang)}
+                          className={`w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-white/10 transition-colors ${
+                            locale === lang ? 'bg-gradient-to-r from-cyan-500/15 to-blue-500/15 text-cyan-200 font-medium' : 'text-gray-300'
+                          }`}
+                        >
+                          <span className="text-xl">{languages[lang].flag}</span>
+                          <span className="font-medium">{languages[lang].name}</span>
+                          {locale === lang && (
+                            <Badge className="ml-auto bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] py-0.5 px-2">
+                              Actif
+                            </Badge>
+                          )}
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* 🔹 Boutons dashboard / connexion */}
+              {isAdmin ? (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/admin">
+                    <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-bold shadow-md shadow-amber-500/30">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin
+                    </Button>
+                  </Link>
+                </motion.div>
+              ) : isUser ? (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/dashboard">
+                    <Button className="bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 to-blue-500">
+                      Tableau de bord
+                    </Button>
+                  </Link>
+                </motion.div>
+              ) : (
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link href="/auth/sign-in">
+                    <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-md shadow-blue-500/30">
+                      {t('navbar.sign_in')}
+                    </Button>
+                  </Link>
+                </motion.div>
               )}
-            </motion.button>
-          ))}
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </div>
 
-  {/* 🔹 Boutons dashboard / connexion */}
-  {isAdmin ? (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-      <Link href="/admin">
-        <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-bold shadow-md shadow-amber-500/30">
-          <Shield className="w-4 h-4 mr-2" />
-          Admin
-        </Button>
-      </Link>
-    </motion.div>
-  ) : isUser ? (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-      <Link href="/dashboard">
-        <Button className="bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 to-blue-500">
-          Tableau de bord
-        </Button>
-      </Link>
-    </motion.div>
-  ) : (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-      <Link href="/auth/sign-in">
-        <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-md shadow-blue-500/30">
-          {t('navbar.sign_in')}
-        </Button>
-      </Link>
-    </motion.div>
-  )}
-
-  {/* 🔹 Menu utilisateur */}
-  {user && (
-    <div className="relative ml-2">
+              {/* 🔹 Menu utilisateur */}
+              {user && (
+                <div className="relative ml-2">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -430,7 +410,7 @@ export default function Navbar() {
             </motion.button>
           </div>
 
-          {/* 🔹 Mobile menu - DESIGN ULTIME */}
+          {/* 🔹 Mobile menu */}
           <AnimatePresence>
             {mobileMenuOpen && (
               <motion.div
@@ -443,24 +423,9 @@ export default function Navbar() {
                 <div className="p-4 space-y-3">
                   {/* 🔹 Thème + Langue mobile */}
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-white/10">
+                    {/* Thème mobile */}
                     <motion.div whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                      <Button
-                        variant="outline"
-                        onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-                        className="w-full bg-white/5 border-white/20 hover:bg-white/10 text-gray-300"
-                      >
-                        {theme === 'light' ? (
-                          <>
-                            <Moon className="h-4 w-4 mr-2" />
-                            Mode sombre
-                          </>
-                        ) : (
-                          <>
-                            <Sun className="h-4 w-4 mr-2 text-yellow-300" />
-                            Mode clair
-                          </>
-                        )}
-                      </Button>
+                      <ThemeToggleMobile />
                     </motion.div>
                     
                     <div className="relative w-full sm:w-auto">
@@ -572,5 +537,35 @@ export default function Navbar() {
         </motion.div>
       </div>
     </header>
+  );
+}
+
+// Composant séparé pour le toggle thème mobile
+function ThemeToggleMobile() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <Button
+      variant="outline"
+      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+      className="w-full bg-white/5 border-white/20 hover:bg-white/10 text-gray-300"
+    >
+      {theme === 'light' ? (
+        <>
+          🌙 Mode sombre
+        </>
+      ) : (
+        <>
+          ☀️ Mode clair
+        </>
+      )}
+    </Button>
   );
 }

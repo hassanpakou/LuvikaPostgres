@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { Toaster } from 'sonner';
-import { NetworkWatcher } from "../../../src/components/system/NetworkWatcher";
-
+import { ThemeProvider } from 'next-themes';
+import { NetworkWatcher } from '../../../src/components/system/NetworkWatcher';
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
   const [isClient, setIsClient] = useState(false);
@@ -16,22 +16,21 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-          .then(registration => console.log('SW registered:', registration.scope))
-          .catch(error => console.log('SW registration failed:', error));
+          .then(registration => console.log('✅ SW registered:', registration.scope))
+          .catch(error => console.log('⚠️ SW registration failed:', error));
       });
     }
   }, []);
 
   return (
-    <>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="luvika-theme">
       {children}
       <Toaster richColors position="top-right" />
       {isClient && (
         <>
           <NetworkWatcher />
-          
         </>
       )}
-    </>
+    </ThemeProvider>
   );
 }

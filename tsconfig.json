@@ -30,7 +30,7 @@
   "src/declarations.d.ts",
   ".next/types/**/*.ts",
   ".next/dev/types/**/*.ts"
-, "src/lib/supabase/client.ts", "src/app/[locale]/layout.tsx"],
+, "src/lib/supabase/client.ts", "src/app/[locale]/layout.tsx", "components/layout/ThemeToggle.tsx"],
 "exclude": [
   "node_modules",
   "supabase"

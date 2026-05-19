@@ -152,7 +152,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
 
-        {/* PERFORMANCE DEBUG (optionnel, tu peux supprimer en prod) */}
+        {/* PERFORMANCE OPTIMIZATIONS */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
