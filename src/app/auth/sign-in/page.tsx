@@ -5,23 +5,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mail, Lock, Eye, EyeOff, X, Sun, Moon, 
-  Sparkle, ShieldCheck, Smartphone, ArrowRight,
-  CheckCircle, AlertCircle, ArrowLeft, 
-  User
-} from 'lucide-react';
-import { Button } from '../../../../components/ui/button';
-import { Input } from '../../../../components/ui/input';
-import { Label } from '../../../../components/ui/label';
-import { Badge } from '../../../../components/ui/badge';
-import { createClient } from '../../../../src/lib/supabase/client';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircle, User, ShieldCheck } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { createClient } from '@/src/lib/supabase/client';
 
-// 🔹 Server-side translations fallback
+// Traductions simplifiées (ou utilisez next-intl si déjà présent)
 const t = (key: string) => {
-  const translations = {
+  const dict: Record<string, string> = {
     'auth.signin.title': 'Connexion',
-    'auth.signin.subtitle': 'Connectez-vous à votre compte LUVIKA.',
+    'auth.signin.subtitle': 'Connectez-vous à votre compte LUVIKA',
     'auth.signin.email': 'Email',
     'auth.signin.password': 'Mot de passe',
     'auth.signin.forgot_password': 'Mot de passe oublié ?',
@@ -31,374 +25,202 @@ const t = (key: string) => {
     'auth.signin.sign_up': 'S\'inscrire',
     'auth.signin.error_credentials': 'Email ou mot de passe incorrect.',
     'navbar.home': 'Accueil',
-    'auth.security': 'Sécurité de niveau bancaire',
-    'auth.features': 'Accès à toutes vos fonctionnalités'
   };
-  return translations[key as keyof typeof translations] || key;
+  return dict[key] || key;
 };
-const SecurityBadge = () => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.3 }}
-    className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/25 rounded-xl p-2.5 mb-4"
-  >
-    <ShieldCheck className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-    <div className="flex-1 min-w-0">
-      <p className="text-[11px] font-medium text-emerald-300">Sécurité renforcée</p>
-      <p className="text-[10px] text-emerald-200/80 truncate">Chiffrement AES-256 • Protection anti-phishing</p>
-    </div>
-  </motion.div>
-);
 
 export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const router = useRouter();
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isDark, setIsDark] = useState(true);
-
   const passwordInputRef = useRef<HTMLInputElement>(null);
 
+  // Vérification session existante
   useEffect(() => {
-    // Détection thème système
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setIsDark(savedTheme === 'dark');
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    } else {
-      const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDark(darkMode);
-      document.documentElement.classList.toggle('dark', darkMode);
-    }
-    
+    const checkSession = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        router.push('/dashboard');
+      }
+    };
+    checkSession();
     passwordInputRef.current?.focus();
-  }, []);
-  
-useEffect(() => {
-  const checkExistingSession = async () => {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session) {
-      // Une session existe déjà → rediriger directement vers le dashboard
-      router.push('/dashboard');
-      return;
-    }
-
-    // Aucune session valide → nettoyer les éventuels tokens expirés ou corrompus
-    await supabase.auth.signOut();
-  };
-
-  checkExistingSession();
-}, [router]);
-
-  const toggleTheme = () => {
-    const newTheme = isDark ? 'light' : 'dark';
-    setIsDark(!isDark);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.classList.toggle('dark', !isDark);
-  };
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(false);
 
     const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
 
-    try {
-      const { error: authError } = await supabase.auth.signInWithPassword({
-  email: email.trim(),
-  password,
-});
-
-if (authError) throw authError;
-
-// ✅ VÉRIFICATION COMPTE DÉSACTIVÉ
-const { data: { user: loggedUser } } = await supabase.auth.getUser();
-const { data: profile } = await supabase
-  .from('profiles')
-  .select('deactivated')
-  .eq('id', loggedUser?.id)
-  .single();
-
-if (profile?.deactivated) {
-  await supabase.auth.signOut();
-  setError('Ce compte a été désactivé. Contactez le support pour le réactiver.');
-  setLoading(false);
-  return;
-}
-      // Simuler un délai pour l'expérience utilisateur
-      await new Promise(r => setTimeout(r, 400));
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error('No session');
-
-      setSuccess(true);
-      
-      // Redirection après succès
-      setTimeout(() => {
-        const role = session.user.user_metadata?.role;
-        if (role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/dashboard');
-        }
-      }, 800);
-
-    } catch (err: any) {
-      console.error('💥 Login failed:', err);
-      setError(err.message === 'Invalid login credentials' 
-        ? t('auth.signin.error_credentials') 
-        : 'Une erreur est survenue. Veuillez réessayer.');
+    if (authError) {
+      setError(t('auth.signin.error_credentials'));
       setLoading(false);
+      return;
     }
+
+    // Vérification désactivation
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('deactivated')
+      .eq('id', user?.id)
+      .single();
+
+    if (profile?.deactivated) {
+      await supabase.auth.signOut();
+      setError('Ce compte a été désactivé. Contactez le support.');
+      setLoading(false);
+      return;
+    }
+
+    // Redirection
+    const role = user?.user_metadata?.role;
+    router.push(role === 'admin' ? '/admin' : '/dashboard');
   };
 
-
-
-  
   return (
-<div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center p-4 relative overflow-hidden">      {/* 🔹 Fond dynamique premium */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.08),transparent_70%)]"></div>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.05),transparent_70%)]"></div>
-      
-      {/* 🔙 Retour accueil - Design premium */}
-      <Link 
-        href="/" 
-        className="absolute top-6 left-6 flex items-center gap-2.5 text-gray-300 hover:text-cyan-300 transition-all group z-10"
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Fond décoratif */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.15),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.08),transparent_70%)]" />
+
+      {/* Lien retour accueil */}
+      <Link
+        href="/"
+        className="absolute top-6 left-6 z-10 text-gray-400 hover:text-cyan-300 transition-colors text-sm flex items-center gap-1 group"
       >
-        <div className="flex flex-col items-start">
-          <span className="text-xs font-medium">← {t('navbar.home')}</span>
-          <span className="text-[10px] text-cyan-400/80 hidden sm:block">Retour à l'accueil</span>
-        </div>
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+        {t('navbar.home')}
       </Link>
 
-      {/* 🔦 Bouton thème - Design premium */}
-      <motion.button
-        onClick={toggleTheme}
-        className="absolute top-6 right-6 p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all backdrop-blur-sm group z-10"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Toggle theme"
-      >
-        <motion.div
-          animate={{ rotate: isDark ? 0 : 180 }}
-          transition={{ duration: 0.4 }}
-          className="w-5 h-5"
-        >
-          {isDark ? (
-            <Sun className="w-full h-full text-yellow-300 drop-shadow-md" />
-          ) : (
-            <Moon className="w-full h-full text-gray-300 drop-shadow-md" />
-          )}
-        </motion.div>
-      </motion.button>
-
-      {/* 🔷 Card principale - Design Ultime */}
+      {/* Carte principale */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-md"
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative"
       >
-        <div className="relative">
-          {/* 🔹 Effet de brillance sur la carte */}
-          <div className="absolute bg-gradient-to-r from-cyan-500/30 to-blue-500/30 rounded-2xl blur opacity-20"></div>
-          
-          <div className="relative bg-black/40 bg-white/5 rounded-2xl border border-white/15 shadow-2xl shadow-black/40 overflow-hidden">
-            {/* 🔹 Bandeau supérieur décoratif */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500"></div>
-            
-            <div className="relative p-7 md:p-8">
-              {/* 🔹 Header avec logo LUVIKA */}
-              <div className="text-center mb-8">
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
-                  className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-5 border border-white/10 shadow-lg shadow-cyan-500/10 relative overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-white/10 animate-pulse"></div>
-                  <div className="relative z-10">
-                    <User className="w-8 h-8 text-white drop-shadow-md" />
-                  </div>
-                  <div className="absolute bg-gradient-to-r from-cyan-400 to-blue-500 rounded-2xl opacity-0 group-hover:opacity-20 blur-xl"></div>
-                </motion.div>
-                
-                <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 to-blue-300 mb-2">
-                  {t('auth.signin.title')}
-                </h1>
-                <p className="text-gray-300 text-sm max-w-xs mx-auto">
-                  {t('auth.signin.subtitle') || 'Connectez-vous à votre compte LUVIKA pour accéder à toutes vos fonctionnalités.'}
-                </p>
-                
-              </div>
+        <div className="relative glass-border rounded-2xl p-6 md:p-8">
+          {/* Bandeau supérieur */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-t-2xl" />
 
-              {/* 🔹 Messages d'état */}
-              <AnimatePresence mode="wait">
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mb-5 p-3.5 rounded-xl bg-amber-900/30 border border-amber-500/30 flex items-start gap-2.5"
-                  >
-                    <AlertCircle className="w-4.5 h-4.5 text-amber-300 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-amber-200 text-sm font-medium mb-0.5">Erreur d'authentification</p>
-                      <p className="text-amber-100/80 text-[13px]">{error}</p>
-                    </div>
-                  </motion.div>
-                )}
-                
-              </AnimatePresence>
+          {/* Logo / icône */}
+          <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center border border-white/10">
+              <User className="w-8 h-8 text-cyan-300" />
+            </div>
+          </div>
 
-              {/* 🔹 Formulaire premium */}
-              <form onSubmit={handleSubmit} className="space-y-4.5">
-                {/* 🔹 Email */}
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 transition-colors group-focus-within:text-cyan-300">
-                    <Mail className="w-5 h-5" />
-                  </div>
-                  <Label htmlFor="email" className="sr-only">
-                    {t('auth.signin.email')}
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    className="pl-12 pr-4 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20 text-white placeholder:text-gray-500 rounded-xl transition-all duration-300 group-hover:border-white/30"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
+          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
+            {t('auth.signin.title')}
+          </h1>
+          <p className="text-gray-400 text-center text-sm mt-1 mb-6">
+            {t('auth.signin.subtitle')}
+          </p>
 
-                {/* 🔹 Mot de passe */}
-                <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-cyan-400 transition-colors group-focus-within:text-cyan-300">
-                    <Lock className="w-5 h-5" />
-                  </div>
-                  <Label htmlFor="password" className="sr-only">
-                    {t('auth.signin.password')}
-                  </Label>
-                  <Input
-                    id="password"
-                    ref={passwordInputRef}
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="pl-12 pr-12 py-3.5 bg-white/5 border border-white/15 focus:border-cyan-400/50 focus:ring-2 focus:ring-cyan-400/20 text-white rounded-xl transition-all duration-300 group-hover:border-white/30"
-                    autoComplete="current-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-300 transition-colors p-1"
-                    aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+          {/* Message d'erreur */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-2"
+              >
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <p className="text-red-200 text-sm">{error}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-                {/* 🔹 Mot de passe oublié */}
-                <div className="flex items-center justify-between text-sm">
-                  <Link 
-                    href="/auth/forgot-password" 
-                    className="text-cyan-300 hover:text-cyan-200 font-medium hover:underline transition-colors flex items-center gap-1.5 group"
-                  >
-                    <span>{t('auth.signin.forgot_password')}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
-                  
-                  <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/25 text-[11px] py-0.5 px-2">
-                    <Lock className="w-3 h-3 mr-0.5 inline" />
-                    Sécurisé
-                  </Badge>
-                </div>
+          {/* Formulaire */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="email"
+                placeholder={t('auth.signin.email')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-9 bg-white/5 border-white/15 focus:border-cyan-400/50 text-white"
+                required
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                ref={passwordInputRef}
+                type={showPassword ? 'text' : 'password'}
+                placeholder={t('auth.signin.password')}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-9 pr-9 bg-white/5 border-white/15 focus:border-cyan-400/50 text-white"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-300"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
 
-                {/* 🔹 Bouton login premium */}
-                <Button
-                  type="submit"
-                  disabled={loading || success}
-                  className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all duration-300 group relative overflow-hidden"
-                >
-                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100"></span>
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-4.5 h-4.5 border-2 border-white/30 border-t-white rounded-full"
-                      />
-                      {t('auth.signin.connecting')}
-                    </span>
-                  ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <Lock className="w-4.5 h-4.5 group-hover:scale-110 transition-transform" />
-                      {t('auth.signin.submit')}
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  )}
-                </Button>
-              </form>
-
-              {/* 🔹 Inscription */}
-              <div className="mt-7 pt-5 border-t border-white/10 text-center">
-                <p className="text-gray-300 text-sm">
-                  {t('auth.signin.no_account')}{' '}
-                  <Link 
-                    href="/auth/sign-up" 
-                    className="text-cyan-300 hover:text-cyan-200 font-bold hover:underline transition-colors flex items-center justify-center gap-1.5 group inline-block mt-1"
-                  >
-                    <span>{t('auth.signin.sign_up')}</span>
-                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                  </Link>
-                </p>
-                
-                {/* 🔹 Lien vers conditions */}
-                <div className="mt-4 flex flex-wrap justify-center gap-3 text-[11px] text-gray-500">
-                  <Link href="/privacy" className="hover:text-cyan-300 transition-colors">Confidentialité</Link>
-                  <span>•</span>
-                  <Link href="/terms" className="hover:text-cyan-300 transition-colors">Conditions</Link>
-                  <span>•</span>
-                  <Link href="/contact" className="hover:text-cyan-300 transition-colors">Contact</Link>
-                </div>
+            <div className="flex justify-between items-center text-sm">
+              <Link
+                href="/auth/forgot-password"
+                className="text-cyan-300 hover:text-cyan-200 transition-colors"
+              >
+                {t('auth.signin.forgot_password')}
+              </Link>
+              <div className="flex items-center gap-1 text-xs text-gray-400">
+                <ShieldCheck className="w-3 h-3" />
+                <span>Sécurisé</span>
               </div>
             </div>
-            
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-semibold py-2 rounded-xl transition-all"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  {t('auth.signin.connecting')}
+                </span>
+              ) : (
+                t('auth.signin.submit')
+              )}
+            </Button>
+          </form>
+
+          {/* Lien inscription */}
+          <div className="mt-6 pt-4 text-center text-sm text-gray-400 border-t border-white/10">
+            {t('auth.signin.no_account')}{' '}
+            <Link href="/auth/sign-up" className="text-cyan-300 hover:text-cyan-200 font-medium">
+              {t('auth.signin.sign_up')}
+            </Link>
+          </div>
+
+          {/* Liens légaux */}
+          <div className="mt-6 flex justify-center gap-4 text-xs text-gray-500">
+            <Link href="/privacy" className="hover:text-cyan-300">Confidentialité</Link>
+            <Link href="/terms" className="hover:text-cyan-300">Conditions</Link>
+            <Link href="/contact" className="hover:text-cyan-300">Contact</Link>
           </div>
         </div>
-    
       </motion.div>
-
-      {/* 🔹 Styles globaux */}
-      <style jsx global>{`
-        @keyframes pulse-slow {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 0.4; }
-        }
-        
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-
-      `}</style>
     </div>
   );
 }

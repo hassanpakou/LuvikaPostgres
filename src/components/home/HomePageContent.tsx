@@ -1,770 +1,478 @@
 // src/components/home/HomePageContent.tsx
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
-import ProfileCard3D from '../../../components/cards/ProfileCard3D';
-import { 
-  ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3, 
-  Layers, QrCode, Zap, CheckCircle, Star,
-  ChevronRight, Trophy, Briefcase, GraduationCap,
-  Github, Twitter, Linkedin, Heart, Globe,
-  Gavel,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useEffect, useState } from 'react';
+import {
+  ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3,
+  Layers, QrCode, Zap, CheckCircle, Star, Trophy, Github,
+  Twitter, Linkedin, Heart, Globe, Gavel, Sparkles,
+} from 'lucide-react';
 import { SiInstagram, SiSocialblade } from 'react-icons/si';
+import { Badge } from '@/components/ui/badge';
+import ProfileCard3D from '@/components/cards/ProfileCard3D';
+import { getQrBlockClass } from '@/src/lib/qr-pattern';
 
-// 🔑 Fonction déterministe pour le pattern QR
-const getQrBlockClass = (index: number): string => {
-  const fixedBlack = [0,1,2,6,7,8,12,13,14,30,31,32,36,37,38,42,43,44];
-  if (fixedBlack.includes(index)) return 'bg-gray-900';
-  const hash = (index * 2654435761) % 49;
-  return hash > 35 ? 'bg-cyan-400/80' : 'bg-gray-200';
+// ============================================================
+// 1. CONFIGURATION CENTRALE
+// ============================================================
+const CONFIG = {
+  brand: {
+    name: 'LUVIKA',
+    taglineKey: 'tagline',
+    logo: SiSocialblade,
+    gradient: 'from-cyan-400 to-blue-500',
+  },
+  hero: {
+    titleKey: 'LUVIKA',
+    audience: [
+      { icon: Users, label: 'Créateurs' },
+      { icon: ScanLine, label: 'Entrepreneurs' },
+      { icon: ShieldCheck, label: 'Professionnels' },
+    ],
+  },
+  cta: {
+    titleKey: 'download.cta_title',
+    descKey: 'download.cta_desc',
+    primaryButton: { textKey: 'download.download_now', link: '/auth/sign-up' },
+    secondaryButton: { textKey: 'navbar.pricing', link: '/public/pricing' },
+    stats: [
+      { value: '50K+', label: 'Utilisateurs', icon: Users },
+      { value: '250K+', label: 'Scans', icon: ScanLine },
+      { value: '98%', label: 'Satisfaction', icon: Star },
+    ],
+  },
+  features: {
+    badgeKey: 'features.title',
+    description: 'LUVIKA transforme votre identité numérique avec des fonctionnalités innovantes conçues pour les créateurs, entrepreneurs et professionnels ambitieux.',
+    list: [
+      {
+        icon: Nfc,
+        titleKey: 'features.nfc.title',
+        descKey: 'features.nfc.desc',
+        gradient: 'from-cyan-500 to-blue-500',
+        stat: '100% sans contact',
+      },
+      {
+        icon: BarChart3,
+        titleKey: 'features.stats.title',
+        descKey: 'features.stats.desc',
+        gradient: 'from-blue-500 to-indigo-500',
+        stat: 'Données en temps réel',
+      },
+      {
+        icon: Layers,
+        titleKey: 'features.multi.title',
+        descKey: 'features.multi.desc',
+        gradient: 'from-emerald-500 to-teal-500',
+        stat: 'Multi-plateforme',
+      },
+    ],
+  },
+  events: {
+    titleKey: 'features.events.title',
+    description: 'Organisez, gérez et analysez vos événements avec des QR codes personnalisés et des statistiques en temps réel.',
+    features: [
+      {
+        icon: ScanLine,
+        titleKey: 'features.events.create.title',
+        descKey: 'features.events.create.desc',
+        color: 'text-cyan-400',
+        bg: 'from-cyan-500/10 to-blue-500/10',
+      },
+      {
+        icon: QrCode,
+        titleKey: 'features.events.qr.title',
+        descKey: 'features.events.qr.desc',
+        color: 'text-blue-400',
+        bg: 'from-blue-500/10 to-indigo-500/10',
+      },
+      {
+        icon: BarChart3,
+        titleKey: 'features.events.analytics.title',
+        descKey: 'features.events.analytics.desc',
+        color: 'text-emerald-400',
+        bg: 'from-emerald-500/10 to-teal-500/10',
+      },
+    ],
+  },
+  footer: {
+    description: 'La nouvelle génération d\'identité numérique pour les créateurs, entrepreneurs et professionnels ambitieux en Afrique et ailleurs.',
+    socials: [
+      { Icon: Twitter, href: 'https://twitter.com/luvika', color: 'text-cyan-400', hover: 'hover:bg-cyan-500/10' },
+      { Icon: SiInstagram, href: 'https://instagram.com/luvika', color: 'text-pink-400', hover: 'hover:bg-pink-500/10' },
+      { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', color: 'text-blue-400', hover: 'hover:bg-blue-500/10' },
+      { Icon: Github, href: 'https://github.com/luvika', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
+    ],
+    links: [
+      { title: 'Produit', icon: Globe, iconColor: 'text-cyan-400', items: ['Fonctionnalités', 'Tarifs', 'Télécharger', 'Documentation'] },
+      { title: 'Entreprise', icon: Heart, iconColor: 'text-rose-400', items: ['À propos', 'Contact', 'Blog', 'Carrières'] },
+      { title: 'Légal', icon: Gavel, iconColor: 'text-amber-400', items: ['Confidentialité', 'Conditions', 'Cookies', 'Sécurité'] },
+    ],
+    contactEmail: 'support@luvika.me',
+  },
 };
 
-export function HomePageContent() {
-  const t = useTranslations();
-  const locale = useLocale();
-  const [isMobile, setIsMobile] = useState(false);
-const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
-useEffect(() => {
-  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  setShouldReduceMotion(mediaQuery.matches);
-}, []);
-  // 🔹 Détection mobile pour optimiser les animations
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+// ============================================================
+// 2. COMPOSANTS GÉNÉRIQUES
+// ============================================================
+const GlassCard = ({ children, className = '', hover = true }: any) => (
+  <div className={`relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl transition-all duration-300 ${hover ? 'hover:border-cyan-400/40 hover:shadow-xl hover:shadow-cyan-500/10' : ''} ${className}`}>
+    {children}
+  </div>
+);
 
+const GradientBadge = ({ children }: { children: React.ReactNode }) => (
+  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-4 py-1.5 rounded-full border border-cyan-500/30">
+    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+    <span className="text-cyan-300 text-xs font-medium tracking-wide uppercase">{children}</span>
+  </div>
+);
+
+const SectionTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <h2 className={`text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent ${className}`}>
+    {children}
+  </h2>
+);
+
+const AnimatedOnScroll = ({ children, delay = 0, direction = 'up' }: any) => {
+  const variants = {
+    hidden: { opacity: 0, y: direction === 'up' ? 40 : -40, x: direction === 'left' ? -40 : direction === 'right' ? 40 : 0 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      x: 0, 
+      transition: { 
+        duration: 0.6, 
+        delay, 
+        ease: "easeOut" as const  // ← utilisation de "as const" pour garantir le type littéral
+      } 
+    },
+  };
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/5 to-indigo-900/10 flex flex-col items-center justify-center text-center px-4 py-12 relative overflow-hidden">
-      {/* 🔹 Fond animé subtil */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.15),transparent_70%)]"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.1),transparent_70%)]"></div>
-        
-      </div>
+    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} variants={variants}>
+      {children}
+    </motion.div>
+  );
+};
 
-      {/* 🔹 Hero Section - Design Premium */}
+// ============================================================
+// 3. SECTIONS
+// ============================================================
+const HeroSection = () => {
+  const t = useTranslations();
+  const { brand, hero } = CONFIG;
+  return (
+    <section className="relative pt-20 pb-16 text-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="max-w-5xl mx-auto text-center mb-16"
+        transition={{ duration: 0.8 }}
+        className="max-w-4xl mx-auto"
       >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 150 }}
-          className="inline-block mb-6"
-        >
-          <Badge className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border-cyan-500/30 px-4 py-1.5 text-sm font-medium">
-            <SiSocialblade className="w-3.5 h-3.5 mr-1.5 inline" />
-            Nouvelle génération d'identité numérique
-          </Badge>
-        </motion.div>
-
         <motion.h1
           initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-300 mb-6 tracking-tight"
+          transition={{ delay: 0.2, duration: 0.8 }}
+          className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter"
         >
-          {t('LUVIKA')}
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-cyan-200 to-cyan-400">
+            {t(hero.titleKey)}
+          </span>
         </motion.h1>
 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed"
+          transition={{ delay: 0.4 }}
+          className="text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto mt-6 leading-relaxed"
         >
-          {t('tagline')}
+          {t(brand.taglineKey)}
         </motion.p>
 
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
-          {[{ icon: Users, label: 'Créateurs' }, { icon: ScanLine, label: 'Entrepreneurs' }, { icon: ShieldCheck, label: 'Professionnels' }].map((item, i) => (
+        <div className="flex flex-wrap justify-center gap-6 mt-10">
+          {hero.audience.map((item, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 + i * 0.1 }}
-              className="flex items-center gap-2 text-sm text-cyan-300/90"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10"
             >
-              <item.icon className="w-4 h-4" />
-              <span>{item.label}</span>
+              <item.icon className="w-4 h-4 text-cyan-400" />
+              <span className="text-sm text-gray-200">{item.label}</span>
             </motion.div>
           ))}
         </div>
       </motion.div>
+    </section>
+  );
+};
 
-      {/* 🔹 Profile Card 3D - Centre et Mis en Valeur */}
-      <motion.div
-        initial={{ scale: 0.85, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, type: 'spring', stiffness: 120, damping: 15 }}
-        className="w-full max-w-md mx-auto mb-16 relative"
-      >
-       {!shouldReduceMotion && <ProfileCard3D />}
-        
-        {/* 🔹 Badge flottant */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1.2 }}
-          className="absolute -top-6 -right-6"
-        >
-          <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-sm py-1.5 px-4 shadow-lg shadow-amber-500/30">
-            <Trophy className="w-4 h-4 mr-1.5 inline" />
-            Meilleure solution 2026
-          </Badge>
-        </motion.div>
-      </motion.div>
+const CTASection = () => {
+  const t = useTranslations();
+  const locale = useLocale();
+  const { cta } = CONFIG;
+  return (
+    <section className="relative py-16 text-center">
+      <GlassCard className="max-w-4xl mx-auto p-8 md:p-12">
+        <SectionTitle className="mb-4">{t(cta.titleKey)}</SectionTitle>
+        <p className="text-gray-300 max-w-2xl mx-auto text-lg">{t(cta.descKey)}</p>
 
-      {/* 🔹 Section CTA + Statistiques - Design Ultime */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.0, duration: 0.6, ease: 'easeOut' }}
-        className="text-center max-w-4xl mx-auto mb-20"
-      >
-        <motion.h2
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.1 }}
-          className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-4"
-        >
-          {t('download.cta_title')}
-        </motion.h2>
-        
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="mt-4 text-gray-300 max-w-2xl mx-auto text-lg leading-relaxed"
-        >
-          {t('download.cta_desc')}
-        </motion.p>
-
-        {/* 🔹 Boutons CTA optimisés */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.3, duration: 0.6, ease: 'easeOut' }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10"
-        >
-          <Link href="/auth/sign-up">
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+          <Link href={cta.primaryButton.link}>
             <motion.button
-              whileHover={{ scale: 1.05, y: -4 }}
-              whileTap={{ scale: 0.97 }}
-              className="
-                group relative flex items-center justify-center gap-2
-                w-full sm:w-auto px-8 py-4 rounded-full
-                font-bold text-lg text-white
-                bg-gradient-to-r from-blue-600 to-cyan-500
-                shadow-2xl shadow-blue-500/30
-                transition-all duration-300
-                overflow-hidden
-              "
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                {t('download.download_now')}
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-md" />
-              <div className="absolute top-2 left-2 w-2 h-2 rounded-full bg-white/40" />
-              
-              {/* 🔹 Animation onde au clic */}
-              </motion.button>
-          </Link>
-
-          <Link href={`/${locale}/pricing`}>
-            <motion.button
-              whileHover={{ scale: 1.03, y: -2 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
-              className="
-                group relative flex items-center justify-center
-                w-full sm:w-auto px-8 py-4 rounded-full
-                font-bold text-lg text-gray-200
-                bg-black/60
-                border border-white/15
-                hover:bg-white/10 hover:border-cyan-400/30
-                transition-all duration-300
-                overflow-hidden
-              "
+              className="group relative px-8 py-3 rounded-full font-bold text-white bg-gradient-to-r from-blue-600 to-cyan-500 shadow-lg shadow-cyan-500/30 flex items-center gap-2"
             >
-              <span className="relative z-10">{t('navbar.pricing')}</span>
-              
-              {/* 🔹 Onde concentrique */}
-              <motion.div
-                className="absolute inset-0 rounded-full bg-cyan-400/10 pointer-events-none"
-                animate={{
-                  scale: [0, 1.5, 0],
-                  opacity: [0.5, 0, 0],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  delay: 1,
-                  ease: 'easeOut',
-                }}
-              />
-              
-              {/* 🔹 Lueur centrale */}
-              <motion.div
-                className="absolute w-3 h-3 rounded-full bg-cyan-300/20 pointer-events-none"
-                animate={{
-                  scale: [1, 1.8, 1],
-                  opacity: [0.6, 0, 0.6],
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
-                }}
-              />
-              
-              {/* 🔹 Gradient intérieur au survol */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-cyan-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {t(cta.primaryButton.textKey)}
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
             </motion.button>
           </Link>
-        </motion.div>
+          <Link href={`/${locale}${cta.secondaryButton.link}`}>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-8 py-3 rounded-full font-bold text-gray-200 bg-black/40 border border-white/20 hover:bg-white/10 transition"
+            >
+              {t(cta.secondaryButton.textKey)}
+            </motion.button>
+          </Link>
+        </div>
 
-        {/* 🔹 Statistiques sociales */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-          className="mt-12 flex flex-wrap justify-center gap-8 text-center"
-        >
-          {[
-            { value: '50K+', label: 'Utilisateurs', icon: Users },
-            { value: '250K+', label: 'Scans', icon: ScanLine },
-            { value: '98%', label: 'Satisfaction', icon: Star }
-          ].map((stat, i) => (
+        <div className="flex flex-wrap justify-center gap-12 mt-12 pt-6 border-t border-white/10">
+          {cta.stats.map((stat, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.6 + i * 0.1 }}
-              className="flex flex-col items-center"
+              transition={{ delay: 0.2 * i }}
+              className="text-center"
             >
-              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent mb-1">
+              <div className="text-4xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
                 {stat.value}
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-gray-400">
-                <stat.icon className="w-4 h-4 text-cyan-400" />
+              <div className="flex items-center gap-1 text-sm text-gray-400 mt-1">
+                <stat.icon className="w-4 h-4" />
                 <span>{stat.label}</span>
               </div>
             </motion.div>
           ))}
-        </motion.div>
-      </motion.div>
-
-      {/* 🔹 Section Pourquoi LUVIKA ? - Design Premium */}
-      <section id="features" className="relative w-full max-w-7xl mx-auto px-4 mb-28">
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="inline-flex items-center gap-3 mb-6 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 px-5 py-2.5 rounded-full border border-cyan-500/30"
-          >
-            <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
-            <span className="text-cyan-300 font-medium text-sm tracking-wide uppercase">
-              {t('features.title')}
-            </span>
-          </motion.div>
-          
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1, duration: 0.8 }}
-            className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-4"
-          >
-            Réinventez votre <span className="text-cyan-400">présence numérique</span>
-          </motion.h2>
-          
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-gray-400 max-w-3xl mx-auto"
-          >
-            LUVIKA transforme votre identité numérique avec des fonctionnalités innovantes conçues pour les créateurs, entrepreneurs et professionnels ambitieux.
-          </motion.p>
         </div>
+      </GlassCard>
+    </section>
+  );
+};
 
-        {/* 🔹 Fond glacial animé */}
-        <div className="absolute -z-10 inset-0 overflow-hidden rounded-3xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-cyan-900/20 to-indigo-900/30"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(129,230,217,0.08),transparent_70%)]"></div>
-          
-        </div>
+const ProfileShowcase = ({ reducedMotion }: { reducedMotion: boolean }) => (
+  <section className="relative py-8">
+    <div className="relative max-w-md mx-auto">
+      {!reducedMotion && <ProfileCard3D />}
+      {reducedMotion && (
+        <GlassCard className="h-96 flex items-center justify-center text-gray-400">
+          Aperçu de la carte
+        </GlassCard>
+      )}
+      <div className="absolute -top-4 -right-4">
+        <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold shadow-lg shadow-amber-500/30">
+          <Trophy className="w-3 h-3 mr-1 inline" />
+          Meilleure solution 2026
+        </Badge>
+      </div>
+    </div>
+  </section>
+);
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            {
-              icon: <Nfc className="w-8 h-8" />,
-              title: t('features.nfc.title'),
-              desc: t('features.nfc.desc'),
-              gradient: "from-cyan-500 to-blue-500",
-              glow: "shadow-cyan-500/20",
-              stats: "100% sans contact"
-            },
-            {
-              icon: <BarChart3 className="w-8 h-8" />,
-              title: t('features.stats.title'),
-              desc: t('features.stats.desc'),
-              gradient: "from-blue-500 to-indigo-500",
-              glow: "shadow-blue-500/20",
-              stats: "Données en temps réel"
-            },
-            {
-              icon: <Layers className="w-8 h-8" />,
-              title: t('features.multi.title'),
-              desc: t('features.multi.desc'),
-              gradient: "from-emerald-500 to-teal-500",
-              glow: "shadow-emerald-500/20",
-              stats: "Multi-plateforme"
-            },
-          ].map((item, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 40, rotateX: -15 }}
-              whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ delay: i * 0.15, duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
-              whileHover={{ 
-                y: -8,
-                scale: 1.02,
-                transition: { duration: 0.4 }
-              }}
-              className="group relative"
-            >
-              <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md"
-                style={{ 
-                  background: `linear-gradient(135deg, ${item.gradient.split(' ')[1]}40, ${item.gradient.split(' ')[3]}20)` 
-                }}
-              ></div>
-              
-              <div className={`
-                relative glass-border rounded-2xl p-8 bg-gradient-to-br from-white/3 to-white/5 
-                backdrop-blur-xl border border-white/10 overflow-hidden
-                transition-all duration-500
-              `}>
-                {/* 🔹 Effet de lumière dynamique */}
-                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
-                {/* 🔹 Icône flottante */}
-                {!isMobile && (
-  <motion.div
-    className={`mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl ${item.glow} shadow-lg`}
-    style={{ background: `linear-gradient(135deg, ${item.gradient})` }}
-    animate={{ y: [0, -6, 0] }}
-    transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
-  >
-    {item.icon}
-  </motion.div>
-)}
-{isMobile && (
-  <div
-    className={`mb-6 inline-flex items-center justify-center w-16 h-16 rounded-2xl ${item.glow} shadow-lg`}
-    style={{ background: `linear-gradient(135deg, ${item.gradient})` }}
-  >
-    {item.icon}
-  </div>
-)}
+const FeaturesGrid = () => {
+  const t = useTranslations();
+  const { features } = CONFIG;
+  return (
+    <section className="relative py-20">
+      <div className="text-center mb-16">
+        <GradientBadge>{t(features.badgeKey)}</GradientBadge>
+        <SectionTitle className="mt-4">
+          Réinventez votre <span className="text-cyan-400">présence numérique</span>
+        </SectionTitle>
+        <p className="text-gray-400 max-w-2xl mx-auto mt-4">{features.description}</p>
+      </div>
 
-                <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-cyan-300 transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-gray-300 leading-relaxed mb-4">
-                  {item.desc}
-                </p>
-                
-                <div className="flex items-center gap-2 text-sm text-cyan-300 font-medium">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>{item.stats}</span>
-                </div>
-
-                {/* 🔹 Ligne de progression sous-titre */}
-                <motion.div
-                  className="mt-6 h-0.5 bg-white/10 rounded-full overflow-hidden"
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "100%" }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 + i * 0.1, duration: 0.8 }}
-                >
-                  <div className={`h-full ${item.glow}`}></div>
-                </motion.div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* 🔹 Section Événements et QR Codes - Design Ultime */}
-      <section id="events" className="relative w-full max-w-7xl mx-auto px-4 mb-28">
-        <div className="text-center mb-16">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            className="inline-block"
-          >
-            <h2 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-4">
-              {t('features.events.title')}
-            </h2>
-            <div className="w-24 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-400 mx-auto mt-4 rounded-full"></div>
-            <p className="mt-6 text-gray-400 max-w-3xl mx-auto">
-              Organisez, gérez et analysez vos événements avec des QR codes personnalisés et des statistiques en temps réel.
-            </p>
-          </motion.div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* 🔹 Colonne gauche : visuel QR/NFC */}
-          <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative"
-          >
-            <div className="relative z-10">
-              {/* 🔹 QR Code réaliste animé */}
-              <motion.div
-                className="w-72 h-72 mx-auto relative"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {features.list.map((feature, i) => (
+          <AnimatedOnScroll key={i} delay={i * 0.1} direction="up">
+            <GlassCard className="p-6 group h-full transition-all hover:-translate-y-2">
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
+                style={{ background: `linear-gradient(135deg, ${feature.gradient})` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/50 to-blue-900/50 rounded-2xl border border-cyan-500/30 backdrop-blur-sm"></div>
-                
-                {/* 🔹 QR Code stylisé */}
-                <div className="absolute inset-6 bg-white rounded-lg flex items-center justify-center p-2">
-                  <div className="grid grid-cols-7 gap-1 w-56 h-56">
+                <feature.icon className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition">
+                {t(feature.titleKey)}
+              </h3>
+              <p className="text-gray-300 mt-2 text-sm leading-relaxed">{t(feature.descKey)}</p>
+              <div className="flex items-center gap-1 mt-4 text-cyan-300 text-xs font-medium">
+                <CheckCircle className="w-3 h-3" />
+                <span>{feature.stat}</span>
+              </div>
+            </GlassCard>
+          </AnimatedOnScroll>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const EventsSection = () => {
+  const t = useTranslations();
+  const { events } = CONFIG;
+  return (
+    <section className="relative py-20">
+      <div className="text-center mb-16">
+        <GradientBadge>Événements intelligents</GradientBadge>
+        <SectionTitle className="mt-4">{t(events.titleKey)}</SectionTitle>
+        <p className="text-gray-400 max-w-2xl mx-auto mt-4">{events.description}</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+        {/* QR Code moderne */}
+        <AnimatedOnScroll direction="left">
+          <div className="relative flex justify-center">
+            <div className="relative w-80 h-80">
+              <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/20 to-blue-500/20 rounded-3xl blur-2xl" />
+              <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-4 border border-white/20">
+                <div className="bg-white rounded-2xl p-3">
+                  <div className="grid grid-cols-7 gap-1 w-64 h-64">
                     {[...Array(49)].map((_, i) => (
-                      <div
-                        key={i}
-                        className={`w-full h-full rounded ${getQrBlockClass(i)}`}
-                      />
+                      <div key={i} className={`w-full h-full rounded-sm ${getQrBlockClass(i)}`} />
                     ))}
                   </div>
-                  <div className="absolute inset-16 flex items-center justify-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                      <Nfc className="w-8 h-8 text-white" />
-                    </div>
+                  <div className="absolute inset-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                    <Nfc className="w-7 h-7 text-white" />
                   </div>
                 </div>
-
-                {/* 🔹 Scanner animé */}
                 <motion.div
-                  className="absolute top-0 left-1/2 w-1 h-16 -translate-x-0.5 bg-gradient-to-b from-transparent via-cyan-400 to-transparent rounded-full"
-                  
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                 />
-                
-                {/* 🔹 Badge événement */}
-                <div className="absolute -top-4 -right-4">
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold text-sm py-1 px-3 shadow-lg">
-                    <Zap className="w-3.5 h-3.5 mr-1 inline" />
-                    Événement en direct
-                  </Badge>
+              </div>
+            </div>
+          </div>
+        </AnimatedOnScroll>
+
+        <div className="space-y-5">
+          {events.features.map((item, i) => (
+            <AnimatedOnScroll key={i} direction="right" delay={i * 0.1}>
+              <GlassCard className="p-5 group hover:border-cyan-400/40">
+                <div className="flex gap-4">
+                  <div className={`shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${item.bg} flex items-center justify-center ${item.color}`}>
+                    <item.icon className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white group-hover:text-cyan-300 transition">
+                      {t(item.titleKey)}
+                    </h3>
+                    <p className="text-gray-400 text-sm mt-1">{t(item.descKey)}</p>
+                  </div>
                 </div>
-              </motion.div>
-
-              {/* 🔹 Effets de lumière */}
-              <div className="absolute -top-12 -right-12 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
-            </div>
-          </motion.div>
-
-          {/* 🔹 Colonne droite : fonctionnalités */}
-          <div>
-            <div className="space-y-6">
-              {[
-                {
-                  icon: ScanLine,
-                  title: t('features.events.create.title'),
-                  desc: t('features.events.create.desc'),
-                  color: "text-cyan-400",
-                  bg: "from-cyan-500/10 to-blue-500/10",
-                },
-                {
-                  icon: QrCode,
-                  title: t('features.events.qr.title'),
-                  desc: t('features.events.qr.desc'),
-                  color: "text-blue-400",
-                  bg: "from-blue-500/10 to-indigo-500/10",
-                },
-                {
-                  icon: BarChart3,
-                  title: t('features.events.analytics.title'),
-                  desc: t('features.events.analytics.desc'),
-                  color: "text-emerald-400",
-                  bg: "from-emerald-500/10 to-teal-500/10",
-                },
-              ].map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.2, duration: 0.8 }}
-                  className="group"
-                >
-                  <div className={`
-                    glass-border rounded-xl p-6 bg-gradient-to-br ${item.bg}
-                    backdrop-blur border border-white/10 transition-all duration-300
-                    hover:border-cyan-400/40 hover:shadow-xl hover:shadow-cyan-500/10
-                  `}>
-                    <div className="flex items-start gap-4">
-                      <div className={`flex-shrink-0 w-14 h-14 rounded-xl ${item.bg} flex items-center justify-center ${item.color} shadow-lg`}>
-                        <item.icon className="w-7 h-7" />
-                      </div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
-                          {item.title}
-                        </h3>
-                        <p className="text-gray-300 leading-relaxed">
-                          {item.desc}
-                        </p>
-                        <motion.div
-                          className="mt-3 w-12 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full"
-                          initial={{ scaleX: 0 }}
-                          whileInView={{ scaleX: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.3, duration: 0.6 }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 🔹 Section Comptes Super Pro / Vente en Ligne - Design Premium */}
-      <section id="enterprise" className="relative w-full max-w-6xl mx-auto px-4 mb-20">
-        {/* 🔹 Fond glacial profond */}
-        <div className="absolute -z-10 inset-0 overflow-hidden rounded-3xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/50 via-purple-900/40 to-cyan-900/30"></div>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(129,230,217,0.05),transparent_70%)]"></div>
-          
-        </div>
-
-        <div className="relative z-10 text-center py-16">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="max-w-4xl mx-auto"
-          >
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-2xl mb-8">
-              <Briefcase className="w-10 h-10" />
-            </div>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-3xl md:text-5xl font-bold text-white mb-6"
-            >
-              <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                {t('features.superpro.title')}
-              </span>
-            </motion.h2>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-xl text-gray-200 max-w-3xl mx-auto leading-relaxed mb-10"
-            >
-              {t('features.superpro.desc')}
-            </motion.p>
-
-            
-            {/* 🔹 Badges de confiance */}
-            <div className="mt-12 flex flex-wrap justify-center gap-6">
-              {[{ icon: GraduationCap, label: 'Formation incluse' }, { icon: Trophy, label: 'Support prioritaire' }, { icon: Zap, label: 'Mises à jour gratuites' }].map((item, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.8 + i * 0.1 }}
-                  className="flex items-center gap-2 text-sm text-cyan-200/90"
-                >
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                    <item.icon className="w-4 h-4" />
-                  </div>
-                  <span>{item.label}</span>
-                </motion.div>
-              ))}
-            </div>
-            
-          </motion.div>
-        </div>
-      </section>     
-
-     <footer className="w-full -mx-4 mt-20   backdrop-blur-sm">
-  {/* Overlay de fond pour contrôler la couleur du haut (plus opaque) */}
-  <div className="absolute inset-0 pointer-events-none" />
-  
-  <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-24">
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-      
-      {/* 🔸 Brand Section */}
-      <div className="space-y-6 lg:col-span-1">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-            <SiSocialblade className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
-            LUVIKA
-          </span>
-        </div>
-        
-        <p className="text-gray-400 leading-relaxed text-sm">
-          La nouvelle génération d'identité numérique pour les créateurs, entrepreneurs et professionnels ambitieux en Afrique et ailleurs.
-        </p>
-        
-        <div className="flex flex-wrap gap-3 pt-2">
-          {[
-            { Icon: Twitter, href: 'https://twitter.com/luvika', color: 'text-cyan-400', hover: 'hover:bg-cyan-500/10' },
-            { Icon: SiInstagram, href: 'https://instagram.com/luvika', color: 'text-pink-400', hover: 'hover:bg-pink-500/10' },
-            { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', color: 'text-blue-400', hover: 'hover:bg-blue-500/10' },
-            { Icon: Github, href: 'https://github.com/luvika', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
-          ].map(({ Icon, href, color, hover }, i) => (
-            <Link
-              key={i}
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`p-2 rounded-lg bg-white/5 ${hover} transition-all duration-300 group`}
-            >
-              <Icon className={`w-5 h-5 ${color} group-hover:scale-110 transition-transform`} />
-            </Link>
+              </GlassCard>
+            </AnimatedOnScroll>
           ))}
         </div>
       </div>
+    </section>
+  );
+};
 
-      {/* 🔸 Links Section (3 colonnes) */}
-      <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-8">
-        {/* Platform */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-white text-lg flex items-center gap-2">
-            <Globe className="w-5 h-5 text-cyan-400" />
-            Produit
-          </h3>
-          <ul className="space-y-3">
-            {['Fonctionnalités', 'Tarifs', 'Télécharger', 'Documentation'].map((item) => (
-              <li key={item}>
-                <Link href="#" className="text-gray-400 hover:text-cyan-300 transition-colors text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/0 group-hover:bg-cyan-500 transition-all" />
-                  {item}
+const Footer = () => {
+  const currentYear = new Date().getFullYear();
+  const { footer, brand } = CONFIG;
+
+  return (
+    <footer className="relative mt-28 border-t border-white/10 bg-black/30 backdrop-blur-sm">
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center">
+                <brand.logo className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                {brand.name}
+              </span>
+            </div>
+            <p className="text-gray-400 text-sm">{footer.description}</p>
+            <div className="flex gap-2">
+              {footer.socials.map((social, i) => (
+                <Link key={i} href={social.href} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-lg bg-white/5 ${social.hover} transition`}>
+                  <social.Icon className={`w-4 h-4 ${social.color}`} />
                 </Link>
-              </li>
-            ))}
-          </ul>
+              ))}
+            </div>
+          </div>
+
+          {footer.links.map((group, idx) => (
+            <div key={idx} className="space-y-3">
+              <h3 className="font-semibold text-white flex items-center gap-2">
+                <group.icon className={`w-4 h-4 ${group.iconColor}`} />
+                {group.title}
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {group.items.map((item) => (
+                  <li key={item}>
+                    <Link href="#" className="text-gray-400 hover:text-cyan-300 transition">
+                      {item}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        {/* Company */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-white text-lg flex items-center gap-2">
-            <Heart className="w-5 h-5 text-rose-400" />
-            Entreprise
-          </h3>
-          <ul className="space-y-3">
-            {['À propos', 'Contact', 'Blog', 'Carrières'].map((item) => (
-              <li key={item}>
-                <Link href="#" className="text-gray-400 hover:text-rose-300 transition-colors text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500/0 group-hover:bg-rose-500 transition-all" />
-                  {item}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Legal */}
-        <div className="space-y-4">
-          <h3 className="font-bold text-white text-lg flex items-center gap-2">
-            <Gavel className="w-5 h-5 text-amber-400" />
-            Légal
-          </h3>
-          <ul className="space-y-3">
-            {['Confidentialité', 'Conditions', 'Cookies', 'Sécurité'].map((item) => (
-              <li key={item}>
-                <Link href="#" className="text-gray-400 hover:text-amber-300 transition-colors text-sm flex items-center gap-2 group">
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500/0 group-hover:bg-amber-500 transition-all" />
-                  {item}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <div className="mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+          <p>© {currentYear} {brand.name}. Fait avec ❤️ en RDC.</p>
+          <div className="flex gap-4 mt-2 md:mt-0">
+            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /> Opérationnel</span>
+            <a href={`mailto:${footer.contactEmail}`} className="hover:text-cyan-400">{footer.contactEmail}</a>
+          </div>
         </div>
       </div>
-    </div>
+    </footer>
+  );
+};
 
-    {/* 🔹 Copyright Bar */}
-    <div className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400">
-      <p>© {new Date().getFullYear()} Luvika. Fait avec ❤️ en RDC.</p>
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span>Systèmes opérationnels</span>
-        </div>
-        <span className="hidden md:inline">•</span>
-        <a href="mailto:support@luvika.me" className="hover:text-cyan-400 transition-colors">support@luvika.me</a>
+// ============================================================
+// 4. COMPOSANT PRINCIPAL
+// ============================================================
+export function HomePageContent() {
+  const prefersReducedMotion = useReducedMotion();
+  const [reduceMotion, setReduceMotion] = useState(prefersReducedMotion ?? false);
+
+  useEffect(() => {
+    setReduceMotion(prefersReducedMotion ?? false);
+  }, [prefersReducedMotion]);
+
+  return (
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-950 via-indigo-950/30 to-cyan-950/20 overflow-x-hidden">
+      {/* Arrière-plan animé */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-3xl" />
       </div>
-    </div>
-  </div>
-</footer>
-      {/* 🔹 FIN DU FOOTER */}
 
-      
+      <main className="relative z-10">
+        <HeroSection />
+        <ProfileShowcase reducedMotion={reduceMotion} />
+        <CTASection />
+        <FeaturesGrid />
+        <EventsSection />
+        <Footer />
+      </main>
     </div>
   );
 }
-
-// 🔹 Styles globaux pour les animations
-<style jsx global>{`
-  @keyframes pulse-slow {
-    0%, 100% { opacity: 0.2; }
-    50% { opacity: 0.4; }
-  }
-
-  
-  @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-  }
-  .animate-shimmer {
-    animation: shimmer 2s infinite linear;
-    background-size: 200% 100%;
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    .animate-shimmer {
-      animation: none !important;
-    }
-  }
-`}</style>

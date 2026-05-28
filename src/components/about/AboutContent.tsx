@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { 
   Book, Globe, Lightbulb, AlertTriangle, RefreshCw, Wifi, 
-  Users, Target, Star, Rocket, Sparkle, ChevronRight, 
+  Users, Target, Star, Rocket, ChevronRight, 
   CheckCircle, Zap, HeartHandshake
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -130,10 +130,7 @@ export default function AboutContent({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
-            <Sparkle className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
-            <span className="text-cyan-300 font-medium text-sm">Notre histoire</span>
-          </div>
+         
           
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-300 via-cyan-200 to-blue-300 bg-clip-text text-transparent mb-3">
             {title}
@@ -200,111 +197,6 @@ export default function AboutContent({
           ))}
         </div>
 
-        {/* 🔹 Section Valeurs ajoutées compacte */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="glass-border rounded-2xl p-5 md:p-6 mt-8 bg-gradient-to-br from-indigo-900/30 to-purple-900/20 border border-purple-500/20"
-        >
-          <div className="text-center mb-5">
-            <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 mb-3 mx-auto">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <h2 className="text-xl font-bold text-white">Ce qui nous rend unique</h2>
-            <p className="text-gray-300 text-sm mt-1">Des valeurs au cœur de notre mission</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              { icon: HeartHandshake, title: 'Impact Social', desc: '1% de nos revenus soutient l\'éducation numérique en Afrique' },
-              { icon: CheckCircle, title: 'Transparence', desc: 'Pas de données vendues, respect total de votre vie privée' },
-              { icon: Globe, title: 'Inclusion', desc: 'Accessibilité dans 9 langues et adaptation culturelle locale' }
-            ].map((value, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.65 + i * 0.1 }}
-                className="glass-border rounded-xl p-4 bg-white/5 border border-white/10"
-              >
-                <div className="flex items-start gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-                    <value.icon className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-sm mb-1">{value.title}</h3>
-                    <p className="text-[11px] text-gray-400 leading-snug">{value.desc}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* 🔹 Call to Action compact et élégant */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="text-center mt-10"
-        >
-          <div className="glass-border rounded-2xl p-6 md:p-8 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-400/20">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div className="text-center md:text-left max-w-2xl mx-auto md:mx-0">
-                <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 text-green-400 px-3 py-1.5 rounded-full border border-green-500/30 mb-3">
-                  <Star className="w-3 h-3" />
-                  <span className="font-medium text-xs">Rejoignez l'aventure</span>
-                </div>
-                <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
-                  Ensemble, redéfinissons le networking
-                </h2>
-                <p className="text-gray-300 text-sm md:text-base max-w-xl mx-auto md:mx-0">
-                  Rejoignez des milliers de professionnels qui transforment leur présence numérique avec LUVIKA
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-end">
-                <Link href="/dashboard">
-                  <Button size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-medium shadow-sm hover:shadow-md">
-                    Commencer gratuitement
-                    <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                  </Button>
-                </Link>
-                <Link href="/contact">
-                  <Button size="sm" variant="outline" className="border-white/20 text-gray-300 hover:bg-white/10">
-                    Parler à un expert
-                  </Button>
-                </Link>
-              </div>
-            </div>
-            
-            {/* 🔹 Statistiques sociales compactes */}
-            <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap justify-center gap-6 text-center">
-              {[
-                { value: '50K+', label: 'Utilisateurs', icon: Users },
-                { value: '25+', label: 'Pays', icon: Globe },
-                { value: '98%', label: 'Satisfaction', icon: Star }
-              ].map((stat, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.85 + i * 0.1 }}
-                  className="flex flex-col items-center"
-                >
-                  <div className="text-xl md:text-2xl font-bold bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                    {stat.value}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-1">
-                    <stat.icon className="w-3 h-3 text-cyan-400" />
-                    <span>{stat.label}</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
 
         {/* 🔹 Footer compact */}
         <motion.div
@@ -317,7 +209,6 @@ export default function AboutContent({
             LUVIKA • Une identité numérique pour l'Afrique et le monde • © {new Date().getFullYear()}
           </p>
           <p className="mt-1 flex items-center justify-center gap-1.5">
-            <Sparkle className="w-3 h-3 text-cyan-400 animate-pulse" />
             <span>Fait avec ❤️ à Kinshasa</span>
           </p>
         </motion.div>

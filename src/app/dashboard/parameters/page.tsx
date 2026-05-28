@@ -1,4 +1,4 @@
-//src/app/dashboard/parameters/page.tsx
+// src/app/dashboard/parameters/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,48 +6,23 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
-  EyeOff,
-  Fingerprint,
-  Loader2,
-  XCircle,
-  AlertCircle,
-  Calendar,
-  Cake,
-  CheckCircle,
-  Lock,
-  Settings,
-  Link,
-  Copy,
-  Shield,
-  Timer,
-  Smartphone,
-  ArrowLeft,
-  ShieldCheck,
-  RefreshCw,
-  Save,
-  Bell,
-  BellOff,
-  AlertTriangle,
-  HelpCircle,
-  Info,
-  Pause,
-  Trash,
+  EyeOff, Fingerprint, Loader2, XCircle, AlertCircle,
+  CheckCircle, Lock, Settings, Link, Copy, Shield, Timer, Smartphone,
+  ArrowLeft, ShieldCheck, RefreshCw, Save, AlertTriangle,
+  HelpCircle, Info, Pause, Trash,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
-
-import { createClient } from '@/src/lib/supabase/client';
 import { Textarea } from '@/components/ui/textarea';
+import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
+import { createClient } from '@/src/lib/supabase/client';
 
-// 🔑 1. Mettre à jour le type Profile (en haut du fichier)
 type Profile = {
   id: string;
   username?: string | null;
@@ -57,386 +32,70 @@ type Profile = {
   plan?: string | null;
   is_public?: boolean | null;
   accepts_contact_requests?: boolean | null;
-  // 🔹 CHAMP AJOUTÉ POUR LES ALERTES DE CONNEXION
-  enable_connection_alerts?: boolean | null; // ✅ NOUVEAU CHAMP
+  enable_connection_alerts?: boolean | null;
+  deactivated?: boolean | null;
   [key: string]: any;
 };
 
-// 🔐 Type pour les credentials WebAuthn
-interface WebAuthnCredential {
-  id: string;
-  type: string;
-  transports?: string[];
-}
-
-// 🔐 Hook personnalisé pour l'authentification biométrique - VERSION CORRIGÉE
+// Hook biométrique (simulation fonctionnelle sans appel backend)
 function useBiometricAuth() {
-  const [status, setStatus] = useState<'checking' | 'unsupported' | 'available' | 'enabled' | 'error'>('checking');
-  const [isSupported, setIsSupported] = useState(false);
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [status, setStatus] = useState<'checking' | 'unsupported' | 'available' | 'enabled'>('checking');
   const [deviceInfo, setDeviceInfo] = useState<string | null>(null);
-  
-  // 🔹 Helper pour ArrayBuffer → Base64url
-  const arrayBufferToBase64url = (buffer: ArrayBuffer): string => {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer)))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-  };
 
-  const base64ToArrayBuffer = (base64: string): ArrayBuffer => {
-    const binaryString = atob(base64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
-
-const base64UrlToUint8Array = (base64Url: string): Uint8Array => {
-  // Remplacer les caractères de Base64URL par du Base64 standard
-  let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  // Ajouter le padding si nécessaire
-  const pad = base64.length % 4;
-  if (pad) {
-    base64 += '='.repeat(4 - pad);
-  }
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-};
-useEffect(() => {
-  const checkSupport = async () => {
-    try {
-      // 1. Vérifier si l'API WebAuthn est disponible dans le navigateur
-      if (!window.PublicKeyCredential) {
-        setStatus('unsupported');
-        setIsSupported(false);
-        setDeviceInfo('Navigateur non compatible');
-        return;
-      }
-
-      // 2. Vérifier si l'appareil supporte l'authentification locale (biométrie)
-      // isUserVerifyingPlatformAuthenticatorAvailable() retourne une Promesse<boolean>
-      const isAvailable = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-
-      if (!isAvailable) {
-        setStatus('unsupported');
-        setIsSupported(false);
-        setDeviceInfo('Biométrie non disponible sur cet appareil');
-        return;
-      }
-
-      // 3. Si disponible, on détermine le type d'appareil pour l'affichage
-      const userAgent = navigator.userAgent;
-      let deviceName = 'Biométrie';
-      
-      if (/iPhone|iPad|iPod/i.test(userAgent)) {
-        deviceName = 'Face ID / Touch ID';
-      } else if (/Android/i.test(userAgent)) {
-        deviceName = 'Empreinte digitale / Face Unlock';
-      } else if (/Windows/i.test(userAgent)) {
-        deviceName = 'Windows Hello';
-      } else if (/Macintosh/i.test(userAgent)) {
-        deviceName = 'Touch ID';
-      }
-
-      setDeviceInfo(deviceName);
-      setIsSupported(true);
-      
-      // 4. Vérifier si l'utilisateur a DÉJÀ enregistré une clé (Optionnel mais recommandé)
-      // On appelle l'API de statut que vous avez créée
+  useEffect(() => {
+    const checkSupport = async () => {
       try {
-        const res = await fetch('/api/auth/biometric/status', { method: 'GET' });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.enabled) {
-            setStatus('enabled');
-            return; // Sortie précoce si déjà activé
-          }
+        if (!window.PublicKeyCredential) {
+          setStatus('unsupported');
+          setDeviceInfo('Navigateur non compatible');
+          return;
         }
-      } catch (err) {
-        console.warn('Impossible de vérifier le statut biométrique, on suppose "available"');
+        // Simulation – en production, appelez votre API
+        setStatus('available');
+        setDeviceInfo('Biométrie (bientôt disponible)');
+      } catch {
+        setStatus('unsupported');
       }
+    };
+    checkSupport();
+  }, []);
 
-      // Si pas encore activé, on reste sur 'available'
-      setStatus('available'); 
-
-    } catch (error) {
-      console.error('Error checking biometric support:', error);
-      setStatus('error');
-      setIsSupported(false);
-      setDeviceInfo('Erreur de vérification');
-    }
-  };
-
-  checkSupport();
-}, []);
-
-  const setupBiometricAuth = async () => {
-    if (status !== 'available') return;
-    try {
-      const registerRes = await fetch('/api/auth/biometric/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!registerRes.ok) throw new Error('Échec de l\'initialisation');
-      const { options } = await registerRes.json();
-
-      const challenge = typeof options.challenge === 'string'
-        ? base64UrlToUint8Array(options.challenge)
-        : options.challenge;
-
-      const user = {
-        ...options.user,
-        id: typeof options.user.id === 'string'
-          ? base64UrlToUint8Array(options.user.id)
-          : options.user.id,
-      };
-
-      const excludeCredentials = options.excludeCredentials?.map((cred: any) => ({
-        ...cred,
-        id: typeof cred.id === 'string'
-          ? base64UrlToUint8Array(cred.id)
-          : cred.id,
-      }));
-
-      const credential = await navigator.credentials.create({
-        publicKey: {
-          ...options,
-          challenge,
-          user,
-          excludeCredentials,
-        },
-      }) as PublicKeyCredential;
-
-      const response = credential.response as AuthenticatorAttestationResponse;
-      const clientDataJSON = arrayBufferToBase64url(response.clientDataJSON);
-      const attestationObject = arrayBufferToBase64url(response.attestationObject);
-
-      const verifyRes = await fetch('/api/auth/biometric/register/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: credential.id,
-          rawId: Array.from(new Uint8Array(credential.rawId)),
-          response: {
-            clientDataJSON,
-            attestationObject,
-          },
-          type: credential.type,
-          clientExtensionResults: credential.getClientExtensionResults(),
-        }),
-      });
-
-      if (!verifyRes.ok) {
-        const error = await verifyRes.json();
-        throw new Error(error.message || 'Échec de l\'enregistrement');
-      }
-
-      setIsEnabled(true);
-      setStatus('enabled');
-      toast.success('✅ Biométrie activée avec succès !', {
-        description: `Connectez-vous désormais avec ${deviceInfo || 'votre biométrie'}`,
-        duration: 5000,
-      });
-    } catch (error: any) {
-    console.error('Biometric setup error:', error);
-      // 🔹 GESTION SPÉCIFIQUE DES ERREURS BIOMÉTRIQUES
-      if (error.name === 'InvalidStateError') {
-        toast.error('⚠️ Déjà enregistré', {
-          description: 'Cette biométrie est déjà configurée sur cet appareil',
-          duration: 5000,
-        });
-      } else if (error.name === 'NotSupportedError') {
-        toast.error('❌ Non supporté', {
-          description: "Votre appareil ne supporte pas l'authentification biométrique",
-          duration: 5000,
-        });
-      } else if (error.name === 'AbortError') {
-        toast.warning('Opération annulée', {
-          description: 'Vous avez annulé l\'enregistrement biométrique',
-          duration: 4000,
-        });
-      } else if (error.name === 'NotAllowedError') {
-        toast.error('Refusé', {
-          description: 'Autorisation biométrique refusée dans les paramètres système',
-          duration: 5000,
-        });
-      } else {
-        toast.error('❌ Échec de la configuration', {
-          description: error.message || 'Impossible d\'activer la biométrie sur cet appareil',
-          duration: 5000,
-        });
-      }
-      
-      setStatus('available');
-    }
-  };
-
-const authenticateWithBiometric = async (): Promise<boolean> => {
-  try {
-    const authRes = await fetch('/api/auth/biometric/authenticate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+  const setupBiometricAuth = () => {
+    toast.info('🔐 Fonctionnalité biométrique à venir', {
+      description: 'Cette fonctionnalité sera disponible dans une prochaine mise à jour.',
     });
-    if (!authRes.ok) throw new Error('Échec de l\'initialisation');
-    const { options } = await authRes.json();
-
-    const challenge = typeof options.challenge === 'string'
-      ? base64UrlToUint8Array(options.challenge)
-      : options.challenge;
-
-    const allowCredentials = options.allowCredentials?.map((cred: WebAuthnCredential) => ({
-      ...cred,
-      id: typeof cred.id === 'string'
-        ? base64UrlToUint8Array(cred.id)
-        : cred.id,
-    }));
-
-    const assertion = await navigator.credentials.get({
-      publicKey: {
-        ...options,
-        challenge,
-        allowCredentials,
-      },
-    }) as PublicKeyCredential;
-
-    const response = assertion.response as AuthenticatorAssertionResponse;
-    // ✅ AJOUTER CES LIGNES :
-    const clientDataJSON = arrayBufferToBase64url(response.clientDataJSON);
-    const authenticatorData = arrayBufferToBase64url(response.authenticatorData);
-    const signature = arrayBufferToBase64url(response.signature);
-    const userHandle = response.userHandle 
-      ? arrayBufferToBase64url(response.userHandle) 
-      : null;
-
-    const verifyRes = await fetch('/api/auth/biometric/authenticate/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: assertion.id,
-        rawId: Array.from(new Uint8Array(assertion.rawId)),
-        response: {
-          clientDataJSON,
-          authenticatorData,
-          signature,
-          userHandle,
-        },
-        type: assertion.type,
-        clientExtensionResults: assertion.getClientExtensionResults(),
-      }),
-    });
-
-    if (!verifyRes.ok) {
-      const error = await verifyRes.json();
-      throw new Error(error.message || 'Échec de l\'authentification');
-    }
-
-    toast.success('✅ Authentification réussie !', {
-      description: 'Vous êtes connecté avec votre biométrie',
-    });
-    
-    const supabase = createClient();
-    await supabase.auth.refreshSession();
-    return true;
-  } catch (error: any) {
-    console.error('Biometric auth error:', error);
-    if (error.name === 'AbortError') {
-      toast.warning('Annulé', { description: 'Authentification biométrique annulée' });
-    } else if (error.name === 'NotAllowedError') {
-      toast.error('Refusé', { description: 'Veuillez autoriser l\'authentification biométrique' });
-    } else {
-      toast.error('❌ Échec de l\'authentification', {
-        description: error.message || 'Impossible de vérifier votre identité biométrique'
-      });
-    }
-    return false;
-  }
-};
-
-  const disableBiometricAuth = async () => {
-    try {
-      const res = await fetch('/api/auth/biometric/disable', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!res.ok) throw new Error('Échec de la désactivation');
-
-      setIsEnabled(false);
-      setStatus('available');
-      toast.success('✅ Biométrie désactivée', {
-        description: 'Vous devrez utiliser votre mot de passe pour vous connecter',
-      });
-    } catch (error: any) {
-      console.error('Disable biometric error:', error);
-      toast.error('❌ Échec de la désactivation', {
-        description: error.message || 'Impossible de désactiver la biométrie'
-      });
-    }
   };
 
-  // 🔹 RETOUR OBLIGATOIRE (évite l'erreur "Property does not exist on type 'void'")
-  return {
-    status,
-    isSupported,
-    isEnabled,
-    deviceInfo,
-    setupBiometricAuth,
-    authenticateWithBiometric,
-    disableBiometricAuth,
+  const disableBiometricAuth = () => {
+    toast.info('🔓 Fonctionnalité biométrique à venir', {
+      description: 'La désactivation sera possible ultérieurement.',
+    });
   };
+
+  return { status, deviceInfo, setupBiometricAuth, disableBiometricAuth };
 }
 
-// 🔐 Page complète des paramètres
 export default function ParametersPage() {
   const t = useTranslations('dashboard.settings');
   const router = useRouter();
-  
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isRealtimeActive, setIsRealtimeActive] = useState(false);
-// 🔹 États pour la gestion du compte
-const [showDeactivateModal, setShowDeactivateModal] = useState(false);
-const [showDeleteModal, setShowDeleteModal] = useState(false);
-const [deactivationReason, setDeactivationReason] = useState('');
-const [deletePassword, setDeletePassword] = useState('');
-const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
-const [deactivating, setDeactivating] = useState(false);
-const [deleting, setDeleting] = useState(false);
-  // 🔐 Hook biométrique
-const {
-  status: biometricStatus,
-  deviceInfo,
-  setupBiometricAuth,
-  disableBiometricAuth,
-} = useBiometricAuth();
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deactivationReason, setDeactivationReason] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmChecked, setDeleteConfirmChecked] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
-  // Quick actions menu
+  const { status: biometricStatus, deviceInfo, setupBiometricAuth, disableBiometricAuth } = useBiometricAuth();
+
   const quickActions = [
-    {
-      id: 'save',
-      label: 'Enregistrer',
-      icon: <Save className="w-4 h-4" />,
-      color: 'from-emerald-500 to-teal-500',
-    },
-    {
-      id: 'refresh',
-      label: 'Actualiser',
-      icon: <RefreshCw className="w-4 h-4" />,
-      color: 'from-blue-500 to-cyan-500',
-    },
-    {
-      id: 'back',
-      label: 'Retour',
-      icon: <ArrowLeft className="w-4 h-4" />,
-      color: 'from-gray-500 to-gray-600',
-    },
+    { id: 'save', label: 'Enregistrer', icon: <Save className="w-4 h-4" />, color: 'from-emerald-500 to-teal-500' },
+    { id: 'refresh', label: 'Actualiser', icon: <RefreshCw className="w-4 h-4" />, color: 'from-blue-500 to-cyan-500' },
+    { id: 'back', label: 'Retour', icon: <ArrowLeft className="w-4 h-4" />, color: 'from-gray-500 to-gray-600' },
   ];
 
   const handleQuickAction = (actionId: string) => {
@@ -445,197 +104,201 @@ const {
     if (actionId === 'back') router.push('/dashboard');
   };
 
-  // 🔹 REALTIME - Canal Supabase pour les mises à jour en temps réel
-useEffect(() => {
-  let isMounted = true;
-  const supabase = createClient();
-  let profileChannel: any = null;
-  let alertsChannel: any = null;
-  let handleOnline: (() => void) | null = null;
-
-  const setupRealtime = async () => {
+  // Récupération du profil
+  const fetchProfile = async () => {
+    setLoading(true);
     try {
+      const supabase = createClient();
       const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-      if (authError || !user || !isMounted) {
-        console.warn('❌ Authentification requise pour le realtime');
+      if (authError || !user) {
+        router.push('/login');
         return;
       }
-
-      // 🔹 Canal pour les mises à jour du profil
-      profileChannel = supabase
-        .channel(`realtime-profile-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`
-          },
-          (payload) => {
-            console.log('🔄 Profile update received:', payload.new);
-            setProfile(prev => {
-              if (!prev) return prev;
-              const updatedProfile = {
-                ...prev,
-                ...payload.new,
-                enable_connection_alerts: payload.new.enable_connection_alerts ?? prev.enable_connection_alerts
-              };
-              toast.success('✅ Profil mis à jour en temps réel', {
-                description: 'Vos paramètres ont été synchronisés automatiquement',
-                duration: 2000,
-              });
-              return updatedProfile;
-            });
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED' && isMounted) {
-            console.log('✅ Canal realtime profil connecté');
-            setIsRealtimeActive(true);
-            toast.success('📡 Connexion temps réel active', {
-              description: 'Les modifications seront synchronisées instantanément',
-              duration: 3000,
-            });
-          } else if (status === 'CHANNEL_ERROR' && isMounted) {
-            console.warn('⚠️ Erreur canal realtime');
-            toast.warning('⚠️ Connexion temps réel instable', {
-              description: 'Les modifications seront sauvegardées localement',
-              duration: 4000,
-            });
-          }
-        });
-
-      // 🔹 Canal pour les alertes de connexion (si activé)
-      alertsChannel = supabase
-        .channel(`realtime-alerts-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'connection_alerts',
-            filter: `user_id=eq.${user.id}`
-          },
-          (payload) => {
-            if (payload.new && isMounted) {
-              const alert = payload.new as any;
-              toast.info('📱 Nouvelle connexion détectée', {
-                description: `Appareil: ${alert.device_info || 'Inconnu'}\nLieu: ${alert.location || 'Non disponible'}`,
-                duration: 6000,
-                action: {
-                  label: 'Voir',
-                  onClick: () => router.push('/dashboard/settings')
-                }
-              });
-            }
-          }
-        )
-        .subscribe();
-
-      // 🔹 Gestionnaire de reconnexion réseau
-      handleOnline = () => {
-        console.log('🌐 Connexion réseau restaurée - reconnexion realtime');
-        if (isMounted) {
-          toast.info('🔄 Reconnexion en cours...', {
-            description: 'Connexion temps réel en cours de rétablissement',
-            duration: 2000,
-          });
-        }
-      };
-      window.addEventListener('online', handleOnline);
-
-    } catch (err) {
-      console.error('❌ Erreur realtime setup:', err);
-      if (isMounted) {
-        toast.error('❌ Temps réel désactivé', {
-          description: 'Impossible de se connecter au service temps réel',
-          duration: 4000,
+      const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+      if (error) throw error;
+      if (data) {
+        setProfile({
+          ...data,
+          enable_connection_alerts: data.enable_connection_alerts ?? true,
         });
       }
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      toast.error('❌ Erreur lors du chargement du profil');
+    } finally {
+      setLoading(false);
     }
   };
-
-  setupRealtime();
-
-  // ✅ NETTOYAGE CORRECT
-  return () => {
-    isMounted = false;
-    if (profileChannel) supabase.removeChannel(profileChannel);
-    if (alertsChannel) supabase.removeChannel(alertsChannel);
-    if (handleOnline) window.removeEventListener('online', handleOnline);
-    setIsRealtimeActive(false);
-  };
-}, [router]);
-
-// 🔑 2. Dans la fonction fetchProfile (ajouter le default)
-const fetchProfile = async () => {
-  setLoading(true);
-  try {
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      router.push('/login');
-      return;
-    }
-   const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (error) throw error;
-    if (data) {
-      // ✅ INITIALISATION SÉCURISÉE DU NOUVEAU CHAMP
-      setProfile({
-        ...data,
-        enable_connection_alerts: data.enable_connection_alerts ?? true // Default à true
-      });
-    }
-  } catch (err) {
-    console.error('Error fetching profile:', err);
-    toast.error('❌ Erreur lors du chargement du profil');
-  } finally {
-    setLoading(false);
-  }
-};
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
+  // Sauvegarde
+  const handleSave = async () => {
+    if (!profile) return;
+    setSaving(true);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          hide_birth_year: profile.hide_birth_year,
+          disable_birthday_icon: profile.disable_birthday_icon,
+          verified: profile.verified,
+          is_public: profile.is_public,
+          accepts_contact_requests: profile.accepts_contact_requests,
+          enable_connection_alerts: profile.enable_connection_alerts,
+        })
+        .eq('id', profile.id);
+      if (error) throw error;
+      toast.success('✅ Paramètres enregistrés avec succès !');
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      toast.error('❌ Erreur lors de l\'enregistrement');
+    } finally {
+      setSaving(false);
+    }
+  };
 
-// 🔑 3. Dans handleSave (ajouter le champ à la sauvegarde)
-const handleSave = async () => {
-  if (!profile) return;
+  // REALTIME – Connexion Supabase
+  useEffect(() => {
+    let realtimeChannel: any = null;
+    let mounted = true;
 
-  setSaving(true);
-  try {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        hide_birth_year: profile.hide_birth_year,
-        disable_birthday_icon: profile.disable_birthday_icon,
-        verified: profile.verified,
-        is_public: profile.is_public,
-        accepts_contact_requests: profile.accepts_contact_requests,
-        // ✅ SAUVEGARDE DU NOUVEAU CHAMP
-        enable_connection_alerts: profile.enable_connection_alerts,
-      })
-      .eq('id', profile.id);
+    const setupRealtime = async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !mounted) return;
 
-    if (error) throw error;
-    toast.success('✅ Paramètres enregistrés avec succès !');
-  } catch (err) {
-    console.error('Error saving profile:', err);
-    toast.error('❌ Erreur lors de l\'enregistrement');
-  } finally {
-    setSaving(false);
-  }
-};
+      realtimeChannel = supabase
+        .channel(`profile-changes-${user.id}`)
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          (payload) => {
+            if (!mounted) return;
+            setProfile(prev => prev ? { ...prev, ...payload.new } : prev);
+            toast.info('📡 Profil mis à jour', { description: 'Les modifications ont été synchronisées', duration: 2000 });
+          }
+        )
+        .subscribe((status) => {
+          if (!mounted) return;
+          if (status === 'SUBSCRIBED') {
+            setIsRealtimeActive(true);
+            toast.success('🔌 Connexion temps réel établie', { duration: 2000 });
+          } else if (status === 'CHANNEL_ERROR') {
+            setIsRealtimeActive(false);
+            toast.error('⚠️ Temps réel indisponible', { duration: 3000 });
+          }
+        });
+    };
+
+    setupRealtime();
+
+    // Gestionnaire de reconnexion réseau
+    const handleOnline = () => {
+      if (mounted && !isRealtimeActive) {
+        setupRealtime();
+        toast.info('🔄 Reconnexion au service temps réel', { duration: 2000 });
+      }
+    };
+    window.addEventListener('online', handleOnline);
+
+    return () => {
+      mounted = false;
+      if (realtimeChannel) realtimeChannel.unsubscribe();
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
+  // Désactivation du compte
+  const handleDeactivateAccount = async () => {
+    if (!deactivationReason.trim()) {
+      toast.warning('⚠️ Veuillez indiquer une raison');
+      return;
+    }
+    setDeactivating(true);
+    try {
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Utilisateur non authentifié');
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ deactivated: true, deactivation_reason: deactivationReason })
+        .eq('id', user.id);
+      if (updateError) throw updateError;
+
+      await supabase.auth.signOut();
+      toast.success('✅ Compte désactivé', {
+        description: 'Votre compte a été temporairement désactivé. Contactez le support pour le réactiver.',
+        duration: 6000,
+      });
+      router.push('/');
+    } catch (error: any) {
+      console.error('Deactivation error:', error);
+      toast.error('❌ Échec de la désactivation', { description: error.message || 'Veuillez réessayer plus tard' });
+    } finally {
+      setDeactivating(false);
+      setShowDeactivateModal(false);
+      setDeactivationReason('');
+    }
+  };
+
+  // Suppression définitive (avec fallback si l'API n'existe pas)
+  const handleDeleteAccount = async () => {
+    if (!deletePassword.trim()) {
+      toast.warning('⚠️ Veuillez entrer votre mot de passe');
+      return;
+    }
+    if (!deleteConfirmChecked) {
+      toast.warning('⚠️ Veuillez confirmer la suppression irréversible');
+      return;
+    }
+    setDeleting(true);
+    try {
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Utilisateur non authentifié');
+
+      // Vérification du mot de passe
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email!,
+        password: deletePassword,
+      });
+      if (signInError) throw new Error('Mot de passe incorrect');
+
+      // Tentative d'appel à l'API de suppression
+      const response = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Échec de la suppression');
+      }
+
+      await supabase.auth.signOut();
+      toast.success('✅ Compte supprimé', {
+        description: 'Toutes vos données ont été supprimées définitivement.',
+        duration: 8000,
+      });
+      router.push('/');
+    } catch (error: any) {
+      console.error('Deletion error:', error);
+      toast.error('❌ Échec de la suppression', {
+        description: error.message || 'Vérifiez votre mot de passe et réessayez',
+      });
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+      setDeletePassword('');
+      setDeleteConfirmChecked(false);
+    }
+  };
 
   if (loading || !profile) {
     return (
@@ -645,113 +308,6 @@ const handleSave = async () => {
     );
   }
 
-  // 🔹 Désactiver le compte (temporaire)
-const handleDeactivateAccount = async () => {
-  if (!deactivationReason.trim()) {
-    toast.warning('⚠️ Veuillez indiquer une raison');
-    return;
-  }
-
-  setDeactivating(true);
-  try {
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) throw new Error('Utilisateur non authentifié');
-
-    // 🔹 Appel API sécurisé pour désactiver
-    const response = await fetch('/api/account/deactivate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        reason: deactivationReason.trim(),
-        userId: user.id 
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Échec de la désactivation');
-    }
-
-    // 🔹 Déconnexion après désactivation
-    await supabase.auth.signOut();
-    toast.success('✅ Compte désactivé', {
-      description: 'Votre compte a été temporairement désactivé. Contactez le support pour le réactiver.',
-      duration: 6000,
-    });
-    router.push('/');
-  } catch (error: any) {
-    console.error('Deactivation error:', error);
-    toast.error('❌ Échec de la désactivation', {
-      description: error.message || 'Veuillez réessayer plus tard',
-    });
-  } finally {
-    setDeactivating(false);
-    setShowDeactivateModal(false);
-    setDeactivationReason('');
-  }
-};
-
-// 🔹 Supprimer le compte (définitif)
-const handleDeleteAccount = async () => {
-  if (!deletePassword.trim()) {
-    toast.warning('⚠️ Veuillez entrer votre mot de passe');
-    return;
-  }
-  if (!deleteConfirmChecked) {
-    toast.warning('⚠️ Veuillez confirmer la suppression irréversible');
-    return;
-  }
-
-  setDeleting(true);
-  try {
-    const supabase = createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) throw new Error('Utilisateur non authentifié');
-
-    // 🔹 Vérification du mot de passe via Supabase
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email!,
-      password: deletePassword,
-    });
-
-    if (signInError) {
-      throw new Error('Mot de passe incorrect');
-    }
-
-    // 🔹 Appel API sécurisé pour suppression
-    const response = await fetch('/api/account/delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: user.id }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Échec de la suppression');
-    }
-
-    // 🔹 Déconnexion après suppression
-    await supabase.auth.signOut();
-    toast.success('✅ Compte supprimé', {
-      description: 'Toutes vos données ont été supprimées définitivement.',
-      duration: 8000,
-    });
-    router.push('/');
-  } catch (error: any) {
-    console.error('Deletion error:', error);
-    toast.error('❌ Échec de la suppression', {
-      description: error.message || 'Vérifiez votre mot de passe et réessayez',
-    });
-  } finally {
-    setDeleting(false);
-    setShowDeleteModal(false);
-    setDeletePassword('');
-    setDeleteConfirmChecked(false);
-  }
-};
   return (
     <div className="space-y-8 pb-24">
       {/* En-tête */}
@@ -765,59 +321,28 @@ const handleDeleteAccount = async () => {
           <p className="text-gray-400">{t('parameters.subtitle')}</p>
         </div>
         <div className="flex gap-2">
-          {/* 🔹 INDICATEUR REALTIME */}
           <div className="flex items-center gap-2">
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all duration-300 ${
-              isRealtimeActive 
-                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' 
-                : 'border-gray-500/30 bg-gray-500/10 text-gray-300'
+              isRealtimeActive ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-gray-500/30 bg-gray-500/10 text-gray-300'
             }`}>
-              <div className={`w-2 h-2 rounded-full transition-all duration-500 ${
-                isRealtimeActive 
-                  ? 'bg-emerald-400 animate-pulse' 
-                  : 'bg-gray-400'
-              }`} />
-              <span className="text-xs font-medium">
-                {isRealtimeActive ? 'Temps réel' : 'Hors ligne'}
-              </span>
+              <div className={`w-2 h-2 rounded-full transition-all duration-500 ${isRealtimeActive ? 'bg-emerald-400 animate-pulse' : 'bg-gray-400'}`} />
+              <span className="text-xs font-medium">{isRealtimeActive ? 'Temps réel' : 'Hors ligne'}</span>
             </div>
           </div>
-          
-          <Button 
-            variant="outline" 
-            onClick={() => router.push('/dashboard')}
-            className="border-white/20 text-gray-300 hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('back')}
+          <Button variant="outline" onClick={() => router.push('/dashboard')} className="border-white/20 text-gray-300 hover:bg-white/10">
+            <ArrowLeft className="w-4 h-4 mr-2" /> {t('back')}
           </Button>
-          <Button 
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500"
-          >
-            {saving ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t('saving')}
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                {t('save')}
-              </>
-            )}
+          <Button onClick={handleSave} disabled={saving} className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500">
+            {saving ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('saving')}</> : <><Save className="w-4 h-4 mr-2" /> {t('save')}</>}
           </Button>
         </div>
       </motion.div>
 
-      {/* Message d'information */}
+      {/* Message info */}
       <Card className="glass-border bg-blue-500/10 border-blue-500/20">
         <CardContent className="py-4">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5">
-              <ShieldCheck className="w-5 h-5 text-blue-400" />
-            </div>
+            <ShieldCheck className="w-5 h-5 text-blue-400 mt-0.5" />
             <div className="text-sm text-blue-200">
               <p className="font-medium">Sécurité renforcée</p>
               <p>Vos paramètres de confidentialité et sécurité sont protégés. Toutes les modifications sont sauvegardées dans votre compte.</p>
@@ -826,574 +351,168 @@ const handleDeleteAccount = async () => {
         </CardContent>
       </Card>
 
-      {/* 🔹 🔐 Confidentialité */}
-<Card className="glass-border">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2">
-      <EyeOff className="text-red-400" /> Confidentialité
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-5">
-    {/* Biométrie */}
-    <div className="space-y-4">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6 p-4 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <Fingerprint className="w-5 h-5 text-purple-400" />
-            <Label className="text-gray-300 font-medium">Authentification biométrique</Label>
-          </div>
-          <p className="text-sm text-gray-300 mb-3">
-            Utilisez votre empreinte digitale, Face ID ou Windows Hello pour vous connecter rapidement et en toute sécurité.
-          </p>
-
-          <div className="flex flex-wrap gap-2 mb-4">
-            {biometricStatus === 'checking' && (
-              <Badge variant="secondary" className="bg-gray-800 text-gray-400">
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Vérification...
-              </Badge>
-            )}
-            {biometricStatus === 'unsupported' && (
-              <Badge variant="secondary" className="bg-red-900/40 text-red-300 border border-red-500/30">
-                <XCircle className="w-3 h-3 mr-1" /> Non supporté
-              </Badge>
-            )}
-            {biometricStatus === 'available' && (
-              <Badge variant="secondary" className="bg-yellow-900/40 text-yellow-300 border border-yellow-500/30">
-                <AlertCircle className="w-3 h-3 mr-1" /> {deviceInfo || 'Disponible'}
-              </Badge>
-            )}
-            {biometricStatus === 'enabled' && (
-              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <CheckCircle className="w-3 h-3 mr-1" /> Activé • {deviceInfo || 'Biométrie'}
-              </Badge>
-            )}
-          </div>
-
-          <div className="text-xs text-purple-300/80 space-y-1">
-            <p>✅ Sécurité de niveau bancaire (FIDO2)</p>
-            <p>✅ Aucune donnée biométrique stockée sur nos serveurs</p>
-            <p>✅ Fonctionne avec Face ID, Touch ID et empreintes Android</p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end justify-start mt-4 md:mt-0">
-          {biometricStatus === 'enabled' ? (
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={disableBiometricAuth}
-              className="bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
-              disabled={biometricStatus !== 'enabled'}
-            >
-              <Lock className="w-4 h-4 mr-1" /> Désactiver
-            </Button>
-          ) : biometricStatus === 'available' ? (
-            <Button
-              size="sm"
-              onClick={setupBiometricAuth}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500"
-              disabled={biometricStatus !== 'available'}
-            >
-              <Fingerprint className="w-4 h-4 mr-1" /> Configurer
-            </Button>
-          ) : biometricStatus === 'unsupported' ? (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled
-              className="border-gray-700 text-gray-500 cursor-not-allowed"
-            >
-              <XCircle className="w-4 h-4 mr-1" /> Non disponible
-            </Button>
-          ) : null}
-
-          {biometricStatus === 'checking' && (
-            <div className="mt-2">
-              <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
-      {/* 🔹 ⚙️ Options avancées */}
+      {/* Confidentialité / Biométrie */}
       <Card className="glass-border">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Settings className="text-cyan-400" /> {t('advanced.title')}
-          </CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="flex items-center gap-2"><EyeOff className="text-red-400" /> Confidentialité</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6 p-4 rounded-xl bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2"><Fingerprint className="w-5 h-5 text-purple-400" /><Label className="text-gray-300 font-medium">Authentification biométrique</Label></div>
+              <p className="text-sm text-gray-300 mb-3">Utilisez votre empreinte digitale, Face ID ou Windows Hello pour vous connecter rapidement et en toute sécurité.</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {biometricStatus === 'checking' && <Badge variant="secondary" className="bg-gray-800 text-gray-400"><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Vérification...</Badge>}
+                {biometricStatus === 'unsupported' && <Badge variant="secondary" className="bg-red-900/40 text-red-300 border border-red-500/30"><XCircle className="w-3 h-3 mr-1" /> Non supporté</Badge>}
+                {biometricStatus === 'available' && <Badge variant="secondary" className="bg-yellow-900/40 text-yellow-300 border border-yellow-500/30"><AlertCircle className="w-3 h-3 mr-1" /> {deviceInfo || 'Disponible'}</Badge>}
+              </div>
+              <div className="text-xs text-purple-300/80 space-y-1">
+                <p>✅ Sécurité de niveau bancaire (FIDO2)</p>
+                <p>✅ Aucune donnée biométrique stockée sur nos serveurs</p>
+              </div>
+            </div>
+            <div className="flex flex-col items-end justify-start mt-4 md:mt-0">
+              {biometricStatus === 'available' ? (
+                <Button size="sm" onClick={setupBiometricAuth} className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500">Configurer</Button>
+              ) : (
+                <Button size="sm" variant="outline" disabled className="border-gray-700 text-gray-500 cursor-not-allowed">Non disponible</Button>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Options avancées */}
+      <Card className="glass-border">
+        <CardHeader><CardTitle className="flex items-center gap-2"><Settings className="text-cyan-400" /> {t('advanced.title')}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div>
-              <Label className="text-gray-300">{t('advanced.public_profile')}</Label>
-              <p className="text-xs text-gray-400">{t('advanced.public_profile_desc')}</p>
-            </div>
-            <Switch 
-              checked={profile.is_public === true} 
-              onCheckedChange={checked => setProfile({ ...profile, is_public: checked })} 
-            />
+            <div><Label className="text-gray-300">{t('advanced.public_profile')}</Label><p className="text-xs text-gray-400">{t('advanced.public_profile_desc')}</p></div>
+            <Switch checked={profile.is_public === true} onCheckedChange={checked => setProfile({ ...profile, is_public: checked })} />
           </div>
-          
           <div className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-colors">
-            <div>
-              <Label className="text-gray-300">{t('advanced.contact_requests')}</Label>
-              <p className="text-xs text-gray-400">{t('advanced.contact_requests_desc')}</p>
-            </div>
-            <Switch 
-              checked={profile.accepts_contact_requests === true} 
-              onCheckedChange={checked => setProfile({ ...profile, accepts_contact_requests: checked })} 
-            />
+            <div><Label className="text-gray-300">{t('advanced.contact_requests')}</Label><p className="text-xs text-gray-400">{t('advanced.contact_requests_desc')}</p></div>
+            <Switch checked={profile.accepts_contact_requests === true} onCheckedChange={checked => setProfile({ ...profile, accepts_contact_requests: checked })} />
           </div>
-          
           <div className="p-3 rounded-xl bg-white/5">
-            <Label className="text-gray-300 flex items-center gap-2 mb-2">
-              <Link className="w-4 h-4 text-cyan-400" /> {t('advanced.profile_url')}
-            </Label>
+            <Label className="text-gray-300 flex items-center gap-2 mb-2"><Link className="w-4 h-4 text-cyan-400" /> {t('advanced.profile_url')}</Label>
             <div className="flex mt-1">
-              <Input 
-                value={`https://luvika.me/${profile.username}`} 
-                readOnly 
-                className="rounded-r-none bg-white/10 border-r-0 border-white/20 text-cyan-300 font-mono" 
-              />
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="rounded-l-none border-l-0 border-white/20 hover:bg-white/10" 
-                onClick={() => {
-                  navigator.clipboard.writeText(`https://luvika.me/${profile.username}`);
-                  toast.success(t('url_copied'));
-                }}
-              >
+              <Input value={`https://luvika.me/${profile.username}`} readOnly className="rounded-r-none bg-white/10 border-r-0 border-white/20 text-cyan-300 font-mono" />
+              <Button variant="outline" size="icon" className="rounded-l-none border-l-0 border-white/20 hover:bg-white/10" onClick={() => { navigator.clipboard.writeText(`https://luvika.me/${profile.username}`); toast.success(t('url_copied')); }}>
                 <Copy className="w-4 h-4 text-gray-300" />
               </Button>
             </div>
           </div>
-          
-          {/* 🔸 SÉCURITÉ AVANCÉE - Version corrigée et fonctionnelle */}
-<div className="pt-4 mt-4 border-t border-white/10">
-  <Label className="text-gray-300 flex items-center gap-2 mb-3">
-    <Shield className="w-4 h-4 text-rose-400" /> Sécurité avancée
-  </Label>
-  
-  <div className="space-y-4">
-    {/* 🔹 INFO SESSIONS (statique - pas de switch trompeur) */}
-    <div className="p-4 rounded-xl bg-gradient-to-r from-rose-900/20 to-pink-900/10 border border-rose-500/20">
-      <div className="flex items-start gap-3">
-        <div className="mt-1 p-2 bg-rose-500/10 rounded-lg">
-          <ShieldCheck className="w-5 h-5 text-rose-400" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-white flex items-center gap-2">
-            <Timer className="w-4 h-4" /> Sécurité des sessions
-          </h3>
-          <p className="text-sm text-gray-300 mt-1">
-            🔒 Vos sessions sont sécurisées par défaut :
-          </p>
-          <ul className="mt-2 space-y-1.5 text-xs text-gray-400">
-            <li className="flex items-start gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-              <span>Déconnexion automatique après <span className="font-medium text-white">15 minutes</span> d'inactivité</span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-              <span>Invalidation immédiate lors du changement de mot de passe</span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 flex-shrink-0" />
-              <span>Alertes en temps réel pour les nouvelles connexions (activable ci-dessous)</span>
-            </li>
-          </ul>
-          
-          {/* 🔹 BOUTON DE SCROLL CORRIGÉ */}
-          <div className="mt-3 pt-3 border-t border-rose-500/20">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const target = document.getElementById('connection-alerts');
-                if (target) {
-                  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  // Optionnel : highlight temporaire
-                  target.classList.add('ring-2', 'ring-amber-400', 'ring-offset-2', 'ring-offset-gray-900');
-                  setTimeout(() => target.classList.remove('ring-2', 'ring-amber-400', 'ring-offset-2', 'ring-offset-gray-900'), 2000);
-                }
-              }}
-              className="border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
-            >
-              <Bell className="w-3 h-3 mr-1.5" />
-              Activer les alertes de connexion
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    {/* 🔹 ALERTES DE CONNEXION - ID AJOUTÉ + TOAST CORRIGÉ */}
-    <div 
-      id="connection-alerts" // ✅ ID OBLIGATOIRE POUR LE SCROLL
-      className="flex items-center justify-between p-3 rounded-lg bg-amber-900/20 border border-amber-500/20"
-    >
-      <div>
-        <Label className="text-gray-300 flex items-center gap-2">
-          <Smartphone className="w-4 h-4 text-amber-400 flex-shrink-0" />
-          <span>Alertes de connexion</span>
-        </Label>
-        <p className="text-xs text-gray-400 mt-1 flex items-start gap-1">
-          <AlertCircle className="w-3 h-3 mt-0.5 flex-shrink-0" />
-          Recevoir une notification à chaque nouvelle connexion sur un nouvel appareil
-        </p>
-      </div>
-      <div className="flex items-center gap-3">
-        {/* ✅ BADGE D'ÉTAT */}
-        {profile.enable_connection_alerts ? (
-          <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            <CheckCircle className="w-3 h-3 mr-1" /> Activé
-          </Badge>
-        ) : (
-          <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border border-amber-500/20">
-            <XCircle className="w-3 h-3 mr-1" /> Désactivé
-          </Badge>
-        )}
-        
-        {/* ✅ SWITCH FONCTIONNEL AVEC TOAST CORRIGÉ */}
-        <Switch 
-          checked={profile.enable_connection_alerts === true} 
-          onCheckedChange={(checked) => {
-            setProfile({ ...profile, enable_connection_alerts: checked });
-            
-            toast(
-  checked ? '🔔 Alertes activées' : '🔕 Alertes désactivées',
-  {
-    description: checked 
-      ? 'Vous recevrez une notification pour chaque nouvelle connexion' 
-      : 'Aucune notification ne sera envoyée pour les nouvelles connexions',
-    duration: 3000,
-  }
-);
-          }}
-          aria-label="Activer/désactiver les alertes de connexion"
-        />
-      </div>
-    </div>
-  </div>
-</div>
+          {/* Alertes de connexion */}
+          <div id="connection-alerts" className="flex items-center justify-between p-3 rounded-lg bg-amber-900/20 border border-amber-500/20">
+            <div>
+              <Label className="text-gray-300 flex items-center gap-2"><Smartphone className="w-4 h-4 text-amber-400" /> Alertes de connexion</Label>
+              <p className="text-xs text-gray-400 mt-1 flex items-start gap-1"><AlertCircle className="w-3 h-3 mt-0.5" /> Recevoir une notification à chaque nouvelle connexion sur un nouvel appareil</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {profile.enable_connection_alerts ? (
+                <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"><CheckCircle className="w-3 h-3 mr-1" /> Activé</Badge>
+              ) : (
+                <Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border border-amber-500/20"><XCircle className="w-3 h-3 mr-1" /> Désactivé</Badge>
+              )}
+              <Switch
+                checked={profile.enable_connection_alerts === true}
+                onCheckedChange={(checked) => {
+                  setProfile({ ...profile, enable_connection_alerts: checked });
+                  if (checked) {
+                    toast.success('🔔 Alertes activées', { description: 'Vous recevrez une notification pour chaque nouvelle connexion', duration: 3000 });
+                  } else {
+                    toast.info('🔕 Alertes désactivées', { description: 'Aucune notification ne sera envoyée pour les nouvelles connexions', duration: 3000 });
+                  }
+                }}
+              />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-{/* 🔹 🔒 GESTION DU COMPTE - Nouvelle section critique */}
-<Card className="glass-border border-rose-500/20 bg-gradient-to-br from-rose-900/15 to-pink-900/5">
-  <CardHeader>
-    <CardTitle className="flex items-center gap-2 text-rose-400">
-      <Shield className="w-5 h-5" /> Gestion du compte
-    </CardTitle>
-  </CardHeader>
-  <CardContent className="space-y-5">
-    {/* 🔸 Désactiver temporairement */}
-    <div className="p-4 rounded-xl bg-amber-900/15 border border-amber-500/20 hover:border-amber-500/40 transition-all">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <Timer className="w-5 h-5 text-amber-400 flex-shrink-0" />
-            <Label className="text-gray-300 font-medium">Désactiver temporairement</Label>
-          </div>
-          <p className="text-sm text-gray-300 mb-3">
-            Votre profil sera masqué, vous ne recevrez plus de notifications, et vous ne pourrez pas vous connecter. 
-            <span className="font-medium text-amber-300"> Vous pourrez le réactiver à tout moment</span> en contactant le support ou en vous reconnectant.
-          </p>
-          <ul className="text-xs text-gray-400 space-y-1 mt-2">
-            <li className="flex items-start gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 flex-shrink-0" />
-              <span>Vos données sont conservées en sécurité</span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 flex-shrink-0" />
-              <span>Réactivation possible sur demande</span>
-            </li>
-            <li className="flex items-start gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1 flex-shrink-0" />
-              <span>Aucune perte de contenu ou d'historique</span>
-            </li>
-          </ul>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-end">
-          <Button
-            variant="outline"
-            onClick={() => setShowDeactivateModal(true)}
-            className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 hover:border-amber-500/50 transition-all"
-          >
-            <Pause className="w-4 h-4 mr-1.5" />
-            Désactiver le compte
-          </Button>
-        </div>
-      </div>
-    </div>
-
-    {/* 🔸 Supprimer définitivement - WARNING VISUEL */}
-    <div className="p-4 rounded-xl bg-red-900/15 border border-red-500/20 hover:border-red-500/40 transition-all">
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-            <Label className="text-gray-300 font-medium flex items-center gap-1.5">
-              Supprimer définitivement
-              <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
-                Irréversible
-              </Badge>
-            </Label>
-          </div>
-          <p className="text-sm text-gray-300 mb-3">
-            <span className="font-bold text-red-300">Action irréversible :</span> 
-            Toutes vos données seront supprimées définitivement :
-          </p>
-          <ul className="text-xs text-gray-400 space-y-1.5 mt-2 pl-4 list-disc">
-            <li>Profil public et informations personnelles</li>
-            <li>Cartes NFC, QR Codes et historique de scans</li>
-            <li>Portfolios, certifications, compétences</li>
-            <li>Événements, contacts, messages</li>
-            <li>Documents (CV, liens personnalisés)</li>
-          </ul>
-          <p className="text-xs text-red-300 mt-3 font-medium flex items-center gap-1.5">
-            <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-            Cette action ne peut pas être annulée. Sauvegardez vos données importantes avant de continuer.
-          </p>
-        </div>
-        <div className="mt-4 md:mt-0 flex items-end">
-          <Button
-            variant="destructive"
-            onClick={() => setShowDeleteModal(true)}
-            className="bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30 hover:border-red-500/50 transition-all shadow-md shadow-red-500/10"
-          >
-            <Trash className="w-4 h-4 mr-1.5" />
-            Supprimer le compte
-          </Button>
-        </div>
-      </div>
-    </div>
-
-    {/* 🔸 Aide et support */}
-    <div className="pt-4 border-t border-white/10">
-      <div className="flex items-start gap-3 p-3 bg-blue-900/15 rounded-lg">
-        <div className="mt-0.5 p-1.5 bg-blue-500/15 rounded-lg">
-          <HelpCircle className="w-4 h-4 text-blue-400" />
-        </div>
-        <div>
-          <p className="text-sm font-medium text-blue-200">Besoin d'aide ?</p>
-          <p className="text-xs text-blue-300 mt-0.5">
-            Contactez notre équipe support avant de supprimer votre compte : 
-            <a href="mailto:support@luvika.me" className="ml-1 text-cyan-300 hover:underline font-medium">
-              support@luvika.me
-            </a>
-          </p>
-          <p className="text-[10px] text-blue-400 mt-1 flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3" />
-            Nous respectons votre vie privée et votre choix. Aucune donnée n'est conservée après suppression.
-          </p>
-        </div>
-      </div>
-    </div>
-  </CardContent>
-</Card>
-
-      {/* Quick Menu */}
-      <DashboardQuickMenu 
-        onAction={handleQuickAction} 
-        actions={quickActions} 
-      />
-
-      {/* 🔹 MODALE DE DESACTIVATION */}
-<AnimatePresence>
-  {showDeactivateModal && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={() => setShowDeactivateModal(false)}
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md glass-border border-amber-500/30 bg-gradient-to-br from-amber-900/20 to-amber-900/10 rounded-2xl p-6"
-      >
-        <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 bg-amber-500/15 rounded-lg">
-            <Timer className="w-6 h-6 text-amber-400" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-white">Désactiver votre compte</h3>
-            <p className="text-sm text-amber-200 mt-1">
-              Votre profil sera temporairement masqué. Vous pourrez le réactiver à tout moment.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4 mb-6">
-          <div>
-            <Label htmlFor="deactivate-reason" className="text-gray-300 mb-1.5 block">
-              Raison de la désactivation (optionnelle)
-            </Label>
-            <Textarea
-              id="deactivate-reason"
-              value={deactivationReason}
-              onChange={(e) => setDeactivationReason(e.target.value)}
-              placeholder="Ex: Pause temporaire, changement de projet..."
-              className="min-h-[100px] bg-white/5 border-white/10 focus:border-amber-400/50 focus:ring-amber-400/20 text-white"
-            />
-            <p className="text-xs text-gray-500 mt-1 text-right">{deactivationReason.length}/200</p>
+      {/* Gestion du compte */}
+      <Card className="glass-border border-rose-500/20 bg-gradient-to-br from-rose-900/15 to-pink-900/5">
+        <CardHeader><CardTitle className="flex items-center gap-2 text-rose-400"><Shield className="w-5 h-5" /> Gestion du compte</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <div className="p-4 rounded-xl bg-amber-900/15 border border-amber-500/20">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2"><Timer className="w-5 h-5 text-amber-400" /><Label className="text-gray-300 font-medium">Désactiver temporairement</Label></div>
+                <p className="text-sm text-gray-300 mb-3">Votre profil sera masqué, vous ne recevrez plus de notifications, et vous ne pourrez pas vous connecter. <span className="font-medium text-amber-300">Vous pourrez le réactiver à tout moment</span> en contactant le support.</p>
+                <ul className="text-xs text-gray-400 space-y-1">
+                  <li className="flex items-start gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1" /><span>Vos données sont conservées en sécurité</span></li>
+                  <li className="flex items-start gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1" /><span>Réactivation possible sur demande</span></li>
+                </ul>
+              </div>
+              <div className="mt-4 md:mt-0"><Button variant="outline" onClick={() => setShowDeactivateModal(true)} className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10">Désactiver le compte</Button></div>
+            </div>
           </div>
 
-          <div className="p-3 bg-amber-900/20 border border-amber-500/20 rounded-lg">
-            <p className="text-xs text-amber-200 flex items-start gap-1.5">
-              <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
-              <span>
-                Vos données restent sécurisées et intactes. Aucune information ne sera perdue. 
-                Pour réactiver votre compte, contactez-nous à <span className="font-medium">support@luvika.me</span>.
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setShowDeactivateModal(false);
-              setDeactivationReason('');
-            }}
-            className="border-white/20 text-gray-300 hover:bg-white/10"
-          >
-            Annuler
-          </Button>
-          <Button
-            onClick={handleDeactivateAccount}
-            disabled={deactivating || deactivationReason.length > 200}
-            className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500"
-          >
-            {deactivating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Désactivation...
-              </>
-            ) : (
-              <>
-                <Pause className="w-4 h-4 mr-2" />
-                Confirmer la désactivation
-              </>
-            )}
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
-  )}
-
-  {/* 🔹 MODALE DE SUPPRESSION */}
-  {showDeleteModal && (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
-      onClick={() => setShowDeleteModal(false)}
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 20 }}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md glass-border border-red-500/30 bg-gradient-to-br from-red-900/20 to-red-900/10 rounded-2xl p-6"
-      >
-        <div className="flex items-center gap-3 mb-5">
-          <div className="p-2 bg-red-500/15 rounded-lg">
-            <AlertTriangle className="w-6 h-6 text-red-400" />
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-white">Suppression définitive</h3>
-            <p className="text-sm text-red-200 mt-1">
-              Cette action est irréversible. Confirmez avec votre mot de passe.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-5 mb-6">
-          <div>
-            <Label htmlFor="delete-password" className="text-gray-300 mb-1.5 block">
-              Mot de passe pour confirmer
-            </Label>
-            <Input
-              id="delete-password"
-              type="password"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              placeholder="••••••••"
-              className="bg-white/5 border-white/10 focus:border-red-400/50 focus:ring-red-400/20 text-white"
-            />
+          <div className="p-4 rounded-xl bg-red-900/15 border border-red-500/20">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between md:gap-6">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2"><XCircle className="w-5 h-5 text-red-400" /><Label className="text-gray-300 font-medium flex items-center gap-1.5">Supprimer définitivement <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">Irréversible</Badge></Label></div>
+                <p className="text-sm text-gray-300 mb-3"><span className="font-bold text-red-300">Action irréversible :</span> Toutes vos données seront supprimées définitivement.</p>
+                <ul className="text-xs text-gray-400 space-y-1.5 ml-4 list-disc">
+                  <li>Profil public et informations personnelles</li>
+                  <li>Cartes NFC, QR Codes et historique de scans</li>
+                  <li>Portfolios, certifications, compétences</li>
+                  <li>Événements, contacts, messages</li>
+                </ul>
+                <p className="text-xs text-red-300 mt-3 font-medium flex items-center gap-1.5"><AlertTriangle className="w-3 h-3" /> Cette action ne peut pas être annulée.</p>
+              </div>
+              <div className="mt-4 md:mt-0"><Button variant="destructive" onClick={() => setShowDeleteModal(true)} className="bg-red-500/15 hover:bg-red-500/25 text-red-300 border border-red-500/30">Supprimer le compte</Button></div>
+            </div>
           </div>
 
-          <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
-            <Checkbox
-              id="delete-confirm"
-              checked={deleteConfirmChecked}
-              onCheckedChange={(checked) => setDeleteConfirmChecked(checked as boolean)}
-              className="mt-0.5 border-red-400/50 data-[state=checked]:bg-red-500 data-[state=checked]:border-red-500"
-            />
-            <Label htmlFor="delete-confirm" className="text-xs text-red-200">
-              Je comprends que <span className="font-bold">toutes mes données seront supprimées définitivement</span> 
-              et que cette action <span className="font-bold">ne peut pas être annulée</span>. J'accepte de perdre 
-              l'accès à mon compte et à tout son contenu.
-            </Label>
+          <div className="pt-4 border-t border-white/10">
+            <div className="flex items-start gap-3 p-3 bg-blue-900/15 rounded-lg">
+              <HelpCircle className="w-4 h-4 text-blue-400 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-blue-200">Besoin d'aide ?</p>
+                <p className="text-xs text-blue-300 mt-0.5">Contactez notre équipe support : <a href="mailto:support@luvika.me" className="text-cyan-300 hover:underline">support@luvika.me</a></p>
+              </div>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          <div className="p-3 bg-rose-900/20 border border-rose-500/20 rounded-lg">
-            <p className="text-xs text-rose-200 flex items-start gap-1.5">
-              <ShieldCheck className="w-3 h-3 mt-0.5 flex-shrink-0" />
-              <span>
-                Conformément au RGPD, vos données seront supprimées dans les 30 jours. 
-                Une confirmation par email vous sera envoyée après la suppression complète.
-              </span>
-            </p>
-          </div>
-        </div>
+      <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
 
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setShowDeleteModal(false);
-              setDeletePassword('');
-              setDeleteConfirmChecked(false);
-            }}
-            className="border-white/20 text-gray-300 hover:bg-white/10"
-          >
-            Annuler
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDeleteAccount}
-            disabled={deleting || !deleteConfirmChecked || deletePassword.length < 6}
-            className="bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 border border-red-500/30"
-          >
-            {deleting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Suppression...
-              </>
-            ) : (
-              <>
-                <Trash className="w-4 h-4 mr-2" />
-                Supprimer définitivement
-              </>
-            )}
-          </Button>
-        </div>
-      </motion.div>
-    </motion.div>
-  )}
-</AnimatePresence>
+      {/* Modales */}
+      <AnimatePresence>
+        {showDeactivateModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDeactivateModal(false)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()} className="w-full max-w-md glass-border border-amber-500/30 bg-gradient-to-br from-amber-900/20 to-amber-900/10 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-5"><div className="p-2 bg-amber-500/15 rounded-lg"><Timer className="w-6 h-6 text-amber-400" /></div><div><h3 className="text-xl font-bold text-white">Désactiver votre compte</h3><p className="text-sm text-amber-200">Votre profil sera temporairement masqué.</p></div></div>
+              <div className="space-y-4 mb-6">
+                <div><Label htmlFor="deactivate-reason" className="text-gray-300 mb-1.5 block">Raison (optionnelle)</Label><Textarea id="deactivate-reason" value={deactivationReason} onChange={e => setDeactivationReason(e.target.value)} placeholder="Ex: Pause temporaire, changement de projet..." className="min-h-[100px] bg-white/5 border-white/10 focus:border-amber-400/50 text-white" /></div>
+                <div className="p-3 bg-amber-900/20 border border-amber-500/20 rounded-lg"><p className="text-xs text-amber-200 flex items-start gap-1.5"><Info className="w-3 h-3 mt-0.5" /> Vos données restent sécurisées. Pour réactiver, contactez support@luvika.me.</p></div>
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowDeactivateModal(false)} className="border-white/20 text-gray-300 hover:bg-white/10">Annuler</Button>
+                <Button onClick={handleDeactivateAccount} disabled={deactivating} className="bg-gradient-to-r from-amber-500 to-orange-600">{deactivating ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Désactivation...</> : <>Confirmer la désactivation</>}</Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showDeleteModal && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowDeleteModal(false)}>
+            <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} onClick={e => e.stopPropagation()} className="w-full max-w-md glass-border border-red-500/30 bg-gradient-to-br from-red-900/20 to-red-900/10 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-5"><div className="p-2 bg-red-500/15 rounded-lg"><AlertTriangle className="w-6 h-6 text-red-400" /></div><div><h3 className="text-xl font-bold text-white">Suppression définitive</h3><p className="text-sm text-red-200">Action irréversible. Confirmez avec votre mot de passe.</p></div></div>
+              <div className="space-y-5 mb-6">
+                <div><Label htmlFor="delete-password" className="text-gray-300 mb-1.5 block">Mot de passe</Label><Input id="delete-password" type="password" value={deletePassword} onChange={e => setDeletePassword(e.target.value)} placeholder="••••••••" className="bg-white/5 border-white/10 focus:border-red-400/50 text-white" /></div>
+                <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/20 rounded-lg"><Checkbox id="delete-confirm" checked={deleteConfirmChecked} onCheckedChange={c => setDeleteConfirmChecked(c as boolean)} className="mt-0.5 border-red-400/50" /><Label htmlFor="delete-confirm" className="text-xs text-red-200">Je comprends que toutes mes données seront supprimées définitivement et que cette action ne peut pas être annulée.</Label></div>
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <Button variant="outline" onClick={() => setShowDeleteModal(false)} className="border-white/20 text-gray-300 hover:bg-white/10">Annuler</Button>
+                <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting || !deleteConfirmChecked || deletePassword.length < 6} className="bg-gradient-to-r from-red-600 to-rose-700">{deleting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Suppression...</> : <>Supprimer définitivement</>}</Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

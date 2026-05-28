@@ -83,20 +83,16 @@ export default async function PricingPage({
   return (
     <>
       <PricingPlans
-        title={t('title')}
-        billingMonthly={t('billing.monthly')}
-        billingYearly={t('billing.yearly')}
-        perMonth={t('billing.per_month')}
-        perYear={t('billing.per_year')}
-        ctaChoose={{
-          freemium: t('cta.choose', { plan: t('plans.freemium.title') }),
-          premium: t('cta.choose', { plan: t('plans.premium.title') }),
-          entreprise: t('cta.choose', { plan: t('plans.entreprise.title') }),
-        }}
-        customPlan={t('footer.custom_plan')}
-        contactUs={t('footer.contact_us')}
-        plans={plans}
-      />
+  title={t('title')}
+  billingMonthly={t('billing.monthly')}
+  billingYearly={t('billing.yearly')}
+  ctaChoose={{
+    freemium: t('cta.choose', { plan: t('plans.freemium.title') }),
+    premium: t('cta.choose', { plan: t('plans.premium.title') }),
+    entreprise: t('cta.choose', { plan: t('plans.entreprise.title') }),
+  }}
+  plans={plans}
+/>
     </>
   );
 }

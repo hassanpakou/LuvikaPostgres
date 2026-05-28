@@ -8,7 +8,7 @@ import {
   ChevronUp
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Footer from '../../../components/layout/Footer'; // ✅ Footer fusionné SANS props
+//import Footer from '../../../components/layout/Footer'; // ✅ Footer fusionné SANS props
 import { useState, useEffect } from 'react';
 
 export default function ProfileLayout({ children }: { children: React.ReactNode }) {
@@ -81,7 +81,7 @@ export default function ProfileLayout({ children }: { children: React.ReactNode 
       </main>
 
       {/* ✅ FOOTER APPELÉ SANS PROPS (utilise useTranslations en interne) */}
-      <Footer />
+      {/* <Footer /> */}
       
       {/* 🔹 Global styles for animations */}
       <style jsx global>{`

@@ -1,14 +1,16 @@
 // src/components/cards/ProfileCard3D.tsx
-
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function ProfileCard3D() {
   const [isHovered, setIsHovered] = useState(false);
   const [flashKey, setFlashKey] = useState(0);
   const [neon, setNeon] = useState(false);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -17,13 +19,34 @@ export default function ProfileCard3D() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleHover = () => {
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left; // X position within the card
+    const y = e.clientY - rect.top;  // Y position within the card
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    // Max rotation angles (in degrees)
+    const maxRotate = 12;
+    const rotateYValue = ((x - centerX) / centerX) * maxRotate;
+    const rotateXValue = ((centerY - y) / centerY) * maxRotate;
+    setRotateY(rotateYValue);
+    setRotateX(rotateXValue);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setRotateX(0);
+    setRotateY(0);
+  };
+
+  const handleMouseEnter = () => {
     setIsHovered(true);
-    setTimeout(() => setIsHovered(false), 600);
   };
 
   return (
     <motion.div
+      ref={cardRef}
       className="
         relative
         w-full
@@ -34,46 +57,46 @@ export default function ProfileCard3D() {
         overflow-hidden
         cursor-pointer
       "
+      style={{
+        perspective: 1000,
+        transformStyle: 'preserve-3d',
+      }}
       animate={{
-        rotateX: [0, 1.5, 0, -1, 0],
-        rotateY: [0, -1, 0, 1, 0],
+        rotateX: rotateX,
+        rotateY: rotateY,
+        scale: isHovered ? 1.02 : 1,
+        y: isHovered ? -4 : 0,
       }}
       transition={{
-        duration: 12,
-        repeat: Infinity,
-        ease: 'easeInOut',
+        type: 'spring',
+        stiffness: 300,
+        damping: 20,
+        mass: 0.5,
       }}
-      whileHover={{
-        scale: 1.04,
-        rotateX: 0,
-        rotateY: 0,
-        y: -6,
-      }}
-      onHoverStart={handleHover}
-      onHoverEnd={() => setIsHovered(false)}
-      style={{ perspective: 1400, transformStyle: 'preserve-3d' }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {/* ===== Glass Border Frame ===== */}
+      {/* Glass Border Frame */}
       <div className="absolute inset-0 rounded-2xl border border-white/20 backdrop-blur-xl bg-white/5" />
       <div className="absolute -inset-[1px] rounded-2xl border border-cyan-300/30 pointer-events-none" />
 
-      {/* ===== Background ===== */}
+      {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#050814] via-[#0b1a3a]/60 to-black" />
 
-      {/* ===== Light Orbs ===== */}
+      {/* Light Orbs */}
       <motion.div
         className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-white-400/10 blur-xl"
         animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.2, 1] }}
         transition={{ duration: 4, repeat: Infinity }}
       />
-
       <motion.div
         className="absolute bottom-1/3 right-1/4 w-24 h-24 rounded-full bg-blue-300/10 blur-xl"
         animate={{ opacity: [0.2, 0.6, 0.2], scale: [1, 1.3, 1] }}
         transition={{ duration: 5, repeat: Infinity, delay: 1.5 }}
       />
 
-      {/* ===== Lightning Flash ===== */}
+      {/* Lightning Flash */}
       <AnimatePresence>
         {(isHovered || flashKey % 3 === 0) && (
           <motion.div
@@ -89,9 +112,8 @@ export default function ProfileCard3D() {
         )}
       </AnimatePresence>
 
-      {/* ===== Content ===== */}
+      {/* Content */}
       <div className="relative z-10 h-full flex items-center justify-between px-8">
-
         {/* Identity */}
         <motion.div
           animate={{ y: [0, -3, 0], x: [0, 1, 0, -1, 0] }}
@@ -135,29 +157,28 @@ export default function ProfileCard3D() {
         </motion.div>
       </div>
 
-      {/* ===== Verified Badge ===== */}
+      {/* Verified Badge */}
       <span className="absolute top-4 right-4 text-[11px] px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 z-20">
         ⚡ Verified
       </span>
 
-      {/* ===== Matricule Bottom Left ===== */}
+      {/* Matricule with neon effect on hover */}
       <motion.div
-  onHoverStart={() => setNeon(true)}
-  onHoverEnd={() => setNeon(false)}
-  className="absolute bottom-3 left-4 z-20 font-mono text-xs tracking-[0.35em]"
-  animate={{
-    color: neon ? '#67e8f9' : '#94a3b8', // couleur normale → couleur néon
-    textShadow: neon
-      ? '0 0 6px #22d3ee, 0 0 12px #22d3ee' // glow néon
-      : '0 0 0 transparent' // pas de glow
-  }}
-  transition={{ duration: 0.2 }}
->
-  483 920 174
-</motion.div>
+        onHoverStart={() => setNeon(true)}
+        onHoverEnd={() => setNeon(false)}
+        className="absolute bottom-3 left-4 z-20 font-mono text-xs tracking-[0.35em]"
+        animate={{
+          color: neon ? '#67e8f9' : '#94a3b8',
+          textShadow: neon
+            ? '0 0 6px #22d3ee, 0 0 12px #22d3ee'
+            : '0 0 0 transparent'
+        }}
+        transition={{ duration: 0.2 }}
+      >
+        483 920 174
+      </motion.div>
 
-
-      {/* ===== Global Shadow ===== */}
+      {/* Global Shadow */}
       <motion.div
         className="absolute -inset-1 rounded-[18px] pointer-events-none"
         animate={{

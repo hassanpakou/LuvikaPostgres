@@ -3,20 +3,17 @@
 
 /* ✅ 2. Définis ton thème avec @theme */
 @theme {
-  /* Couleurs personnalisées */
   --color-night-blue-50: #eef7ff;
   --color-night-blue-100: #d9ecff;
   --color-night-blue-500: #2563eb;
   --color-night-blue-700: #1d4ed8;
   --color-night-blue-900: #1e293b;
-
-  /* Couleurs de base (pour white/10, black/20, etc.) */
   --color-white: #ffffff;
   --color-black: #000000;
-
-  /* Ombres */
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 }
+
+/* ✅ 3. Thème clair/sombre */
 :root {
   --bg-primary: #f3f4f6;
   --text-primary: #111827;
@@ -29,7 +26,8 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
-/* ✅ 3. Styles globaux */
+
+/* ✅ 4. Styles globaux de base */
 @layer base {
   body {
     @apply bg-gradient-to-br from-night-blue-900 to-black text-white min-h-screen;
@@ -47,22 +45,28 @@ body {
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE/Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;             /* Chrome/Safari */
+  display: none;
 }
 
-/* ✅ 4. glass-border */
+/* ✅ 5. glass-border */
 .glass-border {
   @apply border border-white/15 bg-white/5 backdrop-blur-xl;
-  box-shadow: 
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 1px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.08);
 }
 
-/* ========== ANIMATIONS DE BASE ========== */
+/* ✅ 6. Sections vitrées */
+.glass-section {
+  @apply backdrop-blur-xl bg-white/5 border border-white/15 rounded-xl shadow-lg shadow-cyan-500/10;
+}
+.glass-section-icy {
+  @apply backdrop-blur-2xl bg-gradient-to-br from-white/10 via-white/5 to-transparent border border-cyan-300/20 rounded-xl shadow-xl shadow-cyan-500/20;
+}
+
+/* ========== 7. ANIMATIONS DE BASE ========== */
 
 @keyframes float {
   0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
@@ -70,11 +74,9 @@ body {
   90% { opacity: 1; }
   100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
 }
-
 .animate-float {
   animation: float 8s ease-in-out infinite;
 }
-
 .animation-delay-2000 {
   animation-delay: 2s;
 }
@@ -83,7 +85,6 @@ body {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-
 .animate-spin-slow {
   animation: spin-slow 2s linear infinite;
 }
@@ -92,7 +93,6 @@ body {
   0% { width: 0%; }
   100% { width: 100%; }
 }
-
 .animate-progress {
   animation: progress 2.5s ease-in-out infinite;
 }
@@ -102,183 +102,102 @@ body {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
 .animate-gradient-x {
   background-size: 200% 200%;
   animation: gradient-x 8s ease infinite;
 }
 
-/* ========== ANIMATIONS CYBERPUNK - VERSION OPTIMISÉE ========== */
-
-@keyframes glitchMove {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-3px);  /* ✅ Plus prononcé */
-  }
-  50% {
-    transform: translateX(3px);   /* ✅ Plus prononcé */
-  }
-  75% {
-    transform: translateX(-2px);  /* ✅ Plus prononcé */
-  }
-}
-
-@keyframes glitchMoveY {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  25% {
-    transform: translateY(-2px);  /* ✅ Plus prononcé */
-  }
-  50% {
-    transform: translateY(2px);   /* ✅ Plus prononcé */
-  }
-  75% {
-    transform: translateY(-1px);  /* ✅ Plus prononcé */
-  }
-}
-
-@keyframes pulseNeon {
-  0%, 100% {
-    box-shadow: 0 0 8px var(--neon-color), 0 0 15px var(--neon-color);  /* ✅ Plus intense */
-  }
-  50% {
-    box-shadow: 0 0 15px var(--neon-color), 0 0 30px var(--neon-color), 0 0 45px var(--neon-color);
-  }
-}
-
-@keyframes flicker {
-  0%, 100% {
-    opacity: 0.05;  /* ✅ Plus visible */
-  }
-  50% {
-    opacity: 0.08;  /* ✅ Plus visible */
-  }
-}
-
-@keyframes flicker-mobile {
-  0%, 100% {
-    opacity: 0.03;  /* ✅ Plus subtil sur mobile */
-  }
-  50% {
-    opacity: 0.05;  /* ✅ Plus subtil sur mobile */
-  }
-}
-
-@keyframes gradient {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-@keyframes pulse-slow {
-  0%, 100% { opacity: 0.3; }  /* ✅ Plus visible */
-  50% { opacity: 0.5; }       /* ✅ Plus visible */
-}
-
-/* ========== CLASSES D'ANIMATION ========== */
-
-.animate-flicker {
-  animation: flicker 0.12s infinite;  /* ✅ Plus rapide */
-}
-
-.animate-flicker-mobile {
-  animation: flicker-mobile 0.2s infinite;  /* ✅ Plus lent sur mobile */
-}
-
-.neon-glow {
-  --neon-color: #22d3ee;
-  animation: pulseNeon 1.8s ease-in-out infinite;  /* ✅ Plus fluide */
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 6s ease infinite;  /* ✅ Plus fluide */
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;  /* ✅ Plus rapide */
-}
-
-/* ========== EFFETS CRT ========== */
-
-.crt-effect {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background: 
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.06) 2px,
-      rgba(0, 0, 0, 0.06) 4px
-    );
-  opacity: 0.08;
-  z-index: 1;
-}
-
-.noise-overlay {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background-image: 
-    radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
-    radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
-  opacity: 0.3;
-  z-index: 2;
-}
-
-/* ========== ACCESSIBILITÉ ========== */
-
-@media (prefers-reduced-motion: reduce) {
-  .crt-effect,
-  .noise-overlay,
-  [class*="animate-"] {
-    animation: none !important;
-    display: none !important;
-  }
-  
-  .glass-border {
-    backdrop-filter: none !important;
-  }
-}
-/* ========== GLASS SECTIONS (GLOBAL) ========== */
-
-.glass-section {
-  @apply 
-    backdrop-blur-xl
-    bg-white/5
-    border border-white/15
-    rounded-xl
-    shadow-lg
-    shadow-cyan-500/10;
-}
-
-.glass-section-icy {
-  @apply
-    backdrop-blur-2xl
-    bg-gradient-to-br from-white/10 via-white/5 to-transparent
-    border border-cyan-300/20
-    rounded-xl
-    shadow-xl
-    shadow-cyan-500/20;
-}
-
-/* 🔹 ANIMATIONS FOND PREMIUM */
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
-
 .animate-gradient-shift {
   animation: gradient-shift 45s ease infinite;
   background-size: 400% 400%;
 }
 
-/* 🔹 Animation pulse subtile pour la brume */
+/* ========== 8. ANIMATIONS CYBERPUNK ========== */
+
+@keyframes glitchMove {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  75% { transform: translateX(-2px); }
+}
+@keyframes glitchMoveY {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-2px); }
+  50% { transform: translateY(2px); }
+  75% { transform: translateY(-1px); }
+}
+@keyframes pulseNeon {
+  0%, 100% { box-shadow: 0 0 8px var(--neon-color), 0 0 15px var(--neon-color); }
+  50% { box-shadow: 0 0 15px var(--neon-color), 0 0 30px var(--neon-color), 0 0 45px var(--neon-color); }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 0.05; }
+  50% { opacity: 0.08; }
+}
+@keyframes flicker-mobile {
+  0%, 100% { opacity: 0.03; }
+  50% { opacity: 0.05; }
+}
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+/* Classes d'animation cyberpunk */
+.animate-flicker {
+  animation: flicker 0.12s infinite;
+}
+.animate-flicker-mobile {
+  animation: flicker-mobile 0.2s infinite;
+}
+.neon-glow {
+  --neon-color: #22d3ee;
+  animation: pulseNeon 1.8s ease-in-out infinite;
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 6s ease infinite;
+}
+.animate-pulse-slow {
+  animation: pulse-slow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ========== 9. EFFETS CRT ========== */
+
+.crt-effect {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  opacity: 0.08;
+  z-index: 1;
+}
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
+                    radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
+  opacity: 0.3;
+  z-index: 2;
+}
+
+/* ========== 10. ANIMATION PULSE SUBTILE UNIFIÉE ========== */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.5; }
@@ -287,25 +206,21 @@ body {
   animation: pulse-subtle 8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* 🔹 Optimisation perf mobile */
+/* ========== 11. ACCESSIBILITÉ ========== */
 @media (prefers-reduced-motion: reduce) {
+  .crt-effect,
+  .noise-overlay,
+  [class*="animate-"] {
+    animation: none !important;
+    display: none !important;
+  }
+  .glass-border,
+  .glass-section,
+  .glass-section-icy {
+    backdrop-filter: none !important;
+  }
   .fixed.inset-0 > * {
     animation: none !important;
     transition: none !important;
   }
-}
-
-/* 🔹 Animation subtile pour les mises à jour Realtime */
-@keyframes pulse-subtle {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.2); 
-  }
-  50% { 
-    box-shadow: 0 0 0 8px rgba(6, 182, 212, 0); 
-  }
-}
-.animate-pulse-subtle {
-  animation: pulse-subtle 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-  position: relative;
-  z-index: 10;
 }

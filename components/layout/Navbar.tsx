@@ -1,21 +1,20 @@
 // src/components/layout/Navbar.tsx
 'use client';
-import { useTheme } from 'next-themes';
+
 import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, X, LogOut, User as UserIcon, 
   Globe, Shield, Eye, Sparkle, Briefcase,
-  Crown, Heart
+  Crown, Heart, ChevronDown
 } from 'lucide-react';
-import { createClient } from '../../src/lib/supabase/client';
-import { Badge } from '@/components/ui/badge';
 import { SiSocialblade } from 'react-icons/si';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeToggle } from './ThemeToggle';
+import { createClient } from '../../src/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 type Locale = 'ar' | 'en' | 'es' | 'fr' | 'kg' | 'ln' | 'nl' | 'pt' | 'sw';
 
@@ -49,15 +48,14 @@ export default function Navbar() {
   const t = useTranslations();
   const router = useRouter();
 
-  // 🔹 Chargement utilisateur + profil
+  // Récupération utilisateur et profil
   useEffect(() => {
     const fetchUser = async () => {
       const supabase = createClient();
-      const { data : { session } } = await supabase.auth.getSession();
-      
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        const { data : profileData } = await supabase
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('avatar_url, full_name, username, plan, likes_count')
           .eq('id', session.user.id)
@@ -71,16 +69,12 @@ export default function Navbar() {
     fetchUser();
   }, []);
 
-  // 🔹 Reset avatarError quand URL change
   useEffect(() => {
     if (profile?.avatar_url) setAvatarError(false);
-    return () => setAvatarError(false);
   }, [profile?.avatar_url]);
 
-  // 🔹 Déconnexion
   const handleSignOut = async () => {
     if (!window.confirm(t('navbar.sign_out_confirm_message'))) return;
-    
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push('/');
@@ -89,7 +83,6 @@ export default function Navbar() {
     setMobileMenuOpen(false);
   };
 
-  // 🔹 Changement langue
   const changeLanguage = (newLocale: Locale) => {
     const segments = window.location.pathname.split('/');
     segments[1] = newLocale;
@@ -98,21 +91,17 @@ export default function Navbar() {
     setShowLangDropdown(false);
   };
 
-  // 🔹 Détection rôle
   const role = user?.user_metadata?.role;
   const isAdmin = role === 'admin';
   const isUser = !!user && !isAdmin;
 
-  // 🔹 Liens publics
   const navLinks = useMemo(() => [
     { href: '/', label: t('navbar.home') },
-    { href: '/#features', label: t('navbar.features') },
     { href: `/${locale}/public/pricing`, label: t('navbar.pricing') },
     { href: `/${locale}/public/about`, label: t('navbar.about') },
     { href: `/${locale}/public/contact`, label: t('navbar.contact') },
   ], [locale, t]);
 
-  // 🔹 Initial utilisateur
   const getUserInitial = () => {
     if (profile?.full_name) return profile.full_name.charAt(0).toUpperCase();
     if (user?.user_metadata?.full_name) return user.user_metadata.full_name.charAt(0).toUpperCase();
@@ -120,452 +109,331 @@ export default function Navbar() {
     return '?';
   };
 
-  // 🔹 Gestion erreur avatar
   const handleAvatarError = () => {
     setAvatarError(true);
     console.warn('⚠️ Erreur chargement avatar');
   };
 
   return (
-    <header className="sticky top-4 z-50 w-full px-4">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-white/10 backdrop-blur-sm bg-gradient-to-b from-slate-900/80 to-slate-900/50 shadow-2xl shadow-lg"
-        >
-          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            {/* 🔹 Logo LUVIKA - Design Premium */}
-            <Link
-              href={isAdmin ? '/admin' : isUser ? '/dashboard' : '/'}
-              className="flex items-center gap-3 group transition-all duration-300"
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-cyan-900/40 via-blue-900/40 to-cyan-900/40 backdrop-blur-md border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center h-16 md:h-20">
+          {/* Logo */}
+          <Link
+            href={isAdmin ? '/admin' : isUser ? '/dashboard' : '/'}
+            className="flex items-center gap-2 group"
+          >
+            <motion.div
+              whileHover={{ scale: 1.05, rotate: 3 }}
+              whileTap={{ scale: 0.95 }}
+              className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-md"
             >
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-                className="relative w-11 h-11 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-white/20 rounded-2xl"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <SiSocialblade className="w-6 h-6 text-white drop-shadow-md" />
-                </div>
-                <div className="absolute -inset-1  from-cyan-400 to-blue-500 rounded-2xl blur opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </motion.div>
-              
-              <div className="flex flex-col">
-                <span className="text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
-                  LUVIKA
-                </span>
-                <span className="text-[10px] font-medium text-cyan-400/80 mt-0.5 tracking-wider uppercase hidden md:block">
-                  Digital Identity
-                </span>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <SiSocialblade className="w-5 h-5 text-white drop-shadow-sm" />
               </div>
+            </motion.div>
+            <div className="flex flex-col">
+              <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+  LUVIKA
+</span>
+              <span className="text-[10px] font-medium text-cyan-600 -mt-0.5 hidden sm:block">
+                Digital Identity
+              </span>
+            </div>
+            {isAdmin && (
+              <Badge className="ml-2 bg-amber-100 text-amber-700 border-amber-200 text-xs py-0 px-2 h-5">
+                <Shield className="w-3 h-3 mr-1" /> Admin
+              </Badge>
+            )}
+          </Link>
 
-              {isAdmin && (
-                <Badge className="ml-2 bg-amber-500/20 text-amber-300 border-amber-500/30 flex items-center gap-1 text-xs py-0.5 px-2">
-                  <Shield className="w-3 h-3" /> Admin
-                </Badge>
-              )}
-            </Link>
+          {/* Navigation Desktop */}
+          <nav className="hidden md:flex items-center gap-1">
+            {!isAdmin && !isUser && navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="relative px-4 py-2 text-gray-600 hover:text-cyan-600 font-medium transition-colors duration-200 group"
+              >
+                {link.label}
+                <span className="absolute bottom-0 left-1/2 w-0 h-0.5 bg-cyan-500 transition-all duration-300 group-hover:w-full group-hover:left-0" />
+              </Link>
+            ))}
+          </nav>
 
-            {/* 🔹 Menu desktop */}
-            <nav className="hidden md:flex items-center space-x-1">
-              {!isAdmin && !isUser && navLinks.map((link) => (
-                <motion.div
-                  key={link.href}
-                  whileHover={{ y: -2 }}
-                  whileTap={{ scale: 0.98 }}
+          {/* Actions Desktop */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Sélecteur de langue */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLangDropdown(!showLangDropdown)}
+                className="flex items-center gap-1 px-3 py-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{languages[locale].name}</span>
+                <ChevronDown className="w-3 h-3 opacity-70" />
+              </button>
+              <AnimatePresence>
+                {showLangDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 8 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-2xl border border-gray-200 shadow-xl py-1 z-50"
+                  >
+                    {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
+                      <button
+                        key={lang}
+                        onClick={() => changeLanguage(lang)}
+                        className={`w-full px-4 py-2 text-left flex items-center justify-between hover:bg-gray-50 transition ${
+                          locale === lang ? 'text-cyan-600 font-medium bg-cyan-50/50' : 'text-gray-700'
+                        }`}
+                      >
+                        <span>{languages[lang].name}</span>
+                        <span className="text-lg">{languages[lang].flag}</span>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Boutons CTA */}
+            {isAdmin ? (
+              <Link href="/admin">
+                <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white shadow-md rounded-full px-5">
+                  <Shield className="w-4 h-4 mr-2" /> Admin
+                </Button>
+              </Link>
+            ) : isUser ? (
+              <Link href="/dashboard">
+                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-full px-5">
+                  Tableau de bord
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/auth/sign-in">
+                <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-full px-6 shadow-md shadow-blue-500/25">
+                  {t('navbar.sign_in')}
+                </Button>
+              </Link>
+            )}
+
+            {/* Menu utilisateur connecté */}
+            {user && (
+              <div className="relative ml-1">
+                <button
+                  onMouseEnter={() => setShowUserMenu(true)}
+                  onMouseLeave={() => setShowUserMenu(false)}
+                  className="relative w-9 h-9 rounded-full overflow-hidden border-2 border-gray-200 hover:border-cyan-300 transition-all focus:outline-none"
                 >
-                  <Link
-                    href={link.href}
-                    className="px-4 py-2.5 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300 text-sm font-medium relative overflow-hidden group"
-                  >
-                    <span className="relative z-10">{link.label}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
+                  {profile?.avatar_url && !avatarError ? (
+                    <img
+                      src={profile.avatar_url}
+                      alt="Avatar"
+                      onError={handleAvatarError}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
+                      {getUserInitial()}
+                    </div>
+                  )}
+                  {profile?.plan && profile.plan !== 'basic' && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white flex items-center justify-center">
+                      <div className={`w-2 h-2 rounded-full ${
+                        profile.plan === 'premium' ? 'bg-amber-500' : 'bg-purple-500'
+                      }`} />
+                    </div>
+                  )}
+                </button>
 
-            <div className="hidden md:flex items-center space-x-2">
-              {/* 🔹 Thème - Utilise le composant centralisé */}
-              <ThemeToggle />
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      onMouseEnter={() => setShowUserMenu(true)}
+                      onMouseLeave={() => setShowUserMenu(false)}
+                      className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-gray-200 shadow-xl py-1 z-50"
+                    >
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold">
+                            {getUserInitial()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 truncate">
+                              {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                            </p>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              {profile?.plan && (
+                                <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+                                  {profile.plan === 'premium' ? (
+                                    <><Crown className="w-2.5 h-2.5 mr-0.5" /> Premium</>
+                                  ) : (
+                                    <><Briefcase className="w-2.5 h-2.5 mr-0.5" /> Business</>
+                                  )}
+                                </Badge>
+                              )}
+                              {isAdmin && (
+                                <Badge variant="outline" className="text-[10px] h-4 px-1.5 border-amber-200 text-amber-700">
+                                  Admin
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="py-1">
+                        <Link
+                          href="/dashboard/settings"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
+                          onClick={() => setShowUserMenu(false)}
+                        >
+                          <UserIcon className="w-4 h-4 text-cyan-600" />
+                          <span className="text-sm font-medium">{t('navbar.edit_profile')}</span>
+                        </Link>
+                        {isUser && profile?.username && (
+                          <Link
+                            href={`/${locale}/${profile.username}`}
+                            target="_blank"
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
+                            onClick={() => setShowUserMenu(false)}
+                          >
+                            <Eye className="w-4 h-4 text-emerald-600" />
+                            <span className="text-sm font-medium">Voir profil public</span>
+                            <div className="ml-auto flex items-center gap-1 text-pink-500 text-xs">
+                              <Heart className="w-3 h-3 fill-current" />
+                              <span>{profile.likes_count || 0}</span>
+                            </div>
+                          </Link>
+                        )}
+                      </div>
+                      <div className="border-t border-gray-100 mt-1 pt-1">
+                        <button
+                          onClick={handleSignOut}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span className="text-sm font-medium">{t('navbar.sign_out')}</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
 
-              {/* 🔹 Langue */}
+          {/* Bouton mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition"
+            aria-label="Menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Menu Mobile */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="md:hidden border-t border-gray-200 bg-white/95 backdrop-blur-sm"
+          >
+            <div className="px-4 py-4 space-y-3">
+              {/* Langue mobile */}
               <div className="relative">
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setShowLangDropdown(prev => !prev)}
-                    className="text-gray-300 hover:text-cyan-200 hover:bg-white/10 rounded-xl transition-all duration-300"
-                  >
-                    <Globe className="h-5 w-5" />
-                  </Button>
-                </motion.div>
-
+                <button
+                  onClick={() => setShowLangDropdown(!showLangDropdown)}
+                  className="w-full flex items-center justify-between px-4 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-700"
+                >
+                  <div className="flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    <span className="font-medium">{languages[locale].name}</span>
+                  </div>
+                  <span className="text-lg">{languages[locale].flag}</span>
+                </button>
                 <AnimatePresence>
                   {showLangDropdown && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 top-full mt-2 w-48 bg-slate-800/90 border border-white/10 backdrop-blur-sm rounded-2xl py-2 shadow-lg shadow-black/50 z-50"
+                      exit={{ opacity: 0, y: -8 }}
+                      className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl border border-gray-200 shadow-xl py-1 z-50"
                     >
                       {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
-                        <motion.button
+                        <button
                           key={lang}
-                          whileHover={{ x: 5 }}
-                          whileTap={{ scale: 0.98 }}
                           onClick={() => changeLanguage(lang)}
-                          className={`w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-white/10 transition-colors ${
-                            locale === lang ? 'bg-gradient-to-r from-cyan-500/15 to-blue-500/15 text-cyan-200 font-medium' : 'text-gray-300'
+                          className={`w-full flex items-center justify-between px-4 py-2 hover:bg-gray-50 ${
+                            locale === lang ? 'text-cyan-600 bg-cyan-50/50' : 'text-gray-700'
                           }`}
                         >
-                          <span className="text-xl">{languages[lang].flag}</span>
-                          <span className="font-medium">{languages[lang].name}</span>
-                          {locale === lang && (
-                            <Badge className="ml-auto bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] py-0.5 px-2">
-                              Actif
-                            </Badge>
-                          )}
-                        </motion.button>
+                          <span>{languages[lang].name}</span>
+                          <span className="text-lg">{languages[lang].flag}</span>
+                        </button>
                       ))}
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
-              {/* 🔹 Boutons dashboard / connexion */}
-              {isAdmin ? (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link href="/admin">
-                    <Button className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-bold shadow-md shadow-amber-500/30">
-                      <Shield className="w-4 h-4 mr-2" />
-                      Admin
+              {/* Liens navigation mobile */}
+              {!isAdmin && !isUser && navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="block py-2 text-center text-gray-600 hover:text-cyan-600 font-medium transition"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+              {/* Boutons action mobile */}
+              <div className="pt-2 space-y-2">
+                {isAdmin ? (
+                  <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white rounded-full">
+                      <Shield className="w-4 h-4 mr-2" /> Admin
                     </Button>
                   </Link>
-                </motion.div>
-              ) : isUser ? (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link href="/dashboard">
-                    <Button className="bg-gradient-to-r hover:from-cyan-400 hover:to-blue-500 to-blue-500">
+                ) : isUser ? (
+                  <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white rounded-full">
                       Tableau de bord
                     </Button>
                   </Link>
-                </motion.div>
-              ) : (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Link href="/auth/sign-in">
-                    <Button className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 shadow-md shadow-blue-500/30">
+                ) : (
+                  <Link href="/auth/sign-in" onClick={() => setMobileMenuOpen(false)}>
+                    <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white rounded-full">
                       {t('navbar.sign_in')}
                     </Button>
                   </Link>
-                </motion.div>
-              )}
-
-              {/* 🔹 Menu utilisateur */}
-              {user && (
-                <div className="relative ml-2">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onMouseEnter={() => setShowUserMenu(true)}
-                    onMouseLeave={() => setShowUserMenu(false)}
-                    className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-white/20 shadow-lg transition-all duration-300 group"
+                )}
+                {user && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}
+                    className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white rounded-full"
                   >
-                    {profile?.avatar_url && !avatarError ? (
-                      <motion.img
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        src={profile.avatar_url}
-                        alt={profile.full_name || user.email || 'Avatar'}
-                        onError={handleAvatarError}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <motion.div
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="w-full h-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg"
-                      >
-                        {getUserInitial()}
-                      </motion.div>
-                    )}
-                    
-                    {/* 🔹 Badge plan */}
-                    {profile?.plan && profile.plan !== 'basic' && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-slate-900 flex items-center justify-center">
-                        <div className={`w-2.5 h-2.5 rounded-full ${
-                          profile.plan === 'premium' ? 'bg-gradient-to-r from-yellow-400 to-amber-500' : 'bg-purple-500'
-                        } `}></div>
-                      </div>
-                    )}
-                  </motion.button>
-                  
-                  <AnimatePresence>
-                    {showUserMenu && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        onMouseEnter={() => setShowUserMenu(true)}
-                        onMouseLeave={() => setShowUserMenu(false)}
-                        className="absolute right-0 mt-2 w-64 bg-slate-800/95 border border-white/10 backdrop-blur-xl rounded-2xl py-2 shadow-2xl shadow-black/60 z-50 overflow-hidden"
-                      >
-                        {/* 🔹 En-tête utilisateur */}
-                        <div className="px-4 py-3 border-b border-white/10">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                              <span className="text-white font-bold text-xl">{getUserInitial()}</span>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-bold text-white truncate">
-                                {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
-                              </p>
-                              <div className="flex items-center gap-1.5 mt-1">
-                                {profile?.plan && (
-                                  <Badge className={`text-[11px] py-0.5 px-2 ${
-                                    profile.plan === 'premium' 
-                                      ? 'bg-gradient-to-r from-yellow-500 to-amber-500 text-black font-bold' 
-                                      : 'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                                  }`}>
-                                    {profile.plan === 'premium' ? (
-                                      <>
-                                        <Crown className="w-3 h-3 mr-0.5 inline" /> Premium
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Briefcase className="w-3 h-3 mr-0.5 inline" /> Business
-                                      </>
-                                    )}
-                                  </Badge>
-                                )}
-                                {user?.user_metadata?.role === 'admin' && (
-                                  <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-[11px] py-0.5 px-2">
-                                    <Shield className="w-2.5 h-2.5 mr-0.5 inline" /> Admin
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="py-1">
-                          <Link
-                            href="/dashboard/settings"
-                            className="flex items-center gap-2.5 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                            onClick={() => setShowUserMenu(false)}
-                          >
-                            <UserIcon className="w-4 h-4 text-cyan-400" />
-                            <span className="font-medium">{t('navbar.edit_profile')}</span>
-                          </Link>
-                          
-                          {isUser && profile?.username && (
-                            <Link
-                              href={`/${locale}/${profile.username}`}
-                              target="_blank"
-                              className="flex items-center gap-2.5 px-4 py-2.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
-                              onClick={() => setShowUserMenu(false)}
-                            >
-                              <Eye className="w-4 h-4 text-emerald-400" />
-                              <span className="font-medium">{t('navbar.view_public_profile')}</span>
-                              
-                              {/* 🔹 Statistiques à droite */}
-                              <div className="ml-auto flex items-center gap-1.5 text-xs">
-                                <div className="flex items-center gap-0.5 text-pink-400">
-                                  <Heart className="w-3 h-3 fill-current" />
-                                  <span>{profile.likes_count || 0}</span>
-                                </div>
-                              </div>
-                            </Link>
-                          )}
-                        </div>
-
-                        <div className="py-1 border-t border-white/5 mt-1">
-                          <button
-                            onClick={handleSignOut}
-                            className="w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-colors"
-                          >
-                            <LogOut className="w-4 h-4" />
-                            <span className="font-medium">{t('navbar.sign_out')}</span>
-                          </button>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t('navbar.sign_out')}
+                  </Button>
+                )}
+              </div>
             </div>
-
-            {/* 🔹 Menu mobile - Bouton */}
-            <motion.button 
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="md:hidden text-gray-300 hover:text-cyan-200"
-              onClick={() => setMobileMenuOpen(prev => !prev)}
-              aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-            >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </motion.button>
-          </div>
-
-          {/* 🔹 Mobile menu */}
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-                className="md:hidden border-t border-white/10"
-              >
-                <div className="p-4 space-y-3">
-                  {/* 🔹 Thème + Langue mobile */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-white/10">
-                    {/* Thème mobile */}
-                    <motion.div whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
-                      <ThemeToggleMobile />
-                    </motion.div>
-                    
-                    <div className="relative w-full sm:w-auto">
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowLangDropdown(prev => !prev)}
-                        className="w-full bg-white/5 border-white/20 hover:bg-white/10 text-gray-300 justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Globe className="h-4 w-4" />
-                          <span>{languages[locale].name}</span>
-                        </div>
-                        <span className="text-lg">{languages[locale].flag}</span>
-                      </Button>
-                      
-                      <AnimatePresence>
-                        {showLangDropdown && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 10 }}
-                            className="absolute right-0 mt-2 w-full bg-slate-800/90 border border-white/10 backdrop-blur-xl rounded-2xl py-2 shadow-2xl shadow-black/50 z-50"
-                          >
-                            {(['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as Locale[]).map((lang) => (
-                              <motion.button
-                                key={lang}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => changeLanguage(lang)}
-                                className={`w-full px-4 py-2.5 text-left flex items-center justify-between hover:bg-white/10 ${
-                                  locale === lang ? 'text-cyan-300 font-medium' : 'text-gray-300'
-                                }`}
-                              >
-                                <span>{languages[lang].name}</span>
-                                <span className="text-xl">{languages[lang].flag}</span>
-                              </motion.button>
-                            ))}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  </div>
-
-                  {/* 🔹 Liens publics mobile */}
-                  {!isAdmin && !isUser && navLinks.map((link) => (
-                    <motion.div
-                      key={link.href}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <Link
-                        href={link.href}
-                        className="block py-3 text-center text-gray-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors font-medium"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        {link.label}
-                      </Link>
-                    </motion.div>
-                  ))}
-
-                  {/* 🔹 Actions mobile */}
-                  <div className="pt-2 border-t border-white/10 space-y-3">
-                    {isAdmin ? (
-                      <motion.div whileTap={{ scale: 0.98 }}>
-                        <Link href="/admin" onClick={() => setMobileMenuOpen(false)}>
-                          <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black font-bold">
-                            <Shield className="w-4 h-4 mr-2" />
-                            Admin Dashboard
-                          </Button>
-                        </Link>
-                      </motion.div>
-                    ) : isUser ? (
-                      <motion.div whileTap={{ scale: 0.98 }}>
-                        <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                          <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500">
-                            <Sparkle className="w-4 h-4 mr-2" />
-                            Tableau de bord
-                          </Button>
-                        </Link>
-                      </motion.div>
-                    ) : (
-                      <motion.div whileTap={{ scale: 0.98 }}>
-                        <Link href="/auth/sign-in" onClick={() => setMobileMenuOpen(false)}>
-                          <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400">
-                            {t('navbar.sign_in')}
-                          </Button>
-                        </Link>
-                      </motion.div>
-                    )}
-                    
-                    {user && (
-                      <motion.div whileTap={{ scale: 0.98 }}>
-                        <Button 
-                          variant="destructive" 
-                          onClick={() => {
-                            handleSignOut();
-                            setMobileMenuOpen(false);
-                          }}
-                          className="w-full bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500"
-                        >
-                          <LogOut className="mr-2 h-4 w-4" />
-                          {t('navbar.sign_out')}
-                        </Button>
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
-  );
-}
-
-// Composant séparé pour le toggle thème mobile
-function ThemeToggleMobile() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) return null;
-
-  return (
-    <Button
-      variant="outline"
-      onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-      className="w-full bg-white/5 border-white/20 hover:bg-white/10 text-gray-300"
-    >
-      {theme === 'light' ? (
-        <>
-          🌙 Mode sombre
-        </>
-      ) : (
-        <>
-          ☀️ Mode clair
-        </>
-      )}
-    </Button>
   );
 }

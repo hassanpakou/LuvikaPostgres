@@ -16,7 +16,6 @@ import { Button } from '../../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 import { Textarea } from '../../../components/ui/textarea';
-import SimulateNFCTap from '../../../components/nfc/SimulateNFCTap';
 import { generateQRBase64 } from '../../../lib/qr';
 import SearchModal from '../../../src/components/dashboard/SearchModal';
 import FollowersModal from '../../../src/components/dashboard/FollowersModal';
@@ -1279,8 +1278,7 @@ useEffect(() => {
             try {
               const res = await fetch(`/api/portfolio?profile_id=${user.id}`);
               const { portfolios, certificates } = await res.json();
-              
-              // Mettre à jour les modals si ouverts
+           
               // Note: Dans un cas réel, on mettrait à jour l'état global ou le store
             } catch (err) {
               console.warn('Erreur mise à jour portfolio:', err);
@@ -1370,18 +1368,8 @@ useEffect(() => {
     { id: 'statistics', label: 'Statistiques', icon: <BarChart3 size={18} />, color: 'from-purple-500 to-indigo-500' },
     { id: 'subscribers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
     { id: 'card-config', label: 'Carte', icon: <CreditCard size={18} />, color: 'from-amber-400 to-orange-500' },
-    //{ id: 'messages', label: 'Messages', icon: <Mail size={18} />, color: 'from-cyan-400 to-blue-500' },
-    //{ id: 'qr', label: 'QR Code', icon: <QrCode size={18} />, color: 'from-emerald-400 to-teal-500' },
-    //{ id: 'nfc', label: 'Cartes NFC', icon: <Contact size={18} />, color: 'from-amber-400 to-orange-500' },
-    //{ id: 'report', label: 'Signaler', icon: <AlertTriangle size={18} />, color: 'from-red-500 to-rose-500' },
-    //{ id: 'messages', label: 'Message perso', icon: <MessageSquare size={18} />, color: 'from-indigo-400 to-violet-500' },
-    //{ id: 'orders', label: 'Commandes', icon: <Package size={18} />, color: 'from-fuchsia-400 to-pink-500' },
-    //{ id: 'search', label: 'Rechercher', icon: <Search size={18} />, color: 'from-yellow-400 to-orange-400' },
-    //{ id: 'event', label: 'Voir événements', icon: <Calendar size={14} />, color: 'from-indigo-500 to-violet-500', disabled: profile.plan === 'freemium' || profile.plan === 'basic',},
-    //{ id: 'event-create', label: 'Créer événement', icon: <Plus />, color: 'from-green-500 to-emerald-500' },
     { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-cyan-500 to-blue-500' },
     { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
-    //{ id: 'upgrade', label: 'Upgrade', icon: <ArrowUp size={18} />, color: 'from-cyan-300 to-blue-400' },
     { id: 'parameters', label: 'Paramètres', icon: <Settings size={18} />, color: 'from-gray-500 to-gray-600' },
     { id: 'logout', label: 'Déconnexion', icon: <LogOut size={18} />, color: 'from-red-500 to-rose-500' },
   ];

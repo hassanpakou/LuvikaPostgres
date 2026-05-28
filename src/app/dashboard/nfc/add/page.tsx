@@ -5,7 +5,6 @@ import { createServerClient } from '@supabase/ssr';
 import { Button } from '../../../../../components/ui/button';
 import Link from 'next/link';
 // 🔹 Importe le client component
-import { CardManager } from '../../../../../components/nfc/CardManager';
 
 export default async function AddNFCPage() {
   const cookieStore = await cookies();
@@ -85,11 +84,11 @@ export default async function AddNFCPage() {
             2. Approchez la carte vierge<br />
             3. Confirmez l’écriture
           </p>
-          {/* ✅ Appel correct */}
+          {/* ✅ Appel correct 
           <CardManager 
             profileId={profile.id} 
             username={profile.username} 
-          />
+          />*/}
         </div>
 
         <div className="mt-8 text-center text-gray-500 text-sm">

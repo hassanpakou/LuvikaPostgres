@@ -1,7 +1,7 @@
 // src/app/[locale]/public/layout.tsx
 import Link from "next/link";
 import { Toaster } from "sonner";
-import Footer from "../../../components/layout/Footer"; // 👈 Import
+//import Footer from "../../../components/layout/Footer"; // 👈 Import
 import { getTranslations } from "next-intl/server"; // 👈 Pour les traductions
 import Head from 'next/head';
 
@@ -40,8 +40,6 @@ export default async function ProfileLayout({
           <Toaster richColors position="top-right" />
         </main>
 
-        {/* 🔹 Footer complet avec traductions */}
-        <Footer />
       </div>
     </>
   );

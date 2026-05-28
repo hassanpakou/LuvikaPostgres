@@ -3,8 +3,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, MapPin, Phone, MessageCircle, Send, 
-  Sparkle, ChevronRight, CheckCircle, AlertCircle 
+  Mail, MapPin, Phone, MessageCircle, Send, ChevronRight, CheckCircle, AlertCircle 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -46,10 +45,7 @@ export default function ContactContent({
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
-            <Sparkle className="w-3.5 h-3.5 text-cyan-300 animate-pulse" />
-            <span className="text-cyan-300 font-medium text-sm">Contactez-nous</span>
-          </div>
+         
           
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-3">
             {title}
@@ -282,7 +278,6 @@ export default function ContactContent({
         >
           <p>LUVIKA • Une identité numérique pour l'Afrique et le monde • © {new Date().getFullYear()}</p>
           <p className="mt-1 flex items-center justify-center gap-1.5">
-            <Sparkle className="w-3 h-3 text-cyan-400 animate-pulse" />
             <span>Fait avec ❤️ à Kinshasa</span>
           </p>
         </motion.div>
