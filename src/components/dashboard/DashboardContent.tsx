@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from 'next-themes';
 import {
-  Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Bell, Folder, Building, Plus, Calendar, ArrowRight, Contact, QrCode, Package, ArrowUp, Search, Users, ChevronRight,
-  ShoppingBag, Moon, UserPlus, UserMinus,Layers,AlertCircle, Sun, CreditCard, XCircle, User, Globe, Smartphone, Instagram, Github, Linkedin, Twitter, Facebook, Calendar as CalendarIcon, Briefcase, MapPin, Cake, 
-  Tag, Link as LinkIcon, FileText, Shield, Lock, EyeOff, ShieldCheck, LogOut, ShieldAlert, Snowflake, Star, Crown, BellRing, Search as SearchIcon, CheckCircle, BarChart3, Leaf
+  Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Folder, Building, Plus, Calendar, 
+  QrCode, Package, ArrowUp, Search, Users, ChevronRight, ShoppingBag, UserPlus, UserMinus,Layers,AlertCircle, CreditCard, XCircle,
+  User, Globe, Calendar as CalendarIcon, Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing,
+  Search as SearchIcon, CheckCircle, BarChart3, Leaf
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1415,16 +1416,17 @@ const calculateProfileCompletion = (profile: any) => {
   if (profile.skills && profile.skills.length > 0) score += 1;
 
   // Links : au moins un lien social renseigné
-  const hasLinks = !!(
+const hasLinks = !!(
     profile.website ||
     profile.linkedin ||
     profile.github ||
     profile.instagram ||
     profile.tiktok ||
     profile.snapchat ||
-    profile.behance ||
-    profile.dribbble ||
-    profile.gitlab ||
+    profile.pinterest ||
+    profile.discord ||
+    profile.reddit ||
+    profile.threads ||
     profile.portfolio_url
   );
   if (hasLinks) score += 1;

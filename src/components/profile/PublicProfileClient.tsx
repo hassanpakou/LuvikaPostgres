@@ -8,9 +8,9 @@ import ContactSection from './ContactSection';
 import SocialSection from './SocialSection';
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
-  Instagram, Globe, Download, QrCode, ExternalLink, Crown,
-  CheckCircle, UserCheck, ArrowUp, ChevronDown, Send, Link as LinkIcon,
-  Cake, Tag, Briefcase, Calendar, Github, Linkedin, Gitlab, FileText, Share as ShareIcon,
+  Instagram, Globe, Download, ExternalLink, Crown,
+  CheckCircle, ArrowUp, ChevronDown, Send, Link as LinkIcon,
+  Cake, Tag, Briefcase, Calendar, Github, Linkedin, FileText, Share as ShareIcon,
   X, MoreVertical,
   PhoneCall,
   ArrowUpRight,
@@ -46,7 +46,6 @@ import FloatingButtons from './ProfileActions';
 import ContactForm from './ContactForm';
 import { createClient } from '../../lib/supabase/client';
 import FollowersList from './FollowersList';
-import FollowingList from './FollowersList';
 import { PublicProfile } from '../../types/profile';
 
 // 🔹 Types
@@ -73,9 +72,10 @@ type Profile = {
   snapchat: string | null;
   telegram: string | null;
   github: string | null;
-  gitlab: string | null;
-  behance: string | null;
-  dribbble: string | null;
+  discord: string | null;
+  reddit: string | null;
+  pinterest: string | null;
+  threads: string | null;
   calendly: string | null;
   portfolio_url: string | null;
   cv_url: string | null;
@@ -137,7 +137,7 @@ const isSectionEnabled = (section: string, configs?: CardConfig[]): boolean => {
 
 // 🔹 Composant SocialCard - SÉCURISÉ pour Tailwind (pas de classes dynamiques)
 const SocialCard: React.FC<{
-  platform: 'instagram' | 'linkedin' | 'github' | 'gitlab' | 'tiktok' | 'snapchat' | 'telegram' | 'behance' | 'dribbble' | 'youtube';
+  platform: 'instagram' | 'linkedin' | 'github' | 'pinterest' | 'tiktok' | 'snapchat' | 'telegram' | 'discord' | 'threads' | 'youtube' | 'reddit';
   label: string;
   handle: string;
   href: string;
@@ -164,12 +164,6 @@ const SocialCard: React.FC<{
       hover: 'hover:border-gray-500/40 hover:shadow-gray-500/10',
       text: 'text-gray-400'
     },
-    gitlab: { 
-      bg: 'from-orange-500 to-amber-500', 
-      border: 'border-orange-500/20', 
-      hover: 'hover:border-orange-500/40 hover:shadow-orange-500/10',
-      text: 'text-orange-400'
-    },
     tiktok: { 
       bg: 'from-black to-gray-800', 
       border: 'border-gray-700/20', 
@@ -188,23 +182,35 @@ const SocialCard: React.FC<{
       hover: 'hover:border-blue-400/40 hover:shadow-blue-400/10',
       text: 'text-blue-400'
     },
-    behance: { 
-      bg: 'from-blue-500 to-cyan-500', 
-      border: 'border-blue-500/20', 
-      hover: 'hover:border-blue-500/40 hover:shadow-blue-500/10',
-      text: 'text-blue-400'
+    pinterest: { 
+      bg: 'from-red-600 to-rose-600', 
+      border: 'border-red-500/20', 
+      hover: 'hover:border-red-500/40 hover:shadow-red-500/10',
+      text: 'text-red-400'
     },
-    dribbble: { 
-      bg: 'from-pink-500 to-rose-500', 
-      border: 'border-pink-500/20', 
-      hover: 'hover:border-pink-500/40 hover:shadow-pink-500/10',
-      text: 'text-pink-400'
+    discord: { 
+      bg: 'from-indigo-500 to-blue-600', 
+      border: 'border-indigo-500/20', 
+      hover: 'hover:border-indigo-500/40 hover:shadow-indigo-500/10',
+      text: 'text-indigo-400'
+    },
+    reddit: { 
+      bg: 'from-orange-500 to-red-500', 
+      border: 'border-orange-500/20', 
+      hover: 'hover:border-orange-500/40 hover:shadow-orange-500/10',
+      text: 'text-orange-400'
     },
     youtube: {
     bg: 'from-red-600 to-rose-600',
     border: 'border-red-500/20',
     hover: 'hover:border-red-500/40 hover:shadow-red-500/10',
     text: 'text-red-400',
+  },
+  threads: {
+    bg: 'from-neutral-800 to-neutral-700',
+    border: 'border-neutral-600/20',
+    hover: 'hover:border-neutral-600/40 hover:shadow-neutral-600/10',
+    text: 'text-neutral-400',
   },
   };
 
@@ -460,16 +466,19 @@ const profileWithVisibility: PublicProfile = {
     : '/default.png';
 
   const [bubbles, setBubbles] = useState<Array<{id: number, w: number, h: number, l: number, t: number}>>([]);
-  useEffect(() => {
-    const generated = Array.from({ length: 18 }, (_, i) => ({
-      id: i,
-      w: 6 + Math.random() * 20,
-      h: 6 + Math.random() * 20,
-      l: Math.random() * 100,
-      t: Math.random() * 100,
-    }));
-    setBubbles(generated);
-  }, []);
+const [isClient, setIsClient] = useState(false);
+
+useEffect(() => {
+  setIsClient(true);
+  const generated = Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    w: 6 + Math.random() * 20,
+    h: 6 + Math.random() * 20,
+    l: Math.random() * 100,
+    t: Math.random() * 100,
+  }));
+  setBubbles(generated);
+}, []);
 
   // 🔑 CORRECTION CRITIQUE : Synchronisation PROP → STATE
 useEffect(() => {
@@ -751,12 +760,13 @@ const showSocialSection = isSectionEnabled('social', localCardConfigs) && (
   localProfile.instagram?.trim() ||
   localProfile.linkedin?.trim() ||
   localProfile.github?.trim() ||
-  localProfile.gitlab?.trim() ||
   localProfile.tiktok?.trim() ||
   localProfile.snapchat?.trim() ||
   localProfile.telegram?.trim() ||
-  localProfile.behance?.trim() ||
-  localProfile.dribbble?.trim() ||
+  localProfile.pinterest?.trim() ||
+  localProfile.discord?.trim() ||
+  localProfile.reddit?.trim() ||
+  localProfile.threads?.trim() ||
   localProfile.youtube?.trim()
 );
 
@@ -806,17 +816,18 @@ const showLinksSection =
 
       <div className="fixed inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/20 via-blue-900/10 to-indigo-900/5"></div>
-        <div className="absolute inset-0 overflow-hidden">
-          {bubbles.map(bubble => (
-            <motion.div
-              key={bubble.id}
-              className="absolute rounded-full bg-white/5"
-              style={{
-                width: `${bubble.w}px`,
-                height: `${bubble.h}px`,
-                left: `${bubble.l}%`,
-                top: `${bubble.t}%`,
-              }}
+        {isClient && (
+  <div className="absolute inset-0 overflow-hidden">
+    {bubbles.map(bubble => (
+      <motion.div
+        key={bubble.id}
+        className="absolute rounded-full bg-white/5"
+        style={{
+          width: `${bubble.w}px`,
+          height: `${bubble.h}px`,
+          left: `${bubble.l}%`,
+          top: `${bubble.t}%`,
+        }}
               animate={{
                 y: [0, -40, 0],
                 x: [0, Math.sin(bubble.id) * 30, 0],
@@ -831,6 +842,7 @@ const showLinksSection =
             />
           ))}
         </div>
+        )}
       </div>
 
       <div className="relative w-full overflow-hidden">

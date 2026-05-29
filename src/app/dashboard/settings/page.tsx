@@ -6,13 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
-  Upload, Save, ImageIcon, ExternalLink, Eye, Mail, Phone,
-  Smartphone, Globe, Instagram, MapPin, Brush, Palette, User, Settings, Crown,
-  AlertTriangle, CheckCircle, X, RotateCcw, Cake, Tag, Link as LinkIcon,
-  Briefcase, Github, Linkedin, Gitlab, FileText, Calendar, Plus, EyeOff, Lock, ShieldCheck,
-  RefreshCw, Bell, ArrowLeft, ChevronRight,
-  ChevronDown, ChevronUp, Check, Sparkles, Star, Zap, Gift, Trophy, Award,
-  XCircle, Menu, Youtube
+  Save, ImageIcon, Instagram, MapPin, User, Settings, Crown,
+  Link as Briefcase, Github, Linkedin, Lock, ShieldCheck,
+  RefreshCw, ArrowLeft,
+  ChevronDown, ChevronUp, Menu, Youtube
 } from 'lucide-react';
 import { SiTiktok } from "react-icons/si";
 import { Button } from '@/components/ui/button';
@@ -45,15 +42,27 @@ const TelegramIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-const BehanceIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
-    <path fill="currentColor" d="M0 0v24h24V0H0zm8.4 18.4H4.8V5.6h3.6c1.6 0 2.8.4 3.6 1.2s1.2 2 1.2 3.6-.4 2.8-1.2 3.6-2 1.2-3.6 1.2zm-1.2-1.6h2c1.2 0 2-.4 2.4-1.2s.6-2 .6-3.6-.2-2.8-.6-3.6-1.2-1.2-2.4-1.2H7.2v9.6zm5.6-10.4v1.6h-3.2v3.2h2.8v1.6h-2.8v3.2h3.2v1.6h-4.8V5.6h4.8v1.6z" />
+const PinterestIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1.2 13.5c-.3 1.2-.6 2.4-1.5 3-1.2-1.2-1.5-3-1.5-4.5 0-2.4 1.2-4.2 2.4-4.2 1.2 0 1.8.9 1.8 1.8 0 1.2-.6 3-1.5 3-.3 0-.6-.3-.6-.6 0-.6.3-1.2.6-1.8.6-.9.3-1.5-.3-1.5-.9 0-1.5 1.2-1.5 2.4 0 1.5.6 2.4 1.5 3z"/>
   </svg>
 );
 
-const DribbbleIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className}>
-    <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
+const DiscordIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+  </svg>
+);
+
+const RedditIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm3.8 14.2c-.4.4-.9.6-1.4.6s-1-.2-1.4-.6c-.2-.2-.5-.2-.7 0-.4.4-.9.6-1.4.6s-1-.2-1.4-.6c-.2-.2-.5-.2-.7 0-.2.2-.2.5 0 .7.6.6 1.4.9 2.1.9s1.6-.3 2.1-.9c.2-.2.2-.5 0-.7zm1.7-4.2c-.5 0-.9.4-.9.9s.4.9.9.9.9-.4.9-.9-.4-.9-.9-.9zm-8.2 0c-.5 0-.9.4-.9.9s.4.9.9.9.9-.4.9-.9-.4-.9-.9-.9z"/>
+  </svg>
+);
+
+const ThreadsIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className={className} fill="currentColor">
+    <path d="M12.186 1.333c-5.873 0-10.667 4.794-10.667 10.667s4.794 10.667 10.667 10.667 10.667-4.794 10.667-10.667-4.794-10.667-10.667-10.667zm3.82 8.267c1.067.133 2.08.467 3 1l-.667 1.6c-.787-.4-1.6-.667-2.467-.733-1.267-.067-2.4.267-3.4 1-1.867 1.333-2.533 3.933-1.467 5.933.933 1.733 3.067 2.333 4.733 1.333 1.133-.667 1.867-1.933 2-3.267h-3.333v-1.867h5.333c.067.4.133.8.133 1.2 0 3.267-2.4 6-5.667 6-3.333 0-6-2.733-6-6s2.667-6 6-6c.733 0 1.467.133 2.133.4z"/>
   </svg>
 );
 
@@ -76,9 +85,10 @@ type Profile = {
   snapchat: string | null;
   telegram: string | null;
   github: string | null;
-  gitlab: string | null;
-  behance: string | null;
-  dribbble: string | null;
+  pinterest: string | null;
+  discord: string | null;
+  reddit: string | null;
+  threads: string | null;
   calendly: string | null;
   youtube: string | null;
   portfolio_url: string | null;
@@ -247,9 +257,10 @@ export default function SettingsPage() {
       snapchat: profile.snapchat?.replace(/^@/, '') || null,
       telegram: profile.telegram?.replace(/^@/, '') || null,
       github: profile.github?.replace(/^https?:\/\//, '') || null,
-      gitlab: profile.gitlab?.replace(/^https?:\/\//, '') || null,
-      behance: profile.behance?.replace(/^https?:\/\//, '') || null,
-      dribbble: profile.dribbble?.replace(/^https?:\/\//, '') || null,
+      pinterest: profile.pinterest?.replace(/^https?:\/\//, '') || null,
+      discord: profile.discord?.replace(/^@/, '') || null,
+      reddit: profile.reddit?.replace(/^u\//, '') || null,
+      threads: profile.threads?.replace(/^@/, '') || null,
       calendly: profile.calendly?.replace(/^https?:\/\//, '') || null,
       youtube: profile.youtube?.replace(/^https?:\/\//, '') || null,
       portfolio_url: profile.portfolio_url?.replace(/^https?:\/\//, '') || null,
@@ -458,10 +469,11 @@ export default function SettingsPage() {
                 { key: 'snapchat', label: 'Snapchat', icon: SnapchatIcon, prefix: '@' },
                 { key: 'telegram', label: 'Telegram', icon: TelegramIcon, prefix: '@' },
                 { key: 'github', label: 'GitHub', icon: Github },
-                { key: 'gitlab', label: 'GitLab', icon: Gitlab },
-                { key: 'behance', label: 'Behance', icon: BehanceIcon },
+                { key: 'pinterest', label: 'Pinterest', icon: PinterestIcon, prefix: '@' },
+                { key: 'discord', label: 'Discord', icon: DiscordIcon, prefix: '@' },
+                { key: 'reddit', label: 'Reddit', icon: RedditIcon, prefix: 'u/' },                
                 { key: 'youtube', label: 'YouTube', icon: Youtube, prefix: '@' },
-                { key: 'dribbble', label: 'Dribbble', icon: DribbbleIcon },
+                { key: 'threads', label: 'Threads', icon: ThreadsIcon, prefix: '@' },
               ].map(({ key, label, icon: Icon, prefix }) => (
                 <div key={key} className="space-y-1">
                   <Label className="flex items-center gap-2"><Icon className="w-4 h-4" /> {label}</Label>

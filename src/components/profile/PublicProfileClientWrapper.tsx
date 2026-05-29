@@ -44,9 +44,21 @@ export default function PublicProfileClientWrapper({
   const [followers, setFollowers] = useState(initialFollowers);
   const [following, setFollowing] = useState(initialFollowing);
   const [isFollowing, setIsFollowing] = useState(isInitiallyFollowing);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date()); // 🔹 Gardé pour l'indicateur UI
-  const [cardConfigs, setCardConfigs] = useState(initialCardConfigs); // ✅
-  const [scansCount, setScansCount] = useState(initialScansCount); // ✅
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const [cardConfigs, setCardConfigs] = useState(initialCardConfigs);
+  const [scansCount, setScansCount] = useState(initialScansCount);
+
+  // ✅ Protection hydratation : bulles générées uniquement côté client
+  const [isClient, setIsClient] = useState(false);
+  const [bubbles, setBubbles] = useState<Array<{
+    id: number;
+    w: number;
+    h: number;
+    l: number;
+    t: number;
+    animationDelay: string;
+    animationDuration: string;
+  }>>([]);
  
   const router = useRouter();
   const pathname = usePathname();
@@ -56,6 +68,21 @@ export default function PublicProfileClientWrapper({
   // 🔹 Initialisation Supabase client
   useEffect(() => {
     supabase.current = createClient();
+  }, []);
+
+  // ✅ Génération des bulles UNIQUEMENT côté client
+  useEffect(() => {
+    setIsClient(true);
+    const generated = Array.from({ length: 20 }, (_, i) => ({
+      id: i,
+      w: 8 + Math.random() * 25,
+      h: 8 + Math.random() * 25,
+      l: Math.random() * 100,
+      t: Math.random() * 100,
+      animationDelay: `${i * 0.15}s`,
+      animationDuration: `${10 + i * 0.5}s`,
+    }));
+    setBubbles(generated);
   }, []);
 
   // 🔹 Fonction pour charger les stats initiales
@@ -110,53 +137,51 @@ export default function PublicProfileClientWrapper({
     if (!supabase.current) return;
 
     // 🔸 Canal : mises à jour du profil
-    // Canal profil
-const profileChannel = supabase.current
-  .channel(`profile-${profileId}-${Date.now()}`)
-  .on(
-    'postgres_changes',
-    {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'profiles',
-      filter: `id=eq.${profileId}`,
-    },
-    (payload: { new: Record<string, any>; old: Record<string, any> }) => {
-      console.log('🔄 [REALTIME] Profil mis à jour:', payload.new);
-      setProfileData((prev: any) => ({ ...prev, ...payload.new }));
-      setLastUpdate(new Date());
-    }
-  )
-  .subscribe((status: string) => {
-    console.log(`📡 Profil channel status: ${status}`);
-  });
+    const profileChannel = supabase.current
+      .channel(`profile-${profileId}-${Date.now()}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${profileId}`,
+        },
+        (payload: { new: Record<string, any>; old: Record<string, any> }) => {
+          console.log('🔄 [REALTIME] Profil mis à jour:', payload.new);
+          setProfileData((prev: any) => ({ ...prev, ...payload.new }));
+          setLastUpdate(new Date());
+        }
+      )
+      .subscribe((status: string) => {
+        console.log(`📡 Profil channel status: ${status}`);
+      });
 
-// ✅ CANAL REALTIME CORRECT DANS LE WRAPPER (déjà dans votre code)
-// ✅ CANAL REALTIME CORRECT DANS LE WRAPPER (déjà dans votre code)
-const cardConfigsChannel = supabase.current
-  .channel(`card-configs-${profileId}-${Date.now()}`)
-  .on('postgres_changes', {
-    event: '*',
-    schema: 'public',
-    table: 'card_configs',
-    filter: `profile_id=eq.${profileId}`,
-  }, async () => {
-    try {
-      const { data, error } = await supabase.current
-        .from('card_configs')
-        .select('*')
-        .eq('profile_id', profileId);
-      
-      if (error) throw error;
-      
-      setCardConfigs(data || []); // ✅ Met à jour l'état du wrapper
-      setLastUpdate(new Date());
-      console.log('✅ Card configs mises à jour en temps réel | Count:', data?.length || 0);
-    } catch (err) {
-      console.error('❌ Erreur mise à jour card_configs:', err);
-    }
-  })
-  .subscribe();
+    // 🔸 Canal : card_configs
+    const cardConfigsChannel = supabase.current
+      .channel(`card-configs-${profileId}-${Date.now()}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'card_configs',
+        filter: `profile_id=eq.${profileId}`,
+      }, async () => {
+        try {
+          const { data, error } = await supabase.current
+            .from('card_configs')
+            .select('*')
+            .eq('profile_id', profileId);
+          
+          if (error) throw error;
+          
+          setCardConfigs(data || []);
+          setLastUpdate(new Date());
+          console.log('✅ Card configs mises à jour en temps réel | Count:', data?.length || 0);
+        } catch (err) {
+          console.error('❌ Erreur mise à jour card_configs:', err);
+        }
+      })
+      .subscribe();
   
     // 🔸 Canal : changements de follows
     const followChannel = supabase.current
@@ -197,7 +222,7 @@ const cardConfigsChannel = supabase.current
       })
       .subscribe();
 
-    // 🔸 Canal : mises à jour des scans (pour lastUpdate uniquement)
+    // 🔸 Canal : mises à jour des scans
     const scansChannel = supabase.current
       .channel(`scans-${profileId}-${Date.now()}`)
       .on('postgres_changes', {
@@ -328,14 +353,11 @@ const cardConfigsChannel = supabase.current
     };
   }, [profileData.id, currentUser, locale, input, router, setupRealtime]);
 
-  // ✅ Affichage avec indicateur de synchronisation
+  // ✅ AFFICHAGE
   return (
     <div suppressHydrationWarning className="min-h-screen relative">
-      {/* ... indicateur de synchronisation ... */}
-      
-      <div className="fixed right-4 mt-6 z-50">
-
-
+      {/* 🔹 Indicateur de synchronisation */}
+      <div className="fixed right-4 top-4 z-50">
         <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${
           lastUpdate.getTime() > Date.now() - 60000 
             ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
@@ -352,43 +374,46 @@ const cardConfigsChannel = supabase.current
         </div>
       </div>
 
+      {/* ✅ Fond décoratif avec bulles protégées contre l'hydratation */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/30 via-blue-900/20 to-indigo-900/10"></div>
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={`bg-bubble-${i}`}
-              className="absolute rounded-full bg-white/5 animate-pulse"
-              style={{
-                width: `${8 + Math.random() * 25}px`,
-                height: `${8 + Math.random() * 25}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${i * 0.15}s`,
-                animationDuration: `${10 + i * 0.5}s`,
-              }}
-            />
-          ))}
-        </div>
+        
+        {/* ✅ Rendu conditionnel : rien côté serveur, bulles côté client */}
+        {isClient && (
+          <div className="absolute inset-0 overflow-hidden">
+            {bubbles.map(bubble => (
+              <div
+                key={`bg-bubble-${bubble.id}`}
+                className="absolute rounded-full bg-white/5 animate-pulse"
+                style={{
+                  width: `${bubble.w}px`,
+                  height: `${bubble.h}px`,
+                  left: `${bubble.l}%`,
+                  top: `${bubble.t}%`,
+                  animationDelay: bubble.animationDelay,
+                  animationDuration: bubble.animationDuration,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="container mx-auto pb-20 relative z-10">
-
-        {/* ✅ APRÈS - Utilise l'état React (mis à jour en temps réel) */}
-<PublicProfileClient
-  profile={profileData}
-  cardConfigs={cardConfigs} // ← CORRECT : mis à jour par Realtime
-  followers={optimisticFollowers}
-  following={following}
-  isOwner={currentUser?.id === profileData.id}
-  isInitiallyFollowing={isFollowing}
-  currentUserId={currentUser?.id || null}
-  onFollowChange={(newCount: number, isNowFollowing: boolean) => {
-    setFollowers(newCount);
-    setIsFollowing(isNowFollowing);
-  }}
-  lastUpdate={lastUpdate}
-/>
+        <PublicProfileClient
+          profile={profileData}
+          cardConfigs={cardConfigs}
+          followers={optimisticFollowers}
+          following={following}
+          isOwner={currentUser?.id === profileData.id}
+          isInitiallyFollowing={isFollowing}
+          currentUserId={currentUser?.id || null}
+          onFollowChange={(newCount: number, isNowFollowing: boolean) => {
+            setFollowers(newCount);
+            setIsFollowing(isNowFollowing);
+          }}
+          lastUpdate={lastUpdate}
+        />
       </div>
     </div>
   );
