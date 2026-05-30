@@ -158,11 +158,11 @@ export default function CardConfigPage() {
         <div className="flex items-center gap-3 text-sm">
   <div className="flex items-center gap-1.5 text-cyan-400">
     <Zap className="w-4 h-4" />
-    <span className="font-medium">{stats.active} activées</span>
+    <span className="font-medium">{stats.active} </span>
   </div>
   <div className="flex items-center gap-1.5 text-amber-400">
     <Shield className="w-4 h-4" />
-    <span className="font-medium">{stats.locked} verrouillées</span>
+    <span className="font-medium">{stats.locked} </span>
   </div>
   {getPlanBadge(isPremium, userPlan)}
 </div>

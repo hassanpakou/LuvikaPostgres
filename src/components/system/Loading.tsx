@@ -59,11 +59,6 @@ export default function Loading() {
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
           />
         </div>
-
-        {/* Signature discrète */}
-        <p className="text-[10px] text-gray-600 flex items-center gap-1">
-          LUVIKA
-        </p>
       </div>
     </div>
   );
