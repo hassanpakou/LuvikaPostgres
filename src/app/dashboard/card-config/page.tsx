@@ -219,5 +219,5 @@ export default function CardConfigPage() {
 
 function getPlanBadge(isPremium: boolean, plan: string) {
   if (!isPremium) return <Badge className="bg-gray-700 text-gray-300 text-[10px]"><User className="w-3 h-3 mr-1 inline" />Basic</Badge>;
-  return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px]"><Crown className="w-3 h-3 mr-1 inline" />{plan === 'premium' ? 'Premium' : 'Business'}</Badge>;
+  return <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px]"><Crown className="w-3 h-3 mr-1 inline" />{plan === 'premium' ? '' : ''}</Badge>;
 }
