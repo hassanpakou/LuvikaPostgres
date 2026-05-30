@@ -169,9 +169,9 @@ export default function SettingsPage() {
   const [isRealtimeActive, setIsRealtimeActive] = useState(false);
 
   const quickActions = [
-    { id: 'save', label: 'Enregistrer', icon: <Save className="w-4 h-4" />, color: 'from-emerald-500 to-teal-500' },
-    { id: 'refresh', label: 'Actualiser', icon: <RefreshCw className="w-4 h-4" />, color: 'from-blue-500 to-cyan-500' },
-    { id: 'back', label: 'Retour', icon: <ArrowLeft className="w-4 h-4" />, color: 'from-gray-500 to-gray-600' },
+    { id: 'save', label: '', icon: <Save className="w-4 h-4" />, color: 'from-emerald-500 to-teal-500' },
+    { id: 'refresh', label: '', icon: <RefreshCw className="w-4 h-4" />, color: 'from-blue-500 to-cyan-500' },
+    { id: 'back', label: '', icon: <ArrowLeft className="w-4 h-4" />, color: 'from-gray-500 to-gray-600' },
   ];
 
   const toggleSection = (section: keyof typeof expandedSections) => {

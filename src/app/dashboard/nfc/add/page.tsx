@@ -61,7 +61,7 @@ export default async function AddNFCPage() {
       <div className="max-w-2xl mx-auto">
         <Link href="/dashboard" className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 mb-6 group">
           <span className="text-lg">←</span>
-          <span className="group-hover:underline">Retour au tableau de bord</span>
+          <span className="group-hover:underline"></span>
         </Link>
 
         <div className="text-center mb-8">

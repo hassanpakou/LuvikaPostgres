@@ -134,7 +134,7 @@ export default function CardConfigPage() {
           </div>
         </div>
         <Button variant="outline" size="sm" onClick={() => router.push('/dashboard')} className="border-white/20 text-gray-300">
-          <ArrowLeft className="w-4 h-4 mr-1" /> Retour
+          <ArrowLeft className="w-4 h-4 mr-1" />
         </Button>
       </div>
 

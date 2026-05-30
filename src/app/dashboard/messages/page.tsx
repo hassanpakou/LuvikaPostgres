@@ -205,19 +205,19 @@ export default function MessagesPage() {
   const quickActions = [
     {
       id: 'refresh',
-      label: 'Actualiser',
+      label: '',
       icon: <RefreshCw className="w-4 h-4" />,
       color: 'from-emerald-500 to-teal-500',
     },
     {
       id: 'back',
-      label: 'Retour',
+      label: '',
       icon: <ArrowLeft className="w-4 h-4" />,
       color: 'from-gray-500 to-gray-600',
     },
     {
       id: 'export',
-      label: 'Exporter',
+      label: '',
       icon: <Download className="w-4 h-4" />,
       color: 'from-blue-500 to-cyan-500',
     }

@@ -107,10 +107,10 @@ export default function ParametersPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => router.push('/dashboard')} className="border-white/20 text-gray-300">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Retour
+            <ArrowLeft className="w-4 h-4 mr-1" /> 
           </Button>
           <Button size="sm" onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-            <Save className="w-4 h-4 mr-1" /> {saving ? '...' : 'Enregistrer'}
+            <Save className="w-4 h-4 mr-1" /> {saving ? '...' : ''}
           </Button>
         </div>
       </div>

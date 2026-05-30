@@ -107,13 +107,13 @@ export default function SubscribersPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => router.push('/dashboard')} className="border-white/20 text-gray-300">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Retour
+            <ArrowLeft className="w-4 h-4 mr-1" /> 
           </Button>
           <Button variant="outline" size="sm" onClick={fetchFollowers} className="border-white/20 text-gray-300">
-            <RefreshCw className="w-4 h-4 mr-1" /> Actualiser
+            <RefreshCw className="w-4 h-4 mr-1" /> 
           </Button>
           <Button size="sm" onClick={handleExport} className="bg-cyan-600 hover:bg-cyan-700 text-white">
-            <Download className="w-4 h-4 mr-1" /> Export
+            <Download className="w-4 h-4 mr-1" /> 
           </Button>
         </div>
       </div>
