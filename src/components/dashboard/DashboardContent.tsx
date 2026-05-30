@@ -34,6 +34,8 @@ import NFCManagementModal from './Modals/NFCManagementModal';
 import NFCModal from './Modals/NFCModal';
 import { NFCCard } from '../../types/nfc';
 import { normalizeNfcCard } from '@/src/lib/utils/nfc';
+import CompanyTypeModal from './CompanyTypeModal';
+
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -657,15 +659,18 @@ export default function DashboardContent({
   const [showEventForm, setShowEventForm] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-const [searchResults, setSearchResults] = useState<any[]>([]);
-const [isSearching, setIsSearching] = useState(false);
-const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-const [followStatus, setFollowStatus] = useState<Record<string, boolean>>({});
-const [isNFCModalOpen, setIsNFCModalOpen] = useState(false);
-const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
-const [selectedCardForManagement, setSelectedCardForManagement] = useState<NFCCard | null>(null);
-const [nfcCards, setNfcCards] = useState<NFCCard[]>([]);
-const [isTransparent, setIsTransparent] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [followStatus, setFollowStatus] = useState<Record<string, boolean>>({});
+  const [isNFCModalOpen, setIsNFCModalOpen] = useState(false);
+  const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
+  const [selectedCardForManagement, setSelectedCardForManagement] = useState<NFCCard | null>(null);
+  const [nfcCards, setNfcCards] = useState<NFCCard[]>([]);
+  const [isTransparent, setIsTransparent] = useState(false);
+  const [showCompanyTypeModal, setShowCompanyTypeModal] = useState(false);
+  const [companyId, setCompanyId] = useState<string>('');
+  const [needsCompanyType, setNeedsCompanyType] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -687,11 +692,11 @@ const [isTransparent, setIsTransparent] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showFarewell, setShowFarewell] = useState(false);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-const [activeCardStats, setActiveCardStats] = useState<{ scans: number; unique_visitors: number } | null>(null);
-const [loadingCards, setLoadingCards] = useState(true);
-const [loadingMessagesCount, setLoadingMessagesCount] = useState(true);
-  // 🔹 Fonction pour fermer les modaux contrôlés par activeModal
-const closeModal = () => {
+  const [activeCardStats, setActiveCardStats] = useState<{ scans: number; unique_visitors: number } | null>(null);
+  const [loadingCards, setLoadingCards] = useState(true);
+  const [loadingMessagesCount, setLoadingMessagesCount] = useState(true);
+    // 🔹 Fonction pour fermer les modaux contrôlés par activeModal
+  const closeModal = () => {
   setActiveModal(null);
 };
   // 🔹 Références pour les canaux realtime
@@ -1022,20 +1027,43 @@ useEffect(() => {
   };
   
   const [hasCompany, setHasCompany] = useState(false);
-  useEffect(() => {
-    const checkCompany = async () => {
-      if (user?.id && subscription.plan === 'entreprise') {
-        const supabase = createClient();
-        const { data } = await supabase
-          .from('companies')
-          .select('id')
-          .eq('owner_id', user.id)
-          .single();
-        setHasCompany(!!data);
+useEffect(() => {
+  const checkCompany = async () => {
+    if (user?.id && subscription.plan === 'entreprise') {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('companies')
+        .select('id, company_type')
+        .eq('owner_id', user.id)
+        .single();
+      
+      setHasCompany(!!data);
+      
+      if (data) {
+        setCompanyId(data.id); // ✅ AJOUTE CECI
+        if (!data.company_type) {
+          setNeedsCompanyType(true);
+        }
       }
-    };
-    checkCompany();
-  }, [user?.id, subscription.plan]);
+    }
+  };
+  checkCompany();
+}, [user?.id, subscription.plan]);
+
+useEffect(() => {
+  if (needsCompanyType && hasCompany && !showCompanyTypeModal && companyId) {
+    setShowCompanyTypeModal(true);
+  }
+}, [needsCompanyType, hasCompany, showCompanyTypeModal, companyId]);
+
+// 5. En bas du JSX, avant la fermeture du return, ajouter le modal :
+{showCompanyTypeModal && companyId && (
+  <CompanyTypeModal
+    isOpen={showCompanyTypeModal}
+    onClose={() => setShowCompanyTypeModal(false)}
+    companyId={companyId}
+  />
+)}
   useEffect(() => {
   if (unreadMessagesCount > 0 && !loadingMessagesCount) {
     // Jouer un son discret
@@ -3290,4 +3318,3 @@ const handleToggleFollow = async (profileId: string) => {
     </div>
   );
 }
-

@@ -30,6 +30,14 @@ const languages: Record<Locale, { name: string; flag: string }> = {
   sw: { name: 'Kiswahili', flag: '🇹🇿' },
 };
 
+// Fallback sécurisé pour les locales inconnues
+const safeLocale = (raw: string): Locale => {
+  const normalized = raw.split('-')[0];
+  return (languages[normalized as Locale] ? normalized : 'fr') as Locale;
+};
+
+const safeLang = (loc: Locale) => languages[loc] || languages.fr;
+
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -44,7 +52,7 @@ export default function Navbar() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   
-  const locale = useLocale() as Locale;
+  const locale = safeLocale(useLocale() as string);
   const t = useTranslations();
   const router = useRouter();
 
@@ -114,6 +122,8 @@ export default function Navbar() {
     console.warn('⚠️ Erreur chargement avatar');
   };
 
+  const currentLang = safeLang(locale);
+
   return (
     <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-cyan-900/40 via-blue-900/40 to-cyan-900/40 backdrop-blur-md border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -134,8 +144,8 @@ export default function Navbar() {
             </motion.div>
             <div className="flex flex-col">
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-  LUVIKA
-</span>
+                LUVIKA
+              </span>
               <span className="text-[10px] font-medium text-cyan-600 -mt-0.5 hidden sm:block">
                 Digital Identity
               </span>
@@ -170,7 +180,7 @@ export default function Navbar() {
                 className="flex items-center gap-1 px-3 py-2 rounded-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all"
               >
                 <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">{languages[locale].name}</span>
+                <span className="text-sm font-medium">{currentLang.name}</span>
                 <ChevronDown className="w-3 h-3 opacity-70" />
               </button>
               <AnimatePresence>
@@ -265,7 +275,7 @@ export default function Navbar() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="font-semibold text-gray-900 truncate">
-                              {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+                              {profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Utilisateur'}
                             </p>
                             <div className="flex items-center gap-1 mt-0.5">
                               {profile?.plan && (
@@ -357,9 +367,9 @@ export default function Navbar() {
                 >
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <span className="font-medium">{languages[locale].name}</span>
+                    <span className="font-medium">{currentLang.name}</span>
                   </div>
-                  <span className="text-lg">{languages[locale].flag}</span>
+                  <span className="text-lg">{currentLang.flag}</span>
                 </button>
                 <AnimatePresence>
                   {showLangDropdown && (
