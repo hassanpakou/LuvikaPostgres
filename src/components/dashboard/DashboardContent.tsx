@@ -4,7 +4,6 @@
 import { useState, useEffect, useMemo, useRef, SetStateAction } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import { useTheme } from 'next-themes';
 import {
   Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Folder, Building, Plus, Calendar, 
   QrCode, Package, ArrowUp, Search, Users, ChevronRight, ShoppingBag, UserPlus, UserMinus,Layers,AlertCircle, CreditCard, XCircle,
@@ -1479,13 +1478,6 @@ useEffect(() => {
     setProfileCompletion(completion);
   }
 }, [profile]);
-// 🔹 Hook pour le thème
-const { theme, setTheme } = useTheme();
-
-// 🔹 Toggle thème
-const toggleTransparency = () => {
-  setIsTransparent(prev => !prev);
-};
 
 // 🔹 Recherche d'utilisateurs
 const handleSearch = async (query: string) => {
@@ -1661,21 +1653,6 @@ const handleToggleFollow = async (profileId: string) => {
         {(profile?.likes_count ?? 0) > 99 ? '99+' : (profile?.likes_count ?? 0)}
       </span>
       <div className="absolute inset-0 rounded-xl sm:rounded-full bg-red-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-    </Button>
-
-    {/* 🌫️ Transparence des sections */}
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={toggleTransparency}
-      className={`h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md ${isTransparent ? 'shadow-purple-500/10 hover:shadow-purple-500/20' : 'shadow-blue-500/10 hover:shadow-blue-500/20'}`}
-      aria-label={isTransparent ? 'Mode opaque' : 'Mode transparent'}
-    >
-      {isTransparent ? (
-        <EyeOff className="h-5 w-5 sm:h-6 sm:w-6 text-purple-300 group-hover:scale-110 transition-transform" />
-      ) : (
-        <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-blue-200 group-hover:scale-110 transition-transform" />
-      )}
     </Button>
   </div>
 </div>
@@ -2344,384 +2321,69 @@ const handleToggleFollow = async (profileId: string) => {
   </CardContent>
 </Card>
      
-{/* 🔹 Colonne unique: Abonnement - DESIGN ULTRA PREMIUM */}
+{/* 🔹 Abonnement - Design léger et transparent */}
 <motion.div
-  whileHover={{ y: -2, scale: 1.005 }}
-  whileTap={{ scale: 0.995 }}
-  className={`
-    relative
-    glass-section
-    border border-white/10
-    rounded-2xl
-    bg-gradient-to-br
-    ${
-      subscription.plan === 'premium'
-        ? 'from-cyan-900/40 via-blue-900/30 to-transparent'
-        : subscription.plan === 'entreprise'
-        ? 'from-purple-900/40 via-indigo-900/30 to-transparent'
-        : 'from-blue-900/40 via-gray-900/30 to-transparent'
-    }
-    backdrop-blur-2xl
-    w-full
-    shadow-2xl
-    shadow-black/50
-    overflow-visible
-    group
-    transition-all duration-500
-    hover:border-cyan-500/30
-    hover:shadow-cyan-500/15
-  `}
+  whileHover={{ y: -1 }}
+  className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm w-full transition-all duration-300 hover:border-cyan-500/30"
 >
-  {/* 🌊 Fond animé subtil */}
-  <div className="absolute inset-0 overflow-hidden">
-    <div className="absolute -left-1/2 -top-1/2 w-full h-full bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-    <div className="absolute inset-0 bg-grid-white/3 bg-[size:30px_30px]" />
-  </div>
-
- 
-  <CardHeader className="relative z-10 border-b border-white/5 pb-5">
+  <CardHeader className="pb-4">
     <CardTitle className="flex items-center flex-wrap gap-3">
-      {/* 🔸 Icône abonnement avec animation */}
-      <motion.div
-        whileHover={{ rotate: 360 }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        className={`
-          p-2.5 rounded-xl
-          bg-gradient-to-br
-          ${
-            subscription.plan === 'premium'
-              ? 'from-cyan-500/20 to-blue-500/20'
-              : subscription.plan === 'entreprise'
-              ? 'from-purple-500/20 to-indigo-500/20'
-              : 'from-blue-500/20 to-gray-500/20'
-          }
-          shadow-lg
-          shadow-black/30
-        `}
-      >
-        <CreditCard className={`
-          w-6 h-6
-          ${
-            subscription.plan === 'premium'
-              ? 'text-cyan-300'
-              : subscription.plan === 'entreprise'
-              ? 'text-purple-300'
-              : 'text-blue-300'
-          }
-          drop-shadow-md
-        `} />
-      </motion.div>
+      <div className={`p-2 rounded-lg ${
+        subscription.plan === 'premium' ? 'bg-cyan-500/10 text-cyan-400' :
+        subscription.plan === 'entreprise' ? 'bg-purple-500/10 text-purple-400' :
+        'bg-blue-500/10 text-blue-400'
+      }`}>
+        <CreditCard className="w-5 h-5" />
+      </div>
       
-      <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-cyan-200">
-        {t('subscription.title')}
-      </span>
+      <span className="text-lg font-semibold text-white">{t('subscription.title')}</span>
       
-      {/* 🔸 Badge du plan - DESIGN ÉLÉGANT */}
-      <Badge className={`
-        px-3 py-1.5
-        rounded-xl
-        font-bold
-        text-sm
-        shadow-lg
-        ${
-          subscription.plan === 'premium'
-            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-cyan-500/30 border border-cyan-500/30'
-            : subscription.plan === 'entreprise'
-            ? 'bg-gradient-to-r from-purple-600 to-indigo-700 text-white shadow-purple-500/30 border border-purple-500/30'
-            : 'bg-gradient-to-r from-blue-600 to-gray-700 text-white shadow-blue-500/30 border border-blue-500/30'
-        }
-        flex items-center gap-1.5
-        transform transition-all duration-300
-        group-hover:scale-105
-        relative
-        overflow-hidden
-      `}>
-        <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-        {subscription.plan === 'premium' && <Crown className="w-3.5 h-3.5" />}
-        {subscription.plan === 'entreprise' && <Building className="w-3.5 h-3.5" />}
-        {subscription.plan === 'basic' && <Star className="w-3.5 h-3.5" />}
+      <Badge className={`text-xs font-medium ${
+        subscription.plan === 'premium' ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' :
+        subscription.plan === 'entreprise' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
+        'bg-blue-500/20 text-blue-300 border-blue-500/30'
+      }`}>
+        {subscription.plan === 'premium' && <Crown className="w-3 h-3 mr-1" />}
+        {subscription.plan === 'entreprise' && <Building className="w-3 h-3 mr-1" />}
         {t(`subscription.plans.${subscription.plan}`) || subscription.plan}
-        
-        {/* 🔹 Étoile scintillante */}
-        <div className="absolute -right-1 -top-1 w-1.5 h-1.5 bg-white rounded-full" />
       </Badge>
-      
-      {/* 🔸 Indicateur lumineux - AMÉLIORÉ */}
-      <div className="flex items-center gap-2" aria-live="polite">
-        {subscription.active ? (
-          <>
-            <motion.div
-              className="relative w-4 h-4 rounded-full bg-green-500/95"
-              style={{ 
-                boxShadow: '0 0 12px 4px rgba(34, 197, 94, 0.7)',
-                filter: 'drop-shadow(0 0 8px rgba(34, 197, 94, 0.5))'
-              }}
-              animate={{ 
-                opacity: [1, 0.6, 1],
-                scale: [1, 1.15, 1],
-                rotate: [0, 180, 360]
-              }}
-              transition={{ 
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-              role="status"
-              aria-label={t('subscription.active_indicator')}
-            >
-              <motion.div 
-                className="absolute inset-0 rounded-full bg-green-300/40"
-                animate={{ scale: [0.9, 1.3, 0.9] }}
-                transition={{ 
-                  duration: 2.5, 
-                  repeat: Infinity, 
-                  ease: "easeOut" 
-                }}
-              />
-              <div className="absolute inset-0 rounded-full bg-white/20" />
-            </motion.div>
-            <div className="flex flex-col">
-              <span className="text-green-300 text-sm font-bold flex items-center gap-1.5">
-                <CheckCircle className="w-3.5 h-3.5" />
-                {t('subscription.active')}
-              </span>
-              
-            </div>
-          </>
-        ) : (
-          <>
-            <div 
-              className="w-4 h-4 rounded-full bg-yellow-400/80 relative"
-              style={{ 
-                boxShadow: '0 0 8px rgba(234, 179, 8, 0.6)',
-                filter: 'drop-shadow(0 0 6px rgba(234, 179, 8, 0.4))'
-              }}
-              role="status"
-              aria-label={t('subscription.inactive_indicator')}
-            >
-              <div className="absolute inset-0 rounded-full bg-yellow-200/30" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-yellow-300 text-sm font-bold flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                {t('subscription.inactive')}
-              </span>
-              <span className="text-[10px] text-yellow-400/80 font-medium mt-0.5">
-                ⚠️ Renouvellement requis
-              </span>
-            </div>
-          </>
-        )}
+
+      <div className="flex items-center gap-1.5 ml-auto">
+        <div className={`w-2 h-2 rounded-full ${subscription.active ? 'bg-green-400' : 'bg-yellow-400'} animate-pulse`} />
+        <span className={`text-xs ${subscription.active ? 'text-green-400' : 'text-yellow-400'}`}>
+          {subscription.active ? 'Actif' : 'Inactif'}
+        </span>
       </div>
     </CardTitle>
   </CardHeader>
   
-  <CardContent className="relative z-10 pt-5">
-    {/* 🔹 Message contextuel avec icône */}
-    <div className={`
-      p-4 rounded-xl
-      mb-5
-      flex items-start gap-3
-      ${
-        subscription.active
-          ? 'bg-green-500/10 border border-green-500/20'
-          : 'bg-yellow-500/10 border border-yellow-500/20'
-      }
-    `}>
-      {subscription.active ? (
-        <div className="mt-0.5 text-green-400">
-          <CheckCircle className="w-5 h-5" />
-        </div>
-      ) : (
-        <div className="mt-0.5 text-yellow-400">
-          <AlertTriangle className="w-5 h-5" />
-        </div>
-      )}
-      <div>
-        <p className="font-medium text-white">
-          {subscription.active
-            ? t('subscription.active_until', { date: '∞' })
-            : t('subscription.upgrade_prompt')}
-        </p>
-        <p className="text-[13px] text-gray-300 mt-1">
-          {subscription.active
-            ? 'Votre abonnement est actif et renouvelé automatiquement'
-            : '💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités'}
-        </p>
-      </div>
-    </div>
-    
-        {/* 🔹 Bouton d'upgrade - DESIGN PREMIUM */}
-    {profile.plan !== 'entreprise' && (
-      <div>
-        <Button
-          size="lg"
-          onClick={() => setActiveModal('upgrade')}
-          className={`
-            w-full
-            py-4
-            font-bold
-            text-base
-            rounded-xl
-            relative
-            overflow-hidden
-            shadow-xl
-            transition-all duration-300
-            ${
-              profile.plan === 'basic'
-                ? 'bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600'
-                : 'bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-500 hover:to-indigo-600'
-            }
-            text-white
-            border-0
-            group/btn
-          `}
-        >
-          {/* 🔹 Fond animé du bouton - SUPPRIMÉ (allègement) */}
-          {/* 🔹 Particules scintillantes - SUPPRIMÉES */}
-          
-          <div className="relative z-10 flex items-center justify-center gap-2">
-            {profile.plan === 'basic' ? (
-              <>
-                <Crown className="w-5 h-5" />
-                {t('subscription.upgrade_to_premium')}
-              </>
-            ) : (
-              <>
-                <Building className="w-5 h-5" />
-                {t('subscription.request_enterprise')}
-              </>
-            )}
-            <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-          </div>
-          
-          {/* 🔹 Badge angle supérieur droit - SIMPLIFIÉ (sans animation) */}
-          <div className="absolute -top-2 -right-2">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75" />
-              <div className="relative bg-gradient-to-r from-yellow-400 to-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg shadow-yellow-500/50">
-                {profile.plan === 'basic' ? '✨' : '🚀'}
-              </div>
-            </div>
-          </div>
-        </Button>
-        
-        {/* 🔹 Texte incitatif sous le bouton */}
-        <p className="text-center text-[12px] text-gray-400 mt-3 font-medium">
-          {profile.plan === 'basic'
-            ? '💎 Débloquez les fonctionnalités premium dès aujourd\'hui'
-            : '🏢 Solution personnalisée pour votre entreprise'}
-        </p>
-      </div>
+  <CardContent className="pt-0">
+    {subscription.active ? (
+      <p className="text-sm text-gray-400">Votre abonnement est actif et renouvelé automatiquement.</p>
+    ) : (
+      <p className="text-sm text-gray-400">💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités.</p>
     )}
     
-    {/* 🔹 Statut détaillé en bas */}
-<div className="mt-6 pt-4 border-t border-white/5">
-  <div className="flex items-center justify-between text-[13px]">
-    <span className="text-gray-400">Statut du compte :</span>
-
-    <span
-      className={`
-        font-semibold px-2.5 py-1 rounded-full text-[12px] border
-        flex items-center gap-1.5 transition-all duration-200
-        ${
-          subscription.active
-            ? 'bg-green-500/15 text-green-300 border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.35)]'
-            : 'bg-yellow-500/15 text-yellow-300 border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.35)]'
-        }
-      `}
-    >
-      {/* 🔵 Status dot */}
-      <span
-        className={`
-          w-2 h-2 rounded-full animate-pulse
-          ${subscription.active ? 'bg-green-400' : 'bg-yellow-400'}
-        `}
-      />
-
-      {subscription.active ? 'Actif' : 'Inactif'}
-    </span>
-  </div>
-
-  {subscription.active && (
-    <div className="mt-3 flex items-center justify-between text-[13px]">
-      <span className="text-gray-400">Prochain renouvellement :</span>
-      <span className="text-cyan-300 font-medium">
-        Jamais (à vie)
-      </span>
-    </div>
-  )}
-</div>
+    {profile.plan !== 'entreprise' && (
+      <Button
+        size="sm"
+        onClick={() => setActiveModal('upgrade')}
+        className={`w-full mt-4 font-medium rounded-xl ${
+          profile.plan === 'basic'
+            ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500'
+            : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500'
+        } text-white`}
+      >
+        {profile.plan === 'basic' ? (
+          <><Crown className="w-4 h-4 mr-2" />{t('subscription.upgrade_to_premium')}</>
+        ) : (
+          <><Building className="w-4 h-4 mr-2" />{t('subscription.request_enterprise')}</>
+        )}
+        <ChevronRight className="w-4 h-4 ml-auto" />
+      </Button>
+    )}
   </CardContent>
-
-
 </motion.div>
-
-{/* 🔹 Styles personnalisés pour les animations */}
-<style jsx global>{`
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  .animate-shimmer {
-    animation: shimmer 2s infinite linear;
-  }
-  @keyframes grid {
-    0% { background-position: 0 0; }
-    100% { background-position: 20px 20px; }
-  }
-  .bg-grid-white\/5 {
-    background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), 
-                      linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-    background-size: 10px 10px;
-    animation: grid 10s linear infinite;
-  }
-
-  @keyframes floatBubble {
-    0% { transform: translateY(0) scale(0.6); opacity: 0.6; }
-    100% { transform: translateY(-15px) scale(1.2); opacity: 0; }
-  }
-  .bubble {
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), transparent 70%);
-    pointer-events: none;
-    filter: blur(0.2px);
-    opacity: 0.4;
-    animation: floatBubble 1.5s ease-out forwards;
-    z-index: 1;
-  }
-  .bubble-1 { animation-delay: 0s; left: 25%; bottom: 1px; width: 2.5px; height: 2.5px; }
-  .bubble-2 { animation-delay: 0.2s; left: 45%; bottom: 1px; width: 2px; height: 2px; }
-  .bubble-3 { animation-delay: 0.4s; left: 65%; bottom: 1px; width: 3px; height: 3px; }
-  .bubble-4 { animation-delay: 0.6s; left: 80%; bottom: 1px; width: 2.2px; height: 2.2px; }
-  .dashboard-action-btn {
-    position: relative;
-    overflow: visible !important; /* 🔑 CRUCIAL : badges visibles */
-    transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
-  }
-  .dashboard-action-btn::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.08) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .dashboard-action-btn:hover::after {
-    opacity: 1;
-  }
-  .dashboard-action-btn:hover {
-    transform: translateY(-0.5px) scale(1.015) !important;
-    box-shadow: var(--hover-shadow) !important;
-  }
-  .dashboard-action-btn:active {
-    transform: translateY(0.5px) scale(0.985) !important;
-  }
-`}</style>
-
       {/* 🔹 Menu flottant - reste en overlay */}
       <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
 
