@@ -1,152 +1,119 @@
+// src/components/system/ReviewPrompt.tsx
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, X, MessageCircle, Heart, Send } from 'lucide-react';
+import { Star, X, Heart, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { createClient } from '../../lib/supabase/client';
 import { toast } from 'sonner';
-import { User } from '@supabase/supabase-js';
 
 export function ReviewPrompt() {
   const pathname = usePathname();
   const [showPrompt, setShowPrompt] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasAlreadyReviewed, setHasAlreadyReviewed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
 
-  // Refs pour le temps passé et les pages vues
   const startTimeRef = useRef(Date.now());
-  const pageViewsRef = useRef(0);
-  const hasCheckedRef = useRef(false);
-  const previousPathnameRef = useRef(pathname);
+  const pageViewsRef = useRef(1);
+  const checkedRef = useRef(false);
+  const prevPathnameRef = useRef(pathname);
 
-  // 🔹 Configuration
-  const MIN_TIME_SPENT = parseInt(process.env.NEXT_PUBLIC_REVIEW_MIN_TIME || '120000');
-  const MIN_PAGE_VIEWS = parseInt(process.env.NEXT_PUBLIC_REVIEW_MIN_VIEWS || '3');
+  const MIN_TIME = 120000; // 2 minutes
+  const MIN_VIEWS = 3;
   const PROMPT_DELAY = 5000;
-  const REMINDER_DELAY = 7 * 24 * 60 * 60 * 1000;
 
-  // 🔹 Vérifier l'authentification
+  // Compter les pages vues
+  useEffect(() => {
+    if (prevPathnameRef.current !== pathname) {
+      pageViewsRef.current++;
+      prevPathnameRef.current = pathname;
+    }
+  }, [pathname]);
+
+  // Vérifier l'authentification
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user);
-      setLoadingAuth(false);
+      setLoading(false);
     });
   }, []);
 
-  // 🔹 Compter les pages vues via le changement de pathname
-  useEffect(() => {
-    // Incrémenter pour la première page
-    pageViewsRef.current = 1;
-    previousPathnameRef.current = pathname;
-
-    // Détecter les changements de route
-    const handleRouteChange = () => {
-      if (previousPathnameRef.current !== pathname) {
-        pageViewsRef.current++;
-        previousPathnameRef.current = pathname;
-      }
-    };
-    handleRouteChange(); // pour le premier chargement
-    // Pas d'événement router.events, on utilise un effet qui s'exécute à chaque changement de pathname
-    // On va simplement observer pathname
-  }, [pathname]); // chaque fois que pathname change, on incrémente
-
-  // 🔹 Vérifier si l'utilisateur a déjà donné un avis
+  // Vérifier si déjà reviewé
   useEffect(() => {
     if (!user) return;
-    const checkExistingReview = async () => {
+    const check = async () => {
       try {
         const res = await fetch(`/api/review/check?userId=${user.id}`);
         const data = await res.json();
-        setHasAlreadyReviewed(data.hasSubmitted);
         if (data.hasSubmitted) {
-          localStorage.setItem('review_prompt_accepted', 'true');
+          setHasReviewed(true);
+          localStorage.setItem('review_prompt_done', 'true');
         }
       } catch (err) {
-        console.error('Erreur vérification avis existant', err);
+        // Silencieux
       }
     };
-    checkExistingReview();
+    check();
   }, [user]);
 
-  // 🔹 Vérifier les conditions d'affichage du prompt
+  // Vérifier les conditions d'affichage
   useEffect(() => {
-    if (loadingAuth || hasCheckedRef.current) return;
-    if (!user) return;
-    if (hasAlreadyReviewed) return;
+    if (loading || checkedRef.current) return;
+    if (!user || hasReviewed) return;
     if (pathname?.startsWith('/auth')) return;
 
+    const done = localStorage.getItem('review_prompt_done');
     const declined = localStorage.getItem('review_prompt_declined');
-    const accepted = localStorage.getItem('review_prompt_accepted');
-    const lastShown = localStorage.getItem('review_prompt_last_shown');
-
-    if (declined || accepted) {
-      hasCheckedRef.current = true;
-      return;
-    }
-    if (lastShown && Date.now() - parseInt(lastShown) < REMINDER_DELAY) {
-      hasCheckedRef.current = true;
+    if (done || declined) {
+      checkedRef.current = true;
       return;
     }
 
-    const checkInterval = setInterval(() => {
+    const interval = setInterval(() => {
       const timeSpent = Date.now() - startTimeRef.current;
-      if (timeSpent >= MIN_TIME_SPENT && pageViewsRef.current >= MIN_PAGE_VIEWS && !hasInteracted) {
-        setHasInteracted(true);
+      if (timeSpent >= MIN_TIME && pageViewsRef.current >= MIN_VIEWS) {
+        clearInterval(interval);
+        checkedRef.current = true;
         setTimeout(() => setShowPrompt(true), PROMPT_DELAY);
-        clearInterval(checkInterval);
-        hasCheckedRef.current = true;
       }
     }, 10000);
 
-    return () => clearInterval(checkInterval);
-  }, [loadingAuth, user, pathname, hasInteracted, hasAlreadyReviewed]);
+    return () => clearInterval(interval);
+  }, [loading, user, pathname, hasReviewed]);
 
-  // 🔹 Gérer la réponse au prompt
-  const handlePromptResponse = (action: 'accept' | 'decline' | 'later') => {
-    const now = Date.now();
-    switch (action) {
-      case 'accept':
-        localStorage.setItem('review_prompt_accepted', 'true');
-        localStorage.setItem('review_prompt_last_shown', now.toString());
-        setShowPrompt(false);
-        setShowReviewModal(true);
-        break;
-      case 'decline':
-        localStorage.setItem('review_prompt_declined', 'true');
-        localStorage.setItem('review_prompt_last_shown', now.toString());
-        setShowPrompt(false);
-        break;
-      case 'later':
-        localStorage.setItem('review_prompt_last_shown', now.toString());
-        setShowPrompt(false);
-        break;
-    }
+  const handleAccept = () => {
+    setShowPrompt(false);
+    setShowReviewModal(true);
   };
 
-  // 🔹 Soumettre l'avis
+  const handleDecline = () => {
+    localStorage.setItem('review_prompt_declined', 'true');
+    setShowPrompt(false);
+  };
+
+  const handleLater = () => {
+    setShowPrompt(false);
+  };
+
   const submitReview = async () => {
     if (rating === 0) {
-      toast.error('Veuillez sélectionner une note entre 1 et 5 étoiles');
-      return;
-    }
-    if (comment && comment.length > 500) {
-      toast.error('Le commentaire ne peut pas dépasser 500 caractères');
+      toast.warning('Note requise', {
+        description: 'Sélectionnez une note.',
+        icon: <Star className="w-4 h-4 text-amber-400/70" />,
+      });
       return;
     }
 
-    setIsSubmitting(true);
+    setSubmitting(true);
     try {
       const response = await fetch('/api/review', {
         method: 'POST',
@@ -158,161 +125,152 @@ export function ReviewPrompt() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          toast.error('Vous avez déjà soumis un avis. Merci !');
+          toast('Déjà soumis', {
+            description: 'Vous avez déjà donné votre avis. Merci !',
+            icon: <Star className="w-4 h-4 text-amber-400/70" />,
+          });
           setShowReviewModal(false);
           return;
         }
-        throw new Error(data.error || 'Erreur lors de la soumission');
+        throw new Error(data.error || 'Erreur');
       }
 
-      toast.success(data.message || 'Merci pour votre avis !', {
-        duration: 5000,
+      toast.success('Merci pour votre avis !', {
+        description: 'Votre feedback nous aide à nous améliorer.',
+        icon: <Heart className="w-4 h-4 text-rose-400/70" />,
       });
       setShowReviewModal(false);
-      setRating(0);
-      setComment('');
-      localStorage.setItem('review_prompt_accepted', 'true');
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Une erreur est survenue';
-      toast.error(errorMessage);
+      setHasReviewed(true);
+      localStorage.setItem('review_prompt_done', 'true');
+    } catch (error: any) {
+      toast.error('Erreur', {
+        description: error.message || 'Veuillez réessayer.',
+        icon: <X className="w-4 h-4 text-red-400/70" />,
+      });
     } finally {
-      setIsSubmitting(false);
+      setSubmitting(false);
     }
   };
 
-  // 🔹 Ne rien afficher si l'utilisateur n'est pas connecté, ou a déjà avisé
-  if (loadingAuth || !user) return null;
-  if (hasAlreadyReviewed) return null;
+  if (loading || !user || hasReviewed) return null;
 
   return (
     <AnimatePresence>
-      {/* Modal de demande d'avis */}
+      {/* Prompt */}
       {showPrompt && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-          onClick={() => handlePromptResponse('later')}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+          onClick={handleLater}
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, y: 15 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.95, y: 15 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             onClick={e => e.stopPropagation()}
-            className="w-full max-w-md"
+            className="w-full max-w-sm"
           >
-            <Card className="glass-border border-amber-500/30 bg-gradient-to-br from-amber-900/30 to-amber-900/10 p-6 relative overflow-hidden">
-              <div className="absolute -top-4 -right-4 w-24 h-24 bg-amber-500/10 rounded-full blur-3xl" />
-              <div className="absolute -bottom-4 -left-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-3xl" />
-
+            <div className="rounded-2xl p-5 bg-slate-900/90 backdrop-blur-xl border border-amber-500/[0.08] relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/[0.04] rounded-full blur-2xl" />
+              
               <button
-                onClick={() => handlePromptResponse('later')}
-                className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/10 transition-colors"
+                onClick={handleLater}
+                className="absolute top-3 right-3 p-1 text-gray-400/60 hover:text-gray-300/80 transition-colors"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
               <div className="relative z-10 text-center">
-                <div className="flex justify-center mb-4">
+                <div className="flex justify-center gap-1 mb-3">
                   {[...Array(5)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: i * 0.1 }}
-                    >
-                      <Star className="w-8 h-8 fill-amber-400 text-amber-400" />
-                    </motion.div>
+                    <Star key={i} className="w-6 h-6 fill-amber-400/60 text-amber-400/60" />
                   ))}
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-2 flex items-center justify-center gap-2">
-                  <Heart className="w-6 h-6 text-rose-400" />
+                <h3 className="text-base font-semibold text-white/80 mb-1.5">
                   Vous aimez LUVIKA ?
                 </h3>
-
-                <p className="text-gray-300 mb-6">
-                  Votre avis compte énormément ! Prenez 30 secondes pour partager votre expérience.
+                <p className="text-gray-400/60 text-xs font-light mb-4">
+                  Votre avis compte ! Prenez 30 secondes pour partager votre expérience.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <div className="flex flex-col gap-2">
                   <Button
-                    onClick={() => handlePromptResponse('accept')}
-                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-white"
+                    onClick={handleAccept}
+                    className="h-8 text-xs bg-gradient-to-r from-amber-600/80 to-amber-500/80 hover:from-amber-500 hover:to-amber-400 text-white font-light rounded-lg"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                    <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
                     Laisser un avis
                   </Button>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => handlePromptResponse('later')}
-                    className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
-                  >
-                    Plus tard
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    onClick={() => handlePromptResponse('decline')}
-                    className="text-gray-400 hover:text-gray-200 hover:bg-white/5"
-                  >
-                    Non merci
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      onClick={handleLater}
+                      className="flex-1 h-7 text-xs text-gray-400/60 hover:text-gray-300/80 hover:bg-white/[0.04] font-light rounded-lg"
+                    >
+                      Plus tard
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onClick={handleDecline}
+                      className="flex-1 h-7 text-xs text-gray-500/50 hover:text-gray-400/70 hover:bg-white/[0.04] font-light rounded-lg"
+                    >
+                      Non merci
+                    </Button>
+                  </div>
                 </div>
-
-                <p className="text-xs text-gray-500 mt-4">
-                  🔒 Votre avis est anonyme et contribue à l'amélioration de LUVIKA.
-                </p>
               </div>
-            </Card>
+            </div>
           </motion.div>
         </motion.div>
       )}
 
-      {/* Modal de soumission d'avis (intégré) */}
+      {/* Modal d'avis */}
       {showReviewModal && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1001] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[101] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
           onClick={() => setShowReviewModal(false)}
         >
           <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            initial={{ scale: 0.95, y: 15 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.95, y: 15 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             onClick={e => e.stopPropagation()}
-            className="w-full max-w-md"
+            className="w-full max-w-sm"
           >
-            <Card className="glass-border border-white/20 bg-gradient-to-br from-gray-900/90 to-gray-800/90 p-6 relative overflow-hidden">
+            <div className="rounded-2xl p-5 bg-slate-900/90 backdrop-blur-xl border border-white/[0.08] relative">
               <button
                 onClick={() => setShowReviewModal(false)}
-                className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-white/10"
+                className="absolute top-3 right-3 p-1 text-gray-400/60 hover:text-gray-300/80 transition-colors"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-3.5 h-3.5" />
               </button>
 
               <div className="text-center mb-4">
-                <h3 className="text-xl font-bold text-white">Votre avis</h3>
-                <p className="text-sm text-gray-400">Votre feedback nous aide à grandir</p>
+                <h3 className="text-base font-semibold text-white/80 mb-1">Votre avis</h3>
+                <p className="text-gray-400/60 text-xs font-light">Partagez votre expérience</p>
               </div>
 
-              {/* Sélection des étoiles */}
-              <div className="flex justify-center gap-2 mb-6">
+              {/* Étoiles */}
+              <div className="flex justify-center gap-1.5 mb-4">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     onClick={() => setRating(star)}
-                    className="focus:outline-none transition-transform hover:scale-110"
+                    className="focus:outline-none"
                   >
                     <Star
-                      className={`w-8 h-8 ${
+                      className={`w-7 h-7 transition-colors ${
                         star <= rating
-                          ? 'fill-amber-400 text-amber-400'
-                          : 'text-gray-500'
+                          ? 'fill-amber-400/70 text-amber-400/70'
+                          : 'text-gray-600/50'
                       }`}
                     />
                   </button>
@@ -323,32 +281,39 @@ export function ReviewPrompt() {
               <Textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Partagez votre expérience (optionnel, max 500 caractères)"
-                className="bg-white/10 border-white/20 text-white placeholder:text-gray-500 mb-4"
-                rows={4}
+                placeholder="Votre expérience (optionnel)"
+                className="min-h-[80px] bg-white/[0.03] border-white/[0.08] text-white/80 placeholder:text-gray-500/50 text-sm font-light resize-none rounded-xl mb-4"
+                maxLength={500}
               />
 
-              <div className="flex gap-3">
+              {/* Actions */}
+              <div className="flex gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setShowReviewModal(false)}
-                  className="flex-1"
+                  className="flex-1 h-8 text-xs text-gray-400/60 hover:text-gray-300/80 hover:bg-white/[0.04] font-light rounded-lg"
                 >
                   Annuler
                 </Button>
                 <Button
                   onClick={submitReview}
-                  disabled={isSubmitting || rating === 0}
-                  className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500"
+                  disabled={submitting || rating === 0}
+                  className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600/80 to-amber-500/80 hover:from-amber-500 hover:to-amber-400 text-white font-light rounded-lg"
                 >
-                  {isSubmitting ? 'Envoi...' : <><Send className="w-4 h-4 mr-2" />Envoyer</>}
+                  {submitting ? (
+                    <span className="flex items-center gap-1.5">
+                      <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Envoi...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5">
+                      <Send className="w-3.5 h-3.5" />
+                      Envoyer
+                    </span>
+                  )}
                 </Button>
               </div>
-
-              <p className="text-xs text-center text-gray-500 mt-4">
-                Votre avis est anonyme et ne sera pas publié publiquement.
-              </p>
-            </Card>
+            </div>
           </motion.div>
         </motion.div>
       )}

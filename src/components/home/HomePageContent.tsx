@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import {
   ArrowRight, Users, ScanLine, ShieldCheck, Nfc, BarChart3,
   Layers, QrCode, Zap, CheckCircle, Star, Trophy, Github,
-  Twitter, Linkedin, Heart, Globe, Gavel, Sparkles,
+  Twitter, Linkedin, Heart, Globe, Gavel, Quote
 } from 'lucide-react';
 import { SiInstagram, SiSocialblade } from 'react-icons/si';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +49,11 @@ const CONFIG = {
       { icon: BarChart3, titleKey: 'features.stats.title', descKey: 'features.stats.desc', gradient: 'from-blue-500 to-indigo-500', stat: 'Données en temps réel' },
       { icon: Layers, titleKey: 'features.multi.title', descKey: 'features.multi.desc', gradient: 'from-emerald-500 to-teal-500', stat: 'Multi-plateforme' },
     ],
+  },
+  reviews: {
+    badge: 'Avis vérifiés',
+    title: 'Ce que nos utilisateurs disent',
+    description: 'Découvrez les retours d\'expérience de notre communauté.',
   },
   events: {
     titleKey: 'features.events.title',
@@ -202,6 +207,110 @@ const FeaturesGrid = () => {
   );
 };
 
+// ✅ NOUVELLE SECTION AVIS
+const ReviewsSection = () => {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch('/api/review?limit=6');
+      
+      if (!res.ok) {
+        console.warn('API reviews status:', res.status);
+        setReviews([]);
+        setLoading(false);
+        return;
+      }
+      
+      const data = await res.json();
+      console.log('Reviews data:', data); // Debug
+      setReviews(data.reviews || []);
+    } catch (err) {
+      console.warn('Avis non disponibles:', err);
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchReviews();
+}, []);
+
+
+  if (loading) {
+    return (
+      <section className="relative py-16">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin mx-auto" />
+        </div>
+      </section>
+    );
+  }
+
+  if (reviews.length === 0) return null;
+
+  return (
+    <section className="relative py-16">
+      <div className="text-center mb-12">
+        <GradientBadge>{CONFIG.reviews.badge}</GradientBadge>
+        <SectionTitle className="mt-4">{CONFIG.reviews.title}</SectionTitle>
+        <p className="text-gray-400/60 max-w-xl mx-auto mt-3 text-sm font-light">
+          {CONFIG.reviews.description}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto px-4">
+        {reviews.map((review, i) => (
+          <AnimatedOnScroll key={review.id} delay={i * 0.05} direction="up">
+            <div className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] transition-all h-full flex flex-col">
+              {/* Étoiles */}
+              <div className="flex gap-0.5 mb-3">
+                {[...Array(5)].map((_, starIndex) => (
+                  <Star
+                    key={starIndex}
+                    className={`w-4 h-4 ${
+                      starIndex < review.rating
+                        ? 'fill-amber-400/70 text-amber-400/70'
+                        : 'text-gray-600/40'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              {/* Commentaire */}
+              {review.comment && (
+                <div className="flex-1">
+                  <Quote className="w-4 h-4 text-cyan-400/30 mb-1.5" />
+                  <p className="text-gray-300/70 text-sm font-light leading-relaxed line-clamp-4">
+                    {review.comment}
+                  </p>
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="mt-4 pt-3 border-t border-white/[0.04] flex items-center justify-between">
+                <span className="text-[11px] text-gray-500/50 font-light">
+                  {new Date(review.created_at).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </span>
+                {review.profile_id && (
+                  <span className="text-[11px] text-cyan-400/40 font-light">
+                    Vérifié
+                  </span>
+                )}
+              </div>
+            </div>
+          </AnimatedOnScroll>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const EventsSection = () => {
   const t = useTranslations();
   return (
@@ -301,6 +410,7 @@ export function HomePageContent() {
         <ProfileShowcase reducedMotion={reduceMotion} />
         <CTASection />
         <FeaturesGrid />
+        <ReviewsSection />
         <EventsSection />
         <Footer />
       </main>

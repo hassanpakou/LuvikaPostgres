@@ -1,3 +1,4 @@
+// src/components/forms/ReviewForm.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -6,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 
-// 🔹 Correction TypeScript pour gtag
 declare global {
   interface Window {
     gtag?: (...args: any[]) => void;
@@ -19,12 +19,13 @@ export function ReviewForm() {
   const [comment, setComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [eligibleForBadge, setEligibleForBadge] = useState(false);
-  const [reviewsThisWeek, setReviewsThisWeek] = useState(85); // Simulé pour le compteur
+  const [reviewsThisWeek, setReviewsThisWeek] = useState(0);
 
   useEffect(() => {
-    const fetchUserAndEligibility = async () => {
+    const fetchData = async () => {
       try {
         const res = await fetch('/api/auth/user');
         const data = await res.json();
@@ -32,39 +33,46 @@ export function ReviewForm() {
         if (data.user) {
           setUser(data.user);
           
-          // 🔹 Vérifier si déjà soumis
           const reviewRes = await fetch(`/api/review/check?userId=${data.user.id}`);
           const reviewData = await reviewRes.json();
           
           if (reviewData.hasSubmitted) {
             setHasSubmitted(true);
+            setLoading(false);
             return;
           }
           
-          // 🔹 Vérifier éligibilité (simulé côté client pour UX)
           const countRes = await fetch('/api/review/count');
           const countData = await countRes.json();
-          setEligibleForBadge(countData.count < 100);
-          setReviewsThisWeek(countData.count);
+          setReviewsThisWeek(countData.count || 0);
+          setEligibleForBadge((countData.count || 0) < 100);
         }
       } catch (error) {
-        console.error('Fetch error:', error);
+        console.error('Erreur chargement:', error);
+      } finally {
+        setLoading(false);
       }
     };
     
-    fetchUserAndEligibility();
+    fetchData();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
-      toast.error('❌ Vous devez être connecté pour laisser un avis');
+      toast.warning('Connexion requise', {
+        description: 'Connectez-vous pour laisser un avis.',
+        icon: <XCircle className="w-4 h-4 text-amber-400/70" />,
+      });
       return;
     }
     
     if (rating === 0) {
-      toast.warning('⚠️ Veuillez sélectionner une note');
+      toast.warning('Note requise', {
+        description: 'Sélectionnez une note avant d\'envoyer.',
+        icon: <Star className="w-4 h-4 text-amber-400/70" />,
+      });
       return;
     }
     
@@ -79,20 +87,17 @@ export function ReviewForm() {
       
       const result = await response.json();
       
-      if (!response.ok) {
-        throw new Error(result.error || 'Erreur inconnue');
-      }
+      if (!response.ok) throw new Error(result.error || 'Erreur inconnue');
       
       setHasSubmitted(true);
-      // 🔹 Feedback avec badge si reçu
-      toast.success('🙏 Merci pour votre avis !', {
+      toast.success('Merci pour votre avis !', {
         description: result.receivedBadge 
-          ? '✨ Badge "Pionnier LUVIKA" ajouté à votre profil !' 
-          : 'Votre avis aide à améliorer LUVIKA pour toute la communauté.',
-        duration: 8000,
+          ? 'Badge "Pionnier LUVIKA" ajouté à votre profil !' 
+          : 'Votre avis aide à améliorer LUVIKA.',
+        icon: <CheckCircle className="w-4 h-4 text-emerald-400/70" />,
+        duration: 6000,
       });
       
-      // 🔹 Analytics
       if (window.gtag) {
         window.gtag('event', 'review_submitted', {
           event_category: 'engagement',
@@ -102,48 +107,50 @@ export function ReviewForm() {
       }
       
     } catch (error: any) {
-      console.error('Erreur soumission avis:', error);
-      toast.error('❌ Erreur lors de la soumission', {
-        description: error.message || 'Veuillez réessayer plus tard'
+      toast.error('Erreur', {
+        description: error.message || 'Veuillez réessayer plus tard.',
+        icon: <XCircle className="w-4 h-4 text-red-400/70" />,
       });
     } finally {
       setSubmitting(false);
     }
   };
 
+  if (loading) {
+    return (
+      <div className="rounded-2xl p-8 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (hasSubmitted) {
     return (
-      <div className="glass-border border-emerald-500/30 bg-emerald-900/20 rounded-2xl p-6 text-center">
-        <div className="flex justify-center mb-4">
-          <CheckCircle className="w-16 h-16 text-emerald-400" />
+      <div className="rounded-2xl p-6 bg-emerald-500/[0.03] backdrop-blur-sm border border-emerald-500/[0.08] text-center">
+        <div className="flex justify-center mb-3">
+          <CheckCircle className="w-10 h-10 text-emerald-400/60" />
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Merci infiniment !</h2>
-        <p className="text-gray-300 mb-4">
-          Votre avis compte énormément pour nous. Ensemble, nous construisons la meilleure plateforme digitale pour l'Afrique.
+        <h2 className="text-lg font-semibold text-white/80 mb-1.5">Merci !</h2>
+        <p className="text-gray-400/60 text-sm font-light leading-relaxed">
+          Votre avis compte énormément pour nous.
         </p>
-        <Button 
-          onClick={() => window.close()} 
-          className="mt-6 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400"
-        >
-          Fermer cette fenêtre
-        </Button>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="glass-border border-amber-500/30 bg-amber-900/20 rounded-2xl p-6 text-center">
-        <div className="flex justify-center mb-4">
-          <XCircle className="w-12 h-12 text-amber-400" />
+      <div className="rounded-2xl p-6 bg-amber-500/[0.03] backdrop-blur-sm border border-amber-500/[0.08] text-center">
+        <div className="flex justify-center mb-3">
+          <XCircle className="w-10 h-10 text-amber-400/60" />
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">Connexion requise</h2>
-        <p className="text-gray-300 mb-4">
-          Veuillez vous connecter pour partager votre expérience LUVIKA
+        <h2 className="text-lg font-semibold text-white/80 mb-1.5">Connexion requise</h2>
+        <p className="text-gray-400/60 text-sm font-light mb-4">
+          Connectez-vous pour partager votre expérience.
         </p>
         <Button 
           onClick={() => window.location.href = '/auth/sign-in'} 
-          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400"
+          className="h-8 text-xs bg-gradient-to-r from-amber-600/80 to-orange-600/80 hover:from-amber-500 hover:to-orange-500 text-white font-light px-4 rounded-lg"
         >
           Se connecter
         </Button>
@@ -152,23 +159,23 @@ export function ReviewForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="glass-border rounded-2xl p-6 bg-white/5 border-white/10">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-600 mb-2">
+    <form onSubmit={handleSubmit} className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
+      {/* Header */}
+      <div className="text-center mb-5">
+        <h2 className="text-lg font-semibold text-white/80 mb-1">
           Partagez votre expérience
         </h2>
-        <p className="text-gray-400">
-          30 secondes pour nous aider à devenir meilleurs ❤️
+        <p className="text-gray-400/60 text-xs font-light">
+          30 secondes pour nous aider ❤️
         </p>
       </div>
 
-      {/* Sélecteur d'étoiles */}
-      <div className="mb-6">
-        <label className="block text-gray-300 mb-3 text-lg font-medium flex items-center justify-center gap-2">
-          <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+      {/* Étoiles */}
+      <div className="mb-5">
+        <label className="block text-gray-400/70 text-sm font-light mb-2 text-center">
           Votre note
         </label>
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-1.5">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -176,121 +183,113 @@ export function ReviewForm() {
               onClick={() => setRating(star)}
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
-              className="p-1 focus:outline-none focus:ring-2 focus:ring-amber-400 rounded-full"
+              className="p-1 focus:outline-none"
               aria-label={`Note ${star} étoiles`}
             >
               <Star
-                className={`w-10 h-10 transition-all ${
+                className={`w-8 h-8 transition-all duration-200 ${
                   star <= (hoverRating || rating) 
-                    ? 'text-amber-400 fill-amber-400 scale-110' 
-                    : 'text-gray-600'
+                    ? 'text-amber-400/80 fill-amber-400/80' 
+                    : 'text-gray-600/50'
                 }`}
               />
             </button>
           ))}
         </div>
-        <p className="text-center mt-2 text-sm text-gray-400">
+        <p className="text-center mt-1.5 text-xs text-gray-400/60 font-light">
           {rating === 0 ? 'Sélectionnez une note' : 
-           rating < 3 ? 'Nous pouvons faire mieux 😔' :
-           rating < 5 ? 'Merci ! 💙' : 'Vous nous motivez ! 🌟'}
+           rating < 3 ? 'Nous pouvons faire mieux' :
+           rating < 5 ? 'Merci !' : 'Excellent !'}
         </p>
       </div>
 
-      {/* Champ commentaire */}
-      <div className="mb-6">
-        <label htmlFor="comment" className="block text-gray-300 mb-2 font-medium">
+      {/* Commentaire */}
+      <div className="mb-4">
+        <label htmlFor="comment" className="block text-gray-400/70 text-sm font-light mb-1.5">
           Commentaire (optionnel)
         </label>
         <Textarea
           id="comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Qu'avez-vous aimé ? Des suggestions d'amélioration ?"
-          className="min-h-[100px] bg-white/5 border-white/10 focus:border-amber-400/50 focus:ring-amber-400/20 text-white placeholder:text-gray-500"
+          placeholder="Vos suggestions d'amélioration ?"
+          className="min-h-[80px] bg-white/[0.03] border-white/[0.08] text-white/80 placeholder:text-gray-500/50 text-sm font-light resize-none rounded-xl"
           maxLength={500}
         />
-        <p className="text-right text-xs text-gray-500 mt-1">{comment.length}/500</p>
+        <p className="text-right text-[11px] text-gray-500/60 mt-1 font-light">
+          {comment.length}/500
+        </p>
       </div>
 
-      {/* 🔹 BADGE INCITATION + COMPTEUR EN TEMPS RÉEL (PLACEMENT CORRECT) */}
-      <div className="space-y-4">
-        {/* Message incitation */}
-        <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-          <p className="text-xs text-amber-200 flex items-start gap-2">
-            <Gift className="w-4 h-4 mt-0.5 flex-shrink-0" />
+      {/* Badge incitation + Compteur */}
+      <div className="space-y-3 mb-4">
+        <div className="p-3 bg-amber-500/[0.04] border border-amber-500/[0.08] rounded-xl">
+          <p className="text-xs text-amber-300/60 font-light flex items-start gap-2">
+            <Gift className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-400/50" />
             <span>
-              <span className="font-medium">🎁 Cadeau :</span> Les {eligibleForBadge ? 'prochains' : '100 premiers'} avis cette semaine 
-              recevront un badge exclusif <span className="font-bold">"Pionnier LUVIKA"</span> sur leur profil !
+              <span className="text-amber-300/70">Cadeau :</span> Les {eligibleForBadge ? 'prochains' : '100 premiers'} avis 
+              reçoivent le badge <span className="text-amber-300/70">"Pionnier LUVIKA"</span>.
             </span>
           </p>
         </div>
         
-        {/* 🔹 COMPTEUR EN TEMPS RÉEL (PLACÉ ICI) */}
-        <div className="mt-2 text-center">
-          <div className="relative pt-1">
-            <div className="flex mb-2 items-center justify-between">
-              <div>
-                <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-amber-400 bg-amber-900/30">
-                  {reviewsThisWeek}/100
-                </span>
-              </div>
-              <div className="text-right">
-                <span className={`text-xs font-semibold inline-block ${
-                  eligibleForBadge ? 'text-amber-400' : 'text-gray-400'
-                }`}>
-                  {eligibleForBadge ? 'Places restantes' : 'Complet'}
-                </span>
-              </div>
-            </div>
-            <div className="overflow-hidden h-2 mb-2 text-xs flex rounded bg-amber-900/20">
-              <div 
-                style={{ width: `${Math.min(reviewsThisWeek, 100)}%` }}
-                className={`shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center ${
-                  eligibleForBadge 
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
-                    : 'bg-gray-500'
-                }`}
-              ></div>
-            </div>
-            <p className="text-xs text-gray-400">
-              {eligibleForBadge 
-                ? 'Soyez parmi les pionniers qui façonnent LUVIKA' 
-                : 'Merci aux 100 premiers contributeurs !'}
-            </p>
+        <div className="text-center">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[11px] text-amber-400/60 font-light bg-amber-500/[0.04] py-0.5 px-2 rounded-full">
+              {reviewsThisWeek}/100
+            </span>
+            <span className={`text-[11px] font-light ${eligibleForBadge ? 'text-amber-400/60' : 'text-gray-500/60'}`}>
+              {eligibleForBadge ? 'Places restantes' : 'Complet'}
+            </span>
           </div>
+          <div className="overflow-hidden h-1.5 rounded-full bg-white/[0.04]">
+            <div 
+              style={{ width: `${Math.min(reviewsThisWeek, 100)}%` }}
+              className={`h-full rounded-full transition-all duration-500 ${
+                eligibleForBadge 
+                  ? 'bg-gradient-to-r from-amber-500/60 to-orange-500/60' 
+                  : 'bg-gray-500/40'
+              }`}
+            ></div>
+          </div>
+          <p className="text-[11px] text-gray-500/60 mt-1.5 font-light">
+            {eligibleForBadge 
+              ? 'Soyez parmi les pionniers' 
+              : 'Merci aux 100 premiers contributeurs'}
+          </p>
         </div>
       </div>
 
-      {/* Bouton soumission */}
+      {/* Bouton */}
       <Button
         type="submit"
         disabled={submitting || rating === 0}
-        className={`w-full mt-6 py-6 text-lg font-bold transition-all ${
+        className={`w-full h-9 text-sm font-light transition-all duration-300 rounded-xl ${
           submitting
-            ? 'bg-gray-500 cursor-wait'
+            ? 'bg-gray-500/50 cursor-wait'
             : rating >= 4
-            ? 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500'
+            ? 'bg-gradient-to-r from-amber-600/80 to-orange-600/80 hover:from-amber-500 hover:to-orange-500 text-white'
             : rating >= 3
-            ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500'
-            : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500'
+            ? 'bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white'
+            : 'bg-gradient-to-r from-gray-600/80 to-gray-700/80 hover:from-gray-500 hover:to-gray-600 text-white/80'
         }`}
       >
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            Envoi en cours...
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Envoi...
           </span>
         ) : (
-          <span className="flex items-center justify-center gap-2">
-            <Send className="w-5 h-5" />
+          <span className="flex items-center justify-center gap-1.5">
+            <Send className="w-3.5 h-3.5" />
             {rating === 0 ? 'Sélectionnez une note' : 'Envoyer mon avis'}
           </span>
         )}
       </Button>
 
-      {/* Légende discrète */}
-      <p className="mt-4 text-xs text-gray-500 text-center">
-        🔒 Votre avis est anonyme et contribue à l'amélioration de LUVIKA pour toute la communauté africaine
+      {/* Footer */}
+      <p className="mt-3 text-[11px] text-gray-500/50 text-center font-light">
+        Votre avis est anonyme et contribue à améliorer LUVIKA
       </p>
     </form>
   );

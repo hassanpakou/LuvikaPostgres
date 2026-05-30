@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { 
   Cookie, ShieldCheck, X, 
-  Sparkle, ArrowRight 
+  Sparkle, Settings
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -17,7 +17,9 @@ export default function CookieBanner() {
   useEffect(() => {
     const consent = localStorage.getItem('luvika_cookie_consent');
     if (!consent) {
-      setShow(true);
+      // Petit délai pour laisser la page se charger d'abord
+      const timer = setTimeout(() => setShow(true), 500);
+      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -31,92 +33,97 @@ export default function CookieBanner() {
     setShow(false);
   };
 
+  const handleClose = () => {
+    // Fermer sans sauvegarder (le bandeau réapparaîtra au prochain chargement)
+    setShow(false);
+  };
+
   if (!show) return null;
 
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
+        initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
-        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[90%] max-w-md"
+        exit={{ y: 30, opacity: 0 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+        className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 w-[92%] max-w-md"
       >
-        <div className="glass-border rounded-2xl p-5 bg-gradient-to-br from-slate-900/90 to-slate-800/80 backdrop-blur-xl border border-white/15 shadow-2xl shadow-black/50">
-          <div className="flex items-start gap-3 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center flex-shrink-0">
-              <Cookie className="w-4 h-4 text-white" />
+        <div className="rounded-2xl p-4 bg-slate-900/80 backdrop-blur-xl border border-white/[0.08] shadow-2xl shadow-black/30">
+          {/* Header */}
+          <div className="flex items-start gap-2.5 mb-2.5">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-500/60 to-orange-500/60 flex items-center justify-center flex-shrink-0">
+              <Cookie className="w-3.5 h-3.5 text-white/80" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                Luvika utilise des cookies
-                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[10px] py-0.5 px-2">
-                  Strictement nécessaires
+              <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+                Cookies
+                <Badge className="bg-emerald-500/10 text-emerald-300/70 border-emerald-500/20 text-[10px] py-0 px-1.5 font-light">
+                  Essentiels
                 </Badge>
               </h3>
             </div>
             <button
-              onClick={handleReject}
-              className="text-gray-400 hover:text-white transition-colors p-1"
+              onClick={handleClose}
+              className="text-gray-400/60 hover:text-gray-300/80 transition-colors p-0.5"
               aria-label="Fermer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
           
-          <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-            En poursuivant votre navigation, vous acceptez l'utilisation de cookies nécessaires au bon fonctionnement de la plateforme, à la sécurisation de votre session et à l'amélioration de nos services.
+          {/* Description */}
+          <p className="text-gray-300/60 text-xs mb-3 leading-relaxed font-light">
+            Nous utilisons des cookies strictement nécessaires au fonctionnement de la plateforme, 
+            à la sécurisation de votre session et à l'amélioration de nos services.
           </p>
           
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="bg-blue-500/15 text-blue-300 border-blue-500/25 text-[11px] py-0.5 px-2">
-                <ShieldCheck className="w-3 h-3 mr-0.5 inline" />
-                Sécurité
-              </Badge>
-              <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/25 text-[11px] py-0.5 px-2">
-                <Sparkle className="w-3 h-3 mr-0.5 inline" />
-                Session
-              </Badge>
-              <Badge className="bg-purple-500/15 text-purple-300 border-purple-500/25 text-[11px] py-0.5 px-2">
-                <Settings className="w-3 h-3 mr-0.5 inline" />
-                Préférences
-              </Badge>
-            </div>
-            
-            <div className="flex flex-wrap gap-2">
-              <Button
-                onClick={handleAccept}
-                size="sm"
-                className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-medium shadow-sm"
-              >
-                Accepter
-                <ArrowRight className="w-3.5 h-3.5 ml-1" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReject}
-                className="border-white/20 text-gray-300 hover:bg-white/10 font-medium"
-              >
-                Refuser
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="text-cyan-300 hover:text-cyan-200 hover:bg-white/5 font-medium"
-              >
-                <Link href="/privacy" target="_blank" rel="noopener noreferrer">
-                  Politique de confidentialité
-                </Link>
-              </Button>
-            </div>
+          {/* Badges */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+            <Badge className="bg-blue-500/10 text-blue-300/60 border-blue-500/15 text-[10px] py-0 px-1.5 font-light">
+              <ShieldCheck className="w-2.5 h-2.5 mr-0.5 inline" />
+              Sécurité
+            </Badge>
+            <Badge className="bg-cyan-500/10 text-cyan-300/60 border-cyan-500/15 text-[10px] py-0 px-1.5 font-light">
+              <Sparkle className="w-2.5 h-2.5 mr-0.5 inline" />
+              Session
+            </Badge>
+            <Badge className="bg-purple-500/10 text-purple-300/60 border-purple-500/15 text-[10px] py-0 px-1.5 font-light">
+              <Settings className="w-2.5 h-2.5 mr-0.5 inline" />
+              Préférences
+            </Badge>
+          </div>
+          
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              onClick={handleAccept}
+              size="sm"
+              className="h-7 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light px-3 rounded-lg shadow-sm"
+            >
+              Accepter
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReject}
+              className="h-7 text-xs border-white/[0.08] text-gray-300/70 hover:bg-white/[0.04] font-light px-3 rounded-lg"
+            >
+              Refuser
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className="h-7 text-xs text-cyan-300/60 hover:text-cyan-200/80 hover:bg-white/[0.04] font-light px-2 rounded-lg"
+            >
+              <Link href="/privacy">
+                Confidentialité
+              </Link>
+            </Button>
           </div>
         </div>
       </motion.div>
     </AnimatePresence>
   );
 }
-
-// 🔹 Icône manquante
-import { Settings } from 'lucide-react';

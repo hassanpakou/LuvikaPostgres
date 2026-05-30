@@ -19,6 +19,7 @@ export default function ProductActions({
 }) {
   const t = useTranslations();
   const supabase = createClient();
+  const [loading, setLoading] = useState(true);
   const [loadingCart, setLoadingCart] = useState(false);
   const [loadingFavorite, setLoadingFavorite] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -47,7 +48,10 @@ export default function ProductActions({
         .eq('id', productId)
         .single();
 
-      if (error || !product) return;
+      if (error || !product) {
+        setLoading(false);
+        return;
+      }
 
       setProductName(product.name);
       setPrice(product.price);
@@ -60,8 +64,9 @@ export default function ProductActions({
       setCompany(comp || null);
 
       if (product.stock_quantity > 0) {
-        setQuantity(Math.min(1, product.stock_quantity));
+        setQuantity(1);
       }
+      setLoading(false);
     };
     init();
   }, [productId]);
@@ -82,12 +87,17 @@ export default function ProductActions({
 
   const addToCart = async () => {
     if (stock !== null && quantity > stock) {
-      toast.error(t('product.quantity_exceeds_stock'));
+      toast.warning('Stock insuffisant', {
+        description: 'La quantité demandée dépasse le stock disponible.',
+        icon: <AlertCircle className="w-4 h-4 text-yellow-400/70" />,
+      });
       return;
     }
 
     if (!user) {
-      toast.error(t('auth.signin.title'));
+      toast.warning('Connexion requise', {
+        description: 'Connectez-vous pour ajouter au panier.',
+      });
       return;
     }
 
@@ -115,10 +125,15 @@ export default function ProductActions({
           });
       }
 
-      toast.success(t('enterprise.modules.product.added_to_cart'));
+      toast.success('Ajouté au panier', {
+        description: `${productName} a été ajouté à votre panier.`,
+        icon: <ShoppingCart className="w-4 h-4 text-emerald-400/70" />,
+      });
     } catch (err) {
       console.error('Erreur panier:', err);
-      toast.error(t('enterprise.modules.cart_error'));
+      toast.error('Erreur', {
+        description: 'Impossible d\'ajouter au panier.',
+      });
     } finally {
       setLoadingCart(false);
     }
@@ -126,7 +141,9 @@ export default function ProductActions({
 
   const toggleFavorite = async () => {
     if (!user) {
-      toast.error(t('auth.signin.title'));
+      toast.warning('Connexion requise', {
+        description: 'Connectez-vous pour gérer vos favoris.',
+      });
       return;
     }
 
@@ -150,7 +167,9 @@ export default function ProductActions({
       }
     } catch (err) {
       console.error('Erreur favori:', err);
-      toast.error(t('product.favorite_error'));
+      toast.error('Erreur', {
+        description: 'Impossible de modifier les favoris.',
+      });
     } finally {
       setLoadingFavorite(false);
     }
@@ -158,12 +177,17 @@ export default function ProductActions({
 
   const orderViaWhatsApp = async () => {
     if (!company || !company.phone) {
-      toast.error(t('product.no_whatsapp'));
+      toast.warning('Indisponible', {
+        description: 'Ce vendeur n\'a pas configuré son numéro WhatsApp.',
+      });
       return;
     }
 
     if (stock !== null && quantity > stock) {
-      toast.error(t('product.quantity_exceeds_stock'));
+      toast.warning('Stock insuffisant', {
+        description: 'La quantité demandée dépasse le stock disponible.',
+        icon: <AlertCircle className="w-4 h-4 text-yellow-400/70" />,
+      });
       return;
     }
 
@@ -174,16 +198,28 @@ export default function ProductActions({
     const message = encodeURIComponent(
       `Bonjour ${company.name},\n\n` +
       `Je souhaite commander :\n` +
-      `- Produit : ${productName}\n` +
-      `- Quantité : ${quantity}\n` +
-      `- Stock actuel : ${stock}\n` +
-      `- Prix unitaire : $${finalPrice}\n` +
-      `- Total : $${total}\n\n` +
-      `Merci de me confirmer la commande et la disponibilité.`
+      `• ${productName}\n` +
+      `• Quantité : ${quantity}\n` +
+      `• Prix unitaire : $${finalPrice}\n` +
+      `• Total : $${total}\n\n` +
+      `Merci de me confirmer la commande.`
     );
 
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-4 pt-4">
+        <div className="h-10 bg-white/[0.03] rounded-xl animate-pulse" />
+        <div className="flex gap-3">
+          <div className="flex-1 h-10 bg-white/[0.03] rounded-xl animate-pulse" />
+          <div className="w-10 h-10 bg-white/[0.03] rounded-xl animate-pulse" />
+        </div>
+        <div className="h-10 bg-white/[0.03] rounded-xl animate-pulse" />
+      </div>
+    );
+  }
 
   const disabled = stock === null || company === null;
   const isVisitor = !user;
@@ -191,11 +227,11 @@ export default function ProductActions({
   const lowStock = stock !== null && stock <= 5 && stock > 0;
 
   return (
-    <div className="space-y-5 pt-4">
-      {/* 🔢 Quantité */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-        <Label htmlFor="quantity" className="text-sm text-gray-300 whitespace-nowrap">
-          {t('enterprise.modules.product.quantity')}
+    <div className="space-y-4 pt-4">
+      {/* Quantité */}
+      <div className="flex items-center gap-3">
+        <Label htmlFor="quantity" className="text-xs text-gray-400/70 font-light whitespace-nowrap">
+          Quantité
         </Label>
         <div className="relative">
           <Input
@@ -208,49 +244,46 @@ export default function ProductActions({
               const val = parseInt(e.target.value) || 1;
               setQuantity(Math.max(1, Math.min(val, stock || 99)));
             }}
-            className="w-20 bg-white/8 backdrop-blur-lg border border-white/20 text-white placeholder:text-gray-400 rounded-xl py-2 px-3 transition-all hover:bg-white/10 focus:ring-2 focus:ring-cyan-500/50"
+            className="w-16 h-8 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 rounded-lg px-2.5 transition-all focus:ring-1 focus:ring-cyan-500/30"
             disabled={disabled || outOfStock}
           />
           {lowStock && (
-            <AlertCircle className="absolute -right-6 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-400" />
+            <AlertCircle className="absolute -right-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-yellow-400/60" />
           )}
         </div>
         {stock !== null && (
-          <span className={`text-xs ${
-            outOfStock ? 'text-red-400' : lowStock ? 'text-yellow-400' : 'text-gray-400'
+          <span className={`text-[11px] font-light ${
+            outOfStock ? 'text-red-400/60' : lowStock ? 'text-yellow-400/60' : 'text-gray-500/60'
           }`}>
             {outOfStock 
-              ? t('enterprise.modules.product.out_of_stock')
-              : t('enterprise.modules.product.in_stock', { count: stock })
+              ? 'Rupture de stock'
+              : `${stock} en stock`
             }
           </span>
         )}
       </div>
 
-      {/* 🔘 Boutons — avec glassmorphism et animation */}
-      <div className="flex gap-3">
+      {/* Boutons principaux */}
+      <div className="flex gap-2">
         <Button
           onClick={addToCart}
           disabled={isVisitor || loadingCart || disabled || outOfStock}
           className={`
-            flex-1 relative overflow-hidden group
-            bg-gradient-to-r from-emerald-600/90 to-cyan-600/90
+            flex-1 h-9 text-xs font-light rounded-xl
+            bg-gradient-to-r from-emerald-600/80 to-cyan-600/80
             hover:from-emerald-500 hover:to-cyan-500
-            backdrop-blur-md border border-white/20
-            text-white font-medium py-2.5 rounded-xl
-            transition-all duration-300
-            ${isVisitor || outOfStock ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-emerald-500/20'}
+            border border-white/[0.08]
+            text-white transition-all duration-300
+            ${isVisitor || outOfStock ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg hover:shadow-emerald-500/10'}
           `}
-          title={isVisitor ? t('auth.signin.title') : outOfStock ? t('enterprise.modules.product.out_of_stock') : undefined}
         >
-          <div className="flex items-center justify-center gap-2">
-            <ShoppingCart className="w-4 h-4" />
-            {t('enterprise.modules.product.add_to_cart')}
-          </div>
-          {loadingCart && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-            </div>
+          {loadingCart ? (
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <span className="flex items-center gap-1.5">
+              <ShoppingCart className="w-3.5 h-3.5" />
+              Panier
+            </span>
           )}
         </Button>
 
@@ -260,41 +293,38 @@ export default function ProductActions({
           onClick={toggleFavorite}
           disabled={isVisitor || loadingFavorite}
           className={`
-            w-12 h-12 rounded-xl backdrop-blur-md border
-            transition-all duration-200 group
+            w-9 h-9 rounded-xl border transition-all duration-200
             ${isFavorite 
-              ? 'bg-red-500/20 border-red-500 text-red-400 hover:bg-red-500/30' 
-              : 'border-white/20 text-gray-400 hover:border-cyan-400 hover:text-cyan-400'
+              ? 'bg-red-500/[0.08] border-red-500/[0.15] text-red-400/70 hover:bg-red-500/[0.12]' 
+              : 'border-white/[0.08] text-gray-400/50 hover:border-cyan-400/30 hover:text-cyan-400/70'
             }
           `}
-          title={isVisitor ? t('auth.signin.title') : isFavorite ? t('enterprise.modules.product.remove_favorite') : t('enterprise.modules.product.add_favorite')}
         >
-          <Heart className={`w-5 h-5 transition-transform duration-200 ${isFavorite ? 'fill-current scale-110' : ''}`} />
-          {loadingFavorite && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-            </div>
+          {loadingFavorite ? (
+            <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+          ) : (
+            <Heart className={`w-4 h-4 transition-transform duration-200 ${isFavorite ? 'fill-current' : ''}`} />
           )}
         </Button>
       </div>
 
-      {/* 📲 Commander directement — bouton WhatsApp stylé */}
+      {/* Bouton WhatsApp */}
       <Button
         onClick={orderViaWhatsApp}
         disabled={disabled || outOfStock}
         className={`
-          w-full py-3 font-medium rounded-xl
-          bg-gradient-to-r from-green-600/90 to-emerald-600/90
+          w-full h-9 text-xs font-light rounded-xl
+          bg-gradient-to-r from-green-600/80 to-emerald-600/80
           hover:from-green-500 hover:to-emerald-500
-          backdrop-blur-md border border-white/20 text-white
-          transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20
-          ${outOfStock ? 'opacity-60 cursor-not-allowed' : ''}
+          border border-white/[0.08] text-white
+          transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10
+          ${outOfStock ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
-        <div className="flex items-center justify-center gap-2">
-          <Send className="w-4 h-4" />
-          {t('enterprise.modules.product.order_now')}
-        </div>
+        <span className="flex items-center justify-center gap-1.5">
+          <Send className="w-3.5 h-3.5" />
+          Commander via WhatsApp
+        </span>
       </Button>
     </div>
   );

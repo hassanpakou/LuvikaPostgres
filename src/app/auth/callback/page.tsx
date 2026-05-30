@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
-// ✅ SERVER COMPONENT PUR - PAS DE 'use client' NI D'IMPORTS CLIENT
 export default async function CallbackPage({
   searchParams,
 }: {
@@ -29,14 +28,14 @@ export default async function CallbackPage({
     }
   );
 
-  const code = searchParams.code || searchParams.token_hash;
-  const next = (Array.isArray(searchParams.next) ? searchParams.next[0] : searchParams.next) || '/complete-profile';
-  const plan = (Array.isArray(searchParams.plan) ? searchParams.plan[0] : searchParams.plan) || 'basic';
+  const code = searchParams.code as string;
+  const next = (searchParams.next as string) || '/complete-profile';
+  const plan = (searchParams.plan as string) || 'basic';
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code as string);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
     if (error) {
-      console.error('Erreur vérification code:', error);
       redirect(`/auth/error?message=${encodeURIComponent(error.message || 'Erreur lors de la vérification')}`);
     }
 
@@ -50,6 +49,5 @@ export default async function CallbackPage({
     redirect(next);
   }
 
-  // ✅ REDIRECTION PAR DÉFAUT SI PAS DE CODE
   redirect('/auth/sign-in');
 }

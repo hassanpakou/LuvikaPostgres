@@ -1,28 +1,17 @@
-//src/app/dashboard/entreprise/orders/page.tsx
+// src/app/dashboard/entreprise/orders/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
-import { createClient } from '../../../../../src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { Package, TrendingUp, Calendar, ArrowLeft } from 'lucide-react';
-import { Badge } from '../../../../../components/ui/badge';
+import { createClient } from '@/src/lib/supabase/client';
+import { Package, TrendingUp, Calendar, ArrowLeft, Download } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useTranslations } from 'next-intl';
-import { useSoundNotification } from '../../../../../src/hooks/useSoundNotification';
 import { toast } from 'sonner';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../../../../../components/ui/select';
-import { Button } from '../../../../../components/ui/button';
-import { Download } from 'lucide-react';
-import { exportOrders } from '../../../../../src/lib/utils/exportCSV';
-import { filterByDateRange, calculateStats } from '../../../../../src/lib/utils/stats';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import Loading from '@/src/components/system/Loading';
 
 export default function OrdersPage() {
   const t = useTranslations('enterprise.modules.orders');
@@ -31,10 +20,8 @@ export default function OrdersPage() {
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<'today' | 'week' | 'month' | 'all'>('month');
   const supabase = createClient();
-  const { playSound } = useSoundNotification();
   const router = useRouter();
 
-  // 🔹 useEffect : Récupération initiale
   useEffect(() => {
     const fetchOrders = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -47,16 +34,11 @@ export default function OrdersPage() {
         .single();
 
       if (!company) return;
-
       setCompanyId(company.id);
 
       const { data } = await supabase
         .from('ecommerce_orders')
-        .select(`
-          *,
-          buyer:profiles!ecommerce_orders_buyer_id_fkey(full_name, email),
-          seller:companies(name, logo_url)
-        `)
+        .select(`*, buyer:profiles!ecommerce_orders_buyer_id_fkey(full_name, email)`)
         .eq('seller_id', company.id)
         .order('created_at', { ascending: false });
 
@@ -67,39 +49,46 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-  // 🔹 useEffect : Écoute temps réel NOUVELLES COMMANDES
   useEffect(() => {
     if (!companyId) return;
 
     const channel = supabase
       .channel('ecommerce-orders-updates')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
+      .on('postgres_changes', {
+        event: 'INSERT',
         schema: 'public',
         table: 'ecommerce_orders',
         filter: `seller_id=eq.${companyId}`
-      }, (payload) => {
+      }, (payload: any) => {
         setOrders(prev => [payload.new, ...prev]);
-        playSound();
-        
-        // Notification toast
-        if (window.location.pathname.includes('/dashboard/entreprise/orders')) {
-          toast.success(`🔔 Nouvelle commande ! ${payload.new.total_amount} $`, {
-            duration: 5000,
-            icon: '🛒'
-          });
-        }
+        toast('Nouvelle commande', {
+          description: `${payload.new.total_amount} $`,
+          icon: <Package className="w-4 h-4 text-emerald-400/70" />,
+        });
       })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [companyId, playSound]);
+    return () => { supabase.removeChannel(channel); };
+  }, [companyId]);
 
-  // 🔹 Filtres et stats
+  const filterByDateRange = (data: any[], range: string) => {
+    const now = new Date();
+    const start = range === 'today' ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) :
+                  range === 'week' ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) :
+                  range === 'month' ? new Date(now.getFullYear(), now.getMonth(), 1) : new Date(0);
+    return data.filter(o => new Date(o.created_at) >= start);
+  };
+
   const filteredOrders = filterByDateRange(orders, dateRange);
-  const stats = calculateStats(filteredOrders);
+
+  const stats = {
+    revenue: filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
+    pending: filteredOrders.filter(o => o.status === 'pending').length,
+    delivered: filteredOrders.filter(o => o.status === 'delivered').length,
+    average: filteredOrders.length > 0
+      ? filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0) / filteredOrders.length
+      : 0,
+  };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
     try {
@@ -107,122 +96,127 @@ export default function OrdersPage() {
         .from('ecommerce_orders')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq('id', orderId);
-      
+
       if (error) throw error;
-      
-      setOrders(prev => prev.map(o =>
-        o.id === orderId ? { ...o, status: newStatus } : o
-      ));
-      toast.success('✅ Statut mis à jour');
+
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+      toast.success('Statut mis à jour');
     } catch (err) {
       console.error('Erreur:', err);
-      toast.error('❌ Erreur lors de la mise à jour');
+      toast.error('Erreur lors de la mise à jour');
     }
+  };
+
+  const exportCSV = () => {
+    const headers = ['ID', 'Client', 'Email', 'Total', 'Statut', 'Date'];
+    const rows = filteredOrders.map(o => [
+      o.id.slice(0, 8),
+      o.buyer?.full_name || o.buyer_name || 'Anonyme',
+      o.buyer?.email || o.buyer_email || '',
+      o.total_amount || 0,
+      o.status,
+      new Date(o.created_at).toLocaleDateString('fr-FR'),
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `commandes-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    toast.success('Export CSV téléchargé');
+  };
+
+  if (loading) return <Loading />;
+
+  const statCards = [
+    { icon: <TrendingUp className="w-5 h-5 text-emerald-400/70" />, label: "Chiffre d'affaires", value: `${stats.revenue.toLocaleString()} $`, sub: dateRange },
+    { icon: <Package className="w-5 h-5 text-amber-400/70" />, label: "En attente", value: stats.pending, sub: null },
+    { icon: <Package className="w-5 h-5 text-emerald-400/70" />, label: "Livrées", value: stats.delivered, sub: null },
+    { icon: <Calendar className="w-5 h-5 text-cyan-400/70" />, label: "Moyenne", value: `${stats.average.toFixed(0)} $`, sub: null },
+  ];
+
+  const dateRangeLabels: Record<string, string> = {
+    today: "Aujourd'hui", week: "Cette semaine", month: "Ce mois", all: "Tout"
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <Button
-          variant="ghost"
-          onClick={() => router.push('/dashboard/entreprise')}
-          className="text-gray-300 hover:text-white hover:bg-white/10 border border-white/10 backdrop-blur-md"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour
-        </Button>
-        <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <Button variant="ghost" onClick={() => router.push('/dashboard/entreprise')} className="h-8 text-xs text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-lg mb-2">
+            <ArrowLeft className="w-3.5 h-3.5 mr-1.5" /> Retour
+          </Button>
+          <h1 className="text-xl font-semibold text-white/80">{t('title')}</h1>
+        </div>
         <div className="flex gap-2">
-          <Select value={dateRange} onValueChange={(v: any) => setDateRange(v)}>
-            <SelectTrigger className="w-36 bg-white/5 border-white/20">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="today">Aujourd'hui</SelectItem>
-              <SelectItem value="week">Cette semaine</SelectItem>
-              <SelectItem value="month">Ce mois-ci</SelectItem>
-              <SelectItem value="all">Tout</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button onClick={() => exportOrders(orders)} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
+          <div className="flex gap-1 bg-white/[0.03] border border-white/[0.08] rounded-lg p-0.5">
+            {Object.entries(dateRangeLabels).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setDateRange(key as any)}
+                className={`px-2.5 py-1 text-[11px] font-light rounded-md transition-colors ${
+                  dateRange === key ? 'bg-white/[0.08] text-white/70' : 'text-gray-400/50 hover:text-white/60'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <Button onClick={exportCSV} variant="outline" className="h-8 text-xs border-white/[0.08] text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-lg">
+            <Download className="w-3.5 h-3.5 mr-1.5" /> Export
           </Button>
         </div>
       </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="glass-border text-center p-6">
-          <TrendingUp className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">Chiffre d'affaires</p>
-          <p className="text-2xl font-bold text-white">
-            {stats.revenue.toLocaleString()} $
-          </p>
-          <p className="text-xs text-gray-500 mt-1">({dateRange})</p>
-        </Card>
-        <Card className="glass-border text-center p-6">
-          <Package className="w-8 h-8 text-amber-400 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">En attente</p>
-          <p className="text-2xl font-bold text-white">
-            {stats.pending}
-          </p>
-        </Card>
-        <Card className="glass-border text-center p-6">
-          <Package className="w-8 h-8 text-green-400 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">Livrées</p>
-          <p className="text-2xl font-bold text-white">
-            {stats.delivered}
-          </p>
-        </Card>
-        <Card className="glass-border text-center p-6">
-          <Calendar className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
-          <p className="text-gray-400 text-sm">Moyenne</p>
-          <p className="text-2xl font-bold text-white">
-            {stats.average.toFixed(0)} $
-          </p>
-        </Card>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {statCards.map((stat, i) => (
+          <div key={i} className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] text-center">
+            <div className="flex justify-center mb-2">{stat.icon}</div>
+            <p className="text-xs text-gray-400/60 font-light mb-0.5">{stat.label}</p>
+            <p className="text-lg font-semibold text-white/80">{stat.value}</p>
+            {stat.sub && <p className="text-[10px] text-gray-500/60 font-light mt-0.5">{stat.sub}</p>}
+          </div>
+        ))}
       </div>
 
-      <Card className="glass-border">
-        <CardHeader>
-          <CardTitle>{t('recent_orders')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredOrders.slice(0, 10).map(order => (
-              <div key={order.id} className="flex justify-between items-center p-4 glass-border rounded-lg">
-                <div>
-                  <p className="text-white font-mono">#{order.id.slice(0, 8)}</p>
-                  <p className="text-sm text-gray-400">
-                    {order.buyer?.full_name || order.buyer_name || 'Client anonyme'}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-white">{(order.total_amount || 0).toLocaleString()} $</p>
-                  <Select
-                    value={order.status}
-                    onValueChange={(value) => updateOrderStatus(order.id, value)}
-                  >
-                    <SelectTrigger className="w-32 mt-1 bg-white/5 border-white/20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">🕗 En attente</SelectItem>
-                      <SelectItem value="processing">⚙️ En cours</SelectItem>
-                      <SelectItem value="shipped">🚚 Expédiée</SelectItem>
-                      <SelectItem value="delivered">✅ Livrée</SelectItem>
-                      <SelectItem value="cancelled">❌ Annulée</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {format(new Date(order.created_at), 'dd MMMM yyyy', { locale: fr })}
-                  </p>
-                </div>
+      {/* Liste */}
+      <div className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
+        <h2 className="text-sm font-semibold text-white/70 mb-3">{t('recent_orders')}</h2>
+        <div className="space-y-2">
+          {filteredOrders.length === 0 ? (
+            <p className="text-center text-gray-400/60 text-xs font-light py-8">Aucune commande trouvée</p>
+          ) : filteredOrders.slice(0, 15).map(order => (
+            <div key={order.id} className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:bg-white/[0.04] transition-all cursor-pointer" onClick={() => router.push(`/dashboard/entreprise/orders/${order.id}`)}>
+              <div>
+                <p className="text-xs text-white/70 font-mono">#{order.id.slice(0, 8)}</p>
+                <p className="text-[11px] text-gray-400/60 font-light">
+                  {order.buyer?.full_name || order.buyer_name || 'Client anonyme'}
+                </p>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="text-right">
+                <p className="text-sm font-semibold text-white/80">{(order.total_amount || 0).toLocaleString()} $</p>
+                <select
+                  value={order.status}
+                  onChange={(e) => { e.stopPropagation(); updateOrderStatus(order.id, e.target.value); }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="mt-1 h-6 text-[11px] bg-white/[0.03] border border-white/[0.08] text-white/60 rounded-md px-1.5 font-light"
+                >
+                  <option value="pending">En attente</option>
+                  <option value="processing">En cours</option>
+                  <option value="shipped">Expédiée</option>
+                  <option value="delivered">Livrée</option>
+                  <option value="cancelled">Annulée</option>
+                </select>
+                <p className="text-[10px] text-gray-500/50 font-light mt-0.5">
+                  {format(new Date(order.created_at), 'dd MMM yyyy', { locale: fr })}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

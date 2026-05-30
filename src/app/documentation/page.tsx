@@ -1,37 +1,27 @@
 // src/app/documentation/page.tsx
 'use client';
 
-import { useState, useEffect, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Book, Code, Database, Zap, Shield, Globe, 
-  Smartphone, Users, Calendar, ShoppingBag, 
-  ChevronRight, ExternalLink, Github, 
-  ChevronDown, ChevronUp, Search, Filter,
-  User, QrCode, CreditCard, BarChart3, Settings,
-  HelpCircle, UserCheck, Users2, Store, 
-  Calendar as CalendarIcon, MessageSquare, Download
+  Book, Code, Database, Shield, Globe, 
+  Smartphone, Calendar, CreditCard, 
+  ChevronRight, Search,
+  User, QrCode, BarChart3, Settings,
+  HelpCircle, Store, Download
 } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/card';
-import { Input } from '../../../components/ui/input';
-import { Badge } from '../../../components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
-// 🔹 Server-side translations fallback
-const t = (key: string) => {
-  const translations = {
-    'documentation': 'Documentation'
-  };
-  return translations[key as keyof typeof translations] || key;
-};
-
-// Type definitions for documentation content
+// Types
 interface DocumentationItem {
   name?: string;
   title?: string;
   description?: string;
   fields?: string[];
   params?: string[];
+  features?: string[];
 }
 
 interface DocumentationEndpoint {
@@ -49,13 +39,51 @@ interface DocumentationContent {
   endpoints?: DocumentationEndpoint[];
 }
 
-// Documentation sections
+// Sections
 const documentationSections = [
+  {
+    id: 'overview',
+    title: 'Aperçu',
+    icon: Book,
+    color: 'from-blue-500/60 to-cyan-500/60',
+    description: 'Guide complet de la plateforme LUVIKA',
+    content: {
+      introduction: {
+        title: 'Qu\'est-ce que LUVIKA ?',
+        content: 'LUVIKA est une plateforme complète de cartes de visite numériques et de networking qui combine la technologie NFC, les codes QR et les technologies web modernes pour révolutionner la manière dont les professionnels se connectent et partagent leurs informations.'
+      },
+      features: {
+        title: 'Fonctionnalités Clés',
+        items: [
+          'Cartes de Visite NFC Intelligentes',
+          'Génération de Code QR',
+          'Gestion de Profil',
+          'Gestion d\'Événements',
+          'Système d\'Abonnement',
+          'Tableau de Bord Analytics',
+          'Support Multilingue',
+          'Mises à Jour en Temps Réel'
+        ]
+      },
+      architecture: {
+        title: 'Stack Technologique',
+        items: [
+          'Next.js 16+ avec App Router',
+          'TypeScript',
+          'Tailwind CSS',
+          'Supabase (PostgreSQL + Auth)',
+          'Framer Motion pour les Animations',
+          'Lucide React Icons',
+          'Next Intl pour l\'i18n'
+        ]
+      }
+    }
+  },
   {
     id: 'user-guide',
     title: 'Guide Utilisateur',
     icon: HelpCircle,
-    color: 'from-blue-500 to-cyan-500',
+    color: 'from-blue-500/60 to-cyan-500/60',
     description: 'Guide étape par étape pour les débutants',
     content: {
       getting_started: {
@@ -70,7 +98,7 @@ const documentationSections = [
         ]
       },
       for_beginners: {
-        title: 'Pour les Complets Débutants',
+        title: 'Pour les Débutants',
         content: 'Vous ne savez pas par où commencer ? Suivez ces étapes simples :',
         items: [
           {
@@ -83,24 +111,12 @@ const documentationSections = [
           },
           {
             title: 'Étape 3 : Partager Votre Carte',
-            description: 'Vous pouvez partager votre carte en : touchant les téléphones ensemble (NFC), en scannant les codes QR, ou en envoyant un lien.'
+            description: 'Vous pouvez partager votre carte en touchant les téléphones ensemble (NFC), en scannant les codes QR, ou en envoyant un lien.'
           },
           {
             title: 'Étape 4 : Gérer vos Contacts',
             description: 'Lorsque quelqu\'un consulte votre profil, vous pouvez voir qui a visité et vous connecter avec eux.'
           }
-        ]
-      },
-      common_tasks: {
-        title: 'Tâches Courantes',
-        items: [
-          'Comment créer votre profil',
-          'Comment ajouter une photo à votre carte',
-          'Comment partager votre carte numérique',
-          'Comment suivre qui a consulté votre profil',
-          'Comment créer et gérer des événements',
-          'Comment mettre à niveau votre forfait',
-          'Comment obtenir de l\'aide et du support'
         ]
       }
     }
@@ -109,7 +125,7 @@ const documentationSections = [
     id: 'profile-management',
     title: 'Gestion du Profil',
     icon: User,
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-green-500/60 to-emerald-500/60',
     description: 'Créer et personnaliser votre carte de visite numérique',
     content: {
       creating_profile: {
@@ -148,16 +164,6 @@ const documentationSections = [
             fields: ['Compétences', 'Portfolio', 'CV', 'Certificats']
           }
         ]
-      },
-      visibility_settings: {
-        title: 'Confidentialité et Visibilité',
-        content: 'Contrôlez les informations visibles au public.',
-        items: [
-          'Profil public : Visible par tout le monde',
-          'Informations privées : Seulement visibles par les personnes que vous approuvez',
-          'Demandes de contact : Autoriser les inconnus à vous envoyer un message',
-          'Analytics : Suivre qui visite votre profil'
-        ]
       }
     }
   },
@@ -165,7 +171,7 @@ const documentationSections = [
     id: 'nfc-qr-codes',
     title: 'NFC & Codes QR',
     icon: QrCode,
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-purple-500/60 to-pink-500/60',
     description: 'Partagez votre carte numérique instantanément',
     content: {
       nfc_cards: {
@@ -189,24 +195,14 @@ const documentationSections = [
           'Suivez les scans et l\'engagement',
           'Personnalisez l\'apparence du code QR'
         ]
-      },
-      sharing_methods: {
-        title: 'Comment Partager Votre Carte',
-        items: [
-          'Tap NFC : Touchez les téléphones ensemble',
-          'Scan QR : Scannez le code QR',
-          'Partage de Lien : Envoyez l\'URL de votre profil',
-          'Réseaux Sociaux : Partagez sur vos réseaux',
-          'Signature Email : Ajoutez à vos emails'
-        ]
       }
     }
   },
   {
     id: 'events',
     title: 'Événements',
-    icon: CalendarIcon,
-    color: 'from-orange-500 to-red-500',
+    icon: Calendar,
+    color: 'from-orange-500/60 to-red-500/60',
     description: 'Créer et gérer des événements professionnels',
     content: {
       creating_events: {
@@ -215,42 +211,10 @@ const documentationSections = [
         items: [
           'Allez dans Tableau de bord → Événements',
           'Cliquez sur "Créer un Événement"',
-          'Remplissez les détails de l\'événement (titre, date, lieu)',
+          'Remplissez les détails de l\'événement',
           'Générez un code QR pour l\'enregistrement',
           'Partagez l\'événement avec votre réseau',
           'Suivez les inscriptions et la participation'
-        ]
-      },
-      event_features: {
-        title: 'Fonctionnalités des Événements',
-        items: [
-          {
-            name: 'Inscriptions aux Événements',
-            description: 'Gérez les participants et suivez les RSVP'
-          },
-          {
-            name: 'Enregistrement par QR',
-            description: 'Enregistrement rapide utilisant les codes QR sur le lieu'
-          },
-          {
-            name: 'Analytics des Événements',
-            description: 'Voir la participation, l\'engagement et les retours'
-          },
-          {
-            name: 'Promotion d\'Événements',
-            description: 'Partagez les événements sur les réseaux sociaux et par email'
-          }
-        ]
-      },
-      event_management: {
-        title: 'Gestion des Événements',
-        content: 'Gardez vos événements organisés et réussis.',
-        items: [
-          'Surveillez les inscriptions en temps réel',
-          'Envoyez des rappels aux participants',
-          'Enregistrez les participants lors de l\'événement',
-          'Collectez les retours après l\'événement',
-          'Analysez la performance de l\'événement'
         ]
       }
     }
@@ -259,7 +223,7 @@ const documentationSections = [
     id: 'subscriptions',
     title: 'Abonnements',
     icon: CreditCard,
-    color: 'from-indigo-500 to-blue-500',
+    color: 'from-indigo-500/60 to-blue-500/60',
     description: 'Choisissez le bon forfait pour vos besoins',
     content: {
       plan_comparison: {
@@ -281,28 +245,6 @@ const documentationSections = [
             features: ['Gestion d\'équipe', 'Branding personnalisé', 'Analytics avancés', 'Accès API', 'Support dédié']
           }
         ]
-      },
-      upgrading: {
-        title: 'Comment Passer à la Version Supérieure',
-        content: 'Améliorez votre forfait pour débloquer plus de fonctionnalités.',
-        items: [
-          'Allez dans Tableau de bord → Abonnement',
-          'Choisissez votre forfait souhaité',
-          'Entrez les informations de paiement',
-          'Confirmez votre mise à niveau',
-          'Profitez immédiatement des fonctionnalités premium'
-        ]
-      },
-      billing: {
-        title: 'Informations de Facturation',
-        content: 'Gérez votre abonnement et vos paiements.',
-        items: [
-          'Options de facturation mensuelle ou annuelle',
-          'Traitement de paiement sécurisé',
-          'Annulation facile à tout moment',
-          'Reçus et factures disponibles',
-          'Gestion du renouvellement automatique'
-        ]
       }
     }
   },
@@ -310,7 +252,7 @@ const documentationSections = [
     id: 'analytics',
     title: 'Analytics',
     icon: BarChart3,
-    color: 'from-teal-500 to-emerald-500',
+    color: 'from-teal-500/60 to-emerald-500/60',
     description: 'Suivre les performances de votre carte numérique',
     content: {
       profile_analytics: {
@@ -323,118 +265,6 @@ const documentationSections = [
           'Heures d\'activité de pointe',
           'Distribution géographique'
         ]
-      },
-      engagement_metrics: {
-        title: 'Indicateurs d\'Engagement',
-        items: [
-          {
-            name: 'Taux de Scan',
-            description: 'Fréquence à laquelle votre carte est scannée'
-          },
-          {
-            name: 'Complétude du Profil',
-            description: 'Complétude de vos informations de profil'
-          },
-          {
-            name: 'Demandes de Contact',
-            description: 'Messages et demandes de connexion reçus'
-          },
-          {
-            name: 'Partages Sociaux',
-            description: 'Fréquence à laquelle votre profil est partagé'
-          }
-        ]
-      },
-      reporting: {
-        title: 'Rapports et Analyses',
-        content: 'Générez des rapports pour suivre votre succès en networking.',
-        items: [
-          'Rapports d\'activité hebdomadaires',
-          'Résumés de performance mensuels',
-          'Rapports de participation aux événements',
-          'Suivi du ROI pour les efforts de networking',
-          'Exportation des données pour analyse'
-        ]
-      }
-    }
-  },
-  {
-    id: 'admin-panel',
-    title: 'Panneau d\'Administration',
-    icon: Settings,
-    color: 'from-gray-500 to-gray-700',
-    description: 'Gérer les utilisateurs et les paramètres de la plateforme',
-    content: {
-      user_management: {
-        title: 'Gestion des Utilisateurs',
-        content: 'Outils d\'administration pour gérer les utilisateurs de la plateforme.',
-        items: [
-          'Voir tous les utilisateurs enregistrés',
-          'Bannir ou débannir les utilisateurs',
-          'Gérer les rôles et permissions des utilisateurs',
-          'Examiner les rapports et plaintes des utilisateurs',
-          'Surveiller l\'activité des utilisateurs'
-        ]
-      },
-      platform_analytics: {
-        title: 'Analytics de la Plateforme',
-        content: 'Aperçu de la performance et de l\'utilisation de la plateforme.',
-        items: [
-          'Utilisateurs enregistrés au total',
-          'Abonnements actifs',
-          'Scans et interactions totaux',
-          'Métriques de revenus et de croissance',
-          'Surveillance des performances système'
-        ]
-      },
-      system_settings: {
-        title: 'Configuration Système',
-        content: 'Configurer les paramètres et fonctionnalités de toute la plateforme.',
-        items: [
-          'Modèles d\'email et notifications',
-          'Paramètres et politiques de sécurité',
-          'Commutateurs de fonctionnalités et mode maintenance',
-          'Gestion de base de données et sauvegardes',
-          'Paramètres d\'intégration'
-        ]
-      }
-    }
-  },
-  {
-    id: 'overview',
-    title: 'Aperçu',
-    icon: Book,
-    color: 'from-blue-500 to-cyan-500',
-    description: 'Guide complet de la plateforme LUVIKA',
-    content: {
-      introduction: {
-        title: 'Qu\'est-ce que LUVIKA ?',
-        content: 'LUVIKA est une plateforme complète de cartes de visite numériques et de networking qui combine la technologie NFC, les codes QR et les technologies web modernes pour révolutionner la manière dont les professionnels se connectent et partagent leurs informations.'
-      },
-      features: {
-        title: 'Fonctionnalités Clés',
-        items: [
-          'Cartes de Visite NFC Intelligentes',
-          'Génération de Code QR',
-          'Gestion de Profil',
-          'Gestion d\'Événements',
-          'Système d\'Abonnement',
-          'Tableau de Bord Analytics',
-          'Support Multilingue',
-          'Mises à Jour en Temps Réel'
-        ]
-      },
-      architecture: {
-        title: 'Stack Technologique',
-        items: [
-          'Next.js 16+ avec App Router',
-          'TypeScript',
-          'Tailwind CSS',
-          'Supabase (PostgreSQL + Auth)',
-          'Framer Motion pour les Animations',
-          'Lucide React Icons',
-          'Next Intl pour l\'i18n'
-        ]
       }
     }
   },
@@ -442,7 +272,7 @@ const documentationSections = [
     id: 'api',
     title: 'Référence API',
     icon: Code,
-    color: 'from-green-500 to-emerald-500',
+    color: 'from-green-500/60 to-emerald-500/60',
     description: 'Points de terminaison et utilisation de l\'API RESTful',
     content: {
       authentication: {
@@ -456,7 +286,7 @@ const documentationSections = [
             params: ['email', 'password']
           },
           {
-            method: 'POST', 
+            method: 'POST',
             path: '/api/auth/sign-up',
             description: 'Enregistrement utilisateur',
             params: ['email', 'password', 'full_name']
@@ -480,32 +310,14 @@ const documentationSections = [
             params: ['full_name', 'username', 'bio', 'avatar_url']
           }
         ]
-      },
-      events: {
-        title: 'Gestion d\'Événements',
-        endpoints: [
-          {
-            method: 'GET',
-            path: '/api/events',
-            description: 'Lister les événements',
-            auth: true
-          },
-          {
-            method: 'POST',
-            path: '/api/events',
-            description: 'Créer un événement',
-            auth: true,
-            params: ['title', 'description', 'date', 'location']
-          }
-        ]
       }
     }
   },
   {
     id: 'database',
-    title: 'Schéma de Base de Données',
+    title: 'Base de Données',
     icon: Database,
-    color: 'from-purple-500 to-pink-500',
+    color: 'from-purple-500/60 to-pink-500/60',
     description: 'Structure de la base de données Supabase',
     content: {
       tables: {
@@ -532,10 +344,6 @@ const documentationSections = [
             fields: ['id', 'user_id', 'card_id', 'status', 'created_at']
           }
         ]
-      },
-      relationships: {
-        title: 'Relations',
-        content: 'La base de données utilise des clés étrangères pour maintenir l\'intégrité référentielle entre les tables.'
       }
     }
   },
@@ -543,7 +351,7 @@ const documentationSections = [
     id: 'frontend',
     title: 'Architecture Frontend',
     icon: Smartphone,
-    color: 'from-orange-500 to-red-500',
+    color: 'from-orange-500/60 to-red-500/60',
     description: 'Composants React et structure',
     content: {
       components: {
@@ -570,7 +378,7 @@ const documentationSections = [
     id: 'security',
     title: 'Sécurité',
     icon: Shield,
-    color: 'from-gray-500 to-gray-700',
+    color: 'from-gray-500/60 to-gray-700/60',
     description: 'Mesures de sécurité et meilleures pratiques',
     content: {
       measures: {
@@ -582,16 +390,6 @@ const documentationSections = [
           'Protection CORS',
           'Limitation de Débit'
         ]
-      },
-      bestPractices: {
-        title: 'Meilleures Pratiques',
-        items: [
-          'Toujours valider les entrées utilisateur',
-          'Utiliser HTTPS en production',
-          'Implémenter une gestion d\'erreur appropriée',
-          'Audits de sécurité réguliers',
-          'Garder les dépendances à jour'
-        ]
       }
     }
   },
@@ -599,7 +397,7 @@ const documentationSections = [
     id: 'deployment',
     title: 'Déploiement',
     icon: Globe,
-    color: 'from-indigo-500 to-blue-500',
+    color: 'from-indigo-500/60 to-blue-500/60',
     description: 'Guide de déploiement en production',
     content: {
       requirements: {
@@ -626,7 +424,7 @@ const documentationSections = [
   }
 ];
 
-// Fonction pour générer le contenu Markdown de la documentation
+// Fonction pour générer le contenu Markdown
 const generateDocumentationContent = () => {
   let content = '# Documentation LUVIKA\n\n';
   content += 'Guide complet pour comprendre, utiliser et contribuer à la plateforme LUVIKA.\n\n';
@@ -643,20 +441,15 @@ const generateDocumentationContent = () => {
       }
 
       if (sectionContent.items) {
-        sectionContent.items.forEach((item: string | DocumentationItem, index: number) => {
+        sectionContent.items.forEach((item: string | DocumentationItem) => {
           if (typeof item === 'string') {
             content += `- ${item}\n`;
           } else {
             content += `#### ${item.name || item.title || ''}\n`;
-            if (item.description) {
-              content += `${item.description}\n\n`;
-            }
-            if (item.fields) {
-              content += `**Champs:** ${Array.isArray(item.fields) ? item.fields.join(', ') : ''}\n\n`;
-            }
-            if (item.params) {
-              content += `**Paramètres:** ${Array.isArray(item.params) ? item.params.join(', ') : ''}\n\n`;
-            }
+            if (item.description) content += `${item.description}\n\n`;
+            if (item.fields) content += `**Champs:** ${item.fields.join(', ')}\n\n`;
+            if (item.params) content += `**Paramètres:** ${item.params.join(', ')}\n\n`;
+            if (item.features) content += `**Fonctionnalités:** ${item.features.join(', ')}\n\n`;
           }
         });
         content += '\n';
@@ -667,12 +460,8 @@ const generateDocumentationContent = () => {
         sectionContent.endpoints.forEach((endpoint: { method: any; path: any; description: any; auth: any; params: any[]; }) => {
           content += `**${endpoint.method}** \`${endpoint.path}\`\n`;
           content += `${endpoint.description}\n`;
-          if (endpoint.auth) {
-            content += '*Authentification requise*\n';
-          }
-          if (endpoint.params) {
-            content += `**Paramètres:** ${endpoint.params.join(', ')}\n`;
-          }
+          if (endpoint.auth) content += '*Authentification requise*\n';
+          if (endpoint.params) content += `**Paramètres:** ${endpoint.params.join(', ')}\n`;
           content += '\n';
         });
       }
@@ -684,7 +473,6 @@ const generateDocumentationContent = () => {
   return content;
 };
 
-// Fonction pour télécharger la documentation
 const downloadDocumentation = () => {
   const content = generateDocumentationContent();
   const blob = new Blob([content], { type: 'text/markdown' });
@@ -701,224 +489,268 @@ const downloadDocumentation = () => {
 export default function DocumentationPage() {
   const [activeSection, setActiveSection] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
+  const [contentLoading, setContentLoading] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleSectionChange = (sectionId: string) => {
+    setContentLoading(true);
+    setActiveSection(sectionId);
+    setTimeout(() => setContentLoading(false), 300);
+  };
 
   const filteredSections = documentationSections.filter(section =>
     section.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     section.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+          className="flex flex-col items-center gap-4"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+            className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
+          />
+          <span className="text-cyan-300/70 text-sm font-light tracking-wide">
+            Chargement...
+          </span>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl"></div>
-        <div className="container mx-auto px-4 py-16 relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center"
-          >
-            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent mb-6">
-              Documentation
-            </h1>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-              Guide complet pour comprendre, utiliser et contribuer à la plateforme LUVIKA.
-              Trouvez tout ce dont vous avez besoin pour démarrer et tirer le meilleur parti de nos fonctionnalités.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400">
-                <Book className="w-5 h-5 mr-2" />
-                Get Started
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href="https://github.com/hassanpakou/Luvika2026" target="_blank" rel="noopener noreferrer">
-                  <Github className="w-5 h-5 mr-2" />
-                  View on GitHub
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" onClick={downloadDocumentation}>
-                <Download className="w-5 h-5 mr-2" />
-                Download Documentation
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
+    <AnimatePresence>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        {/* Header */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
+          <div className="container mx-auto px-4 py-12 relative">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="text-center"
+            >
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
+                <Book className="w-3.5 h-3.5 text-cyan-300/80" />
+                <span className="text-cyan-300/80 font-medium text-sm">Documentation</span>
+              </div>
 
-      <div className="container mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-1"
-          >
-            <Card className="glass-border sticky top-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <Book className="w-6 h-6 text-cyan-400" />
-                  Table of Contents
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
+              <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-white/90 to-cyan-200/70 bg-clip-text text-transparent mb-3">
+                Documentation LUVIKA
+              </h1>
+              <p className="text-gray-300/70 max-w-2xl mx-auto text-sm font-light leading-relaxed mb-6">
+                Guide complet pour comprendre, utiliser et contribuer à la plateforme LUVIKA.
+                Trouvez tout ce dont vous avez besoin pour démarrer.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <Button size="sm" className="bg-gradient-to-r from-blue-600/80 to-cyan-500/80 hover:from-blue-500 hover:to-cyan-400 text-white text-xs">
+                  <Book className="w-3.5 h-3.5 mr-1.5" />
+                  Commencer
+                </Button>
+                <Button size="sm" variant="outline" onClick={downloadDocumentation} className="text-xs border-white/20 text-gray-300 hover:bg-white/5">
+                  <Download className="w-3.5 h-3.5 mr-1.5" />
+                  Télécharger
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+
+        <div className="container mx-auto px-4 pb-16">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Sidebar */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              className="lg:col-span-1"
+            >
+              <div className="sticky top-4 rounded-2xl p-4 bg-white/[0.03] backdrop-blur-sm border border-white/[0.08]">
+                <h3 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+                  <Book className="w-4 h-4 text-cyan-400/70" />
+                  Table des Matières
+                </h3>
+                
                 <div className="relative mb-4">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400/60 w-3.5 h-3.5" />
                   <Input
-                    placeholder="Search documentation..."
+                    placeholder="Rechercher..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 bg-white/5 border-white/20"
+                    className="pl-9 h-8 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 placeholder:text-gray-500"
                   />
                 </div>
                 
-                {filteredSections.map((section) => (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id)}
-                    className={`w-full text-left p-3 rounded-lg transition-all flex items-center justify-between ${
-                      activeSection === section.id
-                        ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-white/20'
-                        : 'hover:bg-white/5'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${section.color} flex items-center justify-center`}>
-                        <section.icon className="w-4 h-4 text-white" />
+                <div className="space-y-1">
+                  {filteredSections.map((section) => (
+                    <button
+                      key={section.id}
+                      onClick={() => handleSectionChange(section.id)}
+                      className={`w-full text-left p-2.5 rounded-xl transition-all duration-200 flex items-center gap-3 ${
+                        activeSection === section.id
+                          ? 'bg-white/[0.06] border border-white/[0.1]'
+                          : 'hover:bg-white/[0.03] border border-transparent'
+                      }`}
+                    >
+                      <div className={`w-7 h-7 rounded-lg bg-gradient-to-r ${section.color} flex items-center justify-center flex-shrink-0`}>
+                        <section.icon className="w-3.5 h-3.5 text-white/80" />
                       </div>
-                      <div>
-                        <div className="font-medium text-white">{section.title}</div>
-                        <div className="text-xs text-gray-400">{section.description}</div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-medium text-white/80 truncate">{section.title}</div>
+                        <div className="text-[10px] text-gray-500/70 truncate">{section.description}</div>
                       </div>
-                    </div>
-                    <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${
-                      activeSection === section.id ? 'rotate-90' : ''
-                    }`} />
-                  </button>
-                ))}
-              </CardContent>
-            </Card>
-          </motion.div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
 
-          {/* Main Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="lg:col-span-3"
-          >
-            <AnimatePresence mode="wait">
-              {documentationSections.map((section) => (
-                activeSection === section.id && (
+            {/* Main Content */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut', delay: 0.1 }}
+              className="lg:col-span-3"
+            >
+              <AnimatePresence mode="wait">
+                {contentLoading ? (
                   <motion.div
-                    key={section.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="space-y-6"
+                    key="loader"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex items-center justify-center py-20"
                   >
-                    {/* Section Header */}
-                    <Card className="glass-border">
-                      <CardHeader>
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${section.color} flex items-center justify-center`}>
-                            <section.icon className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-2xl text-white">{section.title}</CardTitle>
-                            <p className="text-gray-400">{section.description}</p>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                      className="w-6 h-6 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
+                    />
+                  </motion.div>
+                ) : (
+                  documentationSections.map((section) => (
+                    activeSection === section.id && (
+                      <motion.div
+                        key={section.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        transition={{ duration: 0.3, ease: 'easeOut' }}
+                        className="space-y-4"
+                      >
+                        {/* Section Header */}
+                        <div className="rounded-2xl p-5 bg-white/[0.03] backdrop-blur-sm border border-white/[0.08]">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-xl bg-gradient-to-r ${section.color} flex items-center justify-center`}>
+                              <section.icon className="w-4.5 h-4.5 text-white/80" />
+                            </div>
+                            <div>
+                              <h2 className="text-lg font-semibold text-white/90">{section.title}</h2>
+                              <p className="text-xs text-gray-400/70 font-light">{section.description}</p>
+                            </div>
                           </div>
                         </div>
-                      </CardHeader>
-                    </Card>
 
-                    {/* Content */}
-                    <div className="grid gap-6">
-                      {Object.entries(section.content).map(([key, content]) => (
-                        <Card key={key} className="glass-border">
-                          <CardHeader>
-                            <CardTitle className="text-lg text-white">{content.title}</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {content.content && (
-                              <p className="text-gray-300 mb-4">{content.content}</p>
-                            )}
-                            
-                            {content.items && (
-                              <div className="grid gap-3">
-                                {content.items.map((item: string | DocumentationItem, index: number) => (
-                                  <div key={index} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                                    <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${section.color}`}></div>
-                                    {typeof item === 'string' ? (
-                                      <span className="text-gray-300">{item}</span>
-                                    ) : (
-                                      <div className="flex flex-col">
-                                        <span className="text-white font-medium">{item.name || item.title || ''}</span>
-                                        <span className="text-gray-400 text-sm">{item.description || ''}</span>
-                                        {item.fields && (
-                                          <div className="mt-2">
-                                            <span className="text-xs text-gray-500">Fields: </span>
-                                            <span className="text-xs text-gray-300">{Array.isArray(item.fields) ? item.fields.join(', ') : ''}</span>
-                                          </div>
-                                        )}
-                                        {item.params && (
-                                          <div className="mt-2">
-                                            <span className="text-xs text-gray-500">Parameters: </span>
-                                            <span className="text-xs text-gray-300">{Array.isArray(item.params) ? item.params.join(', ') : ''}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                            
-                            {content.endpoints && (
-                              <div className="space-y-4">
-                                {content.endpoints.map((endpoint: { method: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; path: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; auth: any; description: string | number | bigint | boolean | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | Promise<string | number | bigint | boolean | ReactPortal | ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<ReactNode> | null | undefined> | null | undefined; params: any[]; }, index: Key | null | undefined) => (
-                                  <div key={index} className="p-4 bg-white/5 rounded-lg">
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <Badge variant="secondary" className={`bg-gradient-to-r ${section.color}/20 text-white border-0`}>
-                                        {endpoint.method}
-                                      </Badge>
-                                      <span className="text-white font-mono">{endpoint.path}</span>
-                                      {endpoint.auth && (
-                                        <Badge variant="outline" className="ml-auto">Auth Required</Badge>
+                        {/* Content Cards */}
+                        <div className="grid gap-3">
+                          {Object.entries(section.content).map(([key, content]) => (
+                            <div key={key} className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-300">
+                              <h3 className="text-base font-semibold text-white/80 mb-3">{content.title}</h3>
+                              
+                              {content.content && (
+                                <p className="text-gray-300/70 text-sm leading-relaxed font-light mb-3">{content.content}</p>
+                              )}
+                              
+                              {content.items && (
+                                <div className="grid gap-2">
+                                  {content.items.map((item: string | DocumentationItem, index: number) => (
+                                    <div key={index} className="flex items-start gap-2.5 p-2.5 bg-white/[0.02] rounded-xl border border-white/[0.04]">
+                                      <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r ${section.color} mt-1.5 flex-shrink-0`}></div>
+                                      {typeof item === 'string' ? (
+                                        <span className="text-gray-300/70 text-sm font-light">{item}</span>
+                                      ) : (
+                                        <div className="flex flex-col gap-1">
+                                          <span className="text-white/80 text-sm font-medium">{item.name || item.title || ''}</span>
+                                          <span className="text-gray-400/70 text-xs font-light">{item.description || ''}</span>
+                                          {item.fields && (
+                                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                              {item.fields.map((field, i) => (
+                                                <Badge key={i} variant="outline" className="text-[10px] border-white/10 text-gray-400/70 bg-transparent">
+                                                  {field}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                          {item.features && (
+                                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                              {item.features.map((feature, i) => (
+                                                <Badge key={i} variant="outline" className="text-[10px] border-white/10 text-gray-400/70 bg-transparent">
+                                                  {feature}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
                                       )}
                                     </div>
-                                    <p className="text-gray-300 mb-3">{endpoint.description}</p>
-                                    {endpoint.params && (
-                                      <div>
-                                        <span className="text-xs text-gray-500">Parameters: </span>
-                                        <div className="flex flex-wrap gap-2 mt-1">
+                                  ))}
+                                </div>
+                              )}
+                              
+                              {content.endpoints && (
+                                <div className="space-y-2.5">
+                                  {content.endpoints.map((endpoint: DocumentationEndpoint, index: number) => (
+                                    <div key={index} className="p-3 bg-white/[0.02] rounded-xl border border-white/[0.04]">
+                                      <div className="flex items-center gap-2 mb-1.5">
+                                        <Badge className={`text-[10px] bg-gradient-to-r ${section.color} text-white/80 border-0 px-2 py-0`}>
+                                          {endpoint.method}
+                                        </Badge>
+                                        <span className="text-white/70 text-xs font-mono">{endpoint.path}</span>
+                                        {endpoint.auth && (
+                                          <Badge variant="outline" className="ml-auto text-[10px] border-white/10 text-gray-400/70 bg-transparent">
+                                            Auth
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <p className="text-gray-400/70 text-xs font-light mb-2">{endpoint.description}</p>
+                                      {endpoint.params && (
+                                        <div className="flex flex-wrap gap-1">
                                           {endpoint.params.map((param, i) => (
-                                            <Badge key={i} variant="outline" className="text-xs">{param}</Badge>
+                                            <Badge key={i} variant="outline" className="text-[10px] border-white/10 text-gray-400/70 bg-transparent">
+                                              {param}
+                                            </Badge>
                                           ))}
                                         </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </motion.div>
-                )
-              ))}
-            </AnimatePresence>
-          </motion.div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )
+                  ))
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
         </div>
       </div>
-    </div>
+    </AnimatePresence>
   );
 }

@@ -2,6 +2,8 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default async function AdminLayout({
   children,
@@ -29,13 +31,24 @@ export default async function AdminLayout({
   const isAdmin = profile?.role === 'admin';
 
   if (!isAdmin && !isEnterprise) {
-    console.warn('🚫 Accès Layout Business refusé:', { role: profile?.role, plan: profile?.plan });
     redirect('/dashboard');
   }
 
   return (
-    <div className="min-h-screen w-full text-white">
-      <div className="w-full px-4 sm:px-8 py-8">
+    <div className="min-h-screen w-full bg-gradient-to-br">
+      {/* Bouton retour */}
+      <div className="w-full px-4 sm:px-8 pt-6 pb-2">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-gray-400/60 hover:text-white/70 transition-colors text-xs font-light"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Retour à l'accueil
+        </Link>
+      </div>
+
+      {/* Contenu */}
+      <div className="w-full px-4 sm:px-8 py-4 text-white">
         {children}
       </div>
     </div>
