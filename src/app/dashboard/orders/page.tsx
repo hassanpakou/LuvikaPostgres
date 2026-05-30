@@ -68,10 +68,10 @@ export default function UserOrdersPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => router.push('/dashboard')} className="border-white/20 text-gray-300">
-            <ArrowLeft className="w-4 h-4 mr-1" /> Retour
+            <ArrowLeft className="w-4 h-4 mr-1" /> 
           </Button>
           <Button size="sm" onClick={() => router.push('/dashboard/orders/new')} className="bg-violet-600 hover:bg-violet-700 text-white">
-            <PackageIcon className="w-4 h-4 mr-1" /> Commander
+            <PackageIcon className="w-4 h-4 mr-1" /> 
           </Button>
         </div>
       </div>
