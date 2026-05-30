@@ -62,7 +62,6 @@ export default function Loading() {
 
         {/* Signature discrète */}
         <p className="text-[10px] text-gray-600 flex items-center gap-1">
-          <Sparkle className="w-2.5 h-2.5 text-cyan-500/50" />
           LUVIKA
         </p>
       </div>

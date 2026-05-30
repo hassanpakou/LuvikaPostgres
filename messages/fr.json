@@ -63,8 +63,8 @@
     "greeting_night": "Coucou, {name}",
     "subtitle": "Gérez votre identité numérique intelligente",
     "view_public": "Voir mon profil public",
-    "export_csv": "Exporter (.csv)",
-    "export_json": "Exporter (.json)",
+    "export_csv": "",
+    "export_json": "",
     "quick_menu": {
       "visibility": "Visibilité",
       "contact": "Messages",
@@ -94,9 +94,9 @@
     },
     
     "messages": {
-      "back":"Retour",
-      "refresh":"Actualiser",
-      "export":"Exporter",
+      "back":"",
+      "refresh":"",
+      "export":"",
       "search":"Rechercher",
       "all_statuses":"Tous",
   "title": "Messages",
@@ -132,10 +132,10 @@
     "url_copied": "✅ Lien copié",
       "title": "Paramètres du Profil",
       "description": "Gérez vos informations personnelles et la confidentialité",
-              "save": "Enregistrer les modifications",
+              "save": "",
               
-              "refresh": "Actualiser",
-              "back": "Retour",
+              "refresh": "",
+              "back": "",
       "profile": {
         "title": "Profil",
         "description": "Informations personnelles et professionnelles",
@@ -220,7 +220,7 @@
         "website":"Site web",
         "address_placeholder":"Kinshasa, RDC",
         "saving": "Enregistrement...",
-        "save": "Enregistrer les modifications",
+        "save": "",
         "save_success": "✅ Modifications enregistrées",
         "save_error": "❌ Erreur lors de l'enregistrement"
       },
@@ -245,11 +245,11 @@
       "subtitle": "Gérez les paramètres avancés de votre compte",
       "parameters": "Paramètres",
       "details": "Détails",
-      "refresh": "Actualiser",
+      "refresh": "",
       "add": "Ajouter",
       "edit": "Modifier",
       "delete": "Supprimer",
-      "save": "Enregistrer",
+      "save": "",
       "cancel": "Annuler",
       "select_parameter": "Sélectionnez un paramètre pour afficher les détails",
       "no_parameters": "Aucun paramètre trouvé",
@@ -262,7 +262,7 @@
       "key_placeholder": "Entrez la clé du paramètre",
       "value_placeholder": "Entrez la valeur du paramètre",
       "description_placeholder": "Description optionnelle",
-      "back":"Retour",
+      "back":"",
       "types": {
         "string": "Texte",
         "number": "Nombre",
@@ -273,9 +273,9 @@
     "statistics": {
     "title": "Statistiques",
     "subtitle": "Analysez les performances de votre profil et vos scans",
-    "back":"Retour",
-    "refresh": "Actualiser",
-    "export": "Exporter",
+    "back":"",
+    "refresh": "",
+    "export": "",
     
     "range": "Période",
     "last_7_days": "7 derniers jours",
@@ -318,15 +318,15 @@
       "subtitle": "Gérez les types de scans et leurs priorités",
       "configurations": "Configurations",
       "details": "Détails",
-      "refresh": "Actualiser",
+      "refresh": "",
       "add": "Ajouter",
       "edit": "Modifier",
       "preview_empty": "Aperçu vide",
       "preview_empty_hint":"Aucun contenu à afficher dans l'aperçu",
       "delete": "Supprimer",
-      "save": "Enregistrer",
+      "save": "",
       "cancel": "Annuler",
-      "back":"Retour",
+      "back":"",
       "select_config": "Sélectionnez une configuration pour afficher les détails",
       "no_configs": "Aucune configuration trouvée",
       "no_title": "Aucun titre",
@@ -400,11 +400,11 @@
       "subtitle": "Gérez les paramètres avancés de votre compte",
       "parameters": "Paramètres",
       "details": "Détails",
-      "refresh": "Actualiser",
+      "refresh": "",
       "add": "Ajouter",
       "edit": "Modifier",
       "delete": "Supprimer",
-      "save": "Enregistrer",
+      "save": "",
       "cancel": "Annuler",
       "select_parameter": "Sélectionnez un paramètre pour afficher les détails",
       "no_parameters": "Aucun paramètre trouvé",
@@ -417,7 +417,7 @@
       "key_placeholder": "Entrez la clé du paramètre",
       "value_placeholder": "Entrez la valeur du paramètre",
       "description_placeholder": "Description optionnelle",
-      "back":"Retour",
+      "back":"",
       "types": {
         "string": "Texte",
         "number": "Nombre",
@@ -428,9 +428,9 @@
     "subscribers": {
     "title": "Abonnés",
     "subtitle": "Gérez vos abonnés et leurs permissions",
-    "back": "Retour",
-    "refresh": "Actualiser",
-    "export": "Exporter",
+    "back": "",
+    "refresh": "",
+    "export": "",
     
     "search": "Rechercher",
     "search_placeholder": "Nom, username ou bio...",
@@ -614,8 +614,8 @@
     "title": "Abonnés",
     "subtitle": "Gérez vos abonnés et leurs permissions",
     
-    "refresh": "Actualiser",
-    "export": "Exporter",
+    "refresh": "",
+    "export": "",
     
     "search": "Rechercher",
     "search_placeholder": "Nom, username ou bio...",
@@ -690,7 +690,7 @@
       "company": "Business",
       "bio_short": "Bio courte",
       "skip": "Passer",
-      "back": "Retour",
+      "back": "",
       "next": "Suivant",
       "finish": "Terminer mon profil"
     },
@@ -734,7 +734,7 @@
       "password_special": "Un caractère spécial",
       "password_match": "Les mots de passe correspondent",
       "2fa_enabled": "🔒 L'authentification à deux facteurs (2FA) est activée par défaut pour votre sécurité.",
-      "back": "Retour",
+      "back": "",
       "next": "Suivant",
       "create_account": "Créer mon compte",
       "error_name": "Le nom doit comporter au moins 2 caractères.",
@@ -817,7 +817,7 @@
     },
     "nav": {
       "orders": "Commandes",
-      "back_to_dashboard": "Retour"
+      "back_to_dashboard": ""
     },
     "subscription": {
       "plan": "Plan",
@@ -1131,7 +1131,7 @@
     "cancel": "❌ Échec annulation"
   },
   "common": {
-    "save": "Enregistrer",
+    "save": "",
     "saving": "Enregistrement..."
   },
   "enterprise": {
@@ -1202,7 +1202,7 @@
         "description": "Une erreur est survenue lors de l'enregistrement"
       },
       "saving": "Enregistrement...",
-      "save": "Enregistrer",
+      "save": "",
       "saving": "Sauvegarde...",
       "save_success": "✅ Profil mis à jour",
       "save_error": "❌ Échec de la sauvegarde",
@@ -1311,7 +1311,7 @@
         "sku_placeholder": "LUVIKA-TSHIRT-001",
         "sku_help": "Code unique pour le suivi des stocks",
         "optional": "Optionnel",
-        "save": "Enregistrer",
+        "save": "",
         "saving": "Sauvegarde...",
         "cancel": "Annuler",
         "delete": "Supprimer",
@@ -1406,7 +1406,7 @@
         "website": "Site web",
         "description": "Description",
         "logo_url": "URL du logo",
-        "save": "Enregistrer",
+        "save": "",
         "saving": "Sauvegarde...",
         "save_success": "✅ Profil mis à jour",
         "save_error": "❌ Échec de la sauvegarde",
