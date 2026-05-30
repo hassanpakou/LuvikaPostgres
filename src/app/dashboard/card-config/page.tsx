@@ -9,7 +9,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, Contact, Globe, Calendar, Link, FileText, Briefcase,
   CheckCircle, RefreshCw, ArrowLeft, X, Eye, QrCode,
-  ChevronRight, Lock, Crown
+  ChevronRight, Lock, Crown,
+  Shield,
+  Zap
 } from 'lucide-react';
 import { Button } from '../../../../components/ui/button';
 import { Card, CardContent } from '../../../../components/ui/card';
@@ -154,10 +156,16 @@ export default function CardConfigPage() {
           ))}
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span className="text-cyan-400 font-medium">{stats.active} activées</span>
-          <span className="text-amber-400 font-medium">{stats.locked} verrouillées</span>
-          {getPlanBadge(isPremium, userPlan)}
-        </div>
+  <div className="flex items-center gap-1.5 text-cyan-400">
+    <Zap className="w-4 h-4" />
+    <span className="font-medium">{stats.active} activées</span>
+  </div>
+  <div className="flex items-center gap-1.5 text-amber-400">
+    <Shield className="w-4 h-4" />
+    <span className="font-medium">{stats.locked} verrouillées</span>
+  </div>
+  {getPlanBadge(isPremium, userPlan)}
+</div>
       </div>
 
       {/* Liste */}
