@@ -3,7 +3,6 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 
-// 🔹 METADATA SPÉCIFIQUE AU DASHBOARD
 export const metadata = {
   title: 'Tableau de bord • LUVIKA',
   description: 'Gérez votre identité numérique, vos cartes NFC, événements et statistiques',
@@ -29,7 +28,7 @@ export default async function DashboardLayout({
   if (!user) redirect('/auth/sign-in');
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-gray-950 via-slate-900 to-indigo-950 text-white">
+    <div className="relative min-h-screen bg-transparent text-white">
       <div className="relative z-10">
         <div className="container mx-auto px-4 py-6 sm:py-8 max-w-7xl">
           {children}

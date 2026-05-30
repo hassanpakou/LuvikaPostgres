@@ -22,15 +22,11 @@
   --bg-primary: #0f172a;
   --text-primary: #f9fafb;
 }
-body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-}
 
-/* ✅ 4. Styles globaux de base */
+/* ✅ 4. Styles globaux de base — FOND BLEU NUIT */
 @layer base {
   body {
-    @apply bg-gradient-to-br from-night-blue-900 to-black text-white min-h-screen;
+    @apply bg-[#0b1120] text-white min-h-screen;
     overflow-x: hidden;
   }
 }
@@ -67,35 +63,26 @@ body {
 }
 
 /* ========== 7. ANIMATIONS DE BASE ========== */
-
 @keyframes float {
   0% { transform: translateY(0px) rotate(0deg); opacity: 0; }
   10% { opacity: 1; }
   90% { opacity: 1; }
   100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
 }
-.animate-float {
-  animation: float 8s ease-in-out infinite;
-}
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
+.animate-float { animation: float 8s ease-in-out infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
 
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-.animate-spin-slow {
-  animation: spin-slow 2s linear infinite;
-}
+.animate-spin-slow { animation: spin-slow 2s linear infinite; }
 
 @keyframes progress {
   0% { width: 0%; }
   100% { width: 100%; }
 }
-.animate-progress {
-  animation: progress 2.5s ease-in-out infinite;
-}
+.animate-progress { animation: progress 2.5s ease-in-out infinite; }
 
 @keyframes gradient-x {
   0% { background-position: 0% 50%; }
@@ -118,7 +105,6 @@ body {
 }
 
 /* ========== 8. ANIMATIONS CYBERPUNK ========== */
-
 @keyframes glitchMove {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-3px); }
@@ -152,13 +138,8 @@ body {
   50% { opacity: 0.5; }
 }
 
-/* Classes d'animation cyberpunk */
-.animate-flicker {
-  animation: flicker 0.12s infinite;
-}
-.animate-flicker-mobile {
-  animation: flicker-mobile 0.2s infinite;
-}
+.animate-flicker { animation: flicker 0.12s infinite; }
+.animate-flicker-mobile { animation: flicker-mobile 0.2s infinite; }
 .neon-glow {
   --neon-color: #22d3ee;
   animation: pulseNeon 1.8s ease-in-out infinite;
@@ -172,17 +153,13 @@ body {
 }
 
 /* ========== 9. EFFETS CRT ========== */
-
 .crt-effect {
   position: fixed;
   inset: 0;
   pointer-events: none;
   background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.06) 2px,
-    rgba(0, 0, 0, 0.06) 4px
+    0deg, transparent, transparent 2px,
+    rgba(0, 0, 0, 0.06) 2px, rgba(0, 0, 0, 0.06) 4px
   );
   opacity: 0.08;
   z-index: 1;
@@ -191,13 +168,14 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image: radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
-                    radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
+  background-image:
+    radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.03) 0%, transparent 20%),
+    radial-gradient(circle at 80% 65%, rgba(255, 255, 255, 0.03) 0%, transparent 20%);
   opacity: 0.3;
   z-index: 2;
 }
 
-/* ========== 10. ANIMATION PULSE SUBTILE UNIFIÉE ========== */
+/* ========== 10. ANIMATION PULSE SUBTILE ========== */
 @keyframes pulse-subtle {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 0.5; }
@@ -208,15 +186,11 @@ body {
 
 /* ========== 11. ACCESSIBILITÉ ========== */
 @media (prefers-reduced-motion: reduce) {
-  .crt-effect,
-  .noise-overlay,
-  [class*="animate-"] {
+  .crt-effect, .noise-overlay, [class*="animate-"] {
     animation: none !important;
     display: none !important;
   }
-  .glass-border,
-  .glass-section,
-  .glass-section-icy {
+  .glass-border, .glass-section, .glass-section-icy {
     backdrop-filter: none !important;
   }
   .fixed.inset-0 > * {

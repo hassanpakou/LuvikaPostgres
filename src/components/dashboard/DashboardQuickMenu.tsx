@@ -199,19 +199,26 @@ export default function DashboardQuickMenu({
   );
 }
 
-// Helper pour convertir les classes Tailwind en valeurs de dégradé (simplifié)
 const getGradient = (cls: string): string => {
   const map: Record<string, string> = {
-    'from-purple-500 to-indigo-500': '#a855f7, #818cf8',
+    // Profil
     'from-cyan-500 to-blue-500': '#06b6d4, #3b82f6',
-    'from-emerald-500 to-teal-500': '#10b981, #0d9488',
+    // Statistiques
+    'from-purple-500 to-indigo-500': '#a855f7, #6366f1',
+    // Abonnés
+    'from-emerald-500 to-teal-500': '#10b981, #14b8a6',
+    // Carte
     'from-amber-500 to-orange-500': '#f59e0b, #f97316',
-    'from-red-500 to-rose-500': '#ef4444, #ec4899',
-    'from-indigo-500 to-violet-500': '#6366f1, #8b5cf6',
-    'from-fuchsia-500 to-pink-500': '#d946ef, #ec4899',
-    'from-cyan-400 to-blue-400': '#22d3ee, #60a5fa',
-    'from-green-400 to-emerald-500': '#22c55e, #10b981',
-    'from-gray-500 to-gray-600': '#6b7280, #4b5563',
+    // Commandes
+    'from-blue-900 to-blue-800': '#1e3a5f, #1e3a8a',
+    // Portfolio
+    'from-sky-500 to-cyan-500': '#0ea5e9, #06b6d4',
+    // Certificat
+    'from-yellow-500 to-amber-500': '#eab308, #f59e0b',
+    // Paramètres
+    'from-slate-500 to-gray-500': '#64748b, #6b7280',
+    // Déconnexion
+    'from-red-500 to-rose-500': '#ef4444, #f43f5e',
   };
   return map[cls] || '#06b6d4, #3b82f6';
 };

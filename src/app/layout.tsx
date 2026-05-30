@@ -12,6 +12,7 @@ import { SessionTimeoutProvider } from '../components/providers/SessionTimeoutPr
 import { ReviewPrompt } from '../components/system/ReviewPrompt';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
+import FluidBackground from '../components/effects/FluidBackground';
 
 
 const inter = Inter({ 
@@ -110,8 +111,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} suppressHydrationWarning className="scroll-smooth">
 
-      <body className={`${inter.className} min-h-screen bg-slate-950 text-white relative overflow-x-hidden antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+<body className={`${inter.className} min-h-screen bg-transparent text-white relative overflow-x-hidden antialiased`}>
+  <FluidBackground />
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ClientProviders>
             <SessionTimeoutProvider>

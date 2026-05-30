@@ -3,7 +3,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Mail, MapPin, Phone, MessageCircle, Send, ChevronRight, CheckCircle, AlertCircle 
+  Mail, MapPin, Phone, MessageCircle, Send, ChevronRight, CheckCircle, AlertCircle,
+  User, Lock, Clock, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,28 +38,25 @@ export default function ContactContent({
   send: string;
 }) {
   return (
-    <div className="min-h-screen py-10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen py-10 bg-transparent">
       <div className="max-w-5xl mx-auto px-4">
-        {/* 🔹 Header compact */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-         
-          
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent mb-3">
             {title}
           </h1>
           <p className="text-gray-300 max-w-3xl mx-auto text-sm md:text-base leading-relaxed">
             {subtitle}
           </p>
-          
           <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-400 mx-auto mt-4 rounded-full"></div>
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 🔹 Informations de contact compactes */}
+          {/* Informations de contact */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -102,16 +100,10 @@ export default function ContactContent({
                   }}
                 ></div>
                 
-                <div className={`
-                  glass-border rounded-xl p-4 
-                  ${item.gradient} backdrop-blur-sm border border-white/10
-                  relative overflow-hidden transition-all duration-300
-                  group-hover:border-cyan-400/30
-                `}>
+                <div className={`glass-border rounded-xl p-4 ${item.gradient} backdrop-blur-sm border border-white/10 relative overflow-hidden transition-all duration-300 group-hover:border-cyan-400/30`}>
                   <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  
                   <div className="flex items-start gap-3">
-                    <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${item.color}`}>
+                    <div className={`flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center bg-gradient-to-r ${item.color}`}>
                       <item.icon className="w-4.5 h-4.5 text-white" />
                     </div>
                     <div>
@@ -123,7 +115,7 @@ export default function ContactContent({
               </motion.div>
             ))}
             
-            {/* 🔹 Section horaires (optionnelle mais utile) */}
+            {/* Horaires */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -144,7 +136,7 @@ export default function ContactContent({
             </motion.div>
           </motion.div>
 
-          {/* 🔹 Formulaire compact et élégant */}
+          {/* Formulaire */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -165,12 +157,7 @@ export default function ContactContent({
                 <Label htmlFor="name" className="text-gray-300 text-sm">{name}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder={name_placeholder}
-                    className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30"
-                  />
+                  <Input id="name" type="text" placeholder={name_placeholder} className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30" />
                 </div>
               </div>
               
@@ -178,12 +165,7 @@ export default function ContactContent({
                 <Label htmlFor="email" className="text-gray-300 text-sm">{email}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="votre@email.com"
-                    className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30"
-                  />
+                  <Input id="email" type="email" placeholder="votre@email.com" className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30" />
                 </div>
               </div>
               
@@ -191,27 +173,13 @@ export default function ContactContent({
                 <Label htmlFor="message" className="text-gray-300 text-sm">{message}</Label>
                 <div className="relative">
                   <MessageCircle className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                  <Textarea
-                    id="message"
-                    rows={4}
-                    placeholder={message_placeholder}
-                    className="pl-10 pt-3 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30 resize-none"
-                  />
+                  <Textarea id="message" rows={4} placeholder={message_placeholder} className="pl-10 pt-3 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30 resize-none" />
                 </div>
               </div>
               
               <AnimatePresence mode="wait">
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-300 group"
-                  >
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
+                  <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-300 group">
                     <span className="flex items-center justify-center gap-2">
                       {send}
                       <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -220,26 +188,22 @@ export default function ContactContent({
                 </motion.div>
               </AnimatePresence>
               
-              {/* 🔹 Badges de confiance */}
               <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-white/10 mt-4">
                 <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-[10px] py-0.5 px-2">
-                  <CheckCircle className="w-3 h-3 mr-0.5 inline" />
-                  Réponse sous 24h
+                  <CheckCircle className="w-3 h-3 mr-0.5 inline" /> Réponse sous 24h
                 </Badge>
                 <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/30 text-[10px] py-0.5 px-2">
-                  <Lock className="w-3 h-3 mr-0.5 inline" />
-                  Données sécurisées
+                  <Lock className="w-3 h-3 mr-0.5 inline" /> Données sécurisées
                 </Badge>
                 <Badge className="bg-purple-500/15 text-purple-300 border-purple-500/30 text-[10px] py-0.5 px-2">
-                  <Star className="w-3 h-3 mr-0.5 inline" />
-                  Support prioritaire
+                  <Star className="w-3 h-3 mr-0.5 inline" /> Support prioritaire
                 </Badge>
               </div>
             </form>
           </motion.div>
         </div>
 
-        {/* 🔹 Section CTA finale compacte */}
+        {/* CTA finale */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -255,21 +219,14 @@ export default function ContactContent({
                   ou écrivez à <span className="font-medium text-cyan-300">luvika@gmail.com</span>
                 </p>
               </div>
-              
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200"
-                onClick={() => window.location.href = 'tel:+2438901776601'}
-              >
-                <Phone className="w-3.5 h-3.5 mr-1.5" />
-                Appeler maintenant
+              <Button size="sm" variant="outline" className="border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200" onClick={() => window.location.href = 'tel:+2438901776601'}>
+                <Phone className="w-3.5 h-3.5 mr-1.5" /> Appeler maintenant
               </Button>
             </div>
           </div>
         </motion.div>
 
-        {/* 🔹 Footer compact */}
+        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -285,6 +242,3 @@ export default function ContactContent({
     </div>
   );
 }
-
-// 🔹 Icônes manquantes
-import { User, Lock, Clock, Star } from 'lucide-react';

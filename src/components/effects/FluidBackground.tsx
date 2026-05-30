@@ -1,74 +1,75 @@
 // src/components/effects/FluidBackground.tsx
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
-const ORBS = [
-  { color: 'hsla(200, 60%, 80%, 0.15)', size: '25vw', left: '15%', top: '15%', duration: 26, delay: 0 },
-  { color: 'hsla(260, 50%, 85%, 0.12)', size: '30vw', left: '70%', top: '10%', duration: 30, delay: -5 },
-  { color: 'hsla(330, 60%, 82%, 0.14)', size: '28vw', left: '40%', top: '65%', duration: 28, delay: -10 },
-  { color: 'hsla(40, 60%, 82%, 0.14)',  size: '32vw', left: '75%', top: '70%', duration: 24, delay: -7 },
-  { color: 'hsla(170, 50%, 80%, 0.13)', size: '26vw', left: '5%',  top: '80%', duration: 32, delay: -3 },
-  { color: 'hsla(190, 70%, 85%, 0.16)', size: '35vw', left: '85%', top: '35%', duration: 27, delay: -12 },
+const PARTICLES = [
+  { size: 80,  left: '5%',  top: '10%', duration: 20, delay: 0 },
+  { size: 50,  left: '20%', top: '60%', duration: 25, delay: -3 },
+  { size: 100, left: '45%', top: '5%',  duration: 22, delay: -7 },
+  { size: 40,  left: '65%', top: '40%', duration: 28, delay: -11 },
+  { size: 70,  left: '80%', top: '15%', duration: 24, delay: -2 },
+  { size: 55,  left: '35%', top: '75%', duration: 26, delay: -9 },
+  { size: 90,  left: '10%', top: '80%', duration: 23, delay: -5 },
+  { size: 45,  left: '55%', top: '25%', duration: 30, delay: -14 },
+  { size: 60,  left: '75%', top: '70%', duration: 21, delay: -6 },
+  { size: 35,  left: '90%', top: '50%', duration: 27, delay: -12 },
 ];
 
 export default function FluidBackground() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <>
+    <div className="fixed inset-0 -z-10 overflow-hidden">
+      {/* Fond bleu nuit profond */}
+      <div className="absolute inset-0 bg-[#0b1120]" />
+
+      {/* Dégradé animé subtil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-900/15 via-blue-900/10 to-indigo-900/5 animate-gradient-shift" />
+
+      {/* Particules flottantes */}
+      {mounted && PARTICLES.map((p, i) => (
+        <motion.div
+          key={i}
+          className="absolute rounded-full bg-cyan-500/15"
+          style={{
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            top: p.top,
+            left: p.left,
+          }}
+          animate={{
+            y: [0, -25, 0],
+            x: [0, i % 2 === 0 ? 20 : -20, 0],
+            scale: [1, 1.08, 1],
+            opacity: [0.08, 0.18, 0.08],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: p.delay,
+          }}
+        />
+      ))}
+
+      {/* Styles globaux */}
       <style jsx global>{`
-        @keyframes fluidMove {
-          0% {
-            transform: translate(0%, 0%) scale(0.9);
-            opacity: 0.3;
-          }
-          20% {
-            transform: translate(2vw, -1vh) scale(1.05);
-            opacity: 0.55;
-          }
-          40% {
-            transform: translate(-1vw, 1.5vh) scale(0.95);
-            opacity: 0.45;
-          }
-          60% {
-            transform: translate(-2vw, -0.5vh) scale(1.02);
-            opacity: 0.55;
-          }
-          80% {
-            transform: translate(1vw, 1vh) scale(0.98);
-            opacity: 0.45;
-          }
-          100% {
-            transform: translate(0%, 0%) scale(0.9);
-            opacity: 0.3;
-          }
+        @keyframes gradient-shift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
-        .fluid-orb {
-          animation: fluidMove ease-in-out infinite;
-          will-change: transform, opacity;
+        .animate-gradient-shift {
+          animation: gradient-shift 30s ease infinite;
+          background-size: 400% 400%;
         }
       `}</style>
-
-      <div className="fixed inset-0 pointer-events-none" style={{ zIndex: -2 }}>
-        {/* Fond légèrement teinté pour adoucir le blanc pur */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#fdfbf9] via-[#f9fafb] to-[#f5f7fa]" style={{ zIndex: -1 }} />
-
-        {ORBS.map((orb, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full fluid-orb"
-            style={{
-              width: orb.size,
-              height: orb.size,
-              background: `radial-gradient(circle at 50% 50%, ${orb.color}, transparent 70%)`,
-              filter: 'blur(80px)',
-              left: orb.left,
-              top: orb.top,
-              animationDuration: `${orb.duration}s`,
-              animationDelay: `${orb.delay}s`,
-            }}
-          />
-        ))}
-      </div>
-    </>
+    </div>
   );
 }

@@ -36,7 +36,6 @@ type Profile = {
   price: { usd: number; cdf: number; cfa: number; kwz: number };
 };
 
-// Mapping des couleurs/icônes pour les plans logiciels (design amélioré)
 const PLAN_META: Record<PlanKey, {
   icon: React.ElementType;
   bgGradient: string;
@@ -71,7 +70,6 @@ const PLAN_META: Record<PlanKey, {
   },
 };
 
-// Profils disponibles (inchangé)
 const PROFILES: Profile[] = [
   { id: 'student', name: 'Étudiant', icon: <GraduationCap className="w-3.5 h-3.5" />, price: { usd: 1.5, cdf: 3300, cfa: 900, kwz: 1275 } },
   { id: 'employee', name: 'Employé', icon: <Briefcase className="w-3.5 h-3.5" />, price: { usd: 2, cdf: 4400, cfa: 1200, kwz: 1700 } },
@@ -122,7 +120,7 @@ const BillingToggle = ({ isYearly, setIsYearly, billingMonthly, billingYearly }:
 );
 
 // ============================================================
-// 3. SECTION PROFILS (inchangée)
+// 3. SECTION PROFILS
 // ============================================================
 const ProfilesSection = ({ currency, isYearly }: { currency: string; isYearly: boolean }) => {
   const formatPrice = (price: number) => {
@@ -160,7 +158,7 @@ const ProfilesSection = ({ currency, isYearly }: { currency: string; isYearly: b
 };
 
 // ============================================================
-// 4. SECTION PLANS LOGICIELS (DESIGN PROFESSIONNEL)
+// 4. SECTION PLANS LOGICIELS
 // ============================================================
 const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; isYearly: boolean; ctaChoose: any }) => {
   const plansWithPricing = useMemo(
@@ -172,12 +170,7 @@ const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; i
         const saving = isYearly
           ? Math.round(((monthlyPrice - yearlyMonthlyPrice) / monthlyPrice) * 100)
           : null;
-        return {
-          ...plan,
-          displayPrice,
-          saving,
-          originalPrice: isYearly ? monthlyPrice : null,
-        };
+        return { ...plan, displayPrice, saving, originalPrice: isYearly ? monthlyPrice : null };
       }),
     [plans, isYearly]
   );
@@ -195,13 +188,8 @@ const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; i
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
             whileHover={{ y: -8, scale: 1.02 }}
-            className={`
-              relative rounded-2xl p-6 backdrop-blur-md bg-gradient-to-b ${meta.bgGradient}
-              border ${meta.borderColor} shadow-xl transition-all duration-300
-              ${isHighlighted ? 'ring-2 ring-cyan-400/50 shadow-cyan-500/20 scale-[1.02] z-10' : ''}
-            `}
+            className={`relative rounded-2xl p-6 backdrop-blur-md bg-gradient-to-b ${meta.bgGradient} border ${meta.borderColor} shadow-xl transition-all duration-300 ${isHighlighted ? 'ring-2 ring-cyan-400/50 shadow-cyan-500/20 scale-[1.02] z-10' : ''}`}
           >
-            {/* Badge "Recommandé" en coin incliné pour Premium */}
             {isHighlighted && (
               <div className="absolute top-0 right-0 z-20 overflow-visible">
                 <div className="relative">
@@ -214,7 +202,6 @@ const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; i
               </div>
             )}
 
-            {/* En-tête */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center ${meta.accentColor}`}>
@@ -223,41 +210,27 @@ const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; i
                 <h3 className={`text-xl font-bold ${meta.textColor}`}>{plan.title}</h3>
               </div>
               {plan.badge && (
-                <Badge className={`${meta.badgeBg} text-white border-none text-[11px] font-bold px-2 py-0.5`}>
-                  {plan.badge}
-                </Badge>
+                <Badge className={`${meta.badgeBg} text-white border-none text-[11px] font-bold px-2 py-0.5`}>{plan.badge}</Badge>
               )}
             </div>
 
-            {/* Description courte */}
             <p className="text-sm text-gray-300 mb-5">{plan.desc}</p>
 
-            {/* Prix */}
             <div className="mb-5 text-center">
               <div className="flex items-baseline justify-center gap-2">
-                {plan.originalPrice && (
-                  <span className="text-gray-400 line-through text-sm">${plan.originalPrice.toFixed(2)}</span>
-                )}
-                <span className="text-4xl font-black text-white">
-                  {plan.displayPrice === 0 ? 'Gratuit' : `$${plan.displayPrice.toFixed(2)}`}
-                </span>
+                {plan.originalPrice && <span className="text-gray-400 line-through text-sm">${plan.originalPrice.toFixed(2)}</span>}
+                <span className="text-4xl font-black text-white">{plan.displayPrice === 0 ? 'Gratuit' : `$${plan.displayPrice.toFixed(2)}`}</span>
               </div>
               <div className="text-xs text-gray-400 mt-1">
-                {plan.displayPrice === 0
-                  ? 'Gratuit à vie'
-                  : isYearly
-                  ? 'facturé annuellement (2 mois offerts)'
-                  : 'par mois, sans engagement'}
+                {plan.displayPrice === 0 ? 'Gratuit à vie' : isYearly ? 'facturé annuellement (2 mois offerts)' : 'par mois, sans engagement'}
               </div>
               {plan.saving && plan.saving > 0 && (
                 <div className="mt-2 inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold px-2 py-1 rounded-full">
-                  <TrendingUp className="w-3 h-3" />
-                  Économisez {plan.saving}% avec l'annuel
+                  <TrendingUp className="w-3 h-3" /> Économisez {plan.saving}% avec l'annuel
                 </div>
               )}
             </div>
 
-            {/* Liste des fonctionnalités (jusqu'à 5) */}
             <ul className="space-y-2 mb-6">
               {plan.features.slice(0, 5).map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
@@ -272,35 +245,23 @@ const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; i
               )}
             </ul>
 
-            {/* Bouton CTA amélioré */}
             <Link href={plan.key === 'entreprise' ? '/contact' : '/auth/sign-up'}>
               <Button
-                className={`
-                  w-full py-5 rounded-xl font-semibold text-sm transition-all duration-300
-                  ${
-                    plan.key === 'freemium'
-                      ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white'
-                      : plan.key === 'premium'
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25'
-                      : 'bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white shadow-lg shadow-purple-500/25'
-                  }
-                `}
-              >
-                {ctaChoose[plan.key] ||
-                  (plan.key === 'freemium'
-                    ? 'Commencer gratuitement'
+                className={`w-full py-5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                  plan.key === 'freemium'
+                    ? 'bg-white/10 hover:bg-white/20 border border-white/20 text-white'
                     : plan.key === 'premium'
-                    ? 'Choisir Premium'
-                    : 'Demander un devis')}
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/25'
+                    : 'bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white shadow-lg shadow-purple-500/25'
+                }`}
+              >
+                {ctaChoose[plan.key] || (plan.key === 'freemium' ? 'Commencer gratuitement' : plan.key === 'premium' ? 'Choisir Premium' : 'Demander un devis')}
                 <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             </Link>
 
-            {/* Petit texte rassurant */}
             <p className="text-[11px] text-gray-500 text-center mt-4">
-              {plan.key === 'freemium'
-                ? 'Sans carte bancaire'
-                : 'Annulation possible à tout moment'}
+              {plan.key === 'freemium' ? 'Sans carte bancaire' : 'Annulation possible à tout moment'}
             </p>
           </motion.div>
         );
@@ -310,7 +271,7 @@ const SoftwarePlansSection = ({ plans, isYearly, ctaChoose }: { plans: Plan[]; i
 };
 
 // ============================================================
-// 5. COMPOSANT PRINCIPAL (PAGE COMPLÈTE)
+// 5. COMPOSANT PRINCIPAL
 // ============================================================
 export default function PricingPlans({
   title = 'Tarifs flexibles pour tous',
@@ -334,69 +295,36 @@ export default function PricingPlans({
   const [isYearly, setIsYearly] = useState(false);
 
   return (
-    <section className="py-12 px-4 max-w-7xl mx-auto">
+    <section className="py-12 px-4 max-w-7xl mx-auto bg-transparent">
       {/* En-tête */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-8"
-      >
-        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">
-          {title}
-        </h1>
-        <p className="text-gray-400 mt-2 max-w-xl mx-auto">
-          Des solutions adaptées à votre profil comme à votre organisation.
-        </p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white to-cyan-200 bg-clip-text text-transparent">{title}</h1>
+        <p className="text-gray-400 mt-2 max-w-xl mx-auto">Des solutions adaptées à votre profil comme à votre organisation.</p>
         <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto mt-4 rounded-full" />
       </motion.div>
 
       {/* Barre d'outils */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
         <div className="flex gap-2 bg-white/5 backdrop-blur border border-white/10 rounded-lg p-1 w-fit">
-          <button
-            onClick={() => setActiveTab('profiles')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-              activeTab === 'profiles'
-                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            🧑‍🎓 Tarifs Profils
-          </button>
-          <button
-            onClick={() => setActiveTab('software')}
-            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
-              activeTab === 'software'
-                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            💻 Plans Logiciels
-          </button>
+          <button onClick={() => setActiveTab('profiles')} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'profiles' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}>🧑‍🎓 Tarifs Profils</button>
+          <button onClick={() => setActiveTab('software')} className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${activeTab === 'software' ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}>💻 Plans Logiciels</button>
         </div>
-
         <div className="flex items-center gap-3">
           {activeTab === 'profiles' && <CurrencySelector currency={currency} setCurrency={setCurrency} />}
-          <BillingToggle
-            isYearly={isYearly}
-            setIsYearly={setIsYearly}
-            billingMonthly={billingMonthly}
-            billingYearly={billingYearly}
-          />
+          <BillingToggle isYearly={isYearly} setIsYearly={setIsYearly} billingMonthly={billingMonthly} billingYearly={billingYearly} />
         </div>
       </div>
 
-      {/* Contenu dynamique */}
+      {/* Contenu */}
       {activeTab === 'profiles' ? (
         <ProfilesSection currency={currency} isYearly={isYearly} />
       ) : (
         <SoftwarePlansSection plans={plans} isYearly={isYearly} ctaChoose={ctaChoose} />
       )}
 
-      {/* Note de bas de page */}
+      {/* Note */}
       <div className="mt-12 text-center text-xs text-gray-500 border-t border-white/10 pt-6">
-        Tous les tarifs sont TTC. Les abonnements annuels incluent 2 mois offerts.
-        Pour les devises locales, le taux de change est mis à jour quotidiennement.
+        Tous les tarifs sont TTC. Les abonnements annuels incluent 2 mois offerts. Pour les devises locales, le taux de change est mis à jour quotidiennement.
       </div>
     </section>
   );

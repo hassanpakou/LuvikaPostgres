@@ -8,7 +8,7 @@ import { useTheme } from 'next-themes';
 import {
   Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Folder, Building, Plus, Calendar, 
   QrCode, Package, ArrowUp, Search, Users, ChevronRight, ShoppingBag, UserPlus, UserMinus,Layers,AlertCircle, CreditCard, XCircle,
-  User, Globe, Calendar as CalendarIcon, Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing,
+  User, Globe, Calendar as Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing,
   Search as SearchIcon, CheckCircle, BarChart3, Leaf
 } from 'lucide-react';
 import Link from 'next/link';
@@ -724,6 +724,9 @@ export default function DashboardContent({
       case 'card-config':
         router.push('/dashboard/card-config');
         break;
+      case 'orders':
+      router.push(isAdmin ? '/admin/orders' : '/dashboard/orders');
+        break;
       case 'parameters':
         router.push('/dashboard/parameters');
         break;
@@ -1392,16 +1395,17 @@ useEffect(() => {
     };
   }, [profile.id]);
   // 🔹 ✅ Nouveaux quickActions - version compacte et glassmorphic
-  const quickActions: Action[] = [
-    { id: 'profile', label: 'Profil', icon: <User size={18} />, color: 'from-cyan-500 to-blue-500' },
-    { id: 'statistics', label: 'Statistiques', icon: <BarChart3 size={18} />, color: 'from-purple-500 to-indigo-500' },
-    { id: 'subscribers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-green-400 to-emerald-500' },
-    { id: 'card-config', label: 'Carte', icon: <CreditCard size={18} />, color: 'from-amber-400 to-orange-500' },
-    { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-cyan-500 to-blue-500' },
-    { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
-    { id: 'parameters', label: 'Paramètres', icon: <Settings size={18} />, color: 'from-gray-500 to-gray-600' },
-    { id: 'logout', label: 'Déconnexion', icon: <LogOut size={18} />, color: 'from-red-500 to-rose-500' },
-  ];
+const quickActions: Action[] = [
+  { id: 'profile', label: 'Profil', icon: <User size={18} />, color: 'from-cyan-500 to-blue-500' },
+  { id: 'statistics', label: 'Statistiques', icon: <BarChart3 size={18} />, color: 'from-purple-500 to-indigo-500' },
+  { id: 'subscribers', label: 'Abonnés', icon: <Users size={18} />, color: 'from-emerald-500 to-teal-500' },
+  { id: 'card-config', label: 'Carte', icon: <CreditCard size={18} />, color: 'from-amber-500 to-orange-500' },
+  { id: 'orders', label: 'Commandes', icon: <ShoppingBag size={18} />, color: 'from-blue-900 to-blue-800' },
+  { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-sky-500 to-cyan-500' },
+  { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
+  { id: 'parameters', label: 'Paramètres', icon: <Settings size={18} />, color: 'from-slate-500 to-gray-500' },
+  { id: 'logout', label: 'Déconnexion', icon: <LogOut size={18} />, color: 'from-red-500 to-rose-500' },
+];
   
   useEffect(() => {
     const generateQR = async () => {
@@ -1575,33 +1579,51 @@ const handleToggleFollow = async (profileId: string) => {
   
 
   return (
-    <div className="space-y-6 pb-24">
+  <div className="space-y-6 pb-24 bg-transparent">
   {/* 🎨 En-tête - Design Compact et Glassmorphic */}
-<div className="mb-4">
-  {/* 🔹 Barre d'icônes compacte - DESIGN OPTIMISÉ */}
-  <div className="flex items-center justify-end gap-2 sm:gap-3 mt-3 sm:mt-4">
+{/* 🔹 Barre d'icônes compacte - DESIGN OPTIMISÉ */}
+<div className="flex items-center justify-between gap-2 sm:gap-3 mt-3 sm:mt-4">
+  {/* ⬅️ Boutons Événements à gauche */}
+  <div className="flex items-center gap-2">
+    {/* 📅 Voir vos événements */}
+    {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+      <Button
+        onClick={() => setIsEventModalOpen(true)}
+        variant="ghost"
+        size="sm"
+        className="h-9 px-3 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 text-cyan-300 hover:text-cyan-200 transition-all duration-300 group relative shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20"
+      >
+        <Calendar className="h-4 w-4 mr-1.5 group-hover:rotate-3 transition-transform" />
+        <span className="text-xs font-medium hidden sm:inline">Événements</span>
+      </Button>
+    )}
+
+    {/* ➕ Créer un événement */}
+    {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+      <Button
+        onClick={() => setIsEventFormOpen(true)}
+        variant="ghost"
+        size="sm"
+        className="h-9 px-3 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 text-emerald-300 hover:text-emerald-200 transition-all duration-300 group relative shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20"
+      >
+        <Plus className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
+        <span className="text-xs font-medium hidden sm:inline">Créer</span>
+      </Button>
+    )}
+  </div>
+
+  {/* ➡️ Icônes à droite */}
+  <div className="flex items-center gap-2 sm:gap-3">
     {/* 🔍 Recherche - VIOLET */}
     <Button
       variant="ghost"
       size="icon"
       onClick={() => setIsSearchModalOpen(true)}
-      className={`
-        h-11 w-11 sm:h-12 sm:w-12
-        rounded-xl sm:rounded-full
-        bg-white/8 hover:bg-white/15
-        border border-white/15
-        transition-all duration-300
-        group
-        relative
-        shadow-md shadow-purple-500/10
-        hover:shadow-purple-500/20
-      `}
+      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-purple-500/10 hover:shadow-purple-500/20"
       aria-label="Rechercher des profils"
     >
       <SearchIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-300 group-hover:scale-110 transition-transform" />
       <div className="absolute inset-0 rounded-xl sm:rounded-full bg-purple-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-      
-      {/* 🔹 Badge indicateur subtil */}
       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 hidden sm:block">
         <div className="flex items-center gap-1 bg-purple-500/20 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full border border-purple-500/30">
           <span>Recherche</span>
@@ -1613,125 +1635,48 @@ const handleToggleFollow = async (profileId: string) => {
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => {
-        setIsContactModalOpen(true);
-        setUnreadMessagesCount(0);
-      }}
-      className={`
-        h-11 w-11 sm:h-12 sm:w-12
-        rounded-xl sm:rounded-full
-        bg-white/8 hover:bg-white/15
-        border border-white/15
-        transition-all duration-300
-        group
-        relative
-        shadow-md shadow-green-500/10
-        hover:shadow-green-500/20
-      `}
+      onClick={() => { setIsContactModalOpen(true); setUnreadMessagesCount(0); }}
+      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-green-500/10 hover:shadow-green-500/20"
       aria-label={`Messages${unreadMessagesCount > 0 ? `: ${unreadMessagesCount} non lus` : ''}`}
     >
       <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-green-300 group-hover:scale-110 transition-transform" />
-      
-      {/* 🔹 Badge messages non lus - TOUJOURS VISIBLE */}
       {unreadMessagesCount > 0 && (
-        <div className={`
-          absolute -top-1.5 -right-1.5
-          flex items-center justify-center
-          min-w-[20px] h-5
-          rounded-full
-          bg-gradient-to-r from-red-500 to-rose-600
-          text-white text-[11px] font-bold
-          border-2 border-black
-          shadow-lg shadow-red-500/40
-          z-10
-        `}>
+        <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white text-[11px] font-bold border-2 border-black shadow-lg shadow-red-500/40 z-10">
           {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
         </div>
       )}
-      
       <div className="absolute inset-0 rounded-xl sm:rounded-full bg-green-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
     </Button>
 
-    {/* ❤️ Likes - ROUGE (Version TypeScript-safe) */}
-<Button
-  variant="ghost"
-  size="icon"
-  onClick={() => console.log('Likes clicked')}
-  className={`
-    h-11 w-11 sm:h-12 sm:w-12
-    rounded-xl sm:rounded-full
-    bg-white/8 hover:bg-white/15
-    border border-white/15
-    transition-all duration-300
-    group
-    relative
-    shadow-md shadow-red-500/10
-    hover:shadow-red-500/20
-  `}
-  aria-label={`Likes: ${(profile?.likes_count ?? 0)}`}
->
-  <Heart 
-    size={20} 
-    className={`
-      relative z-10
-      drop-shadow-sm
-      group-hover:scale-110
-      transition-transform
-      ${(profile?.likes_count ?? 0) > 0 
-        ? 'fill-red-500 text-red-300' 
-        : 'text-gray-400'
-      }
-    `} 
-  />
-  
-  {/* 🔹 Badge compteur likes - TOUJOURS VISIBLE & SAFE */}
-  <span className={`
-    absolute -top-1.5 -right-1.5
-    flex items-center justify-center
-    min-w-[20px] h-5
-    rounded-full
-    ${(profile?.likes_count ?? 0) > 0 
-      ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white' 
-      : 'bg-gray-700/50 text-gray-300'
-    }
-    text-[11px] font-bold
-    border-2 border-black
-    shadow-lg
-    ${(profile?.likes_count ?? 0) > 0 ? 'shadow-red-500/40' : ''}
-    z-10
-  `}>
-    {(profile?.likes_count ?? 0) > 99 ? '99+' : (profile?.likes_count ?? 0)}
-  </span>
-  
-  <div className="absolute inset-0 rounded-xl sm:rounded-full bg-red-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-</Button>
+    {/* ❤️ Likes - ROUGE */}
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => console.log('Likes clicked')}
+      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-red-500/10 hover:shadow-red-500/20"
+      aria-label={`Likes: ${(profile?.likes_count ?? 0)}`}
+    >
+      <Heart size={20} className={`relative z-10 drop-shadow-sm group-hover:scale-110 transition-transform ${(profile?.likes_count ?? 0) > 0 ? 'fill-red-500 text-red-300' : 'text-gray-400'}`} />
+      <span className={`absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 rounded-full ${(profile?.likes_count ?? 0) > 0 ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white' : 'bg-gray-700/50 text-gray-300'} text-[11px] font-bold border-2 border-black shadow-lg ${(profile?.likes_count ?? 0) > 0 ? 'shadow-red-500/40' : ''} z-10`}>
+        {(profile?.likes_count ?? 0) > 99 ? '99+' : (profile?.likes_count ?? 0)}
+      </span>
+      <div className="absolute inset-0 rounded-xl sm:rounded-full bg-red-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+    </Button>
 
     {/* 🌫️ Transparence des sections */}
-<Button
-  variant="ghost"
-  size="icon"
-  onClick={toggleTransparency}
-  className={`
-    h-11 w-11 sm:h-12 sm:w-12
-    rounded-xl sm:rounded-full
-    bg-white/8 hover:bg-white/15
-    border border-white/15
-    transition-all duration-300
-    group relative
-    shadow-md
-    ${isTransparent 
-      ? 'shadow-purple-500/10 hover:shadow-purple-500/20' 
-      : 'shadow-blue-500/10 hover:shadow-blue-500/20'
-    }
-  `}
-  aria-label={isTransparent ? 'Mode opaque' : 'Mode transparent'}
->
-  {isTransparent ? (
-    <EyeOff className="h-5 w-5 sm:h-6 sm:w-6 text-purple-300 group-hover:scale-110 transition-transform" />
-  ) : (
-    <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-blue-200 group-hover:scale-110 transition-transform" />
-  )}
-</Button>
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTransparency}
+      className={`h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md ${isTransparent ? 'shadow-purple-500/10 hover:shadow-purple-500/20' : 'shadow-blue-500/10 hover:shadow-blue-500/20'}`}
+      aria-label={isTransparent ? 'Mode opaque' : 'Mode transparent'}
+    >
+      {isTransparent ? (
+        <EyeOff className="h-5 w-5 sm:h-6 sm:w-6 text-purple-300 group-hover:scale-110 transition-transform" />
+      ) : (
+        <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-blue-200 group-hover:scale-110 transition-transform" />
+      )}
+    </Button>
   </div>
 </div>
 
@@ -2036,29 +1981,7 @@ const handleToggleFollow = async (profileId: string) => {
 
   
 </motion.div>
-
-{/* 🔹 Styles personnalisés pour les animations */}
-<style jsx global>{`
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  .animate-shimmer {
-    animation: shimmer 2s infinite linear;
-  }
-  @keyframes grid {
-    0% { background-position: 0 0; }
-    100% { background-position: 20px 20px; }
-  }
-  .bg-grid-white\/5 {
-    background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), 
-                      linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
-    background-size: 10px 10px;
-    animation: grid 10s linear infinite;
-  }
-`}</style>
-
-{/* 🔹 Section 4: Boutons Actions - ULTRA COMPACT avec BADGES ICÔNES */}
+{/* 🔹 Section 4: Boutons Actions - DESIGN PREMIUM */}
 <style>{`
   @keyframes floatBubble {
     0% { transform: translateY(0) scale(0.6); opacity: 0.6; }
@@ -2080,16 +2003,16 @@ const handleToggleFollow = async (profileId: string) => {
   .bubble-4 { animation-delay: 0.6s; left: 80%; bottom: 1px; width: 2.2px; height: 2.2px; }
   .dashboard-action-btn {
     position: relative;
-    overflow: visible !important; /* 🔑 CRUCIAL : badges visibles */
-    transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+    overflow: visible !important;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
   }
   .dashboard-action-btn::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.08) 0%, transparent 60%);
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.12) 0%, transparent 60%);
     opacity: 0;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.3s ease;
     pointer-events: none;
     z-index: 1;
   }
@@ -2097,7 +2020,7 @@ const handleToggleFollow = async (profileId: string) => {
     opacity: 1;
   }
   .dashboard-action-btn:hover {
-    transform: translateY(-0.5px) scale(1.015) !important;
+    transform: translateY(-2px) scale(1.02) !important;
     box-shadow: var(--hover-shadow) !important;
   }
   .dashboard-action-btn:active {
@@ -2105,23 +2028,23 @@ const handleToggleFollow = async (profileId: string) => {
   }
 `}</style>
 
-<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1.5"> {/* 🔑 gap-1.5 pour densité maximale */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
   
-  {/* 🌐 Voir profil public - CYAN */}
-  <Link href={`/${locale}/${profile.username}`} target="_blank">
-    <Button
-      className={`
-        dashboard-action-btn
-        w-full h-9 sm:h-10 /* 🔑 ULTRA COMPACT : h-9 */
-        bg-gradient-to-r from-cyan-600 via-blue-500 to-cyan-600
-        text-white font-medium text-[11px] sm:text-xs /* 🔑 Texte minimal */
-        rounded-lg
-        group
-        relative
-        shadow-md shadow-cyan-500/15
-        hover:shadow-cyan-500/25
-        [--hover-shadow:0_4px_12px_-2px_rgba(6,182,212,0.3),0_3px_6px_-3px_rgba(59,130,246,0.2)]
-      `}
+  {/* 🌐 Voir mon profil public */}
+  <Link href={`/${locale}/${profile.username}`} target="_blank" className="group">
+    <div className={`
+      dashboard-action-btn
+      relative overflow-hidden
+      rounded-2xl p-4
+      bg-gradient-to-br from-cyan-500/10 to-blue-500/10
+      border border-cyan-500/20
+      hover:border-cyan-400/40
+      transition-all duration-300
+      cursor-pointer
+      shadow-md shadow-cyan-500/5
+      hover:shadow-xl hover:shadow-cyan-500/15
+      [--hover-shadow:0_8px_25px_-5px_rgba(6,182,212,0.25),0_4px_10px_-5px_rgba(59,130,246,0.15)]
+    `}
       onMouseMove={(e) => {
         const btn = e.currentTarget;
         const rect = btn.getBoundingClientRect();
@@ -2129,150 +2052,45 @@ const handleToggleFollow = async (profileId: string) => {
         btn.style.setProperty('--y', `${e.clientY - rect.top}px`);
       }}
     >
-      {/* 🔑 Conteneur bulles - overflow-visible */}
       <div className="absolute inset-0 overflow-visible pointer-events-none">
         <div className="bubble bubble-1" />
         <div className="bubble bubble-2" />
         <div className="bubble bubble-3" />
         <div className="bubble bubble-4" />
       </div>
+      <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-400/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
-      {/* Lueur hover subtile */}
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-250" />
-      
-      {/* 🔑 Contenu ultra-compact */}
-      <div className="relative z-10 flex items-center justify-center gap-1"> {/* 🔑 gap-1 */}
-        <Globe className="h-3.5 w-3.5 group-hover:scale-115 transition-transform duration-250" /> {/* 🔑 h-3.5 w-3.5 */}
-        <span className="hidden xs:inline whitespace-nowrap">Profil</span> {/* 🔑 Texte court */}
+      <div className="relative z-10 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-110 transition-transform duration-300">
+          <Globe className="w-5 h-5 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-white text-sm">Mon profil public</p>
+          <p className="text-xs text-cyan-300/70 mt-0.5">@{profile.username}</p>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
+          <span className="text-cyan-300 text-sm">→</span>
+        </div>
       </div>
-    </Button>
+    </div>
   </Link>
 
-  {/* 🛒 Gestion des commandes - BLEU FONCÉ */}
-  <Button
-    onClick={() => router.push(isAdmin ? '/admin/orders' : '/dashboard/orders')}
-    className={`
-      dashboard-action-btn
-      w-full h-9 sm:h-10
-      bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900
-      text-white font-medium text-[11px] sm:text-xs
-      rounded-lg
-      group
-      relative
-      shadow-md shadow-blue-900/20
-      hover:shadow-blue-800/30
-      [--hover-shadow:0_4px_12px_-2px_rgba(59,130,246,0.2),0_3px_6px_-3px_rgba(30,64,175,0.25)]
-    `}
-    onMouseMove={(e) => {
-      const btn = e.currentTarget;
-      const rect = btn.getBoundingClientRect();
-      btn.style.setProperty('--x', `${e.clientX - rect.left}px`);
-      btn.style.setProperty('--y', `${e.clientY - rect.top}px`);
-    }}
-  >
-    <div className="absolute inset-0 overflow-visible pointer-events-none">
-      <div className="bubble bubble-1" />
-      <div className="bubble bubble-2" />
-      <div className="bubble bubble-3" />
-      <div className="bubble bubble-4" />
-    </div>
-    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/2 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-250" />
-    <div className="relative z-10 flex items-center justify-center gap-1">
-      <ShoppingBag className="h-3.5 w-3.5 group-hover:scale-115 transition-transform duration-250" />
-      <span className="hidden xs:inline whitespace-nowrap">Commandes</span>
-    </div>
-  </Button>
-
-  {/* 📅 Voir vos événements - CYAN (Conditionnel) */}
-  {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
-    <Button
-      onClick={() => setIsEventModalOpen(true)}
-      className={`
-        dashboard-action-btn
-        w-full h-9 sm:h-10
-        bg-gradient-to-r from-cyan-600 via-blue-500 to-cyan-600
-        text-white font-medium text-[11px] sm:text-xs
-        rounded-lg
-        group
-        relative
-        shadow-md shadow-cyan-500/15
-        hover:shadow-cyan-500/25
-        [--hover-shadow:0_4px_12px_-2px_rgba(6,182,212,0.3),0_3px_6px_-3px_rgba(59,130,246,0.2)]
-      `}
-      onMouseMove={(e) => {
-        const btn = e.currentTarget;
-        const rect = btn.getBoundingClientRect();
-        btn.style.setProperty('--x', `${e.clientX - rect.left}px`);
-        btn.style.setProperty('--y', `${e.clientY - rect.top}px`);
-      }}
-    >
-      <div className="absolute inset-0 overflow-visible pointer-events-none">
-        <div className="bubble bubble-1" />
-        <div className="bubble bubble-2" />
-        <div className="bubble bubble-3" />
-        <div className="bubble bubble-4" />
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-250" />
-      <div className="relative z-10 flex items-center justify-center gap-1">
-        <Calendar className="h-3.5 w-3.5 group-hover:rotate-3 group-hover:scale-110 transition-transform duration-250" />
-        <span className="hidden xs:inline whitespace-nowrap">Événements</span>
-      </div>
-    </Button>
-  )}
-
-  {/* ➕ Créer un événement - VERT (Conditionnel) */}
-  {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
-    <Button
-      onClick={() => setIsEventFormOpen(true)}
-      className={`
-        dashboard-action-btn
-        w-full h-9 sm:h-10
-        bg-gradient-to-r from-green-600 via-emerald-500 to-green-600
-        text-white font-medium text-[11px] sm:text-xs
-        rounded-lg
-        group
-        relative
-        shadow-md shadow-green-500/15
-        hover:shadow-green-500/25
-        [--hover-shadow:0_4px_12px_-2px_rgba(16,185,129,0.3),0_3px_6px_-3px_rgba(22,163,74,0.2)]
-      `}
-      onMouseMove={(e) => {
-        const btn = e.currentTarget;
-        const rect = btn.getBoundingClientRect();
-        btn.style.setProperty('--x', `${e.clientX - rect.left}px`);
-        btn.style.setProperty('--y', `${e.clientY - rect.top}px`);
-      }}
-    >
-      <div className="absolute inset-0 overflow-visible pointer-events-none">
-        <div className="bubble bubble-1" />
-        <div className="bubble bubble-2" />
-        <div className="bubble bubble-3" />
-        <div className="bubble bubble-4" />
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/3 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-250" />
-      <div className="relative z-10 flex items-center justify-center gap-1">
-        <Plus className="h-3.5 w-3.5 group-hover:scale-125 transition-transform duration-250" />
-        <span className="hidden xs:inline whitespace-nowrap">Créer</span>
-      </div>
-    </Button>
-  )}
-
-  {/* 🏢 Espace Business - VIOLET (Conditionnel) */}
+  {/* 🏢 Espace Business */}
   {subscription.plan === 'entreprise' && hasCompany && (
-    <Link href="/dashboard/entreprise">
-      <Button
-        className={`
-          dashboard-action-btn
-          w-full h-9 sm:h-10
-          bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600
-          text-white font-medium text-[11px] sm:text-xs
-          rounded-lg
-          group
-          relative
-          shadow-md shadow-purple-500/20
-          hover:shadow-purple-500/30
-          [--hover-shadow:0_4px_12px_-2px_rgba(124,58,237,0.3),0_3px_6px_-3px_rgba(99,102,241,0.2)]
-        `}
+    <Link href="/dashboard/entreprise" className="group">
+      <div className={`
+        dashboard-action-btn
+        relative overflow-hidden
+        rounded-2xl p-4
+        bg-gradient-to-br from-violet-500/10 to-purple-500/10
+        border border-violet-500/20
+        hover:border-violet-400/40
+        transition-all duration-300
+        cursor-pointer
+        shadow-md shadow-violet-500/5
+        hover:shadow-xl hover:shadow-violet-500/15
+        [--hover-shadow:0_8px_25px_-5px_rgba(139,92,246,0.25),0_4px_10px_-5px_rgba(124,58,237,0.15)]
+      `}
         onMouseMove={(e) => {
           const btn = e.currentTarget;
           const rect = btn.getBoundingClientRect();
@@ -2286,12 +2104,21 @@ const handleToggleFollow = async (profileId: string) => {
           <div className="bubble bubble-3" />
           <div className="bubble bubble-4" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-250" />
-        <div className="relative z-10 flex items-center justify-center gap-1">
-          <Building className="h-3.5 w-3.5 group-hover:scale-115 transition-transform duration-250" />
-          <span className="hidden xs:inline whitespace-nowrap">Business</span>
+        <div className="absolute top-0 right-0 w-20 h-20 bg-violet-400/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20 group-hover:scale-110 transition-transform duration-300">
+            <Building className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-white text-sm">Espace Business</p>
+            <p className="text-xs text-violet-300/70 mt-0.5">Gérez votre organisation</p>
+          </div>
+          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:translate-x-1">
+            <span className="text-violet-300 text-sm">→</span>
+          </div>
         </div>
-      </Button>
+      </div>
     </Link>
   )}
 </div>
@@ -2832,26 +2659,68 @@ const handleToggleFollow = async (profileId: string) => {
 
 {/* 🔹 Styles personnalisés pour les animations */}
 <style jsx global>{`
-  @keyframes border-shimmer {
+  @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
   }
-  .animate-border-shimmer {
-    animation: border-shimmer 3s infinite linear;
+  .animate-shimmer {
+    animation: shimmer 2s infinite linear;
   }
   @keyframes grid {
     0% { background-position: 0 0; }
-    100% { background-position: 30px 30px; }
+    100% { background-position: 20px 20px; }
   }
-  .bg-grid-white\/3 {
-    background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), 
-                      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 30px 30px;
-    animation: grid 15s linear infinite;
+  .bg-grid-white\/5 {
+    background-image: linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px), 
+                      linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 10px 10px;
+    animation: grid 10s linear infinite;
+  }
+
+  @keyframes floatBubble {
+    0% { transform: translateY(0) scale(0.6); opacity: 0.6; }
+    100% { transform: translateY(-15px) scale(1.2); opacity: 0; }
+  }
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), transparent 70%);
+    pointer-events: none;
+    filter: blur(0.2px);
+    opacity: 0.4;
+    animation: floatBubble 1.5s ease-out forwards;
+    z-index: 1;
+  }
+  .bubble-1 { animation-delay: 0s; left: 25%; bottom: 1px; width: 2.5px; height: 2.5px; }
+  .bubble-2 { animation-delay: 0.2s; left: 45%; bottom: 1px; width: 2px; height: 2px; }
+  .bubble-3 { animation-delay: 0.4s; left: 65%; bottom: 1px; width: 3px; height: 3px; }
+  .bubble-4 { animation-delay: 0.6s; left: 80%; bottom: 1px; width: 2.2px; height: 2.2px; }
+  .dashboard-action-btn {
+    position: relative;
+    overflow: visible !important; /* 🔑 CRUCIAL : badges visibles */
+    transition: all 0.25s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+  }
+  .dashboard-action-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.08) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .dashboard-action-btn:hover::after {
+    opacity: 1;
+  }
+  .dashboard-action-btn:hover {
+    transform: translateY(-0.5px) scale(1.015) !important;
+    box-shadow: var(--hover-shadow) !important;
+  }
+  .dashboard-action-btn:active {
+    transform: translateY(0.5px) scale(0.985) !important;
   }
 `}</style>
-
-
 
       {/* 🔹 Menu flottant - reste en overlay */}
       <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />

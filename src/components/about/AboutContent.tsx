@@ -54,7 +54,6 @@ export default function AboutContent({
   perspective_title: string;
   perspective_content: string;
 }) {
-  // 🔹 Sections avec icônes compactes et couleurs cohérentes
   const sections = [
     { 
       title: origin_title, 
@@ -122,16 +121,14 @@ export default function AboutContent({
   ];
 
   return (
-    <div className="min-h-screen py-10 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen py-10 bg-transparent">
       <div className="max-w-5xl mx-auto px-4">
-        {/* 🔹 Header compact */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-10"
         >
-         
-          
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-300 via-cyan-200 to-blue-300 bg-clip-text text-transparent mb-3">
             {title}
           </h1>
@@ -142,7 +139,7 @@ export default function AboutContent({
           <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-400 mx-auto mt-4 rounded-full"></div>
         </motion.div>
 
-        {/* 🔹 Sections compactes avec design moderne */}
+        {/* Sections */}
         <div className="space-y-5">
           {sections.map((section, index) => (
             <motion.section
@@ -153,24 +150,18 @@ export default function AboutContent({
               whileHover={{ y: -2 }}
               className="group relative"
             >
-              {/* 🔹 Effet de survol subtil */}
+              {/* Effet de survol */}
               <div className="absolute -inset-0.5 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl blur-sm"
                 style={{ 
                   background: `linear-gradient(135deg, ${section.color.split(' ')[1]}40, ${section.color.split(' ')[3]}20)` 
                 }}
               ></div>
               
-              <div className={`
-                glass-border rounded-2xl p-5 md:p-6 
-                bg-white/5 backdrop-blur-sm border border-white/10
-                relative overflow-hidden transition-all duration-300
-                group-hover:border-cyan-400/30
-              `}>
-                {/* 🔹 Décoration intérieure */}
+              <div className="glass-border rounded-2xl p-5 md:p-6 bg-white/5 backdrop-blur-sm border border-white/10 relative overflow-hidden transition-all duration-300 group-hover:border-cyan-400/30">
                 <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 
                 <div className="flex items-start gap-3 mb-3">
-                  <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center ${section.color}`}>
+                  <div className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-r ${section.color}`}>
                     <section.icon className="w-4.5 h-4.5 text-white" />
                   </div>
                   <h2 className="text-xl font-bold text-white flex-1">
@@ -182,7 +173,6 @@ export default function AboutContent({
                   {section.content}
                 </p>
                 
-                {/* 🔹 Ligne de progression subtile */}
                 <motion.div
                   className="mt-3 h-0.5 bg-white/5 rounded-full overflow-hidden"
                   initial={{ width: 0 }}
@@ -197,8 +187,7 @@ export default function AboutContent({
           ))}
         </div>
 
-
-        {/* 🔹 Footer compact */}
+        {/* Footer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
