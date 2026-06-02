@@ -1,3 +1,4 @@
+// src/middleware.ts
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
@@ -11,15 +12,9 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          response.cookies.delete({ name, ...options });
-        },
+        get(name) { return cookieStore.get(name)?.value; },
+        set(name, value, options) { response.cookies.set({ name, value, ...options }); },
+        remove(name, options) { response.cookies.delete({ name, ...options }); },
       },
     }
   );
@@ -27,17 +22,25 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
-  // Rediriger /events/* vers /fr/events/* (default locale)
-  if (path.startsWith('/events/')) {
-    return NextResponse.redirect(new URL(path.replace('/events/', '/fr/events/'), request.url));
+  // ✅ Routes publiques : toujours accessibles
+  const publicPaths = ['/auth/sign-in', '/auth/sign-up', '/auth/forgot-password', '/auth/callback', '/auth/error', '/', '/privacy', '/terms', '/cookies', '/contact'];
+  const isPublicPath = publicPaths.some(p => path === p || path.startsWith(p + '/'));
+  
+  if (isPublicPath) {
+    return response;
   }
 
-  // Routes protégées : si pas connecté → redirection
-  if (!user && (path.startsWith('/dashboard') || path === '/complete-profile')) {
-    return NextResponse.redirect(new URL('/auth/sign-in', request.url));
+  // ✅ Routes protégées : si pas connecté → redirection vers sign-in
+  const protectedPaths = ['/dashboard', '/admin', '/complete-profile'];
+  const isProtectedPath = protectedPaths.some(p => path.startsWith(p));
+
+  if (isProtectedPath && !user) {
+    const signInUrl = new URL('/auth/sign-in', request.url);
+    signInUrl.searchParams.set('redirect', path); // ✅ Sauvegarde la page demandée
+    return NextResponse.redirect(signInUrl);
   }
 
-  // Vérifie le profil et onboarding
+  // ✅ Vérification onboarding pour dashboard
   if (user && path.startsWith('/dashboard')) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -46,8 +49,16 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (!profile || profile.onboarding_done !== true) {
-      return NextResponse.redirect(new URL('/complete-profile', request.url));
+      // Ne pas rediriger si on est déjà sur complete-profile
+      if (path !== '/complete-profile') {
+        return NextResponse.redirect(new URL('/complete-profile', request.url));
+      }
     }
+  }
+
+  // ✅ Redirection events vers locale par défaut
+  if (path.startsWith('/events/')) {
+    return NextResponse.redirect(new URL(path.replace('/events/', '/fr/events/'), request.url));
   }
 
   return response;
@@ -55,7 +66,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/complete-profile',
+    '/((?!_next|api|static|.*\\..*|favicon.ico|sw.js).*)',
   ],
 };

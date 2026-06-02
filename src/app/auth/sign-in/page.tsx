@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, User, ShieldCheck } from 'lucide-react';
@@ -22,6 +22,7 @@ const t = (key: string) => {
     'auth.signin.no_account': 'Pas de compte ?',
     'auth.signin.sign_up': 'S\'inscrire',
     'auth.signin.error_credentials': 'Email ou mot de passe incorrect.',
+    'auth.signin.error_deactivated': 'Ce compte a été désactivé. Contactez le support.',
     'navbar.home': 'Accueil',
   };
   return dict[key] || key;
@@ -32,6 +33,7 @@ export default function SignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -42,13 +44,16 @@ export default function SignInPage() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        router.push('/dashboard');
+        // ✅ Si déjà connecté, redirige vers la page demandée ou dashboard
+        const redirectTo = searchParams.get('redirect') || '/dashboard';
+        router.push(redirectTo);
         return;
       }
       setPageLoading(false);
+      passwordInputRef.current?.focus();
     };
     checkSession();
-  }, [router]);
+  }, [router, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,22 +72,30 @@ export default function SignInPage() {
       return;
     }
 
+    // ✅ Vérifier si le compte est désactivé
     const { data: { user } } = await supabase.auth.getUser();
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('deactivated')
-      .eq('id', user?.id)
-      .single();
+    
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('deactivated, role')
+        .eq('id', user.id)
+        .single();
 
-    if (profile?.deactivated) {
-      await supabase.auth.signOut();
-      setError('Ce compte a été désactivé. Contactez le support.');
-      setLoading(false);
-      return;
+      if (profile?.deactivated) {
+        await supabase.auth.signOut();
+        setError(t('auth.signin.error_deactivated'));
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Récupère le paramètre redirect ou détermine la destination
+      const redirectTo = searchParams.get('redirect') || 
+        (profile?.role === 'admin' || user.user_metadata?.role === 'admin' ? '/admin' : '/dashboard');
+      
+      router.push(redirectTo);
+      router.refresh(); // ✅ Force le rafraîchissement pour éviter les problèmes de cache
     }
-
-    const role = user?.user_metadata?.role;
-    router.push(role === 'admin' ? '/admin' : '/dashboard');
   };
 
   if (pageLoading) {
@@ -110,8 +123,10 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br bg-transparent flex items-center justify-center p-4 relative overflow-hidden">
       {/* Fond décoratif subtil */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.06),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(79,70,229,0.04),transparent_60%)]" />
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(59,130,246,0.04),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(6,182,212,0.03),transparent_50%)]" />
+      </div>
 
       {/* Lien retour */}
       <Link

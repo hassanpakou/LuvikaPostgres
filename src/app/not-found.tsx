@@ -148,14 +148,22 @@ export default function NotFound() {
           {/* Boutons d'action */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => window.history.back()}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white/70 rounded-xl text-sm font-light transition-all duration-300 group"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-              <span>Retour</span>
-            </motion.button>
+  whileHover={{ scale: 1.02 }}
+  whileTap={{ scale: 0.98 }}
+  onClick={() => {
+    // ✅ Vérifie si on peut revenir en arrière
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Sinon, va à l'accueil
+      window.location.href = '/';
+    }
+  }}
+  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white/70 rounded-xl text-sm font-light transition-all duration-300 group"
+>
+  <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+  <span>Retour</span>
+</motion.button>
 
             <Link href="/">
               <Button className="bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-light px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/10 transition-all duration-300 group">
