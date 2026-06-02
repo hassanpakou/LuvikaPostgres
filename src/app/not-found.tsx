@@ -193,13 +193,6 @@ export default function NotFound() {
                 <span>Retour</span>
               </motion.button>
             )}
-
-            <Link href="/">
-              <Button className="bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-light px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/10 transition-all duration-300 group">
-                <Home className="w-3.5 h-3.5 mr-1.5 group-hover:rotate-12 transition-transform" />
-                Accueil
-              </Button>
-            </Link>
           </div>
           
           {/* Suggestions */}
