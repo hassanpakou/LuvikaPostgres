@@ -2,104 +2,50 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  CheckCircle,
-  XCircle,
-  MessageSquare,
-  Loader2,
-  ArrowRight,
-  Building2,
-} from 'lucide-react';
+import { CheckCircle, XCircle, MessageSquare, Loader2, ArrowRight, Building2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
-import { Textarea } from '../../../components/ui/textarea';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-} from '../../../components/ui/alert-dialog';
-import { useToast } from '../../../components/ui/use-toast';
-
-// 🔹 Props rendues partiellement optionnelles
 type Props = {
   id: string;
-  currentPlan?: 'basic' | 'premium'; // ✅ optionnel
-  targetPlan?: 'entreprise';        // ✅ optionnel
+  currentPlan?: 'basic' | 'premium';
+  targetPlan?: 'entreprise';
 };
 
-export function UpgradeRequestActions({
-  id,
-  currentPlan,
-  targetPlan = 'entreprise',
-}: Props) {
-  const { toast } = useToast();
+export function UpgradeRequestActions({ id, currentPlan, targetPlan = 'entreprise' }: Props) {
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState<'approve' | 'reject' | null>(null);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  // 🔹 Valeurs par défaut pour l'affichage
   const displayCurrentPlan = currentPlan || 'basic';
-  const displayTargetPlan = targetPlan || 'entreprise';
 
   const approve = async () => {
     setLoading('approve');
-
     try {
-      // ✅ CORRECT : utilise "/approved" pour le paramètre [action]
       const res = await fetch(`/api/admin/upgrade-requests/${id}/approved`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ admin_notes: notes || null }),
       });
-
       if (!res.ok) throw new Error();
-
-      toast({
-        title: 'Abonnement approuvé',
-        description: `Le plan a été mis à jour vers "${displayTargetPlan}".`,
-      });
-
+      toast.success('Abonnement approuvé', { description: `Plan mis à jour vers "${targetPlan}".` });
       window.location.reload();
     } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible d’approuver la demande.',
-        variant: 'destructive',
-      });
+      toast.error('Erreur', { description: 'Impossible d\'approuver la demande.' });
     } finally {
       setLoading(null);
-      setConfirmOpen(false);
+      setShowConfirm(false);
     }
   };
 
   const reject = async () => {
     setLoading('reject');
-
     try {
-      // ✅ CORRECT : utilise "/rejected" pour le paramètre [action]
-      const res = await fetch(`/api/admin/upgrade-requests/${id}/rejected`, {
-        method: 'POST',
-      });
-
+      const res = await fetch(`/api/admin/upgrade-requests/${id}/rejected`, { method: 'POST' });
       if (!res.ok) throw new Error();
-
-      toast({
-        title: 'Demande rejetée',
-        description: 'La demande a été rejetée avec succès.',
-      });
-
+      toast.success('Demande rejetée');
       window.location.reload();
     } catch {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de rejeter la demande.',
-        variant: 'destructive',
-      });
+      toast.error('Erreur', { description: 'Impossible de rejeter la demande.' });
     } finally {
       setLoading(null);
     }
@@ -107,110 +53,79 @@ export function UpgradeRequestActions({
 
   return (
     <>
-      {/* Card principale */}
-      <div className="w-full max-w-lg space-y-4 rounded-xl border border-white/10 bg-gradient-to-b from-black/50 to-black/70 p-5 backdrop-blur-sm">
-        
-        {/* Plan */}
-        <div className="flex items-center justify-between rounded-lg bg-black/30 p-3">
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            <Building2 className="h-4 w-4" />
+      <div className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] space-y-3">
+        {/* Plan actuel → cible */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+          <div className="flex items-center gap-2 text-xs text-gray-400/60 font-light">
+            <Building2 className="w-3.5 h-3.5" />
             Changement de plan
           </div>
-
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="bg-blue-900/50 text-blue-300 border-blue-700/50">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-gray-400/60 font-light bg-white/[0.03] px-2 py-0.5 rounded-lg">
               {displayCurrentPlan}
-            </Badge>
-            <ArrowRight className="h-4 w-4 text-gray-500" />
-            <Badge className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md">
-              {displayTargetPlan}
-            </Badge>
+            </span>
+            <ArrowRight className="w-3 h-3 text-gray-500/50" />
+            <span className="text-[11px] text-purple-300/60 font-light bg-purple-500/10 px-2 py-0.5 rounded-lg border border-purple-500/20">
+              {targetPlan}
+            </span>
           </div>
         </div>
 
         {/* Notes */}
-        <div className="space-y-1">
-          <label className="flex items-center gap-1 text-xs font-medium text-gray-400">
-            <MessageSquare className="h-3 w-3" />
+        <div>
+          <label className="text-[11px] text-gray-400/60 font-light flex items-center gap-1 mb-1">
+            <MessageSquare className="w-3 h-3" />
             Note interne (optionnelle)
           </label>
-          <Textarea
-            rows={3}
+          <textarea
+            rows={2}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Commentaire admin, justification, condition…"
-            className="resize-none bg-black/30 border-white/10 focus:border-cyan-500/50"
+            placeholder="Commentaire admin..."
+            className="w-full text-xs bg-white/[0.03] border border-white/[0.08] text-white/80 rounded-xl p-2.5 resize-none font-light placeholder:text-gray-500/40"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-2">
-          <Button
-            size="sm"
-            variant="destructive"
+        <div className="flex gap-2">
+          <button
             onClick={reject}
             disabled={loading !== null}
-            className="border-red-800/50 hover:bg-red-900/50"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 text-xs text-red-400/60 hover:text-red-300/70 rounded-lg border border-red-500/[0.08] hover:bg-red-500/[0.04] transition-colors font-light disabled:opacity-50"
           >
-            {loading === 'reject' ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <>
-                <XCircle className="mr-1 h-4 w-4" />
-                Rejeter
-              </>
-            )}
-          </Button>
-
-          <Button
-            size="sm"
-            className="bg-gradient-to-r from-green-600 to-emerald-500 text-white hover:from-green-700 hover:to-emerald-600 shadow-md"
-            onClick={() => setConfirmOpen(true)}
+            {loading === 'reject' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+            Rejeter
+          </button>
+          <button
+            onClick={() => setShowConfirm(true)}
             disabled={loading !== null}
+            className="flex-1 inline-flex items-center justify-center gap-1.5 h-8 text-xs bg-gradient-to-r from-emerald-600/80 to-teal-600/80 hover:from-emerald-500 hover:to-teal-500 text-white font-light rounded-lg transition-all disabled:opacity-50"
           >
-            <CheckCircle className="mr-1 h-4 w-4" />
+            {loading === 'approve' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
             Approuver
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Modal confirmation */}
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent className="bg-gradient-to-b from-gray-900 to-black border-white/10">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">
-              Confirmer l’activation du plan entreprise
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div className="text-sm text-muted-foreground">
-                Cette action :
-                <ul className="mt-2 list-disc pl-5 space-y-1 text-sm text-gray-400">
-                  <li>active un abonnement entreprise</li>
-                  <li>met à jour le profil utilisateur</li>
-                  <li>autorise la création d’une entreprise</li>
-                </ul>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-
-          <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-800 hover:bg-gray-700 border-gray-700">
-              Annuler
-            </AlertDialogCancel>
-            <Button
-              onClick={approve}
-              disabled={loading === 'approve'}
-              className="bg-gradient-to-r from-green-600 to-emerald-500 text-white hover:from-green-700 hover:to-emerald-600"
-            >
-              {loading === 'approve' ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                'Confirmer'
-              )}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {showConfirm && (
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowConfirm(false)}>
+          <div className="w-full max-w-sm bg-slate-900/90 backdrop-blur-xl rounded-2xl p-5 border border-white/[0.08]" onClick={e => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-white/80 mb-2">Confirmer l'activation</h3>
+            <p className="text-xs text-gray-400/60 font-light mb-4">
+              Cette action activera un abonnement {targetPlan} et autorisera la création d'une entreprise.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowConfirm(false)} className="flex-1 h-8 text-xs text-gray-400/60 hover:text-white/70 rounded-lg hover:bg-white/[0.04] transition-colors font-light">
+                Annuler
+              </button>
+              <button onClick={approve} disabled={loading === 'approve'} className="flex-1 h-8 text-xs bg-gradient-to-r from-emerald-600/80 to-teal-600/80 hover:from-emerald-500 hover:to-teal-500 text-white font-light rounded-lg transition-all disabled:opacity-50">
+                {loading === 'approve' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Confirmer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
