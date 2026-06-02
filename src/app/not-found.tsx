@@ -5,19 +5,36 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
-  Home, ArrowLeft, AlertCircle, Search, 
+  Home, LogOut, AlertCircle, Search, 
   Sparkle, Rocket, Zap, Scan, 
   Database, ShieldCheck, Globe, ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/src/lib/supabase/client';
 
 export default function NotFound() {
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 600);
+    
+    // Vérifier si l'utilisateur est connecté
+    const checkAuth = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+    
     return () => clearTimeout(timer);
   }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    window.location.href = '/auth/sign-in?reason=session_expired';
+  };
 
   if (loading) {
     return (
@@ -141,29 +158,41 @@ export default function NotFound() {
             transition={{ delay: 0.4, duration: 0.4 }}
             className="text-gray-300/60 mb-8 max-w-sm mx-auto text-sm font-light leading-relaxed"
           >
-            La page que vous cherchez n'existe pas ou a été déplacée.
-            Nous allons vous aider à retrouver votre chemin.
+            {isAuthenticated 
+              ? "Votre session a peut-être expiré. Reconnectez-vous pour continuer."
+              : "La page que vous cherchez n'existe pas ou a été déplacée."
+            }
           </motion.p>
           
           {/* Boutons d'action */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-            <motion.button
-  whileHover={{ scale: 1.02 }}
-  whileTap={{ scale: 0.98 }}
-  onClick={() => {
-    // ✅ Vérifie si on peut revenir en arrière
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      // Sinon, va à l'accueil
-      window.location.href = '/';
-    }
-  }}
-  className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white/70 rounded-xl text-sm font-light transition-all duration-300 group"
->
-  <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-  <span>Retour</span>
-</motion.button>
+            {isAuthenticated ? (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSignOut}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-500/[0.08] hover:bg-red-500/[0.12] border border-red-500/[0.15] text-red-400/70 hover:text-red-300/80 rounded-xl text-sm font-light transition-all duration-300 group"
+              >
+                <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
+                <span>Déconnexion</span>
+              </motion.button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (window.history.length > 1) {
+                    window.history.back();
+                  } else {
+                    window.location.href = '/';
+                  }
+                }}
+                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white/70 rounded-xl text-sm font-light transition-all duration-300 group"
+              >
+                <ArrowRight className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform rotate-180" />
+                <span>Retour</span>
+              </motion.button>
+            )}
 
             <Link href="/">
               <Button className="bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white text-sm font-light px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/10 transition-all duration-300 group">
@@ -233,7 +262,6 @@ export default function NotFound() {
             className="mt-8 pt-5 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11px] text-gray-500/60 font-light"
           >
             <div className="flex items-center justify-center gap-1.5">
-              <Sparkle className="w-3 h-3 text-cyan-400/40" />
               <span>Fait avec ❤️ à Kinshasa</span>
             </div>
             
