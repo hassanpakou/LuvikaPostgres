@@ -276,7 +276,7 @@ export default function EnterpriseDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br bg-transparent">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <main className="space-y-6">
           {/* Header */}
