@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 type CheckInClientProps = {
   eventId: string;
@@ -33,6 +34,8 @@ export default function CheckInClient({
   isOrganizer,
   requiresName = false,
 }: CheckInClientProps) {
+  const t = useTranslations('CheckInClient');
+  
   // États pour le formulaire de check-in
   const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
@@ -131,13 +134,13 @@ export default function CheckInClient({
   // 🔹 Gestion du check-in (appel à l'API existante)
   const handleCheckIn = async () => {
     if (!token) {
-      setMessage('QR code invalide. Veuillez scanner un QR valide.');
+      setMessage(t('invalid_qr_message'));
       setStatus('error');
       return;
     }
 
     if (requiresName && !inputName.trim()) {
-      setMessage('Veuillez entrer votre nom.');
+      setMessage(t('name_required_message'));
       setStatus('error');
       return;
     }
@@ -153,18 +156,18 @@ export default function CheckInClient({
 
       if (res.ok) {
         setStatus('success');
-        setMessage(`✅ Bienvenue, ${data.name || 'participant'} !`);
-        toast.success('Check-in réussi !');
+        setMessage(t('welcome_message', { name: data.name || 'participant' }));
+        toast.success(t('checkin_success_toast'));
       } else {
         setStatus('error');
-        setMessage(data.error || 'Erreur lors du check-in.');
-        toast.error(data.error || 'Échec du check-in');
+        setMessage(data.error || t('checkin_error_generic'));
+        toast.error(data.error || t('checkin_error_failed'));
       }
     } catch (err) {
       console.error('Erreur réseau:', err);
       setStatus('error');
-      setMessage('Erreur réseau. Impossible de joindre le serveur.');
-      toast.error('Erreur réseau');
+      setMessage(t('network_error_message'));
+      toast.error(t('network_error_toast'));
     }
   };
 
@@ -174,15 +177,15 @@ export default function CheckInClient({
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
         <Card className="glass-border p-8 text-center max-w-md">
           <Clock className="w-16 h-16 mx-auto text-cyan-400 mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-white mb-2">⏳ Bientôt !</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('upcoming_title')}</h2>
           <p className="text-gray-300 text-lg">
-            L'événement « {eventTitle} » commence dans
+            {t('upcoming_description', { title: eventTitle })}
           </p>
           <div className="mt-4 text-4xl font-mono font-bold text-cyan-300">
             {timeRemaining.minutes.toString().padStart(2, '0')}:
             {timeRemaining.seconds.toString().padStart(2, '0')}
           </div>
-          <p className="text-sm text-gray-400 mt-2">minutes : secondes</p>
+          <p className="text-sm text-gray-400 mt-2">{t('minutes_seconds_label')}</p>
         </Card>
       </div>
     );
@@ -193,8 +196,8 @@ export default function CheckInClient({
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
         <Card className="glass-border p-8 text-center max-w-md">
           <XCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Événement terminé</h2>
-          <p className="text-gray-300">Merci d'être venu(e) !</p>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('ended_title')}</h2>
+          <p className="text-gray-300">{t('ended_description')}</p>
         </Card>
       </div>
     );
@@ -205,8 +208,8 @@ export default function CheckInClient({
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
         <Card className="glass-border p-8 text-center max-w-md">
           <Lock className="w-16 h-16 mx-auto text-amber-400 mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Accès privé</h2>
-          <p className="text-gray-300">Cet événement est réservé aux invités.</p>
+          <h2 className="text-2xl font-bold text-white mb-2">{t('private_title')}</h2>
+          <p className="text-gray-300">{t('private_description')}</p>
         </Card>
       </div>
     );
@@ -224,7 +227,7 @@ export default function CheckInClient({
         >
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-sm mb-4">
             <QrCode className="w-4 h-4" />
-            Check-in événement
+            {t('checkin_badge')}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
             {eventTitle}
@@ -236,7 +239,9 @@ export default function CheckInClient({
               <Card className="glass-border bg-white/5 border-white/10 px-6 py-3 inline-flex items-center gap-3">
                 <Users className="w-5 h-5 text-cyan-400" />
                 <span className="text-2xl font-bold text-white">{participantsCount}</span>
-                <span className="text-gray-400 text-sm">participant{participantsCount !== 1 ? 's' : ''}</span>
+                <span className="text-gray-400 text-sm">
+                  {participantsCount === 1 ? t('participant_singular') : t('participant_plural')}
+                </span>
 
                 <div className={`flex items-center gap-1 ml-2 px-2 py-1 rounded-full text-xs ${
                   isRealtimeActive
@@ -246,12 +251,12 @@ export default function CheckInClient({
                   {isRealtimeActive ? (
                     <>
                       <Wifi className="w-3 h-3" />
-                      <span>Live</span>
+                      <span>{t('live_status')}</span>
                     </>
                   ) : (
                     <>
                       <WifiOff className="w-3 h-3" />
-                      <span>Hors ligne</span>
+                      <span>{t('offline_status')}</span>
                     </>
                   )}
                 </div>
@@ -260,7 +265,7 @@ export default function CheckInClient({
           )}
           {lastUpdate && (
             <p className="text-xs text-gray-500 mt-1">
-              Dernière mise à jour : {lastUpdate.toLocaleTimeString()}
+              {t('last_update', { time: lastUpdate.toLocaleTimeString() })}
             </p>
           )}
           {loadingCount && (
@@ -281,9 +286,9 @@ export default function CheckInClient({
               <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-10 h-10 text-emerald-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Présence enregistrée !</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">{t('success_title')}</h2>
               <p className="text-gray-300">{message}</p>
-              <p className="text-sm text-gray-400 mt-4">Profitez de l'événement 🎉</p>
+              <p className="text-sm text-gray-400 mt-4">{t('success_footer')}</p>
             </Card>
           </motion.div>
         ) : (
@@ -296,13 +301,13 @@ export default function CheckInClient({
               {requiresName && (
                 <div className="mb-4">
                   <label htmlFor="check-in-name" className="block text-sm font-medium text-gray-300 mb-2">
-                    Votre nom complet *
+                    {t('full_name_label')}
                   </label>
                   <Input
                     id="check-in-name"
                     value={inputName}
                     onChange={(e) => setInputName(e.target.value)}
-                    placeholder="Entrez votre nom"
+                    placeholder={t('name_placeholder')}
                     className="bg-white/5 border-white/10 text-white placeholder:text-gray-500"
                   />
                 </div>
@@ -323,19 +328,19 @@ export default function CheckInClient({
                 {status === 'checking' ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Vérification...
+                    {t('checking_button')}
                   </>
                 ) : (
                   <>
                     <CheckCircle className="mr-2 h-4 w-4" />
-                    Enregistrer ma présence
+                    {t('checkin_button')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
               {!token && (
                 <p className="text-xs text-gray-400 mt-4 text-center">
-                  ❗ Ce QR code n'est pas valide. Assurez-vous de scanner le bon lien.
+                  {t('invalid_qr_hint')}
                 </p>
               )}
             </CardContent>

@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowLeft, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
@@ -11,24 +12,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/src/lib/supabase/client';
 
-const t = (key: string) => {
-  const translations: Record<string, string> = {
-    'auth.forgot_password.back_to_login': 'Retour à la connexion',
-    'auth.forgot_password.title': 'Mot de passe oublié ?',
-    'auth.forgot_password.subtitle': 'Entrez votre email pour recevoir un lien de réinitialisation.',
-    'auth.forgot_password.email': 'Adresse email',
-    'auth.forgot_password.email_placeholder': 'votre@email.com',
-    'auth.forgot_password.submit': 'Envoyer le lien',
-    'auth.forgot_password.success': 'Email envoyé ! Vérifiez votre boîte de réception.',
-    'auth.forgot_password.error': 'Email non trouvé. Veuillez réessayer.',
-    'auth.forgot_password.sending': 'Envoi...',
-    'auth.forgot_password.check_spam': 'Pensez à vérifier vos spams.',
-    'navbar.home': 'Accueil',
-  };
-  return translations[key] || key;
-};
-
 export default function ForgotPasswordPage() {
+  const t = useTranslations('auth.forgot_password');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +30,7 @@ export default function ForgotPasswordPage() {
 
   const handleSendReset = async () => {
     if (!isValidEmail) {
-      setError('Veuillez entrer une adresse email valide');
+      setError(t('error_invalid_email'));
       return;
     }
 
@@ -60,12 +46,12 @@ export default function ForgotPasswordPage() {
 
       if (sendError) throw sendError;
 
-      setSuccess(t('auth.forgot_password.success'));
+      setSuccess(t('success'));
       setTimeout(() => router.push('/auth/sign-in'), 3000);
     } catch (err: any) {
       setError(err.message?.includes('Invalid email')
-        ? 'Aucun compte trouvé avec cette adresse email'
-        : t('auth.forgot_password.error'));
+        ? t('error_no_account')
+        : t('error_generic'));
     } finally {
       setLoading(false);
     }
@@ -88,7 +74,7 @@ export default function ForgotPasswordPage() {
       {/* Retour */}
       <Link href="/auth/sign-in" className="absolute top-6 left-6 z-10 text-gray-400/60 hover:text-cyan-300/70 transition-colors text-xs flex items-center gap-1.5 font-light">
         <ArrowLeft className="w-3.5 h-3.5" />
-        {t('auth.forgot_password.back_to_login')}
+        {t('back_to_login')}
       </Link>
 
       <motion.div
@@ -106,10 +92,10 @@ export default function ForgotPasswordPage() {
           </div>
 
           <h1 className="text-lg font-semibold text-center text-white/80 mb-1">
-            {t('auth.forgot_password.title')}
+            {t('title')}
           </h1>
           <p className="text-gray-400/60 text-center text-xs font-light mb-5">
-            {t('auth.forgot_password.subtitle')}
+            {t('subtitle')}
           </p>
 
           {/* Messages */}
@@ -135,7 +121,7 @@ export default function ForgotPasswordPage() {
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-400/60 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-emerald-300/60 text-xs font-light">{success}</p>
-                  <p className="text-emerald-300/40 text-[11px] font-light mt-0.5">{t('auth.forgot_password.check_spam')}</p>
+                  <p className="text-emerald-300/40 text-[11px] font-light mt-0.5">{t('check_spam')}</p>
                 </div>
               </motion.div>
             )}
@@ -146,7 +132,7 @@ export default function ForgotPasswordPage() {
             <div>
               <Label htmlFor="email" className="text-xs text-gray-400/70 font-light mb-1.5 flex items-center gap-1.5">
                 <Mail className="w-3.5 h-3.5 text-cyan-400/60" />
-                {t('auth.forgot_password.email')}
+                {t('email_label')}
               </Label>
               <Input
                 ref={emailInputRef}
@@ -155,7 +141,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={t('auth.forgot_password.email_placeholder')}
+                placeholder={t('email_placeholder')}
                 className="h-9 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 rounded-xl focus:border-cyan-400/30 font-light"
                 autoComplete="email"
                 required
@@ -170,12 +156,12 @@ export default function ForgotPasswordPage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  {t('auth.forgot_password.sending')}
+                  {t('sending')}
                 </span>
               ) : (
                 <span className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" />
-                  {t('auth.forgot_password.submit')}
+                  {t('submit')}
                 </span>
               )}
             </Button>
@@ -184,21 +170,21 @@ export default function ForgotPasswordPage() {
           {/* Footer */}
           <div className="mt-5 pt-4 border-t border-white/[0.06] text-center">
             <Link href="/auth/sign-in" className="text-xs text-cyan-400/60 hover:text-cyan-300/70 font-light">
-              {t('auth.forgot_password.back_to_login')}
+              {t('back_to_login')}
             </Link>
             <div className="mt-3 flex justify-center gap-3 text-[11px] text-gray-500/50 font-light">
-              <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">Confidentialité</Link>
+              <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">{tCommon('privacy_link')}</Link>
               <span>•</span>
-              <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">Conditions</Link>
+              <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">{tCommon('terms_link')}</Link>
               <span>•</span>
-              <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">Contact</Link>
+              <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">{tCommon('contact_link')}</Link>
             </div>
           </div>
         </div>
 
         {/* Signature */}
         <p className="mt-5 text-center text-[11px] text-gray-500/50 font-light">
-          LUVIKA • Lien valable 1h
+          {t('signature')}
         </p>
       </motion.div>
     </div>

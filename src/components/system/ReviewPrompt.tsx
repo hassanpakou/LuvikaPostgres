@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, X, Heart, MessageCircle, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { createClient } from '../../lib/supabase/client';
 import { toast } from 'sonner';
 
 export function ReviewPrompt() {
+  const t = useTranslations('ReviewPrompt');
   const pathname = usePathname();
   const [showPrompt, setShowPrompt] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -106,8 +108,8 @@ export function ReviewPrompt() {
 
   const submitReview = async () => {
     if (rating === 0) {
-      toast.warning('Note requise', {
-        description: 'Sélectionnez une note.',
+      toast.warning(t('rating_required'), {
+        description: t('select_rating_description'),
         icon: <Star className="w-4 h-4 text-amber-400/70" />,
       });
       return;
@@ -125,26 +127,26 @@ export function ReviewPrompt() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          toast('Déjà soumis', {
-            description: 'Vous avez déjà donné votre avis. Merci !',
+          toast(t('already_submitted_title'), {
+            description: t('already_submitted_description'),
             icon: <Star className="w-4 h-4 text-amber-400/70" />,
           });
           setShowReviewModal(false);
           return;
         }
-        throw new Error(data.error || 'Erreur');
+        throw new Error(data.error || t('error_unknown'));
       }
 
-      toast.success('Merci pour votre avis !', {
-        description: 'Votre feedback nous aide à nous améliorer.',
+      toast.success(t('thank_you_title'), {
+        description: t('thank_you_description'),
         icon: <Heart className="w-4 h-4 text-rose-400/70" />,
       });
       setShowReviewModal(false);
       setHasReviewed(true);
       localStorage.setItem('review_prompt_done', 'true');
     } catch (error: any) {
-      toast.error('Erreur', {
-        description: error.message || 'Veuillez réessayer.',
+      toast.error(t('error_title'), {
+        description: error.message || t('error_try_again'),
         icon: <X className="w-4 h-4 text-red-400/70" />,
       });
     } finally {
@@ -191,10 +193,10 @@ export function ReviewPrompt() {
                 </div>
 
                 <h3 className="text-base font-semibold text-white/80 mb-1.5">
-                  Vous aimez LUVIKA ?
+                  {t('prompt_title')}
                 </h3>
                 <p className="text-gray-400/60 text-xs font-light mb-4">
-                  Votre avis compte ! Prenez 30 secondes pour partager votre expérience.
+                  {t('prompt_description')}
                 </p>
 
                 <div className="flex flex-col gap-2">
@@ -203,7 +205,7 @@ export function ReviewPrompt() {
                     className="h-8 text-xs bg-gradient-to-r from-amber-600/80 to-amber-500/80 hover:from-amber-500 hover:to-amber-400 text-white font-light rounded-lg"
                   >
                     <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
-                    Laisser un avis
+                    {t('leave_review_button')}
                   </Button>
                   <div className="flex gap-2">
                     <Button
@@ -211,14 +213,14 @@ export function ReviewPrompt() {
                       onClick={handleLater}
                       className="flex-1 h-7 text-xs text-gray-400/60 hover:text-gray-300/80 hover:bg-white/[0.04] font-light rounded-lg"
                     >
-                      Plus tard
+                      {t('later_button')}
                     </Button>
                     <Button
                       variant="ghost"
                       onClick={handleDecline}
                       className="flex-1 h-7 text-xs text-gray-500/50 hover:text-gray-400/70 hover:bg-white/[0.04] font-light rounded-lg"
                     >
-                      Non merci
+                      {t('no_thanks_button')}
                     </Button>
                   </div>
                 </div>
@@ -254,8 +256,8 @@ export function ReviewPrompt() {
               </button>
 
               <div className="text-center mb-4">
-                <h3 className="text-base font-semibold text-white/80 mb-1">Votre avis</h3>
-                <p className="text-gray-400/60 text-xs font-light">Partagez votre expérience</p>
+                <h3 className="text-base font-semibold text-white/80 mb-1">{t('modal_title')}</h3>
+                <p className="text-gray-400/60 text-xs font-light">{t('modal_subtitle')}</p>
               </div>
 
               {/* Étoiles */}
@@ -281,7 +283,7 @@ export function ReviewPrompt() {
               <Textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Votre expérience (optionnel)"
+                placeholder={t('comment_placeholder')}
                 className="min-h-[80px] bg-white/[0.03] border-white/[0.08] text-white/80 placeholder:text-gray-500/50 text-sm font-light resize-none rounded-xl mb-4"
                 maxLength={500}
               />
@@ -293,7 +295,7 @@ export function ReviewPrompt() {
                   onClick={() => setShowReviewModal(false)}
                   className="flex-1 h-8 text-xs text-gray-400/60 hover:text-gray-300/80 hover:bg-white/[0.04] font-light rounded-lg"
                 >
-                  Annuler
+                  {t('cancel_button')}
                 </Button>
                 <Button
                   onClick={submitReview}
@@ -303,12 +305,12 @@ export function ReviewPrompt() {
                   {submitting ? (
                     <span className="flex items-center gap-1.5">
                       <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      Envoi...
+                      {t('sending_button')}
                     </span>
                   ) : (
                     <span className="flex items-center gap-1.5">
                       <Send className="w-3.5 h-3.5" />
-                      Envoyer
+                      {t('send_button')}
                     </span>
                   )}
                 </Button>

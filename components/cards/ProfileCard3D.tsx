@@ -3,8 +3,10 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 export default function ProfileCard3D() {
+  const t = useTranslations('profile_card_3d');
   const [isHovered, setIsHovered] = useState(false);
   const [flashKey, setFlashKey] = useState(0);
   const [neon, setNeon] = useState(false);
@@ -22,11 +24,10 @@ export default function ProfileCard3D() {
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left; // X position within the card
-    const y = e.clientY - rect.top;  // Y position within the card
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
-    // Max rotation angles (in degrees)
     const maxRotate = 12;
     const rotateYValue = ((x - centerX) / centerX) * maxRotate;
     const rotateXValue = ((centerY - y) / centerY) * maxRotate;
@@ -43,6 +44,12 @@ export default function ProfileCard3D() {
   const handleMouseEnter = () => {
     setIsHovered(true);
   };
+
+  // Générer des blocs QR aléatoires pour l'aperçu (statique)
+  const qrBlocks = Array(9).fill(0).map((_, i) => ({
+    isDark: [0, 2, 6, 8].includes(i),
+    isCenter: i === 4
+  }));
 
   return (
     <motion.div
@@ -120,13 +127,13 @@ export default function ProfileCard3D() {
           transition={{ duration: 8, repeat: Infinity }}
         >
           <h2 className="text-4xl font-bold bg-gradient-to-r from-cyan-200 via-white to-blue-200 bg-clip-text text-transparent">
-            LUVIKA
+            {t('brand_name')}
           </h2>
           <p className="mt-1 text-sm text-cyan-200/90">
-            Révèle qui tu es
+            {t('tagline')}
           </p>
           <p className="mt-2 text-xs font-mono text-gray-300 tracking-wider">
-            luvika.me/vika
+            {t('example_url')}
           </p>
         </motion.div>
 
@@ -144,12 +151,12 @@ export default function ProfileCard3D() {
           transition={{ duration: 6, repeat: Infinity, delay: 1 }}
         >
           <div className="grid grid-cols-3 gap-1">
-            {Array(9).fill(0).map((_, i) => (
+            {qrBlocks.map((block, i) => (
               <div
                 key={i}
                 className={`w-2 h-2 rounded-sm ${
-                  [0,2,6,8].includes(i) ? 'bg-cyan-300' :
-                  i === 4 ? 'bg-blue-300' : 'bg-white/20'
+                  block.isDark ? 'bg-cyan-300' :
+                  block.isCenter ? 'bg-blue-300' : 'bg-white/20'
                 }`}
               />
             ))}
@@ -159,7 +166,7 @@ export default function ProfileCard3D() {
 
       {/* Verified Badge */}
       <span className="absolute top-4 right-4 text-[11px] px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 z-20">
-        ⚡ Verified
+        {t('verified_badge')}
       </span>
 
       {/* Matricule with neon effect on hover */}
@@ -175,7 +182,7 @@ export default function ProfileCard3D() {
         }}
         transition={{ duration: 0.2 }}
       >
-        483 920 174
+        {t('matricule_example')}
       </motion.div>
 
       {/* Global Shadow */}

@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { 
@@ -13,13 +14,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createClient } from '@/src/lib/supabase/client';
 
 export default function NotFound() {
+  const t = useTranslations('not_found');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 600);
     
-    // Vérifier si l'utilisateur est connecté
     const checkAuth = async () => {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
@@ -51,7 +53,7 @@ export default function NotFound() {
             className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
           />
           <span className="text-cyan-300/70 text-sm font-light tracking-wide">
-            Chargement...
+            {t('loading')}
           </span>
         </motion.div>
       </div>
@@ -59,16 +61,16 @@ export default function NotFound() {
   }
 
   const suggestions = [
-    { icon: Zap, label: "Tableau de bord", href: "/dashboard" },
-    { icon: Scan, label: "Fonctionnalités NFC", href: "/features" },
-    { icon: Database, label: "Offres et tarifs", href: "/pricing" },
-    { icon: ShieldCheck, label: "Documentation", href: "/documentation" }
+    { icon: Zap, label: t('suggestions.dashboard'), href: "/dashboard" },
+    { icon: Scan, label: t('suggestions.features'), href: "/features" },
+    { icon: Database, label: t('suggestions.pricing'), href: "/pricing" },
+    { icon: ShieldCheck, label: t('suggestions.documentation'), href: "/documentation" }
   ];
 
   const badges = [
-    { icon: Globe, label: "9 langues" },
-    { icon: ShieldCheck, label: "Sécurité bancaire" },
-    { icon: Rocket, label: "99.9% dispo" }
+    { icon: Globe, label: t('badges.languages') },
+    { icon: ShieldCheck, label: t('badges.security') },
+    { icon: Rocket, label: t('badges.availability') }
   ];
 
   return (
@@ -149,7 +151,7 @@ export default function NotFound() {
             transition={{ delay: 0.3, duration: 0.4, ease: 'easeOut' }}
             className="text-2xl md:text-3xl font-bold text-white/90 mb-3"
           >
-            Page non trouvée
+            {t('title')}
           </motion.h1>
           
           <motion.p
@@ -158,10 +160,7 @@ export default function NotFound() {
             transition={{ delay: 0.4, duration: 0.4 }}
             className="text-gray-300/60 mb-8 max-w-sm mx-auto text-sm font-light leading-relaxed"
           >
-            {isAuthenticated 
-              ? "Votre session a peut-être expiré. Reconnectez-vous pour continuer."
-              : "La page que vous cherchez n'existe pas ou a été déplacée."
-            }
+            {isAuthenticated ? t('session_expired') : t('page_moved')}
           </motion.p>
           
           {/* Boutons d'action */}
@@ -174,7 +173,7 @@ export default function NotFound() {
                 className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-500/[0.08] hover:bg-red-500/[0.12] border border-red-500/[0.15] text-red-400/70 hover:text-red-300/80 rounded-xl text-sm font-light transition-all duration-300 group"
               >
                 <LogOut className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                <span>Déconnexion</span>
+                <span>{t('sign_out')}</span>
               </motion.button>
             ) : (
               <motion.button
@@ -190,7 +189,7 @@ export default function NotFound() {
                 className="flex items-center justify-center gap-2 px-5 py-2.5 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.08] text-white/70 rounded-xl text-sm font-light transition-all duration-300 group"
               >
                 <ArrowRight className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform rotate-180" />
-                <span>Retour</span>
+                <span>{t('back')}</span>
               </motion.button>
             )}
           </div>
@@ -206,7 +205,7 @@ export default function NotFound() {
               <div className="w-7 h-7 rounded-lg bg-gradient-to-r from-cyan-500/60 to-blue-500/60 flex items-center justify-center">
                 <Search className="w-3.5 h-3.5 text-white/80" />
               </div>
-              <h3 className="text-sm font-semibold text-white/80">Suggestions</h3>
+              <h3 className="text-sm font-semibold text-white/80">{t('suggestions_title')}</h3>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -236,13 +235,13 @@ export default function NotFound() {
             className="mt-6 text-center"
           >
             <p className="text-gray-500/60 text-xs font-light mb-2">
-              Besoin d'aide ?
+              {t('need_help')}
             </p>
             <Link 
               href="/contact" 
               className="inline-flex items-center gap-1.5 text-cyan-400/60 hover:text-cyan-300/80 text-xs font-light group transition-colors"
             >
-              <span>Contacter le support</span>
+              <span>{t('contact_support')}</span>
               <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>
@@ -255,7 +254,7 @@ export default function NotFound() {
             className="mt-8 pt-5 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-[11px] text-gray-500/60 font-light"
           >
             <div className="flex items-center justify-center gap-1.5">
-              <span>Fait avec ❤️ à Kinshasa</span>
+              <span>{t('made_with')}</span>
             </div>
             
             <div className="flex flex-wrap justify-center gap-3">

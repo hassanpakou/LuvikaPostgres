@@ -25,9 +25,9 @@ const CONFIG = {
   hero: {
     titleKey: 'LUVIKA',
     audience: [
-      { icon: Users, label: 'Créateurs' },
-      { icon: ScanLine, label: 'Entrepreneurs' },
-      { icon: ShieldCheck, label: 'Professionnels' },
+      { icon: Users, labelKey: 'home.audience.creators' },
+      { icon: ScanLine, labelKey: 'home.audience.entrepreneurs' },
+      { icon: ShieldCheck, labelKey: 'home.audience.professionals' },
     ],
   },
   cta: {
@@ -36,28 +36,28 @@ const CONFIG = {
     primaryButton: { textKey: 'download.download_now', link: '/auth/sign-up' },
     secondaryButton: { textKey: 'navbar.pricing', link: '/public/pricing' },
     stats: [
-      { value: '50K+', label: 'Utilisateurs', icon: Users },
-      { value: '250K+', label: 'Scans', icon: ScanLine },
-      { value: '98%', label: 'Satisfaction', icon: Star },
+      { value: '50K+', labelKey: 'home.stats.users', icon: Users },
+      { value: '250K+', labelKey: 'home.stats.scans', icon: ScanLine },
+      { value: '98%', labelKey: 'home.stats.satisfaction', icon: Star },
     ],
   },
   features: {
     badgeKey: 'features.title',
-    description: 'LUVIKA transforme votre identité numérique avec des fonctionnalités innovantes conçues pour les créateurs, entrepreneurs et professionnels ambitieux.',
     list: [
-      { icon: Nfc, titleKey: 'features.nfc.title', descKey: 'features.nfc.desc', gradient: 'from-cyan-500 to-blue-500', stat: '100% sans contact' },
-      { icon: BarChart3, titleKey: 'features.stats.title', descKey: 'features.stats.desc', gradient: 'from-blue-500 to-indigo-500', stat: 'Données en temps réel' },
-      { icon: Layers, titleKey: 'features.multi.title', descKey: 'features.multi.desc', gradient: 'from-emerald-500 to-teal-500', stat: 'Multi-plateforme' },
+      { icon: Nfc, titleKey: 'features.nfc.title', descKey: 'features.nfc.desc', gradient: 'from-cyan-500 to-blue-500', statKey: 'home.features.nfc_stat' },
+      { icon: BarChart3, titleKey: 'features.stats.title', descKey: 'features.stats.desc', gradient: 'from-blue-500 to-indigo-500', statKey: 'home.features.stats_stat' },
+      { icon: Layers, titleKey: 'features.multi.title', descKey: 'features.multi.desc', gradient: 'from-emerald-500 to-teal-500', statKey: 'home.features.multi_stat' },
     ],
   },
   reviews: {
-    badge: 'Avis vérifiés',
-    title: 'Ce que nos utilisateurs disent',
-    description: 'Découvrez les retours d\'expérience de notre communauté.',
+    badgeKey: 'home.reviews.badge',
+    titleKey: 'home.reviews.title',
+    descriptionKey: 'home.reviews.description',
   },
   events: {
+    badgeKey: 'home.events.badge',
     titleKey: 'features.events.title',
-    description: 'Organisez, gérez et analysez vos événements avec des QR codes personnalisés et des statistiques en temps réel.',
+    descriptionKey: 'home.events.description',
     features: [
       { icon: ScanLine, titleKey: 'features.events.create.title', descKey: 'features.events.create.desc', color: 'text-cyan-400', bg: 'from-cyan-500/10 to-blue-500/10' },
       { icon: QrCode, titleKey: 'features.events.qr.title', descKey: 'features.events.qr.desc', color: 'text-blue-400', bg: 'from-blue-500/10 to-indigo-500/10' },
@@ -65,7 +65,7 @@ const CONFIG = {
     ],
   },
   footer: {
-    description: 'La nouvelle génération d\'identité numérique pour les créateurs, entrepreneurs et professionnels ambitieux en Afrique et ailleurs.',
+    descriptionKey: 'home.footer.description',
     socials: [
       { Icon: Twitter, href: 'https://twitter.com/luvika', color: 'text-cyan-400', hover: 'hover:bg-cyan-500/10' },
       { Icon: SiInstagram, href: 'https://instagram.com/luvika', color: 'text-pink-400', hover: 'hover:bg-pink-500/10' },
@@ -73,9 +73,9 @@ const CONFIG = {
       { Icon: Github, href: 'https://github.com/luvika', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
     ],
     links: [
-      { title: 'Produit', icon: Globe, iconColor: 'text-cyan-400', items: ['Fonctionnalités', 'Tarifs', 'Télécharger', 'Documentation'] },
-      { title: 'Entreprise', icon: Heart, iconColor: 'text-rose-400', items: ['À propos', 'Contact', 'Blog', 'Carrières'] },
-      { title: 'Légal', icon: Gavel, iconColor: 'text-amber-400', items: ['Confidentialité', 'Conditions', 'Cookies', 'Sécurité'] },
+      { titleKey: 'home.footer.product', icon: Globe, iconColor: 'text-cyan-400', items: ['home.footer.features', 'home.footer.pricing', 'home.footer.download', 'home.footer.documentation'] },
+      { titleKey: 'home.footer.company', icon: Heart, iconColor: 'text-rose-400', items: ['home.footer.about', 'home.footer.contact', 'home.footer.blog', 'home.footer.careers'] },
+      { titleKey: 'home.footer.legal', icon: Gavel, iconColor: 'text-amber-400', items: ['home.footer.privacy', 'home.footer.terms', 'home.footer.cookies', 'home.footer.security'] },
     ],
     contactEmail: 'support@luvika.me',
   },
@@ -125,7 +125,7 @@ const HeroSection = () => {
           {CONFIG.hero.audience.map((item, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 + i * 0.1 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10">
               <item.icon className="w-4 h-4 text-cyan-400" />
-              <span className="text-sm text-gray-200">{item.label}</span>
+              <span className="text-sm text-gray-200">{t(item.labelKey)}</span>
             </motion.div>
           ))}
         </div>
@@ -158,7 +158,7 @@ const CTASection = () => {
           {CONFIG.cta.stats.map((stat, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 * i }} className="text-center">
               <div className="text-4xl font-black bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">{stat.value}</div>
-              <div className="flex items-center gap-1 text-sm text-gray-400 mt-1"><stat.icon className="w-4 h-4" /><span>{stat.label}</span></div>
+              <div className="flex items-center gap-1 text-sm text-gray-400 mt-1"><stat.icon className="w-4 h-4" /><span>{t(stat.labelKey)}</span></div>
             </motion.div>
           ))}
         </div>
@@ -167,18 +167,21 @@ const CTASection = () => {
   );
 };
 
-const ProfileShowcase = ({ reducedMotion }: { reducedMotion: boolean }) => (
-  <section className="relative py-8">
-    <div className="relative max-w-md mx-auto">
-      {!reducedMotion ? <ProfileCard3D /> : <GlassCard className="h-96 flex items-center justify-center text-gray-400">Aperçu de la carte</GlassCard>}
-      <div className="absolute -top-4 -right-4">
-        <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold shadow-lg shadow-amber-500/30">
-          <Trophy className="w-3 h-3 mr-1 inline" /> Meilleure solution 2026
-        </Badge>
+const ProfileShowcase = ({ reducedMotion }: { reducedMotion: boolean }) => {
+  const t = useTranslations();
+  return (
+    <section className="relative py-8">
+      <div className="relative max-w-md mx-auto">
+        {!reducedMotion ? <ProfileCard3D /> : <GlassCard className="h-96 flex items-center justify-center text-gray-400">{t('home.profile_preview')}</GlassCard>}
+        <div className="absolute -top-4 -right-4">
+          <Badge className="bg-gradient-to-r from-amber-500 to-orange-600 text-black font-bold shadow-lg shadow-amber-500/30">
+            <Trophy className="w-3 h-3 mr-1 inline" /> {t('home.best_solution_badge')}
+          </Badge>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const FeaturesGrid = () => {
   const t = useTranslations();
@@ -186,8 +189,10 @@ const FeaturesGrid = () => {
     <section className="relative py-20">
       <div className="text-center mb-16">
         <GradientBadge>{t(CONFIG.features.badgeKey)}</GradientBadge>
-        <SectionTitle className="mt-4">Réinventez votre <span className="text-cyan-400">présence numérique</span></SectionTitle>
-        <p className="text-gray-400 max-w-2xl mx-auto mt-4">{CONFIG.features.description}</p>
+        <SectionTitle className="mt-4">
+          {t('home.features.title_before')} <span className="text-cyan-400">{t('home.features.title_highlight')}</span>
+        </SectionTitle>
+        <p className="text-gray-400 max-w-2xl mx-auto mt-4">{t('home.features.description')}</p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
         {CONFIG.features.list.map((feature, i) => (
@@ -198,7 +203,7 @@ const FeaturesGrid = () => {
               </div>
               <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition">{t(feature.titleKey)}</h3>
               <p className="text-gray-300 mt-2 text-sm leading-relaxed">{t(feature.descKey)}</p>
-              <div className="flex items-center gap-1 mt-4 text-cyan-300 text-xs font-medium"><CheckCircle className="w-3 h-3" /><span>{feature.stat}</span></div>
+              <div className="flex items-center gap-1 mt-4 text-cyan-300 text-xs font-medium"><CheckCircle className="w-3 h-3" /><span>{t(feature.statKey)}</span></div>
             </GlassCard>
           </AnimatedOnScroll>
         ))}
@@ -207,36 +212,35 @@ const FeaturesGrid = () => {
   );
 };
 
-// ✅ NOUVELLE SECTION AVIS
 const ReviewsSection = () => {
+  const t = useTranslations();
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  const fetchReviews = async () => {
-    try {
-      const res = await fetch('/api/review?limit=6');
-      
-      if (!res.ok) {
-        console.warn('API reviews status:', res.status);
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await fetch('/api/review?limit=6');
+        
+        if (!res.ok) {
+          console.warn('API reviews status:', res.status);
+          setReviews([]);
+          setLoading(false);
+          return;
+        }
+        
+        const data = await res.json();
+        console.log('Reviews data:', data);
+        setReviews(data.reviews || []);
+      } catch (err) {
+        console.warn('Avis non disponibles:', err);
         setReviews([]);
+      } finally {
         setLoading(false);
-        return;
       }
-      
-      const data = await res.json();
-      console.log('Reviews data:', data); // Debug
-      setReviews(data.reviews || []);
-    } catch (err) {
-      console.warn('Avis non disponibles:', err);
-      setReviews([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchReviews();
-}, []);
-
+    };
+    fetchReviews();
+  }, []);
 
   if (loading) {
     return (
@@ -253,10 +257,10 @@ useEffect(() => {
   return (
     <section className="relative py-16">
       <div className="text-center mb-12">
-        <GradientBadge>{CONFIG.reviews.badge}</GradientBadge>
-        <SectionTitle className="mt-4">{CONFIG.reviews.title}</SectionTitle>
+        <GradientBadge>{t(CONFIG.reviews.badgeKey)}</GradientBadge>
+        <SectionTitle className="mt-4">{t(CONFIG.reviews.titleKey)}</SectionTitle>
         <p className="text-gray-400/60 max-w-xl mx-auto mt-3 text-sm font-light">
-          {CONFIG.reviews.description}
+          {t(CONFIG.reviews.descriptionKey)}
         </p>
       </div>
 
@@ -299,7 +303,7 @@ useEffect(() => {
                 </span>
                 {review.profile_id && (
                   <span className="text-[11px] text-cyan-400/40 font-light">
-                    Vérifié
+                    {t('home.reviews.verified')}
                   </span>
                 )}
               </div>
@@ -316,9 +320,9 @@ const EventsSection = () => {
   return (
     <section className="relative py-20">
       <div className="text-center mb-16">
-        <GradientBadge>Événements intelligents</GradientBadge>
+        <GradientBadge>{t(CONFIG.events.badgeKey)}</GradientBadge>
         <SectionTitle className="mt-4">{t(CONFIG.events.titleKey)}</SectionTitle>
-        <p className="text-gray-400 max-w-2xl mx-auto mt-4">{CONFIG.events.description}</p>
+        <p className="text-gray-400 max-w-2xl mx-auto mt-4">{t(CONFIG.events.descriptionKey)}</p>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
         <AnimatedOnScroll direction="left">
@@ -360,6 +364,7 @@ const EventsSection = () => {
 };
 
 const Footer = () => {
+  const t = useTranslations();
   const currentYear = new Date().getFullYear();
   return (
     <footer className="relative mt-28 border-t border-white/10 bg-black/30 backdrop-blur-sm">
@@ -370,7 +375,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center"><CONFIG.brand.logo className="w-4 h-4 text-white" /></div>
               <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{CONFIG.brand.name}</span>
             </div>
-            <p className="text-gray-400 text-sm">{CONFIG.footer.description}</p>
+            <p className="text-gray-400 text-sm">{t(CONFIG.footer.descriptionKey)}</p>
             <div className="flex gap-2">
               {CONFIG.footer.socials.map((social, i) => (
                 <Link key={i} href={social.href} target="_blank" rel="noopener noreferrer" className={`p-2 rounded-lg bg-white/5 ${social.hover} transition`}><social.Icon className={`w-4 h-4 ${social.color}`} /></Link>
@@ -379,17 +384,17 @@ const Footer = () => {
           </div>
           {CONFIG.footer.links.map((group, idx) => (
             <div key={idx} className="space-y-3">
-              <h3 className="font-semibold text-white flex items-center gap-2"><group.icon className={`w-4 h-4 ${group.iconColor}`} />{group.title}</h3>
+              <h3 className="font-semibold text-white flex items-center gap-2"><group.icon className={`w-4 h-4 ${group.iconColor}`} />{t(group.titleKey)}</h3>
               <ul className="space-y-2 text-sm">
-                {group.items.map((item) => (<li key={item}><Link href="#" className="text-gray-400 hover:text-cyan-300 transition">{item}</Link></li>))}
+                {group.items.map((itemKey) => (<li key={itemKey}><Link href="#" className="text-gray-400 hover:text-cyan-300 transition">{t(itemKey)}</Link></li>))}
               </ul>
             </div>
           ))}
         </div>
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
-          <p>© {currentYear} {CONFIG.brand.name}. Fait avec ❤️ en RDC.</p>
+          <p>{t('home.footer.copyright', { year: currentYear, brand: CONFIG.brand.name })}</p>
           <div className="flex gap-4 mt-2 md:mt-0">
-            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /> Opérationnel</span>
+            <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /> {t('home.footer.operational')}</span>
             <a href={`mailto:${CONFIG.footer.contactEmail}`} className="hover:text-cyan-400">{CONFIG.footer.contactEmail}</a>
           </div>
         </div>

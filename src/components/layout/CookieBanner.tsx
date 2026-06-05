@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -12,12 +13,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 export default function CookieBanner() {
+  const t = useTranslations('cookies_banner');
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     const consent = localStorage.getItem('luvika_cookie_consent');
     if (!consent) {
-      // Petit délai pour laisser la page se charger d'abord
       const timer = setTimeout(() => setShow(true), 500);
       return () => clearTimeout(timer);
     }
@@ -34,7 +35,6 @@ export default function CookieBanner() {
   };
 
   const handleClose = () => {
-    // Fermer sans sauvegarder (le bandeau réapparaîtra au prochain chargement)
     setShow(false);
   };
 
@@ -57,16 +57,16 @@ export default function CookieBanner() {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
-                Cookies
+                {t('title')}
                 <Badge className="bg-emerald-500/10 text-emerald-300/70 border-emerald-500/20 text-[10px] py-0 px-1.5 font-light">
-                  Essentiels
+                  {t('essential_badge')}
                 </Badge>
               </h3>
             </div>
             <button
               onClick={handleClose}
               className="text-gray-400/60 hover:text-gray-300/80 transition-colors p-0.5"
-              aria-label="Fermer"
+              aria-label={t('close_label')}
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -74,23 +74,22 @@ export default function CookieBanner() {
           
           {/* Description */}
           <p className="text-gray-300/60 text-xs mb-3 leading-relaxed font-light">
-            Nous utilisons des cookies strictement nécessaires au fonctionnement de la plateforme, 
-            à la sécurisation de votre session et à l'amélioration de nos services.
+            {t('description')}
           </p>
           
           {/* Badges */}
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
             <Badge className="bg-blue-500/10 text-blue-300/60 border-blue-500/15 text-[10px] py-0 px-1.5 font-light">
               <ShieldCheck className="w-2.5 h-2.5 mr-0.5 inline" />
-              Sécurité
+              {t('badge_security')}
             </Badge>
             <Badge className="bg-cyan-500/10 text-cyan-300/60 border-cyan-500/15 text-[10px] py-0 px-1.5 font-light">
               <Sparkle className="w-2.5 h-2.5 mr-0.5 inline" />
-              Session
+              {t('badge_session')}
             </Badge>
             <Badge className="bg-purple-500/10 text-purple-300/60 border-purple-500/15 text-[10px] py-0 px-1.5 font-light">
               <Settings className="w-2.5 h-2.5 mr-0.5 inline" />
-              Préférences
+              {t('badge_preferences')}
             </Badge>
           </div>
           
@@ -101,7 +100,7 @@ export default function CookieBanner() {
               size="sm"
               className="h-7 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light px-3 rounded-lg shadow-sm"
             >
-              Accepter
+              {t('accept_button')}
             </Button>
             <Button
               variant="outline"
@@ -109,7 +108,7 @@ export default function CookieBanner() {
               onClick={handleReject}
               className="h-7 text-xs border-white/[0.08] text-gray-300/70 hover:bg-white/[0.04] font-light px-3 rounded-lg"
             >
-              Refuser
+              {t('reject_button')}
             </Button>
             <Button
               variant="ghost"
@@ -118,7 +117,7 @@ export default function CookieBanner() {
               className="h-7 text-xs text-cyan-300/60 hover:text-cyan-200/80 hover:bg-white/[0.04] font-light px-2 rounded-lg"
             >
               <Link href="/privacy">
-                Confidentialité
+                {t('privacy_link')}
               </Link>
             </Button>
           </div>

@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { 
   X, Smartphone, Download, 
@@ -10,6 +11,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function InstallModal() {
+  const t = useTranslations('install_modal');
   const [show, setShow] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
@@ -32,7 +34,6 @@ export default function InstallModal() {
     // iOS / Safari
     const isInStandaloneMode = 'standalone' in window.navigator && (window.navigator as any).standalone;
     if (ios && !isInStandaloneMode) {
-      // Petit délai pour laisser la page se charger
       const timer = setTimeout(() => setShow(true), 1000);
       return () => clearTimeout(timer);
     }
@@ -79,7 +80,7 @@ export default function InstallModal() {
           <button
             onClick={handleClose}
             className="absolute top-3 right-3 text-gray-400/60 hover:text-gray-300/80 transition-colors p-1 z-10"
-            aria-label="Fermer"
+            aria-label={t('close_label')}
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -91,8 +92,8 @@ export default function InstallModal() {
                 <Smartphone className="w-3.5 h-3.5 text-white/80" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-white/80">Installer Luvika</h2>
-                <p className="text-xs text-cyan-300/60 font-light">Application PWA</p>
+                <h2 className="text-sm font-semibold text-white/80">{t('title')}</h2>
+                <p className="text-xs text-cyan-300/60 font-light">{t('pwa_badge')}</p>
               </div>
             </div>
             
@@ -100,14 +101,13 @@ export default function InstallModal() {
             <p className="text-gray-300/60 text-xs mb-3 leading-relaxed font-light">
               {isIOS ? (
                 <>
-                  <span className="text-cyan-300/70">Sur iOS :</span> Appuyez sur <Share2 className="w-3 h-3 inline mx-0.5 align-middle text-gray-400/70" /> 
-                  <span>Partager</span>, puis <Plus className="w-3 h-3 inline mx-0.5 align-middle text-gray-400/70" /> 
-                  <span>Ajouter à l'écran d'accueil</span>.
+                  <span className="text-cyan-300/70">{t('ios_prefix')}</span> {t('ios_instruction_before')} <Share2 className="w-3 h-3 inline mx-0.5 align-middle text-gray-400/70" /> 
+                  <span>{t('ios_share_text')}</span>, <Plus className="w-3 h-3 inline mx-0.5 align-middle text-gray-400/70" /> 
+                  <span>{t('ios_add_text')}</span>.
                 </>
               ) : (
                 <>
-                  <span className="text-cyan-300/70">Sur Android :</span> Installez Luvika pour un accès rapide, 
-                  des notifications et le mode hors-ligne.
+                  <span className="text-cyan-300/70">{t('android_prefix')}</span> {t('android_description')}
                 </>
               )}
             </p>
@@ -121,7 +121,7 @@ export default function InstallModal() {
                   onClick={handleInstall}
                 >
                   <Download className="w-3 h-3 mr-1" />
-                  Installer
+                  {t('install_button')}
                 </Button>
               )}
               
@@ -131,7 +131,7 @@ export default function InstallModal() {
                 className="h-7 text-xs border-white/[0.08] text-gray-300/70 hover:bg-white/[0.04] font-light px-3 rounded-lg"
                 onClick={handleClose}
               >
-                Plus tard
+                {t('later_button')}
               </Button>
             </div>
             
@@ -139,7 +139,7 @@ export default function InstallModal() {
             <div className="mt-3 pt-2.5 border-t border-white/[0.06] text-[10px] text-gray-500/60 font-light">
               <p className="flex items-center gap-1">
                 <Sparkle className="w-2.5 h-2.5 text-cyan-400/40" />
-                <span>Gratuit • Quelques secondes</span>
+                <span>{t('footer_text')}</span>
               </p>
             </div>
           </div>

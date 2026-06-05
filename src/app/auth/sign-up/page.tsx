@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Mail, Lock, ArrowLeft, ArrowRight, 
@@ -15,32 +16,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/src/lib/supabase/client';
 
-const t = (key: string) => {
-  const translations: Record<string, string> = {
-    'auth.signup.email_title': 'Adresse email',
-    'auth.signup.security_title': 'Sécurité',
-    'auth.signup.email_desc': 'Entrez votre adresse email',
-    'auth.signup.security_desc': 'Choisissez un mot de passe sécurisé',
-    'auth.signup.email': 'Email',
-    'auth.signup.password': 'Mot de passe',
-    'auth.signup.password_confirm': 'Confirmez le mot de passe',
-    'auth.signup.error_email_format': 'Seule une adresse Gmail est acceptée',
-    'auth.signup.email_exists': 'Cet email est déjà utilisé',
-    'auth.signup.check_email': 'Compte créé ! Vérifiez votre boîte mail.',
-    'auth.signup.error_generic': 'Erreur lors de la création du compte',
-    'auth.signup.next': 'Suivant',
-    'auth.signup.create_account': 'Créer le compte',
-    'auth.signup.creating': 'Création...',
-    'auth.signup.already_have_account': 'Déjà un compte ?',
-    'auth.signup.sign_in': 'Se connecter',
-    'navbar.home': 'Accueil',
-  };
-  return translations[key] || key;
-};
-
 type Step = 'email' | 'security';
 
 export default function SignUpPage() {
+  const t = useTranslations('auth.signup');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [step, setStep] = useState<Step>('email');
   const [loading, setLoading] = useState(false);
@@ -122,11 +102,11 @@ export default function SignUpPage() {
 
   const handleNextEmail = () => {
     if (!isValidEmail) {
-      setError(t('auth.signup.error_email_format'));
+      setError(t('error_email_format'));
       return;
     }
     if (emailExists) {
-      setError(t('auth.signup.email_exists'));
+      setError(t('email_exists'));
       return;
     }
     setStep('security');
@@ -154,16 +134,16 @@ export default function SignUpPage() {
 
       if (signUpError) throw signUpError;
 
-      setSuccess(t('auth.signup.check_email'));
+      setSuccess(t('check_email'));
       setTimeout(() => {
         setShowWelcomeModal(true);
         setTimeout(() => router.push('/auth/sign-in'), 3000);
       }, 1000);
     } catch (err: any) {
       if (err.message?.includes('User already registered')) {
-        setError(t('auth.signup.email_exists'));
+        setError(t('email_exists'));
       } else {
-        setError(err.message || t('auth.signup.error_generic'));
+        setError(err.message || t('error_generic'));
       }
     } finally {
       setLoading(false);
@@ -179,7 +159,7 @@ export default function SignUpPage() {
   const steps: Step[] = ['email', 'security'];
   const currentStepIndex = steps.indexOf(step);
   const stepIcons = { email: Mail, security: Lock };
-  const stepTitles = { email: t('auth.signup.email_title'), security: t('auth.signup.security_title') };
+  const stepTitles = { email: t('email_title'), security: t('security_title') };
 
   if (pageLoading) {
     return (
@@ -195,7 +175,7 @@ export default function SignUpPage() {
             transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
             className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
           />
-          <span className="text-cyan-300/70 text-sm font-light tracking-wide">Chargement...</span>
+          <span className="text-cyan-300/70 text-sm font-light tracking-wide">{tCommon('loading')}</span>
         </motion.div>
       </div>
     );
@@ -212,7 +192,7 @@ export default function SignUpPage() {
       {/* Retour accueil */}
       <Link href="/" className="absolute top-6 left-6 z-10 text-gray-400/60 hover:text-cyan-300/70 transition-colors text-xs flex items-center gap-1.5 group font-light">
         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-        {t('navbar.home')}
+        {tCommon('back_to_home')}
       </Link>
 
       <div className="w-full max-w-md">
@@ -278,7 +258,7 @@ export default function SignUpPage() {
 
           <h1 className="text-lg font-semibold text-center text-white/80 mb-1">{stepTitles[step]}</h1>
           <p className="text-gray-400/60 text-center text-xs font-light mb-5">
-            {step === 'email' ? t('auth.signup.email_desc') : t('auth.signup.security_desc')}
+            {step === 'email' ? t('email_desc') : t('security_desc')}
           </p>
 
           {/* Erreur */}
@@ -307,7 +287,7 @@ export default function SignUpPage() {
               <div>
                 <Label htmlFor="email" className="text-xs text-gray-400/70 font-light mb-1.5 flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-cyan-400/60" />
-                  {t('auth.signup.email')}
+                  {t('email')}
                 </Label>
                 <div className="relative">
                   <Input
@@ -329,12 +309,12 @@ export default function SignUpPage() {
                 </div>
                 {emailExists && (
                   <p className="text-[11px] text-red-400/60 mt-1.5 flex items-center gap-1 font-light">
-                    <AlertCircle className="w-3 h-3" />{t('auth.signup.email_exists')}
+                    <AlertCircle className="w-3 h-3" />{t('email_exists')}
                   </p>
                 )}
                 {emailTouched && !isValidEmail && formData.email && !emailExists && (
                   <p className="text-[11px] text-amber-400/60 mt-1.5 flex items-center gap-1 font-light">
-                    <AlertCircle className="w-3 h-3" />{t('auth.signup.error_email_format')}
+                    <AlertCircle className="w-3 h-3" />{t('error_email_format')}
                   </p>
                 )}
               </div>
@@ -347,7 +327,7 @@ export default function SignUpPage() {
               <div>
                 <Label htmlFor="password" className="text-xs text-gray-400/70 font-light mb-1.5 flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-cyan-400/60" />
-                  {t('auth.signup.password')}
+                  {t('password')}
                 </Label>
                 <div className="relative">
                   <Input
@@ -367,7 +347,7 @@ export default function SignUpPage() {
                 </div>
                 {formData.password && !isPasswordLengthValid && (
                   <p className="text-[11px] text-amber-400/60 mt-1.5 flex items-center gap-1 font-light">
-                    <AlertCircle className="w-3 h-3" />Minimum 6 caractères
+                    <AlertCircle className="w-3 h-3" />{t('password_min_length')}
                   </p>
                 )}
               </div>
@@ -375,7 +355,7 @@ export default function SignUpPage() {
               <div>
                 <Label htmlFor="passwordConfirm" className="text-xs text-gray-400/70 font-light mb-1.5 flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-cyan-400/60" />
-                  {t('auth.signup.password_confirm')}
+                  {t('password_confirm')}
                 </Label>
                 <div className="relative">
                   <Input
@@ -394,14 +374,14 @@ export default function SignUpPage() {
                 </div>
                 {formData.passwordConfirm && !doPasswordsMatch && (
                   <p className="text-[11px] text-amber-400/60 mt-1.5 flex items-center gap-1 font-light">
-                    <AlertCircle className="w-3 h-3" />Les mots de passe ne correspondent pas
+                    <AlertCircle className="w-3 h-3" />{t('password_mismatch')}
                   </p>
                 )}
               </div>
 
               <div className="p-3 rounded-xl bg-blue-500/[0.03] border border-blue-500/[0.06] text-xs text-blue-300/60 font-light flex items-start gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                <span>Authentification à deux facteurs activée par défaut pour sécuriser votre compte.</span>
+                <span>{t('two_factor_info')}</span>
               </div>
             </div>
           )}
@@ -412,7 +392,7 @@ export default function SignUpPage() {
               {step === 'security' && (
                 <Button type="button" onClick={handleBack} variant="ghost"
                   className="h-9 text-xs text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-xl px-4">
-                  <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />Retour
+                  <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />{t('back_button')}
                 </Button>
               )}
               <Button type="button"
@@ -422,29 +402,29 @@ export default function SignUpPage() {
                 {loading ? (
                   <span className="flex items-center gap-2">
                     <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    {t('auth.signup.creating')}
+                    {t('creating')}
                   </span>
                 ) : step === 'email' ? (
-                  <span className="flex items-center gap-1.5">{t('auth.signup.next')}<ArrowRight className="w-3.5 h-3.5" /></span>
+                  <span className="flex items-center gap-1.5">{t('next')}<ArrowRight className="w-3.5 h-3.5" /></span>
                 ) : (
-                  <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" />{t('auth.signup.create_account')}</span>
+                  <span className="flex items-center gap-1.5"><Lock className="w-3.5 h-3.5" />{t('create_account')}</span>
                 )}
               </Button>
             </div>
 
             <div className="mt-4 text-center pt-3 border-t border-white/[0.04]">
               <p className="text-xs text-gray-400/60 font-light">
-                {t('auth.signup.already_have_account')}{' '}
+                {t('already_have_account')}{' '}
                 <Link href="/auth/sign-in" className="text-cyan-400/60 hover:text-cyan-300/70 font-medium">
-                  {t('auth.signup.sign_in')}
+                  {t('sign_in')}
                 </Link>
               </p>
               <div className="mt-3 flex justify-center gap-3 text-[11px] text-gray-500/50 font-light">
-                <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">Confidentialité</Link>
+                <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">{tCommon('privacy_link')}</Link>
                 <span>•</span>
-                <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">Conditions</Link>
+                <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">{tCommon('terms_link')}</Link>
                 <span>•</span>
-                <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">Contact</Link>
+                <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">{tCommon('contact_link')}</Link>
               </div>
             </div>
           </div>
@@ -461,18 +441,18 @@ export default function SignUpPage() {
               className="w-full max-w-sm bg-slate-900/90 backdrop-blur-xl rounded-2xl p-6 border border-white/[0.08] text-center"
               onClick={e => e.stopPropagation()}>
               <div className="text-5xl mb-4">🎉</div>
-              <h3 className="text-lg font-semibold text-white/80 mb-2">Bienvenue sur LUVIKA !</h3>
+              <h3 className="text-lg font-semibold text-white/80 mb-2">{t('welcome_title')}</h3>
               <p className="text-gray-400/60 text-xs font-light mb-5">
-                Votre compte a été créé. Vérifiez votre email pour l'activer.
+                {t('welcome_description')}
               </p>
               <div className="flex gap-2">
                 <Button onClick={() => setShowWelcomeModal(false)}
                   className="flex-1 h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white font-light rounded-lg">
-                  Commencer
+                  {t('welcome_start_button')}
                 </Button>
                 <Button variant="ghost" onClick={() => { setShowWelcomeModal(false); router.push('/auth/sign-in'); }}
                   className="flex-1 h-8 text-xs text-gray-400/60 hover:text-white/70 font-light rounded-lg">
-                  Connexion
+                  {t('welcome_login_button')}
                 </Button>
               </div>
             </motion.div>

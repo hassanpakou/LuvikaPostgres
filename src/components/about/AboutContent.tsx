@@ -2,6 +2,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { 
   Book, Globe, Lightbulb, AlertTriangle, RefreshCw, Wifi, 
@@ -54,6 +55,9 @@ export default function AboutContent({
   perspective_title: string;
   perspective_content: string;
 }) {
+  const t = useTranslations('about_page');
+  const currentYear = new Date().getFullYear();
+
   const sections = [
     { 
       title: origin_title, 
@@ -169,7 +173,7 @@ export default function AboutContent({
                   </h2>
                 </div>
                 
-                <p className="text-gray-300 text-sm leading-relaxed">
+                <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
                   {section.content}
                 </p>
                 
@@ -195,10 +199,10 @@ export default function AboutContent({
           className="text-center mt-8 pt-6 border-t border-white/10 text-[11px] text-gray-500"
         >
           <p>
-            LUVIKA • Une identité numérique pour l'Afrique et le monde • © {new Date().getFullYear()}
+            {t('footer_text', { year: currentYear })}
           </p>
           <p className="mt-1 flex items-center justify-center gap-1.5">
-            <span>Fait avec ❤️ à Kinshasa</span>
+            <span>{t('made_with')}</span>
           </p>
         </motion.div>
       </div>

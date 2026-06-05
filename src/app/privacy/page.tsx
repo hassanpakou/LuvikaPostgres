@@ -13,7 +13,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
-// 🔹 Icône manquante
 const Sparkles = ({ size = 16 }: { size?: number }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 3l2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5z"/>
@@ -21,7 +20,7 @@ const Sparkles = ({ size = 16 }: { size?: number }) => (
 );
 
 export default function PrivacyPage() {
-  const t = useTranslations('footer');
+  const t = useTranslations('privacy_page');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,7 +43,7 @@ export default function PrivacyPage() {
             className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
           />
           <span className="text-cyan-300/70 text-sm font-light tracking-wide">
-            Chargement...
+            {t('loading')}
           </span>
         </motion.div>
       </div>
@@ -53,85 +52,65 @@ export default function PrivacyPage() {
 
   const sections = [
     {
-      title: 'Introduction',
+      title: t('sections.introduction.title'),
       icon: FileText,
       color: 'from-blue-500/60 to-cyan-500/60',
-      content: 'Luvika est une plateforme de cartes numériques professionnelles. La protection de vos données personnelles est une priorité absolue. Cette politique explique quelles données nous collectons, pourquoi, et comment elles sont protégées.'
+      content: t('sections.introduction.content')
     },
     {
-      title: 'Données collectées',
+      title: t('sections.collected_data.title'),
       icon: Database,
       color: 'from-green-500/60 to-emerald-500/60',
-      content: 'Lors de l\'utilisation de Luvika, nous collectons :',
-      items: [
-        'Nom et prénom',
-        'Adresse e-mail',
-        'Numéro de téléphone',
-        'Photo de profil',
-        'Informations de carte numérique créées',
-        'Données de connexion (adresse IP, type d\'appareil)'
-      ]
+      content: t('sections.collected_data.content'),
+      items: t('sections.collected_data.items').split('|')
     },
     {
-      title: 'Finalité de la collecte',
+      title: t('sections.purpose.title'),
       icon: Target,
       color: 'from-purple-500/60 to-pink-500/60',
-      content: 'Les données sont utilisées pour :',
-      items: [
-        'Créer et gérer votre compte',
-        'Générer vos cartes numériques',
-        'Sécuriser l\'accès à la plateforme',
-        'Améliorer les performances du service'
-      ]
+      content: t('sections.purpose.content'),
+      items: t('sections.purpose.items').split('|')
     },
     {
-      title: 'Cookies',
+      title: t('sections.cookies.title'),
       icon: Cookie,
       color: 'from-amber-500/60 to-orange-500/60',
-      content: 'Luvika utilise des cookies pour :',
-      items: [
-        'Maintenir votre session connectée',
-        'Sécuriser la navigation',
-        'Mémoriser certaines préférences'
-      ],
-      highlight: 'Aucun cookie publicitaire tiers n\'est utilisé sans votre consentement.'
+      content: t('sections.cookies.content'),
+      items: t('sections.cookies.items').split('|'),
+      highlight: t('sections.cookies.highlight')
     },
     {
-      title: 'Partage des données',
+      title: t('sections.data_sharing.title'),
       icon: Share2,
       color: 'from-indigo-500/60 to-blue-500/60',
-      content: 'Vos données ne sont jamais vendues. Elles peuvent être hébergées chez des services techniques sécurisés uniquement pour le fonctionnement de la plateforme.'
+      content: t('sections.data_sharing.content')
     },
     {
-      title: 'Sécurité',
+      title: t('sections.security.title'),
       icon: Shield,
       color: 'from-cyan-500/60 to-blue-500/60',
-      content: 'Nous mettons en place des mesures techniques avancées pour protéger vos informations contre tout accès non autorisé.'
+      content: t('sections.security.content')
     },
     {
-      title: 'Durée de conservation',
+      title: t('sections.retention.title'),
       icon: Clock,
       color: 'from-teal-500/60 to-emerald-500/60',
-      content: 'Les données sont conservées tant que votre compte est actif. Vous pouvez demander la suppression à tout moment.'
+      content: t('sections.retention.content')
     },
     {
-      title: 'Vos droits',
+      title: t('sections.your_rights.title'),
       icon: Key,
       color: 'from-yellow-500/60 to-orange-500/60',
-      content: 'Vous pouvez :',
-      items: [
-        'Accéder à vos données',
-        'Modifier vos informations',
-        'Supprimer votre compte'
-      ]
+      content: t('sections.your_rights.content'),
+      items: t('sections.your_rights.items').split('|')
     },
     {
-      title: 'Contact',
+      title: t('sections.contact.title'),
       icon: Mail,
       color: 'from-red-500/60 to-pink-500/60',
       content: (
         <>
-          Pour toute demande :{' '}
+          {t('sections.contact.content_before')}{' '}
           <a href="mailto:support@luvika.com" className="text-cyan-300/80 hover:text-cyan-200 hover:underline font-medium transition-colors">
             support@luvika.com
           </a>
@@ -144,7 +123,7 @@ export default function PrivacyPage() {
     <AnimatePresence>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-10">
         <div className="max-w-4xl mx-auto px-4">
-          {/* 🔹 Header compact */}
+          {/* Header compact */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -153,20 +132,20 @@ export default function PrivacyPage() {
           >
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
               <Sparkle className="w-3.5 h-3.5 text-cyan-300/80 animate-pulse" />
-              <span className="text-cyan-300/80 font-medium text-sm">Confidentialité</span>
+              <span className="text-cyan-300/80 font-medium text-sm">{t('badge')}</span>
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white/90 to-cyan-200/70 bg-clip-text text-transparent mb-3">
-              Politique de confidentialité – Luvika
+              {t('title')}
             </h1>
             <p className="text-gray-300/70 max-w-2xl mx-auto text-sm font-light leading-relaxed">
-              Votre vie privée est notre priorité absolue. Cette politique explique comment nous protégeons vos données personnelles.
+              {t('description')}
             </p>
             
             <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500/60 to-blue-400/60 mx-auto mt-4 rounded-full"></div>
           </motion.div>
 
-          {/* 🔹 Sections */}
+          {/* Sections */}
           <div className="space-y-4">
             {sections.map((section, index) => (
               <motion.div
@@ -187,7 +166,7 @@ export default function PrivacyPage() {
                   {section.content}
                 </p>
                 
-                {section.items && (
+                {section.items && section.items.length > 0 && section.items[0] !== '' && (
                   <ul className="space-y-2 mt-3 text-gray-300/70 text-sm font-light">
                     {section.items.map((item, i) => (
                       <li key={i} className="flex items-start gap-2 pl-1">
@@ -207,7 +186,7 @@ export default function PrivacyPage() {
             ))}
           </div>
 
-          {/* 🔹 Bouton retour */}
+          {/* Bouton retour */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -217,22 +196,22 @@ export default function PrivacyPage() {
             <Link href="/">
               <Button variant="ghost" size="sm" className="text-cyan-300/70 hover:text-cyan-200 hover:bg-white/5 transition-all">
                 <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-                Retour à l'accueil
+                {t('back_to_home')}
               </Button>
             </Link>
           </motion.div>
 
-          {/* 🔹 Footer */}
+          {/* Footer */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             className="text-center mt-10 pt-6 border-t border-white/[0.06] text-[11px] text-gray-500/70 font-light"
           >
-            <p>LUVIKA • Politique de Confidentialité • Dernière mise à jour: {new Date().toLocaleDateString('fr-FR')}</p>
+            <p>{t('footer_text', { date: new Date().toLocaleDateString('fr-FR') })}</p>
             <p className="mt-1 flex items-center justify-center gap-1.5">
               <Sparkle className="w-3 h-3 text-cyan-400/50 animate-pulse" />
-              <span>Fait avec ❤️ à Kinshasa</span>
+              <span>{t('made_with')}</span>
             </p>
           </motion.div>
         </div>

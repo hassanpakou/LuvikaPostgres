@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   Calendar, MapPin, Users, Hash, Link as LinkIcon, QrCode, Send, RotateCcw,
   Locate, Clock, Tag, AlertCircle, Loader2, ChevronRight, ChevronLeft, Globe, Shield, CheckCircle, ScanLine
@@ -33,6 +34,7 @@ type Props = {
 };
 
 export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading = false }: Props) {
+  const t = useTranslations('CreateEventForm');
   const now = new Date();
   
   // États du formulaire (1 à 5)
@@ -76,15 +78,13 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     return true;
   }, [maxParticipants]);
 
-  const isStep3Valid = true; // Switch toujours valide
-  const isStep4Valid = !isGeneratingQR && !!qrDataUrl; // QR généré
+  const isStep3Valid = true;
+  const isStep4Valid = !isGeneratingQR && !!qrDataUrl;
 
-  // Validation Globale
   const isFormValid = useMemo(() => {
     return isStep1Valid && isStep2Valid && isStep3Valid && isStep4Valid;
   }, [isStep1Valid, isStep2Valid, isStep3Valid, isStep4Valid]);
 
-  // URL Prévisualisation
   const previewUrl = useMemo(() => {
     if (!title) return '';
     const slug = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -107,7 +107,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
 
   // Géolocalisation
   const getCurrentLocation = () => {
-    if (!navigator.geolocation) return setErrors(p => ({ ...p, location: 'Non supporté' }));
+    if (!navigator.geolocation) return setErrors(p => ({ ...p, location: t('error_location_not_supported') }));
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -115,32 +115,31 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json&accept-language=${currentLocale}`);
           const data = await res.json();
           setLocation(data.display_name || `${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
-        } catch { setLocation('Position inconnue'); }
+        } catch { setLocation(t('error_location_unknown')); }
         finally { setIsLocating(false); }
       },
       (err) => {
-        setErrors(p => ({ ...p, location: err.code === 1 ? 'Refusé' : 'Erreur' }));
+        setErrors(p => ({ ...p, location: err.code === 1 ? t('error_location_denied') : t('error_location_generic') }));
         setIsLocating(false);
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   };
 
-  // Gestion des erreurs et navigation
   const validateStep1 = () => {
     const e: Record<string, string> = {};
-    if (!title.trim()) e.title = 'Requis';
-    else if (title.length < 3) e.title = '3 chars min';
-    if (!startsAt) e.startsAt = 'Requis';
-    else if (new Date(startsAt) <= new Date()) e.startsAt = 'Futur requis';
-    if (endsAt && new Date(endsAt) <= new Date(startsAt)) e.endsAt = 'Après début';
+    if (!title.trim()) e.title = t('error_title_required');
+    else if (title.length < 3) e.title = t('error_title_min_length');
+    if (!startsAt) e.startsAt = t('error_date_required');
+    else if (new Date(startsAt) <= new Date()) e.startsAt = t('error_date_future');
+    if (endsAt && new Date(endsAt) <= new Date(startsAt)) e.endsAt = t('error_date_order');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const validateStep2 = () => {
     const e: Record<string, string> = {};
-    if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) e.maxParticipants = '1-10000';
+    if (maxParticipants && (Number(maxParticipants) < 1 || Number(maxParticipants) > 10000)) e.maxParticipants = t('error_max_participants_range');
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -176,6 +175,28 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     });
   };
 
+  const getStepTitle = () => {
+    switch(step) {
+      case 1: return t('step1_title');
+      case 2: return t('step2_title');
+      case 3: return t('step3_title');
+      case 4: return t('step4_title');
+      case 5: return t('step5_title');
+      default: return '';
+    }
+  };
+
+  const getStepSubtitle = () => {
+    switch(step) {
+      case 1: return t('step1_subtitle');
+      case 2: return t('step2_subtitle');
+      case 3: return t('step3_subtitle');
+      case 4: return t('step4_subtitle');
+      case 5: return t('step5_subtitle');
+      default: return '';
+    }
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full">
       <Card className="glass-border bg-black/40 backdrop-blur-xl border-white/10 w-full shadow-2xl overflow-hidden">
@@ -188,18 +209,8 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                 <Calendar className="w-5 h-5 text-cyan-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white">
-                  {step === 1 ? "Informations de base" : 
-                   step === 2 ? "Détails & Lieu" : 
-                   step === 3 ? "Options de visibilité" :
-                   step === 4 ? "Votre QR Code" : "Validation Finale"}
-                </h2>
-                <p className="text-xs text-gray-400">
-                  {step === 1 ? "L'essentiel pour commencer" : 
-                   step === 2 ? "Personnalisez votre événement" : 
-                   step === 3 ? "Qui peut voir cet événement ?" :
-                   step === 4 ? "Génération automatique" : "Vérifiez et créez"}
-                </p>
+                <h2 className="text-lg font-bold text-white">{getStepTitle()}</h2>
+                <p className="text-xs text-gray-400">{getStepSubtitle()}</p>
               </div>
             </div>
             
@@ -237,24 +248,26 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             {step === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" /> Titre *</label>
-                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ex: Conférence Tech" className="bg-white/5 border-white/10 text-sm h-10" autoFocus />
+                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" /> {t('title_label')}</label>
+                  <Input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('title_placeholder')} className="bg-white/5 border-white/10 text-sm h-10" autoFocus />
                   {errors.title && <p className="text-red-400 text-[10px] mt-1">{errors.title}</p>}
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Début *</label>
+                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {t('start_label')}</label>
                     <Input type="datetime-local" value={startsAt} onChange={e => setStartsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-10" />
                     {errors.startsAt && <p className="text-red-400 text-[10px] mt-1">{errors.startsAt}</p>}
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Fin</label>
+                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> {t('end_label')}</label>
                     <Input type="datetime-local" value={endsAt} onChange={e => setEndsAt(e.target.value)} className="bg-white/5 border-white/10 text-xs h-10" min={startsAt} />
                     {errors.endsAt && <p className="text-red-400 text-[10px] mt-1">{errors.endsAt}</p>}
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end">
-                  <Button type="button" onClick={handleNext} disabled={!isStep1Valid} className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Suivant <ChevronRight className="w-4 h-4 ml-2" /></Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep1Valid} className="w-full sm:w-auto bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
+                    {t('next_button')} <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -263,9 +276,9 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-5">
                 <div>
-                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Lieu</label>
+                  <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> {t('location_label')}</label>
                   <div className="flex gap-2">
-                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Adresse ou 'En ligne'" className="bg-white/5 border-white/10 text-sm h-10" />
+                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder={t('location_placeholder')} className="bg-white/5 border-white/10 text-sm h-10" />
                     <Button type="button" size="icon" variant="ghost" className="h-10 w-10 text-cyan-400 hover:bg-cyan-500/10 shrink-0" onClick={getCurrentLocation} disabled={isLocating}>
                       {isLocating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Locate className="w-4 h-4" />}
                     </Button>
@@ -273,20 +286,24 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> Max participants</label>
-                    <Input type="number" value={maxParticipants} onChange={e => setMaxParticipants(e.target.value ? Number(e.target.value) : '')} placeholder="Illimité" className="bg-white/5 border-white/10 text-sm h-10" />
+                    <label className="text-xs font-medium text-gray-300 mb-1.5 flex items-center gap-1.5"><Users className="w-3.5 h-3.5" /> {t('max_participants_label')}</label>
+                    <Input type="number" value={maxParticipants} onChange={e => setMaxParticipants(e.target.value ? Number(e.target.value) : '')} placeholder={t('max_participants_placeholder')} className="bg-white/5 border-white/10 text-sm h-10" />
                     {errors.maxParticipants && <p className="text-red-400 text-[10px] mt-1">{errors.maxParticipants}</p>}
                   </div>
                   <div className="flex flex-col justify-end pb-1">
                      <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-                      <label className="text-xs font-medium text-gray-300 block mb-1">Description courte</label>
-                      <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="bg-black/20 border-white/5 text-sm resize-none h-20" placeholder="Détails..." />
+                      <label className="text-xs font-medium text-gray-300 block mb-1">{t('description_label')}</label>
+                      <Textarea value={description} onChange={e => setDescription(e.target.value)} rows={2} className="bg-black/20 border-white/5 text-sm resize-none h-20" placeholder={t('description_placeholder')} />
                     </div>
                   </div>
                 </div>
                 <div className="pt-4 flex gap-3">
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11"><ChevronLeft className="w-4 h-4 mr-2" /> Retour</Button>
-                  <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Suivant <ChevronRight className="w-4 h-4 ml-2" /></Button>
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
+                    <ChevronLeft className="w-4 h-4 mr-2" /> {t('back_button')}
+                  </Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep2Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
+                    {t('next_button')} <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -295,23 +312,27 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                 <div className="p-4 rounded-xl bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-500/20">
-                  <h3 className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2"><Shield className="w-4 h-4" /> Visibilité</h3>
+                  <h3 className="text-sm font-bold text-cyan-300 mb-3 flex items-center gap-2"><Shield className="w-4 h-4" /> {t('visibility_title')}</h3>
                   <div className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded-lg ${isPublic ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
                         {isPublic ? <Globe className="w-5 h-5" /> : <Shield className="w-5 h-5" />}
                       </div>
                       <div>
-                        <label className="text-sm font-bold text-white block">Événement Public</label>
-                        <p className="text-xs text-gray-400 mt-0.5">{isPublic ? "Visible par tous." : "Sur invitation uniquement."}</p>
+                        <label className="text-sm font-bold text-white block">{t('public_event_label')}</label>
+                        <p className="text-xs text-gray-400 mt-0.5">{isPublic ? t('public_event_description') : t('private_event_description')}</p>
                       </div>
                     </div>
                     <Switch checked={isPublic} onCheckedChange={setIsPublic} className="data-[state=checked]:bg-green-500" />
                   </div>
                 </div>
                 <div className="pt-4 flex gap-3">
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11"><ChevronLeft className="w-4 h-4 mr-2" /> Retour</Button>
-                  <Button type="button" onClick={handleNext} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Voir le QR <ChevronRight className="w-4 h-4 ml-2" /></Button>
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
+                    <ChevronLeft className="w-4 h-4 mr-2" /> {t('back_button')}
+                  </Button>
+                  <Button type="button" onClick={handleNext} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
+                    {t('view_qr_button')} <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </motion.div>
             )}
@@ -320,8 +341,8 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             {step === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6">
                 <div className="text-center mb-4">
-                  <h3 className="text-lg font-bold text-white mb-1">Votre QR Code Intelligent</h3>
-                  <p className="text-xs text-gray-400">Génération automatique basée sur vos infos</p>
+                  <h3 className="text-lg font-bold text-white mb-1">{t('qr_title')}</h3>
+                  <p className="text-xs text-gray-400">{t('qr_subtitle')}</p>
                 </div>
                 <div className="flex flex-col items-center justify-center space-y-4">
                   <div className="relative group">
@@ -334,7 +355,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                           <img src={qrDataUrl} alt="QR" className="w-40 h-40 object-contain mix-blend-multiply" />
                           <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center backdrop-blur-sm rounded-xl">
                             <ScanLine className="w-8 h-8 text-white mb-1 animate-pulse" />
-                            <span className="text-white font-bold text-xs">SCAN ME</span>
+                            <span className="text-white font-bold text-xs">{t('scan_me')}</span>
                           </div>
                         </div>
                       ) : null}
@@ -347,13 +368,17 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   </div>
                 </div>
                 <div className="pt-4 flex gap-3">
-                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11"><ChevronLeft className="w-4 h-4 mr-2" /> Modifier</Button>
-                  <Button type="button" onClick={handleNext} disabled={!isStep4Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">Valider les détails <ChevronRight className="w-4 h-4 ml-2" /></Button>
+                  <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
+                    <ChevronLeft className="w-4 h-4 mr-2" /> {t('edit_button')}
+                  </Button>
+                  <Button type="button" onClick={handleNext} disabled={!isStep4Valid} className="flex-[2] bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 h-11">
+                    {t('validate_button')} <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </div>
               </motion.div>
             )}
 
-            {/* ================= ÉTAPE 5 : RÉCAPITULATIF FINAL (NOUVEAU) ================= */}
+            {/* ================= ÉTAPE 5 : RÉCAPITULATIF FINAL ================= */}
             {step === 5 && (
               <motion.div
                 key="step5"
@@ -363,30 +388,29 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                 className="space-y-6"
               >
                 <div className="text-center mb-2">
-                  <h3 className="text-lg font-bold text-white mb-1">Dernière vérification</h3>
-                  <p className="text-xs text-gray-400">Confirmez les informations avant la création</p>
+                  <h3 className="text-lg font-bold text-white mb-1">{t('review_title')}</h3>
+                  <p className="text-xs text-gray-400">{t('review_subtitle')}</p>
                 </div>
 
-                {/* Info Bulle Récap (Contenu demandé) */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10 shadow-lg">
                   <div className="flex-1 w-full space-y-4 text-xs">
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-black/20 rounded-lg border border-white/5">
-                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Titre</span> 
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">{t('review_title_label')}</span> 
                         <span className="text-white font-medium truncate block text-sm">{title}</span>
                       </div>
                       <div className="p-3 bg-black/20 rounded-lg border border-white/5">
-                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Date</span> 
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">{t('review_date_label')}</span> 
                         <span className="text-white font-medium block text-sm">{startsAt ? new Date(startsAt).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'}) : '...'}</span>
                       </div>
                       <div className="p-3 bg-black/20 rounded-lg border border-white/5">
-                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Lieu</span> 
-                        <span className="text-white font-medium truncate block text-sm">{location || 'Non défini'}</span>
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">{t('review_location_label')}</span> 
+                        <span className="text-white font-medium truncate block text-sm">{location || t('review_not_defined')}</span>
                       </div>
                       <div className="p-3 bg-black/20 rounded-lg border border-white/5">
-                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">Visibilité</span> 
+                        <span className="text-gray-400 block mb-1 text-[10px] uppercase tracking-wider">{t('review_visibility_label')}</span> 
                         <Badge variant={isPublic ? "default" : "secondary"} className="text-[9px] h-5 mt-0.5">
-                          {isPublic ? 'Public' : 'Privé'}
+                          {isPublic ? t('public_badge') : t('private_badge')}
                         </Badge>
                       </div>
                     </div>
@@ -400,14 +424,13 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   </div>
                 </div>
 
-                {/* Boutons d'action */}
                 <div className="pt-2 flex gap-3">
                   <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
-                    <ChevronLeft className="w-4 h-4 mr-2" /> Modifier
+                    <ChevronLeft className="w-4 h-4 mr-2" /> {t('edit_button')}
                   </Button>
                   <Button type="submit" disabled={isLoading || !isFormValid || isGeneratingQR} className="flex-[2] bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white h-11 shadow-lg shadow-green-900/20">
                     {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                    Créer l'événement
+                    {t('create_button')}
                   </Button>
                 </div>
               </motion.div>
@@ -424,7 +447,7 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
             <div className="bg-red-950/90 backdrop-blur border border-red-500/50 text-red-100 px-4 py-3 rounded-xl shadow-2xl flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-sm">Erreurs détectées</p>
+                <p className="font-bold text-sm">{t('errors_detected_title')}</p>
                 <ul className="text-xs space-y-1 mt-1 list-disc list-inside opacity-90">
                   {Object.values(errors).map((msg, i) => <li key={i}>{msg}</li>)}
                 </ul>

@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 export default function TermsPage() {
-  const t = useTranslations('footer');
+  const t = useTranslations('terms_page');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function TermsPage() {
             className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
           />
           <span className="text-cyan-300/70 text-sm font-light tracking-wide">
-            Chargement...
+            {t('loading')}
           </span>
         </motion.div>
       </div>
@@ -45,34 +45,34 @@ export default function TermsPage() {
 
   const sections = [
     {
-      title: '1. Acceptation des conditions',
+      title: t('sections.acceptance.title'),
       icon: CheckCircle,
       color: 'from-green-500/60 to-emerald-500/60',
-      content: 'En utilisant LUVIKA, vous acceptez ces conditions. Si vous n\'êtes pas d\'accord, veuillez ne pas utiliser le service.'
+      content: t('sections.acceptance.content')
     },
     {
-      title: '2. Compte utilisateur',
+      title: t('sections.account.title'),
       icon: User,
       color: 'from-blue-500/60 to-cyan-500/60',
-      content: 'Vous êtes responsable de la sécurité de votre compte et des informations que vous partagez publiquement.'
+      content: t('sections.account.content')
     },
     {
-      title: '3. Propriété intellectuelle',
+      title: t('sections.intellectual_property.title'),
       icon: Lock,
       color: 'from-purple-500/60 to-pink-500/60',
-      content: 'LUVIKA et son code source sont la propriété de ses auteurs. Le contenu que vous publiez reste le vôtre.'
+      content: t('sections.intellectual_property.content')
     },
     {
-      title: '4. Limitation de responsabilité',
+      title: t('sections.liability.title'),
       icon: AlertTriangle,
       color: 'from-amber-500/60 to-orange-500/60',
-      content: 'LUVIKA est fourni « tel quel ». Nous ne garantissons pas la disponibilité 24/7 ni la fiabilité des scans NFC/QR.'
+      content: t('sections.liability.content')
     },
     {
-      title: '5. Modifications',
+      title: t('sections.modifications.title'),
       icon: RefreshCw,
       color: 'from-cyan-500/60 to-blue-500/60',
-      content: 'Nous pouvons mettre à jour ces conditions. Vous serez informé(e) en cas de changement majeur.'
+      content: t('sections.modifications.content')
     }
   ];
 
@@ -80,7 +80,7 @@ export default function TermsPage() {
     <AnimatePresence>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-10">
         <div className="max-w-4xl mx-auto px-4">
-          {/* 🔹 Header compact */}
+          {/* Header compact */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -89,24 +89,24 @@ export default function TermsPage() {
           >
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
               <Sparkle className="w-3.5 h-3.5 text-cyan-300/80 animate-pulse" />
-              <span className="text-cyan-300/80 font-medium text-sm">Conditions Générales</span>
+              <span className="text-cyan-300/80 font-medium text-sm">{t('badge')}</span>
             </div>
             
             <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-white/90 to-cyan-200/70 bg-clip-text text-transparent mb-3">
-              {t('terms')}
+              {t('title')}
             </h1>
             <p className="text-gray-300/70 max-w-2xl mx-auto text-sm font-light leading-relaxed">
-              Conditions d'utilisation de la plateforme LUVIKA. En utilisant nos services, vous acceptez ces conditions.
+              {t('description')}
             </p>
             
             <div className="w-16 h-0.5 bg-gradient-to-r from-cyan-500/60 to-blue-400/60 mx-auto mt-4 rounded-full"></div>
             
             <Badge className="mt-3 bg-blue-500/10 text-blue-300/70 border-blue-500/20 text-xs py-0.5 px-2 backdrop-blur-sm">
-              En vigueur au : {new Date().toLocaleDateString('fr-FR')}
+              {t('effective_date', { date: new Date().toLocaleDateString('fr-FR') })}
             </Badge>
           </motion.div>
 
-          {/* 🔹 Sections */}
+          {/* Sections */}
           <div className="space-y-4">
             {sections.map((section, index) => (
               <motion.div
@@ -130,7 +130,7 @@ export default function TermsPage() {
             ))}
           </div>
 
-          {/* 🔹 Bouton retour */}
+          {/* Bouton retour */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -140,22 +140,22 @@ export default function TermsPage() {
             <Link href="/">
               <Button variant="ghost" size="sm" className="text-cyan-300/70 hover:text-cyan-200 hover:bg-white/5 transition-all">
                 <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-                Retour à l'accueil
+                {t('back_to_home')}
               </Button>
             </Link>
           </motion.div>
 
-          {/* 🔹 Footer */}
+          {/* Footer */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
             className="text-center mt-10 pt-6 border-t border-white/[0.06] text-[11px] text-gray-500/70 font-light"
           >
-            <p>LUVIKA • Conditions Générales d'Utilisation • Dernière mise à jour: {new Date().toLocaleDateString('fr-FR')}</p>
+            <p>{t('footer_text', { date: new Date().toLocaleDateString('fr-FR') })}</p>
             <p className="mt-1 flex items-center justify-center gap-1.5">
               <Sparkle className="w-3 h-3 text-cyan-400/50 animate-pulse" />
-              <span>Fait avec ❤️ à Kinshasa</span>
+              <span>{t('made_with')}</span>
             </p>
           </motion.div>
         </div>

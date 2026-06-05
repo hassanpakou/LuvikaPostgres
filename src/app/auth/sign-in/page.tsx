@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle, User, ShieldCheck } from 'lucide-react';
@@ -10,25 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/src/lib/supabase/client';
 
-const t = (key: string) => {
-  const dict: Record<string, string> = {
-    'auth.signin.title': 'Connexion',
-    'auth.signin.subtitle': 'Connectez-vous à votre compte LUVIKA',
-    'auth.signin.email': 'Email',
-    'auth.signin.password': 'Mot de passe',
-    'auth.signin.forgot_password': 'Mot de passe oublié ?',
-    'auth.signin.submit': 'Se connecter',
-    'auth.signin.connecting': 'Connexion...',
-    'auth.signin.no_account': 'Pas de compte ?',
-    'auth.signin.sign_up': 'S\'inscrire',
-    'auth.signin.error_credentials': 'Email ou mot de passe incorrect.',
-    'auth.signin.error_deactivated': 'Ce compte a été désactivé. Contactez le support.',
-    'navbar.home': 'Accueil',
-  };
-  return dict[key] || key;
-};
-
 export default function SignInPage() {
+  const t = useTranslations('auth.signin');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
@@ -44,7 +29,6 @@ export default function SignInPage() {
       const supabase = createClient();
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // ✅ Si déjà connecté, redirige vers la page demandée ou dashboard
         const redirectTo = searchParams.get('redirect') || '/dashboard';
         router.push(redirectTo);
         return;
@@ -67,12 +51,11 @@ export default function SignInPage() {
     });
 
     if (authError) {
-      setError(t('auth.signin.error_credentials'));
+      setError(t('error_credentials'));
       setLoading(false);
       return;
     }
 
-    // ✅ Vérifier si le compte est désactivé
     const { data: { user } } = await supabase.auth.getUser();
     
     if (user) {
@@ -84,17 +67,16 @@ export default function SignInPage() {
 
       if (profile?.deactivated) {
         await supabase.auth.signOut();
-        setError(t('auth.signin.error_deactivated'));
+        setError(t('error_deactivated'));
         setLoading(false);
         return;
       }
 
-      // ✅ Récupère le paramètre redirect ou détermine la destination
       const redirectTo = searchParams.get('redirect') || 
         (profile?.role === 'admin' || user.user_metadata?.role === 'admin' ? '/admin' : '/dashboard');
       
       router.push(redirectTo);
-      router.refresh(); // ✅ Force le rafraîchissement pour éviter les problèmes de cache
+      router.refresh();
     }
   };
 
@@ -113,7 +95,7 @@ export default function SignInPage() {
             className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
           />
           <span className="text-cyan-300/70 text-sm font-light tracking-wide">
-            Chargement...
+            {tCommon('loading')}
           </span>
         </motion.div>
       </div>
@@ -134,7 +116,7 @@ export default function SignInPage() {
         className="absolute top-6 left-6 z-10 text-gray-400/60 hover:text-cyan-300/70 transition-colors text-xs flex items-center gap-1.5 group font-light"
       >
         <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-        {t('navbar.home')}
+        {tCommon('back_to_home')}
       </Link>
 
       {/* Carte principale */}
@@ -156,10 +138,10 @@ export default function SignInPage() {
           </div>
 
           <h1 className="text-xl font-semibold text-center text-white/80">
-            {t('auth.signin.title')}
+            {t('title')}
           </h1>
           <p className="text-gray-400/60 text-center text-xs font-light mt-1 mb-5">
-            {t('auth.signin.subtitle')}
+            {t('subtitle')}
           </p>
 
           {/* Erreur */}
@@ -183,7 +165,7 @@ export default function SignInPage() {
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500/50" />
               <Input
                 type="email"
-                placeholder={t('auth.signin.email')}
+                placeholder={t('email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-9 h-9 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 rounded-xl focus:border-cyan-400/30 font-light"
@@ -195,7 +177,7 @@ export default function SignInPage() {
               <Input
                 ref={passwordInputRef}
                 type={showPassword ? 'text' : 'password'}
-                placeholder={t('auth.signin.password')}
+                placeholder={t('password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-9 pr-9 h-9 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 rounded-xl focus:border-cyan-400/30 font-light"
@@ -215,11 +197,11 @@ export default function SignInPage() {
                 href="/auth/forgot-password"
                 className="text-cyan-400/60 hover:text-cyan-300/70 transition-colors text-xs font-light"
               >
-                {t('auth.signin.forgot_password')}
+                {t('forgot_password')}
               </Link>
               <div className="flex items-center gap-1 text-[11px] text-gray-500/50 font-light">
                 <ShieldCheck className="w-3 h-3" />
-                <span>Sécurisé</span>
+                <span>{t('secure_badge')}</span>
               </div>
             </div>
 
@@ -231,27 +213,27 @@ export default function SignInPage() {
               {loading ? (
                 <span className="flex items-center gap-2">
                   <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {t('auth.signin.connecting')}
+                  {t('connecting')}
                 </span>
               ) : (
-                t('auth.signin.submit')
+                t('submit')
               )}
             </Button>
           </form>
 
           {/* Lien inscription */}
           <div className="mt-5 pt-4 text-center text-xs text-gray-400/60 font-light border-t border-white/[0.06]">
-            {t('auth.signin.no_account')}{' '}
+            {t('no_account')}{' '}
             <Link href="/auth/sign-up" className="text-cyan-400/60 hover:text-cyan-300/70 font-medium">
-              {t('auth.signin.sign_up')}
+              {t('sign_up')}
             </Link>
           </div>
 
           {/* Liens légaux */}
           <div className="mt-5 flex justify-center gap-4 text-[11px] text-gray-500/50 font-light">
-            <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">Confidentialité</Link>
-            <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">Conditions</Link>
-            <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">Contact</Link>
+            <Link href="/privacy" className="hover:text-cyan-400/60 transition-colors">{t('privacy_link')}</Link>
+            <Link href="/terms" className="hover:text-cyan-400/60 transition-colors">{t('terms_link')}</Link>
+            <Link href="/contact" className="hover:text-cyan-400/60 transition-colors">{t('contact_link')}</Link>
           </div>
         </div>
       </motion.div>

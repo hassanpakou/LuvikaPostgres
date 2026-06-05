@@ -3,13 +3,16 @@
 
 import { motion } from 'framer-motion';
 import { Sparkle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 export default function Loading() {
+  const t = useTranslations('Loading');
+  
   const messages = [
-    "Initialisation...",
-    "Chargement du profil...",
-    "Préparation de l'interface...",
+    t('message_initializing'),
+    t('message_loading_profile'),
+    t('message_preparing_interface'),
   ];
 
   const [idx, setIdx] = React.useState(0);
@@ -19,7 +22,7 @@ export default function Loading() {
       setIdx(prev => (prev + 1) % messages.length);
     }, 2000);
     return () => clearInterval(interval);
-  }, []);
+  }, [messages.length]);
 
   return (
     <div className="min-h-screen bg-transparent flex items-center justify-center">
@@ -39,7 +42,7 @@ export default function Loading() {
 
         {/* Texte */}
         <div className="text-center">
-          <p className="text-white font-semibold text-sm">LUVIKA</p>
+          <p className="text-white font-semibold text-sm">{t('brand_name')}</p>
           <motion.p
             key={idx}
             initial={{ opacity: 0, y: 4 }}

@@ -11,7 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 export default function CookiesPage() {
-  const t = useTranslations('footer');
+  const t = useTranslations('cookies_page');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export default function CookiesPage() {
             className="w-8 h-8 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full"
           />
           <span className="text-cyan-300/70 text-sm font-light tracking-wide">
-            Chargement...
+            {t('loading')}
           </span>
         </motion.div>
       </div>
@@ -42,15 +42,15 @@ export default function CookiesPage() {
   }
 
   const cookiesList = [
-    { icon: Lock, title: 'Authentification', desc: 'Cookies de session pour garder votre compte actif' },
-    { icon: Globe, title: 'Préférences', desc: 'Langue sélectionnée et thème d\'affichage' },
-    { icon: Shield, title: 'Sécurité', desc: 'Protection contre les attaques CSRF et XSS' }
+    { icon: Lock, title: t('cookies_list.auth'), desc: t('cookies_list.auth_desc') },
+    { icon: Globe, title: t('cookies_list.preferences'), desc: t('cookies_list.preferences_desc') },
+    { icon: Shield, title: t('cookies_list.security'), desc: t('cookies_list.security_desc') }
   ];
 
   const rightsList = [
-    'Accéder à la liste des cookies utilisés',
-    'Supprimer les cookies via les paramètres de votre navigateur',
-    'Refuser les cookies non-essentiels (aucun sur LUVIKA)'
+    t('rights_list.access'),
+    t('rights_list.delete'),
+    t('rights_list.refuse')
   ];
 
   return (
@@ -66,15 +66,14 @@ export default function CookiesPage() {
           >
             <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
               <Sparkle className="w-3.5 h-3.5 text-cyan-300/80" />
-              <span className="text-cyan-300/80 font-medium text-sm">Cookies</span>
+              <span className="text-cyan-300/80 font-medium text-sm">{t('badge')}</span>
             </div>
             
             <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white/90 to-cyan-200/70 bg-clip-text text-transparent mb-3">
-              Politique de Cookies
+              {t('title')}
             </h1>
             <p className="text-gray-300/70 max-w-xl mx-auto text-sm font-light leading-relaxed">
-              Nous utilisons uniquement des cookies strictement nécessaires au fonctionnement de la plateforme. 
-              Aucun cookie de suivi ou publicitaire n'est utilisé.
+              {t('description')}
             </p>
             
             <div className="w-12 h-0.5 bg-gradient-to-r from-cyan-500/60 to-blue-400/60 mx-auto mt-4 rounded-full"></div>
@@ -94,8 +93,8 @@ export default function CookiesPage() {
                   <Shield className="w-4 h-4 text-white/80" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-white/80 mb-0.5">Cookies utilisés</h2>
-                  <p className="text-xs text-gray-400/60 font-light">Strictement nécessaires au fonctionnement</p>
+                  <h2 className="text-base font-semibold text-white/80 mb-0.5">{t('used_cookies_title')}</h2>
+                  <p className="text-xs text-gray-400/60 font-light">{t('used_cookies_subtitle')}</p>
                 </div>
               </div>
               
@@ -126,11 +125,10 @@ export default function CookiesPage() {
                   <AlertTriangle className="w-4 h-4 text-white/80" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-white/80 mb-1.5">Important</h2>
+                  <h2 className="text-base font-semibold text-white/80 mb-1.5">{t('important_title')}</h2>
                   <p className="text-gray-300/60 text-sm font-light leading-relaxed">
-                    <span className="text-amber-300/70">Aucun cookie de suivi</span> (Google Analytics, Meta Pixel, etc.) 
-                    n'est utilisé sur LUVIKA. Vous pouvez gérer ou supprimer les cookies via les paramètres de votre 
-                    navigateur à tout moment.
+                    <span className="text-amber-300/70">{t('important_no_tracking')}</span>{' '}
+                    {t('important_description')}
                   </p>
                 </div>
               </div>
@@ -143,7 +141,7 @@ export default function CookiesPage() {
               transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
               className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]"
             >
-              <h2 className="text-base font-semibold text-white/80 mb-3">Vos droits</h2>
+              <h2 className="text-base font-semibold text-white/80 mb-3">{t('your_rights_title')}</h2>
               <ul className="space-y-2">
                 {rightsList.map((right, i) => (
                   <li key={i} className="flex items-start gap-2.5 text-gray-300/60 text-sm font-light">
@@ -165,7 +163,7 @@ export default function CookiesPage() {
             <Link href="/">
               <Button variant="ghost" size="sm" className="h-8 text-xs text-cyan-300/60 hover:text-cyan-200/80 hover:bg-cyan-500/[0.04] font-light rounded-lg">
                 <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-                Retour à l'accueil
+                {t('back_to_home')}
               </Button>
             </Link>
           </motion.div>
@@ -177,9 +175,9 @@ export default function CookiesPage() {
             transition={{ delay: 0.4, duration: 0.5 }}
             className="text-center mt-10 pt-5 border-t border-white/[0.06] text-[11px] text-gray-500/60 font-light"
           >
-            <p>LUVIKA • Politique de Cookies • Dernière mise à jour: {new Date().toLocaleDateString('fr-FR')}</p>
+            <p>{t('footer_text', { date: new Date().toLocaleDateString('fr-FR') })}</p>
             <p className="mt-1 flex items-center justify-center gap-1.5">
-              <span>Fait avec ❤️ à Kinshasa</span>
+              <span>{t('made_with')}</span>
             </p>
           </motion.div>
         </div>

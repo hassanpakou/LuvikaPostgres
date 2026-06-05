@@ -2,6 +2,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import { 
   Mail, MapPin, Phone, MessageCircle, Send, ChevronRight, CheckCircle, AlertCircle,
   User, Lock, Clock, Star
@@ -37,6 +38,9 @@ export default function ContactContent({
   message_placeholder: string;
   send: string;
 }) {
+  const t = useTranslations('contact_page');
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="min-h-screen py-10 bg-transparent">
       <div className="max-w-5xl mx-auto px-4">
@@ -126,12 +130,12 @@ export default function ContactContent({
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
                   <Clock className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-bold text-white text-sm">Heures d'ouverture</h3>
+                <h3 className="font-bold text-white text-sm">{t('opening_hours')}</h3>
               </div>
               <div className="space-y-1 text-[11px] text-gray-300">
-                <p>Lundi - Vendredi: 8h - 18h</p>
-                <p>Samedi: 9h - 14h</p>
-                <p>Dimanche: Fermé</p>
+                <p>{t('monday_friday')}</p>
+                <p>{t('saturday')}</p>
+                <p>{t('sunday')}</p>
               </div>
             </motion.div>
           </motion.div>
@@ -148,8 +152,8 @@ export default function ContactContent({
                 <MessageCircle className="w-3.5 h-3.5" />
                 <span className="font-medium text-xs">{form_title}</span>
               </div>
-              <h2 className="text-xl font-bold text-white">Parlez-nous de votre projet</h2>
-              <p className="text-gray-400 text-sm mt-1">Nous répondons sous 24h en moyenne</p>
+              <h2 className="text-xl font-bold text-white">{t('form_title')}</h2>
+              <p className="text-gray-400 text-sm mt-1">{t('form_subtitle')}</p>
             </div>
             
             <form className="space-y-4">
@@ -190,13 +194,13 @@ export default function ContactContent({
               
               <div className="flex flex-wrap items-center justify-center gap-3 pt-4 border-t border-white/10 mt-4">
                 <Badge className="bg-emerald-500/15 text-emerald-300 border-emerald-500/30 text-[10px] py-0.5 px-2">
-                  <CheckCircle className="w-3 h-3 mr-0.5 inline" /> Réponse sous 24h
+                  <CheckCircle className="w-3 h-3 mr-0.5 inline" /> {t('badge_response_24h')}
                 </Badge>
                 <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/30 text-[10px] py-0.5 px-2">
-                  <Lock className="w-3 h-3 mr-0.5 inline" /> Données sécurisées
+                  <Lock className="w-3 h-3 mr-0.5 inline" /> {t('badge_secure_data')}
                 </Badge>
                 <Badge className="bg-purple-500/15 text-purple-300 border-purple-500/30 text-[10px] py-0.5 px-2">
-                  <Star className="w-3 h-3 mr-0.5 inline" /> Support prioritaire
+                  <Star className="w-3 h-3 mr-0.5 inline" /> {t('badge_priority_support')}
                 </Badge>
               </div>
             </form>
@@ -213,14 +217,14 @@ export default function ContactContent({
           <div className="glass-border rounded-2xl p-6 bg-gradient-to-br from-cyan-900/20 to-blue-900/20 border border-cyan-400/20 max-w-3xl mx-auto">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="text-center md:text-left">
-                <h3 className="text-lg font-bold text-white mb-1">Préférez-vous discuter directement ?</h3>
+                <h3 className="text-lg font-bold text-white mb-1">{t('cta_title')}</h3>
                 <p className="text-gray-300 text-sm">
-                  Appelez-nous au <span className="font-medium text-cyan-300">+243 890 17 76 601</span><br />
-                  ou écrivez à <span className="font-medium text-cyan-300">luvika@gmail.com</span>
+                  {t('cta_call_text')} <span className="font-medium text-cyan-300">{phone}</span><br />
+                  {t('cta_email_text')} <span className="font-medium text-cyan-300">luvika@gmail.com</span>
                 </p>
               </div>
               <Button size="sm" variant="outline" className="border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200" onClick={() => window.location.href = 'tel:+2438901776601'}>
-                <Phone className="w-3.5 h-3.5 mr-1.5" /> Appeler maintenant
+                <Phone className="w-3.5 h-3.5 mr-1.5" /> {t('cta_button')}
               </Button>
             </div>
           </div>
@@ -233,9 +237,9 @@ export default function ContactContent({
           transition={{ delay: 0.5 }}
           className="text-center mt-8 pt-6 border-t border-white/10 text-[11px] text-gray-500"
         >
-          <p>LUVIKA • Une identité numérique pour l'Afrique et le monde • © {new Date().getFullYear()}</p>
+          <p>{t('footer_text', { year: currentYear })}</p>
           <p className="mt-1 flex items-center justify-center gap-1.5">
-            <span>Fait avec ❤️ à Kinshasa</span>
+            <span>{t('made_with')}</span>
           </p>
         </motion.div>
       </div>

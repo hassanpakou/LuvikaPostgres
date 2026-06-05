@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck, Building, User, Mail, Phone, Globe,
@@ -64,12 +65,13 @@ const parseFullName = (fullName: string): { surname: string; givenName: string }
 };
 
 export default function OrgCardPublicClient({ card, isValid, isExpired }: Props) {
+  const t = useTranslations('org_card');
   const [showFullInfo, setShowFullInfo] = useState(false);
   const [animatedIn, setAnimatedIn] = useState(false);
 
   useEffect(() => { setAnimatedIn(true); }, []);
 
-  const rawFullName = card.profiles?.full_name || card.member_name || 'Membre';
+  const rawFullName = card.profiles?.full_name || card.member_name || t('default_member');
   const parsed = parseFullName(rawFullName);
   const memberSurname = card.member_surname || parsed.surname;
   const memberGivenName = card.member_given_name || parsed.givenName;
@@ -77,9 +79,8 @@ export default function OrgCardPublicClient({ card, isValid, isExpired }: Props)
   const memberEmail = card.profiles?.email || card.member_email || null;
   const memberPhone = card.member_phone || card.profiles?.phone || null;
   const memberPosition = card.member_position || card.profiles?.job_title || null;
-  // ✅ Photo : priorité à member_photo_url, puis avatar_url
   const memberPhoto = card.member_photo_url || card.profiles?.avatar_url || null;
-  const orgName = card.companies?.name || 'Organisation';
+  const orgName = card.companies?.name || t('default_org');
   const orgLogo = card.companies?.logo_url || null;
   const orgWebsite = card.companies?.website || null;
   const orgDescription = card.companies?.description || null;
@@ -88,30 +89,38 @@ export default function OrgCardPublicClient({ card, isValid, isExpired }: Props)
   const memberInitials = memberFullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   const getStatusConfig = () => {
-    if (isExpired) return { icon: Clock, label: 'Carte expirée', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-400', bandeau: 'from-amber-400 to-orange-400' };
-    if (card.status === 'suspended') return { icon: Clock, label: 'Suspendue', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-400', bandeau: 'from-amber-400 to-orange-400' };
-    if (card.status === 'revoked') return { icon: XCircle, label: 'Révoquée', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-400', bandeau: 'from-red-400 to-rose-400' };
-    if (!isValid) return { icon: XCircle, label: 'Invalide', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-400', bandeau: 'from-red-400 to-rose-400' };
-    return { icon: CheckCircle, label: 'Valide', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-400', bandeau: 'from-emerald-400 to-teal-400' };
+    if (isExpired) return { icon: Clock, label: t('status.expired'), bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-400', bandeau: 'from-amber-400 to-orange-400' };
+    if (card.status === 'suspended') return { icon: Clock, label: t('status.suspended'), bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-400', bandeau: 'from-amber-400 to-orange-400' };
+    if (card.status === 'revoked') return { icon: XCircle, label: t('status.revoked'), bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-400', bandeau: 'from-red-400 to-rose-400' };
+    if (!isValid) return { icon: XCircle, label: t('status.invalid'), bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-400', bandeau: 'from-red-400 to-rose-400' };
+    return { icon: CheckCircle, label: t('status.valid'), bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-400', bandeau: 'from-emerald-400 to-teal-400' };
   };
 
   const status = getStatusConfig();
   const StatusIcon = status.icon;
 
   const identityFields = [
-    { label: 'Nom', value: memberSurname?.split(' ')[0] || null, icon: UserCircle },
-    { label: 'Post-nom', value: memberSurname?.split(' ').slice(1).join(' ') || null, icon: UserCircle },
-    { label: 'Prénom', value: memberGivenName, icon: User },
-    { label: 'Téléphone', value: memberPhone, icon: PhoneCall, href: memberPhone ? `tel:${memberPhone}` : undefined },
-    { label: 'Email', value: memberEmail, icon: Mail, href: memberEmail ? `mailto:${memberEmail}` : undefined },
-    { label: 'Poste / Fonction', value: memberPosition, icon: Briefcase },
-    { label: 'Département / Service', value: card.member_department, icon: Layers },
-    { label: 'Rôle dans l\'organisation', value: card.role_in_org, icon: Award },
-    { label: 'Niveau d\'accès', value: card.member_access_level, icon: ShieldCheck },
-    { label: 'Groupe sanguin', value: card.member_blood_group, icon: Droplet },
-    { label: 'Nationalité', value: card.member_nationality, icon: Flag },
-    { label: 'Horaires de service', value: card.member_work_hours, icon: Clock3 },
+    { label: t('fields.surname'), value: memberSurname?.split(' ')[0] || null, icon: UserCircle },
+    { label: t('fields.middle_name'), value: memberSurname?.split(' ').slice(1).join(' ') || null, icon: UserCircle },
+    { label: t('fields.given_name'), value: memberGivenName, icon: User },
+    { label: t('fields.phone'), value: memberPhone, icon: PhoneCall, href: memberPhone ? `tel:${memberPhone}` : undefined },
+    { label: t('fields.email'), value: memberEmail, icon: Mail, href: memberEmail ? `mailto:${memberEmail}` : undefined },
+    { label: t('fields.position'), value: memberPosition, icon: Briefcase },
+    { label: t('fields.department'), value: card.member_department, icon: Layers },
+    { label: t('fields.role_in_org'), value: card.role_in_org, icon: Award },
+    { label: t('fields.access_level'), value: card.member_access_level, icon: ShieldCheck },
+    { label: t('fields.blood_group'), value: card.member_blood_group, icon: Droplet },
+    { label: t('fields.nationality'), value: card.member_nationality, icon: Flag },
+    { label: t('fields.work_hours'), value: card.member_work_hours, icon: Clock3 },
   ].filter(f => !!f.value);
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  };
+
+  const formatShortDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('fr-FR');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-zinc-50 flex flex-col items-center justify-center p-4">
@@ -187,8 +196,8 @@ export default function OrgCardPublicClient({ card, isValid, isExpired }: Props)
             <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl border border-violet-100 mb-5">
               <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0"><ShieldCheck className="w-5 h-5 text-violet-600" /></div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-violet-800">Vérifié par {orgName}</p>
-                <p className="text-xs text-violet-500">Membre depuis le {new Date(card.valid_from).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                <p className="text-sm font-semibold text-violet-800">{t('verified_by', { orgName })}</p>
+                <p className="text-xs text-violet-500">{t('member_since', { date: formatDate(card.valid_from) })}</p>
               </div>
             </div>
 
@@ -206,32 +215,48 @@ export default function OrgCardPublicClient({ card, isValid, isExpired }: Props)
                       );
                       return field.href ? <a key={i} href={field.href} className="block hover:bg-violet-50 rounded-xl transition-all">{content}</a> : <div key={i}>{content}</div>;
                     })}
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center"><Fingerprint className="w-4 h-4 text-violet-600" /></div><div className="flex-1"><p className="text-[11px] text-gray-400 uppercase">N° matricule</p><p className="text-sm text-gray-900 font-mono font-medium">{card.card_number}</p></div></div>
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"><div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center"><Calendar className="w-4 h-4 text-violet-600" /></div><div className="flex-1"><p className="text-[11px] text-gray-400 uppercase">Validité</p><p className="text-sm text-gray-900 font-medium">Du {new Date(card.valid_from).toLocaleDateString('fr-FR')}{card.valid_until ? ` au ${new Date(card.valid_until).toLocaleDateString('fr-FR')}` : ' — Sans limite'}</p></div></div>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                      <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center"><Fingerprint className="w-4 h-4 text-violet-600" /></div>
+                      <div className="flex-1"><p className="text-[11px] text-gray-400 uppercase">{t('fields.matricule')}</p><p className="text-sm text-gray-900 font-mono font-medium">{card.card_number}</p></div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                      <div className="w-9 h-9 rounded-lg bg-violet-100 flex items-center justify-center"><Calendar className="w-4 h-4 text-violet-600" /></div>
+                      <div className="flex-1">
+                        <p className="text-[11px] text-gray-400 uppercase">{t('fields.validity')}</p>
+                        <p className="text-sm text-gray-900 font-medium">
+                          {t('validity_range', {
+                            from: formatShortDate(card.valid_from),
+                            to: card.valid_until ? formatShortDate(card.valid_until) : t('no_limit')
+                          })}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
 
             <button onClick={() => setShowFullInfo(!showFullInfo)} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 hover:from-violet-100 hover:to-purple-100 text-violet-700 font-medium text-sm transition-all border border-violet-100">
-              {showFullInfo ? <><ChevronUp className="w-4 h-4" /> Masquer les détails</> : <><ChevronDown className="w-4 h-4" /> Voir l'identité complète</>}
+              {showFullInfo ? <><ChevronUp className="w-4 h-4" /> {t('hide_details')}</> : <><ChevronDown className="w-4 h-4" /> {t('show_details')}</>}
             </button>
 
             {orgWebsite && (
-              <a href={orgWebsite} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 w-full py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl transition-all text-sm"><Globe className="w-4 h-4" />{orgName}<ExternalLink className="w-3.5 h-3.5 opacity-70" /></a>
+              <a href={orgWebsite} target="_blank" rel="noopener noreferrer" className="mt-3 flex items-center justify-center gap-2 w-full py-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl transition-all text-sm">
+                <Globe className="w-4 h-4" />{orgName}<ExternalLink className="w-3.5 h-3.5 opacity-70" />
+              </a>
             )}
           </div>
 
           <div className="px-6 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-1.5"><Fingerprint className="w-3.5 h-3.5 text-gray-400" /><span className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">LUVIKA ORG</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /><span className="text-[10px] text-gray-400 font-medium">Carte sécurisée</span></div>
+            <div className="flex items-center gap-1.5"><Fingerprint className="w-3.5 h-3.5 text-gray-400" /><span className="text-[10px] text-gray-400 font-mono uppercase tracking-wider">{t('org_badge')}</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /><span className="text-[10px] text-gray-400 font-medium">{t('secure_card')}</span></div>
           </div>
         </motion.div>
 
         <motion.div initial={{ opacity: 0 }} animate={animatedIn ? { opacity: 1 } : {}} transition={{ delay: 0.5 }} className="mt-5 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-sm rounded-full border border-gray-200 shadow-sm">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span className="text-xs text-gray-500 font-medium">Carte authentifiée • Vérifiée par {orgName}</span>
+            <span className="text-xs text-gray-500 font-medium">{t('footer_authenticated', { orgName })}</span>
           </div>
         </motion.div>
       </motion.div>

@@ -87,16 +87,16 @@ export default function ProductActions({
 
   const addToCart = async () => {
     if (stock !== null && quantity > stock) {
-      toast.warning('Stock insuffisant', {
-        description: 'La quantité demandée dépasse le stock disponible.',
+      toast.warning(t('ProductActions.out_of_stock_warning'), {
+        description: t('ProductActions.insufficient_stock_description'),
         icon: <AlertCircle className="w-4 h-4 text-yellow-400/70" />,
       });
       return;
     }
 
     if (!user) {
-      toast.warning('Connexion requise', {
-        description: 'Connectez-vous pour ajouter au panier.',
+      toast.warning(t('ProductActions.login_required'), {
+        description: t('ProductActions.login_to_add_to_cart'),
       });
       return;
     }
@@ -125,14 +125,14 @@ export default function ProductActions({
           });
       }
 
-      toast.success('Ajouté au panier', {
-        description: `${productName} a été ajouté à votre panier.`,
+      toast.success(t('ProductActions.added_to_cart'), {
+        description: t('ProductActions.added_to_cart_description', { productName }),
         icon: <ShoppingCart className="w-4 h-4 text-emerald-400/70" />,
       });
     } catch (err) {
       console.error('Erreur panier:', err);
-      toast.error('Erreur', {
-        description: 'Impossible d\'ajouter au panier.',
+      toast.error(t('ProductActions.error'), {
+        description: t('ProductActions.cart_error_description'),
       });
     } finally {
       setLoadingCart(false);
@@ -141,8 +141,8 @@ export default function ProductActions({
 
   const toggleFavorite = async () => {
     if (!user) {
-      toast.warning('Connexion requise', {
-        description: 'Connectez-vous pour gérer vos favoris.',
+      toast.warning(t('ProductActions.login_required'), {
+        description: t('ProductActions.login_to_manage_favorites'),
       });
       return;
     }
@@ -167,8 +167,8 @@ export default function ProductActions({
       }
     } catch (err) {
       console.error('Erreur favori:', err);
-      toast.error('Erreur', {
-        description: 'Impossible de modifier les favoris.',
+      toast.error(t('ProductActions.error'), {
+        description: t('ProductActions.favorite_error_description'),
       });
     } finally {
       setLoadingFavorite(false);
@@ -177,15 +177,15 @@ export default function ProductActions({
 
   const orderViaWhatsApp = async () => {
     if (!company || !company.phone) {
-      toast.warning('Indisponible', {
-        description: 'Ce vendeur n\'a pas configuré son numéro WhatsApp.',
+      toast.warning(t('ProductActions.unavailable'), {
+        description: t('ProductActions.no_whatsapp_configured'),
       });
       return;
     }
 
     if (stock !== null && quantity > stock) {
-      toast.warning('Stock insuffisant', {
-        description: 'La quantité demandée dépasse le stock disponible.',
+      toast.warning(t('ProductActions.out_of_stock_warning'), {
+        description: t('ProductActions.insufficient_stock_description'),
         icon: <AlertCircle className="w-4 h-4 text-yellow-400/70" />,
       });
       return;
@@ -196,13 +196,13 @@ export default function ProductActions({
     const total = (finalPrice * quantity).toFixed(2);
 
     const message = encodeURIComponent(
-      `Bonjour ${company.name},\n\n` +
-      `Je souhaite commander :\n` +
-      `• ${productName}\n` +
-      `• Quantité : ${quantity}\n` +
-      `• Prix unitaire : $${finalPrice}\n` +
-      `• Total : $${total}\n\n` +
-      `Merci de me confirmer la commande.`
+      t('ProductActions.whatsapp_message_template', {
+        companyName: company.name,
+        productName,
+        quantity,
+        unitPrice: finalPrice,
+        total,
+      })
     );
 
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
@@ -231,7 +231,7 @@ export default function ProductActions({
       {/* Quantité */}
       <div className="flex items-center gap-3">
         <Label htmlFor="quantity" className="text-xs text-gray-400/70 font-light whitespace-nowrap">
-          Quantité
+          {t('ProductActions.quantity_label')}
         </Label>
         <div className="relative">
           <Input
@@ -256,8 +256,8 @@ export default function ProductActions({
             outOfStock ? 'text-red-400/60' : lowStock ? 'text-yellow-400/60' : 'text-gray-500/60'
           }`}>
             {outOfStock 
-              ? 'Rupture de stock'
-              : `${stock} en stock`
+              ? t('ProductActions.out_of_stock_status')
+              : t('ProductActions.in_stock_status', { count: stock })
             }
           </span>
         )}
@@ -282,7 +282,7 @@ export default function ProductActions({
           ) : (
             <span className="flex items-center gap-1.5">
               <ShoppingCart className="w-3.5 h-3.5" />
-              Panier
+              {t('ProductActions.cart_button')}
             </span>
           )}
         </Button>
@@ -323,7 +323,7 @@ export default function ProductActions({
       >
         <span className="flex items-center justify-center gap-1.5">
           <Send className="w-3.5 h-3.5" />
-          Commander via WhatsApp
+          {t('ProductActions.whatsapp_button')}
         </span>
       </Button>
     </div>

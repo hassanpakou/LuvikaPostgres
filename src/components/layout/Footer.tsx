@@ -51,6 +51,19 @@ export default function PublicProfileFooter() {
     { Icon: Github, href: 'https://github.com/hassanpakou/Luvika2026', label: 'GitHub', color: 'text-gray-400/60 group-hover:text-gray-300/80', hover: 'hover:bg-gray-500/5' },
   ];
 
+  // Liste des langues
+  const languages = [
+    { code: 'fr', label: 'Français' },
+    { code: 'en', label: 'English' },
+    { code: 'sw', label: 'Kiswahili' },
+    { code: 'ln', label: 'Lingala' },
+    { code: 'pt', label: 'Português' },
+    { code: 'ar', label: 'العربية' },
+    { code: 'es', label: 'Español' },
+    { code: 'ko', label: '한국어' },
+    { code: 'nl', label: 'Nederlands' },
+  ];
+
   return (
     <footer className="w-full mt-auto relative border-t border-white/[0.06]">
       {/* Bouton "Retour en haut" */}
@@ -64,7 +77,7 @@ export default function PublicProfileFooter() {
             className="fixed bottom-4 right-4 z-50 p-2.5 rounded-full bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white shadow-lg shadow-cyan-500/10 border border-white/[0.08] backdrop-blur-sm"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            aria-label="Retour en haut"
+            aria-label={t('scroll_to_top')}
           >
             <ChevronUp className="w-4 h-4" />
           </motion.button>
@@ -198,13 +211,13 @@ export default function PublicProfileFooter() {
                   <Globe className="w-3 h-3" />
                   <span className="text-[10px] font-light">{t('available_languages')}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  {['fr', 'en', 'sw', 'ln', 'pt', 'ar', 'es', 'ko', 'nl'].map((lang) => (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {languages.map((lang) => (
                     <span 
-                      key={lang} 
+                      key={lang.code} 
                       className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-white/[0.02] border border-white/[0.06] text-gray-400/60 font-light"
                     >
-                      {lang}
+                      {lang.code}
                     </span>
                   ))}
                 </div>

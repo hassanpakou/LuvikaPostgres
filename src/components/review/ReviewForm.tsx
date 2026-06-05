@@ -6,6 +6,7 @@ import { Star, Send, Gift, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 declare global {
   interface Window {
@@ -14,6 +15,7 @@ declare global {
 }
 
 export function ReviewForm() {
+  const t = useTranslations('ReviewForm');
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -57,20 +59,27 @@ export function ReviewForm() {
     fetchData();
   }, []);
 
+  const getRatingMessage = () => {
+    if (rating === 0) return t('rating_select_prompt');
+    if (rating < 3) return t('rating_low_message');
+    if (rating < 5) return t('rating_medium_message');
+    return t('rating_high_message');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) {
-      toast.warning('Connexion requise', {
-        description: 'Connectez-vous pour laisser un avis.',
+      toast.warning(t('login_required'), {
+        description: t('login_to_review'),
         icon: <XCircle className="w-4 h-4 text-amber-400/70" />,
       });
       return;
     }
     
     if (rating === 0) {
-      toast.warning('Note requise', {
-        description: 'Sélectionnez une note avant d\'envoyer.',
+      toast.warning(t('rating_required'), {
+        description: t('select_rating_before_submit'),
         icon: <Star className="w-4 h-4 text-amber-400/70" />,
       });
       return;
@@ -87,13 +96,11 @@ export function ReviewForm() {
       
       const result = await response.json();
       
-      if (!response.ok) throw new Error(result.error || 'Erreur inconnue');
+      if (!response.ok) throw new Error(result.error || t('unknown_error'));
       
       setHasSubmitted(true);
-      toast.success('Merci pour votre avis !', {
-        description: result.receivedBadge 
-          ? 'Badge "Pionnier LUVIKA" ajouté à votre profil !' 
-          : 'Votre avis aide à améliorer LUVIKA.',
+      toast.success(t('thank_you_title'), {
+        description: result.receivedBadge ? t('badge_received') : t('review_helps'),
         icon: <CheckCircle className="w-4 h-4 text-emerald-400/70" />,
         duration: 6000,
       });
@@ -107,8 +114,8 @@ export function ReviewForm() {
       }
       
     } catch (error: any) {
-      toast.error('Erreur', {
-        description: error.message || 'Veuillez réessayer plus tard.',
+      toast.error(t('error_title'), {
+        description: error.message || t('error_try_again'),
         icon: <XCircle className="w-4 h-4 text-red-400/70" />,
       });
     } finally {
@@ -130,9 +137,9 @@ export function ReviewForm() {
         <div className="flex justify-center mb-3">
           <CheckCircle className="w-10 h-10 text-emerald-400/60" />
         </div>
-        <h2 className="text-lg font-semibold text-white/80 mb-1.5">Merci !</h2>
+        <h2 className="text-lg font-semibold text-white/80 mb-1.5">{t('thank_you_title')}</h2>
         <p className="text-gray-400/60 text-sm font-light leading-relaxed">
-          Votre avis compte énormément pour nous.
+          {t('thank_you_description')}
         </p>
       </div>
     );
@@ -144,15 +151,15 @@ export function ReviewForm() {
         <div className="flex justify-center mb-3">
           <XCircle className="w-10 h-10 text-amber-400/60" />
         </div>
-        <h2 className="text-lg font-semibold text-white/80 mb-1.5">Connexion requise</h2>
+        <h2 className="text-lg font-semibold text-white/80 mb-1.5">{t('login_required')}</h2>
         <p className="text-gray-400/60 text-sm font-light mb-4">
-          Connectez-vous pour partager votre expérience.
+          {t('login_to_share_experience')}
         </p>
         <Button 
           onClick={() => window.location.href = '/auth/sign-in'} 
           className="h-8 text-xs bg-gradient-to-r from-amber-600/80 to-orange-600/80 hover:from-amber-500 hover:to-orange-500 text-white font-light px-4 rounded-lg"
         >
-          Se connecter
+          {t('sign_in_button')}
         </Button>
       </div>
     );
@@ -163,17 +170,17 @@ export function ReviewForm() {
       {/* Header */}
       <div className="text-center mb-5">
         <h2 className="text-lg font-semibold text-white/80 mb-1">
-          Partagez votre expérience
+          {t('form_title')}
         </h2>
         <p className="text-gray-400/60 text-xs font-light">
-          30 secondes pour nous aider ❤️
+          {t('form_subtitle')}
         </p>
       </div>
 
       {/* Étoiles */}
       <div className="mb-5">
         <label className="block text-gray-400/70 text-sm font-light mb-2 text-center">
-          Votre note
+          {t('your_rating_label')}
         </label>
         <div className="flex justify-center gap-1.5">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -184,7 +191,7 @@ export function ReviewForm() {
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
               className="p-1 focus:outline-none"
-              aria-label={`Note ${star} étoiles`}
+              aria-label={t('rating_star_aria', { stars: star })}
             >
               <Star
                 className={`w-8 h-8 transition-all duration-200 ${
@@ -197,22 +204,20 @@ export function ReviewForm() {
           ))}
         </div>
         <p className="text-center mt-1.5 text-xs text-gray-400/60 font-light">
-          {rating === 0 ? 'Sélectionnez une note' : 
-           rating < 3 ? 'Nous pouvons faire mieux' :
-           rating < 5 ? 'Merci !' : 'Excellent !'}
+          {getRatingMessage()}
         </p>
       </div>
 
       {/* Commentaire */}
       <div className="mb-4">
         <label htmlFor="comment" className="block text-gray-400/70 text-sm font-light mb-1.5">
-          Commentaire (optionnel)
+          {t('comment_label')}
         </label>
         <Textarea
           id="comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
-          placeholder="Vos suggestions d'amélioration ?"
+          placeholder={t('comment_placeholder')}
           className="min-h-[80px] bg-white/[0.03] border-white/[0.08] text-white/80 placeholder:text-gray-500/50 text-sm font-light resize-none rounded-xl"
           maxLength={500}
         />
@@ -227,8 +232,7 @@ export function ReviewForm() {
           <p className="text-xs text-amber-300/60 font-light flex items-start gap-2">
             <Gift className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-400/50" />
             <span>
-              <span className="text-amber-300/70">Cadeau :</span> Les {eligibleForBadge ? 'prochains' : '100 premiers'} avis 
-              reçoivent le badge <span className="text-amber-300/70">"Pionnier LUVIKA"</span>.
+              <span className="text-amber-300/70">{t('gift_prefix')}</span> {t('badge_offer_text', { eligible: eligibleForBadge ? t('next') : t('first') })}
             </span>
           </p>
         </div>
@@ -239,7 +243,7 @@ export function ReviewForm() {
               {reviewsThisWeek}/100
             </span>
             <span className={`text-[11px] font-light ${eligibleForBadge ? 'text-amber-400/60' : 'text-gray-500/60'}`}>
-              {eligibleForBadge ? 'Places restantes' : 'Complet'}
+              {eligibleForBadge ? t('spots_remaining') : t('full')}
             </span>
           </div>
           <div className="overflow-hidden h-1.5 rounded-full bg-white/[0.04]">
@@ -253,9 +257,7 @@ export function ReviewForm() {
             ></div>
           </div>
           <p className="text-[11px] text-gray-500/60 mt-1.5 font-light">
-            {eligibleForBadge 
-              ? 'Soyez parmi les pionniers' 
-              : 'Merci aux 100 premiers contributeurs'}
+            {eligibleForBadge ? t('be_among_pioneers') : t('thanks_to_contributors')}
           </p>
         </div>
       </div>
@@ -277,19 +279,19 @@ export function ReviewForm() {
         {submitting ? (
           <span className="flex items-center justify-center gap-2">
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Envoi...
+            {t('sending')}
           </span>
         ) : (
           <span className="flex items-center justify-center gap-1.5">
             <Send className="w-3.5 h-3.5" />
-            {rating === 0 ? 'Sélectionnez une note' : 'Envoyer mon avis'}
+            {rating === 0 ? t('select_rating_button') : t('submit_review_button')}
           </span>
         )}
       </Button>
 
       {/* Footer */}
       <p className="mt-3 text-[11px] text-gray-500/50 text-center font-light">
-        Votre avis est anonyme et contribue à améliorer LUVIKA
+        {t('footer_anonymous_note')}
       </p>
     </form>
   );

@@ -2,31 +2,24 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 
-const t = (key: string) => {
-  const translations: Record<string, string> = {
-    'auth.error.back_to_login': 'Retour à la connexion',
-    'auth.error.title': 'Erreur d\'authentification',
-    'auth.signin.submit': 'Retour à la connexion',
-    'navbar.home': 'Accueil',
-  };
-  return translations[key] || key;
-};
-
 export default function ErrorPage() {
+  const t = useTranslations('auth.error');
+  const tCommon = useTranslations('common');
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [message, setMessage] = useState('Une erreur est survenue.');
+  const [message, setMessage] = useState(t('default_message'));
 
   useEffect(() => {
-    const msg = searchParams.get('message') || 'Une erreur inattendue est survenue.';
+    const msg = searchParams.get('message') || t('unexpected_error');
     setMessage(msg);
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4 relative overflow-hidden">
@@ -39,7 +32,7 @@ export default function ErrorPage() {
       {/* Retour */}
       <Link href="/" className="absolute top-6 left-6 z-10 text-gray-400/60 hover:text-amber-300/70 transition-colors text-xs flex items-center gap-1.5 font-light">
         <ArrowLeft className="w-3.5 h-3.5" />
-        {t('navbar.home')}
+        {tCommon('back_to_home')}
       </Link>
 
       <motion.div
@@ -57,10 +50,10 @@ export default function ErrorPage() {
           </div>
 
           <h1 className="text-lg font-semibold text-center text-white/80 mb-1">
-            {t('auth.error.title')}
+            {t('title')}
           </h1>
           <p className="text-gray-400/60 text-center text-xs font-light mb-5">
-            Une erreur est survenue lors de l'authentification.
+            {t('description')}
           </p>
 
           {/* Message d'erreur */}
@@ -75,26 +68,26 @@ export default function ErrorPage() {
             className="w-full h-9 text-xs bg-gradient-to-r from-amber-600/80 to-red-600/80 hover:from-amber-500 hover:to-red-500 text-white font-light rounded-xl transition-all"
           >
             <ArrowLeft className="w-3.5 h-3.5 mr-1.5" />
-            {t('auth.signin.submit')}
+            {t('back_to_login_button')}
           </Button>
 
           {/* Footer */}
           <div className="mt-5 pt-4 border-t border-white/[0.06] text-center">
             <Link href="/auth/sign-in" className="text-xs text-amber-400/60 hover:text-amber-300/70 font-light">
-              {t('auth.error.back_to_login')}
+              {t('back_to_login')}
             </Link>
             <div className="mt-3 flex justify-center gap-3 text-[11px] text-gray-500/50 font-light">
-              <Link href="/privacy" className="hover:text-amber-400/60 transition-colors">Confidentialité</Link>
+              <Link href="/privacy" className="hover:text-amber-400/60 transition-colors">{tCommon('privacy_link')}</Link>
               <span>•</span>
-              <Link href="/terms" className="hover:text-amber-400/60 transition-colors">Conditions</Link>
+              <Link href="/terms" className="hover:text-amber-400/60 transition-colors">{tCommon('terms_link')}</Link>
               <span>•</span>
-              <Link href="/contact" className="hover:text-amber-400/60 transition-colors">Contact</Link>
+              <Link href="/contact" className="hover:text-amber-400/60 transition-colors">{tCommon('contact_link')}</Link>
             </div>
           </div>
         </div>
 
         <p className="mt-5 text-center text-[11px] text-gray-500/50 font-light">
-          LUVIKA • Assistance disponible
+          {t('signature')}
         </p>
       </motion.div>
     </div>
