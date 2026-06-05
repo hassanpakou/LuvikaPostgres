@@ -378,21 +378,7 @@ export default function EnterpriseDashboard() {
             <AnalyticsChart profileId={stats.profileId} />
           </div>
 
-          {/* Modules communs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { id: 'cards', title: 'Cartes Membres', desc: 'Gérez les cartes d\'identité', icon: <CreditCard className="w-4 h-4" />, color: 'from-violet-500/60 to-purple-500/60', path: '/dashboard/entreprise/cards' },
-              { id: 'settings', title: 'Paramètres', desc: 'Configurez votre entreprise', icon: <Settings className="w-4 h-4" />, color: 'from-gray-500/60 to-gray-600/60', path: '/dashboard/entreprise/settings' },
-            ].map((module) => (
-              <div key={module.id} className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-300 cursor-pointer group" onClick={() => router.push(module.path)}>
-                <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${module.color} flex items-center justify-center mb-3 group-hover:scale-105 transition-transform`}>
-                  {module.icon}
-                </div>
-                <h3 className="text-sm font-semibold text-white/70 mb-1">{module.title}</h3>
-                <p className="text-gray-400/60 text-xs font-light">{module.desc}</p>
-              </div>
-            ))}
-          </div>
+          
         </main>
       </div>
 
