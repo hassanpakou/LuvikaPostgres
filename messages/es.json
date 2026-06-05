@@ -64,7 +64,10 @@
     "subtitle": "Gestiona tu identidad digital inteligente",
     "view_public": "Ver mi perfil público",
     "export_csv": "Exportar (.csv)",
-    "export_json": "Exportar (.json)",
+    "visibility": {
+      "title": "Visibilidad de secciones",
+      "description": "Elige qué pueden ver los visitantes."
+    },
     "quick_menu": {
       "visibility": "Visibilidad",
       "contact": "Mensajes",
@@ -74,6 +77,80 @@
       "message": "Mensaje personal",
       "orders": "Pedidos",
       "upgrade": "Actualizar"
+    },
+    "contact_requests": {
+      "title": "Mensajes de visitantes",
+      "description": "Permite que quienes vean tu perfil público te dejen un mensaje.",
+      "label": "Recibir mensajes",
+      "enabled": "Activado – los visitantes pueden contactarte",
+      "disabled": "Desactivado – formulario oculto",
+      "enable": "Activar",
+      "disable": "Desactivar"
+    },
+    "time": {
+      "seconds": "{count} segundo",
+      "seconds_plural": "{count} segundos",
+      "minutes": "{count} minuto",
+      "minutes_plural": "{count} minutos",
+      "hours": "{count} hora",
+      "hours_plural": "{count} horas",
+      "days": "{count} día",
+      "days_plural": "{count} días"
+    },
+    "orders": {
+      "title": "Pedidos de tarjetas",
+      "description": "Gestiona tus pedidos actuales de tarjetas NFC.",
+      "manage": "Gestionar pedidos"
+    },
+    "subscription": {
+      "title": "Suscripción",
+      "plans": {
+        "freemium": "Freemium",
+        "basic": "Freemium",
+        "premium": "Premium",
+        "entreprise": "Empresa"
+      },
+      "active": "✅ Activa",
+      "inactive": "⚠️ Inactiva",
+      "active_until": "Tu plan está activo hasta el {date}.",
+      "upgrade_prompt": "Tu cuenta está en modo Freemium. Contacta a un administrador para activar un plan pago.",
+      "request_upgrade": "Solicitar una actualización",
+      "success_title": "✅ ¡Éxito!",
+      "success_message": "Un administrador te contactará en 24h.",
+      "upgrade_to_premium": "Actualizar a Premium",
+      "request_enterprise": "Convertir en cuenta Empresarial"
+    },
+    "qr": {
+      "title": "Código QR de perfil",
+      "alt": "Código QR para {username}",
+      "instructions": "Escanea para acceder a tu perfil",
+      "open_link": "Abrir enlace"
+    },
+    "nfc": {
+      "title": "Tarjetas NFC ({count})",
+      "empty": "No hay tarjeta NFC vinculada.",
+      "ago": "hace",
+      "status": {
+        "active": "Activa",
+        "lost": "Perdida",
+        "blocked": "Bloqueada",
+        "inactive": "Inactiva"
+      },
+      "upgrade_required": "⚠️ Se requiere plan Premium",
+      "add_card": "Añadir una tarjeta NFC"
+    },
+    "stats": {
+      "title": "Estadísticas de participación",
+      "total_scans": "Escaneos totales",
+      "nfc_scans": "Escaneos NFC",
+      "qr_scans": "Escaneos QR",
+      "recent_visitors": "Visitantes recientes",
+      "no_scans": "Sin escaneos recientes.",
+      "anonymous": "Visitante anónimo",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
     },
     "other_features": {
       "title": "Otras funciones",
@@ -93,29 +170,77 @@
       "custom_message_placeholder": "ej.: Cambio de puesto, por favor actualicen mi perfil...",
       "send_message": "Enviar mensaje"
     },
-    "messages": {
-      "back": "Atrás",
-      "refresh": "Actualizar",
-      "export": "Exportar",
-      "search": "Buscar",
-      "all_statuses": "Todos",
-      "title": "Mensajes",
-      "subtitle": "Gestiona tus mensajes y notificaciones",
-      "no_messages": "No hay mensajes",
-      "mark_read": "Marcar como leído",
-      "mark_unread": "Marcar como no leído",
-      "delete": "Eliminar",
-      "reply": "Responder",
-      "send": "Enviar",
-      "message_placeholder": "Tu mensaje...",
-      "new_message": "Nuevo mensaje",
-      "from": "De",
-      "to": "Para",
-      "date": "Fecha",
-      "status": "Estado",
-      "read": "Leído",
-      "unread": "No leído",
-      "view_received": "Ver mensajes recibidos"
+    "settings": {
+      "title": "Configuración del perfil",
+      "saving": "Guardando...",
+      "save": "Guardar",
+      "save_success": "✅ Perfil actualizado",
+      "save_error": "❌ Error al guardar",
+      "load_error": "❌ No se pudo cargar el perfil",
+      "avatar_uploaded": "✅ Foto de perfil actualizada",
+      "avatar_error": "❌ Error al subir",
+      "avatar_invalid": "⚠️ Formato inválido (solo JPG/PNG)",
+      "cover_uploaded": "✅ Portada actualizada",
+      "cover_error": "❌ Error al subir",
+      "cover_invalid": "⚠️ Formato inválido (solo JPG/PNG)",
+      "url_copied": "✅ Enlace copiado",
+      "photo": {
+        "title": "Foto y portada",
+        "avatar": "Foto de perfil",
+        "cover": "Foto de portada",
+        "upload_avatar": "Cambiar foto",
+        "upload_cover": "Haz clic para subir una portada"
+      },
+      "personal": {
+        "title": "Información personal",
+        "full_name": "Nombre completo",
+        "full_name_placeholder": "ej.: Hassan M.",
+        "username": "Nombre de usuario",
+        "username_placeholder": "tu_nombre",
+        "job_title": "Cargo",
+        "job_title_placeholder": "Desarrollador Full-Stack",
+        "company": "Empresa",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Biografía corta",
+        "bio_short_placeholder": "Una línea impactante",
+        "bio_long": "Biografía completa",
+        "bio_long_placeholder": "Tu trayectoria, pasiones, valores..."
+      },
+      "contact": {
+        "title": "Datos de contacto",
+        "email": "Correo electrónico",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Teléfono",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Dirección",
+        "address_placeholder": "Kinshasa, RDC",
+        "website": "Sitio web"
+      },
+      "visibility": {
+        "title": "Visibilidad",
+        "description": "Elige qué aparece en tu perfil público",
+        "portfolio_locked": "Desbloquea el portafolio con una suscripción Premium",
+        "certificates_locked": "Certificados reservados para cuentas Premium/Empresa"
+      },
+      "advanced": {
+        "title": "Opciones avanzadas",
+        "public_profile": "Perfil público",
+        "public_profile_desc": "Visible sin iniciar sesión",
+        "contact_requests": "Mensajes públicos",
+        "contact_requests_desc": "Permitir que los visitantes te escriban",
+        "profile_url": "URL del perfil"
+      },
+      "privacy": {
+        "title": "Privacidad",
+        "hide_birth_year": "Ocultar año de nacimiento",
+        "hide_birth_year_desc": "Mostrar solo día/mes",
+        "disable_birthday_icon": "Desactivar ícono de cumpleaños",
+        "disable_birthday_icon_desc": "Ocultar 🎂 el día del cumpleaños",
+        "verified_badge": "Distintivo de verificación",
+        "verified_badge_desc": "Se muestra junto a tu nombre",
+        "verified_tooltip": "Perfil verificado",
+        "enterprise_only": "Reservado para empresas"
+      }
     }
   },
   "navbar": {

@@ -378,7 +378,7 @@ export default function EnterpriseDashboard() {
             <AnalyticsChart profileId={stats.profileId} />
           </div>
 
-          
+           v
         </main>
       </div>
 

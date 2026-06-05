@@ -57,23 +57,100 @@
     }
   },
   "dashboard": {
-    "greeting_morning": "Good morning, {name}",
-    "greeting_afternoon": "Good afternoon, {name}",
-    "greeting_evening": "Good evening, {name}",
-    "greeting_night": "Hello, {name}",
+    "greeting_morning": "Good morning, {name} 🌞",
+    "greeting_afternoon": "Good afternoon, {name} ☀️",
+    "greeting_evening": "Good evening, {name} 🌙",
+    "greeting_night": "Hey there, {name} 🌃",
     "subtitle": "Manage your smart digital identity",
     "view_public": "View my public profile",
-    "export_csv": "",
-    "export_json": "",
+    "export_csv": "Export (.csv)",
+    "visibility": {
+      "title": "Section visibility",
+      "description": "Choose what visitors can see."
+    },
     "quick_menu": {
       "visibility": "Visibility",
       "contact": "Messages",
       "qr": "QR Code",
       "nfc": "NFC Cards",
       "report": "Report",
-      "message": "Custom message",
+      "message": "Personal message",
       "orders": "Orders",
       "upgrade": "Upgrade"
+    },
+    "contact_requests": {
+      "title": "Visitor messages",
+      "description": "Allow people who view your public profile to leave you a message.",
+      "label": "Receive messages",
+      "enabled": "Enabled – visitors can contact you",
+      "disabled": "Disabled – form hidden",
+      "enable": "Enable",
+      "disable": "Disable"
+    },
+    "time": {
+      "seconds": "{count} second",
+      "seconds_plural": "{count} seconds",
+      "minutes": "{count} minute",
+      "minutes_plural": "{count} minutes",
+      "hours": "{count} hour",
+      "hours_plural": "{count} hours",
+      "days": "{count} day",
+      "days_plural": "{count} days"
+    },
+    "orders": {
+      "title": "Card orders",
+      "description": "Manage your current NFC card orders.",
+      "manage": "Manage orders"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "plans": {
+        "freemium": "Freemium",
+        "basic": "Freemium",
+        "premium": "Premium",
+        "entreprise": "Enterprise"
+      },
+      "active": "✅ Active",
+      "inactive": "⚠️ Inactive",
+      "active_until": "Your plan is active until {date}.",
+      "upgrade_prompt": "Your account is on Freemium mode. Contact an administrator to activate a paid plan.",
+      "request_upgrade": "Request an upgrade",
+      "success_title": "✅ Success!",
+      "success_message": "An administrator will contact you within 24h.",
+      "upgrade_to_premium": "Upgrade to Premium",
+      "request_enterprise": "Convert to Enterprise account"
+    },
+    "qr": {
+      "title": "Profile QR Code",
+      "alt": "QR Code for {username}",
+      "instructions": "Scan to access your profile",
+      "open_link": "Open link"
+    },
+    "nfc": {
+      "title": "NFC Cards ({count})",
+      "empty": "No NFC card linked.",
+      "ago": "ago",
+      "status": {
+        "active": "Active",
+        "lost": "Lost",
+        "blocked": "Blocked",
+        "inactive": "Inactive"
+      },
+      "upgrade_required": "⚠️ Premium plan required",
+      "add_card": "Add an NFC card"
+    },
+    "stats": {
+      "title": "Engagement statistics",
+      "total_scans": "Total scans",
+      "nfc_scans": "NFC scans",
+      "qr_scans": "QR scans",
+      "recent_visitors": "Recent visitors",
+      "no_scans": "No recent scans.",
+      "anonymous": "Anonymous visitor",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
     },
     "other_features": {
       "title": "Other features",
@@ -86,36 +163,84 @@
         "no_longer_needed": "No longer need the card",
         "other": "Other (specify)"
       },
-      "custom_reason": "Specify the reason",
-      "custom_reason_placeholder": "Ex: broken card, printing error...",
+      "custom_reason": "Specify reason",
+      "custom_reason_placeholder": "e.g., Card broken, printing error...",
       "submit_report": "Report card",
       "custom_message": "Custom message",
-      "custom_message_placeholder": "Ex: I'm changing positions, please update my profile...",
+      "custom_message_placeholder": "e.g., I'm changing roles, please update my profile...",
       "send_message": "Send message"
     },
-    "messages": {
-      "back": "",
-      "refresh": "",
-      "export": "",
-      "search": "Search",
-      "all_statuses": "All",
-      "title": "Messages",
-      "subtitle": "Manage your messages and notifications",
-      "no_messages": "No messages",
-      "mark_read": "Mark as read",
-      "mark_unread": "Mark as unread",
-      "delete": "Delete",
-      "reply": "Reply",
-      "send": "Send",
-      "message_placeholder": "Your message...",
-      "new_message": "New message",
-      "from": "From",
-      "to": "To",
-      "date": "Date",
-      "status": "Status",
-      "read": "Read",
-      "unread": "Unread",
-      "view_received": "View received messages"
+    "settings": {
+      "title": "Profile settings",
+      "saving": "Saving...",
+      "save": "Save",
+      "save_success": "✅ Profile updated",
+      "save_error": "❌ Save failed",
+      "load_error": "❌ Failed to load profile",
+      "avatar_uploaded": "✅ Profile picture updated",
+      "avatar_error": "❌ Upload failed",
+      "avatar_invalid": "⚠️ Invalid format (JPG/PNG only)",
+      "cover_uploaded": "✅ Cover updated",
+      "cover_error": "❌ Upload failed",
+      "cover_invalid": "⚠️ Invalid format (JPG/PNG only)",
+      "url_copied": "✅ Link copied",
+      "photo": {
+        "title": "Photo & Cover",
+        "avatar": "Profile picture",
+        "cover": "Cover photo",
+        "upload_avatar": "Change photo",
+        "upload_cover": "Click to upload a cover"
+      },
+      "personal": {
+        "title": "Personal info",
+        "full_name": "Full name",
+        "full_name_placeholder": "e.g., Hassan M.",
+        "username": "Username",
+        "username_placeholder": "your_name",
+        "job_title": "Job title",
+        "job_title_placeholder": "Full-Stack Developer",
+        "company": "Company",
+        "company_placeholder": "LUVIKA",
+        "bio_short": "Short bio",
+        "bio_short_placeholder": "One punchy line",
+        "bio_long": "Full bio",
+        "bio_long_placeholder": "Your journey, passions, values..."
+      },
+      "contact": {
+        "title": "Contact details",
+        "email": "Email",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "Phone",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "Address",
+        "address_placeholder": "Kinshasa, DRC",
+        "website": "Website"
+      },
+      "visibility": {
+        "title": "Visibility",
+        "description": "Choose what appears on your public profile",
+        "portfolio_locked": "Unlock portfolio with a Premium subscription",
+        "certificates_locked": "Certificates reserved for Premium/Enterprise accounts"
+      },
+      "advanced": {
+        "title": "Advanced options",
+        "public_profile": "Public profile",
+        "public_profile_desc": "Visible without login",
+        "contact_requests": "Public messages",
+        "contact_requests_desc": "Allow visitors to message you",
+        "profile_url": "Profile URL"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "hide_birth_year": "Hide birth year",
+        "hide_birth_year_desc": "Show only day/month",
+        "disable_birthday_icon": "Disable birthday icon",
+        "disable_birthday_icon_desc": "Hide 🎂 on birthday",
+        "verified_badge": "Verification badge",
+        "verified_badge_desc": "Displays next to your name",
+        "verified_tooltip": "Verified profile",
+        "enterprise_only": "Reserved for enterprises"
+      }
     }
   },
   "navbar": {

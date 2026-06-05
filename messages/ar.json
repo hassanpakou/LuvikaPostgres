@@ -57,65 +57,190 @@
     }
   },
   "dashboard": {
-    "greeting_morning": "صباح الخير، {name}",
-    "greeting_afternoon": "مساء الخير، {name}",
-    "greeting_evening": "مساء الخير، {name}",
-    "greeting_night": "مرحبًا، {name}",
-    "subtitle": "إدارة هويتك الرقمية الذكية",
+    "greeting_morning": "صباح الخير، {name} 🌞",
+    "greeting_afternoon": "مساء الخير، {name} ☀️",
+    "greeting_evening": "مساء النور، {name} 🌙",
+    "greeting_night": "مرحبًا، {name} 🌃",
+    "subtitle": "أدر هويتك الرقمية الذكية",
     "view_public": "عرض ملفي العام",
-    "export_csv": "",
-    "export_json": "",
+    "export_csv": "تصدير (.csv)",
+    "visibility": {
+      "title": "رؤية الأقسام",
+      "description": "اختر ما يمكن للزوار رؤيته."
+    },
     "quick_menu": {
       "visibility": "الرؤية",
       "contact": "الرسائل",
-      "qr": "رمز QR",
+      "qr": "رمز الاستجابة السريعة",
       "nfc": "بطاقات NFC",
       "report": "الإبلاغ",
-      "message": "رسالة مخصصة",
+      "message": "رسالة شخصية",
       "orders": "الطلبات",
       "upgrade": "ترقية"
     },
+    "contact_requests": {
+      "title": "رسائل الزوار",
+      "description": "اسمح للأشخاص الذين يزورون ملفك العام بإرسال رسالة لك.",
+      "label": "استقبال الرسائل",
+      "enabled": "مفعل – يمكن للزوار التواصل معك",
+      "disabled": "معطل – النموذج مخفي",
+      "enable": "تفعيل",
+      "disable": "تعطيل"
+    },
+    "time": {
+      "seconds": "{count} ثانية",
+      "seconds_plural": "{count} ثوانٍ",
+      "minutes": "{count} دقيقة",
+      "minutes_plural": "{count} دقائق",
+      "hours": "{count} ساعة",
+      "hours_plural": "{count} ساعات",
+      "days": "{count} يوم",
+      "days_plural": "{count} أيام"
+    },
+    "orders": {
+      "title": "طلبات البطاقات",
+      "description": "أدر طلباتك الحالية لبطاقات NFC.",
+      "manage": "إدارة الطلبات"
+    },
+    "subscription": {
+      "title": "الاشتراك",
+      "plans": {
+        "freemium": "فريميوم",
+        "basic": "فريميوم",
+        "premium": "بريميوم",
+        "entreprise": "مؤسسة"
+      },
+      "active": "✅ نشط",
+      "inactive": "⚠️ غير نشط",
+      "active_until": "خطتك نشطة حتى {date}.",
+      "upgrade_prompt": "حسابك في الوضع المجاني. اتصل بالمسؤول لتفعيل خطة مدفوعة.",
+      "request_upgrade": "طلب ترقية",
+      "success_title": "✅ نجاح!",
+      "success_message": "سيتواصل معك المسؤول خلال 24 ساعة.",
+      "upgrade_to_premium": "الترقية إلى بريميوم",
+      "request_enterprise": "تحويل إلى حساب مؤسسي"
+    },
+    "qr": {
+      "title": "رمز الاستجابة السريعة للملف",
+      "alt": "رمز QR لـ {username}",
+      "instructions": "امسح الرمز للوصول إلى ملفك",
+      "open_link": "فتح الرابط"
+    },
+    "nfc": {
+      "title": "بطاقات NFC ({count})",
+      "empty": "لا توجد بطاقة NFC مرتبطة.",
+      "ago": "منذ",
+      "status": {
+        "active": "نشطة",
+        "lost": "مفقودة",
+        "blocked": "محظورة",
+        "inactive": "غير نشطة"
+      },
+      "upgrade_required": "⚠️ يتطلب خطة بريميوم",
+      "add_card": "إضافة بطاقة NFC"
+    },
+    "stats": {
+      "title": "إحصائيات التفاعل",
+      "total_scans": "إجمالي المسحات",
+      "nfc_scans": "مسحات NFC",
+      "qr_scans": "مسحات QR",
+      "recent_visitors": "آخر الزوار",
+      "no_scans": "لا توجد مسحات حديثة.",
+      "anonymous": "زائر مجهول",
+      "scan_type": {
+        "nfc": "NFC",
+        "qr": "QR"
+      }
+    },
     "other_features": {
-      "title": "ميزات أخرى",
-      "description": "إدارة بطاقة NFC الخاصة بك أو مشاركة رسالة مخصصة.",
+      "title": "ميزات إضافية",
+      "description": "أدر بطاقة NFC الخاصة بك أو شارك رسالة مخصصة.",
       "report_card": "الإبلاغ عن بطاقتك",
       "reasons": {
         "lost": "البطاقة مفقودة",
         "stolen": "البطاقة مسروقة",
         "damaged": "البطاقة تالفة",
-        "no_longer_needed": "لم تعد هناك حاجة للبطاقة",
+        "no_longer_needed": "لم تعد البطاقة ضرورية",
         "other": "أخرى (حدد)"
       },
       "custom_reason": "حدد السبب",
-      "custom_reason_placeholder": "مثال: بطاقة مكسورة، خطأ في الطباعة...",
+      "custom_reason_placeholder": "مثال: البطاقة مكسورة، خطأ في الطباعة...",
       "submit_report": "الإبلاغ عن البطاقة",
       "custom_message": "رسالة مخصصة",
-      "custom_message_placeholder": "مثال: أنا أغيّر منصبي، يرجى تحديث ملفي الشخصي...",
+      "custom_message_placeholder": "مثال: أتغير وظيفتي، يرجى تحديث ملفي...",
       "send_message": "إرسال الرسالة"
     },
-    "messages": {
-      "back": "",
-      "refresh": "",
-      "export": "",
-      "search": "بحث",
-      "all_statuses": "الجميع",
-      "title": "الرسائل",
-      "subtitle": "إدارة رسائلك وإشعاراتك",
-      "no_messages": "لا توجد رسائل",
-      "mark_read": "تعيين كمقروء",
-      "mark_unread": "تعيين كغير مقروء",
-      "delete": "حذف",
-      "reply": "رد",
-      "send": "إرسال",
-      "message_placeholder": "رسالتك...",
-      "new_message": "رسالة جديدة",
-      "from": "من",
-      "to": "إلى",
-      "date": "التاريخ",
-      "status": "الحالة",
-      "read": "مقروء",
-      "unread": "غير مقروء",
-      "view_received": "عرض الرسائل المستلمة"
+    "settings": {
+      "title": "إعدادات الملف",
+      "saving": "جارٍ الحفظ...",
+      "save": "حفظ",
+      "save_success": "✅ تم تحديث الملف",
+      "save_error": "❌ فشل الحفظ",
+      "load_error": "❌ تعذر تحميل الملف",
+      "avatar_uploaded": "✅ تم تحديث صورة الملف",
+      "avatar_error": "❌ فشل الرفع",
+      "avatar_invalid": "⚠️ تنسيق غير صالح (JPG/PNG فقط)",
+      "cover_uploaded": "✅ تم تحديث الغلاف",
+      "cover_error": "❌ فشل الرفع",
+      "cover_invalid": "⚠️ تنسيق غير صالح (JPG/PNG فقط)",
+      "url_copied": "✅ تم نسخ الرابط",
+      "photo": {
+        "title": "الصورة والغلاف",
+        "avatar": "صورة الملف",
+        "cover": "صورة الغلاف",
+        "upload_avatar": "تغيير الصورة",
+        "upload_cover": "انقر لرفع غلاف"
+      },
+      "personal": {
+        "title": "المعلومات الشخصية",
+        "full_name": "الاسم الكامل",
+        "full_name_placeholder": "مثال: حسن م.",
+        "username": "اسم المستخدم",
+        "username_placeholder": "اسمك",
+        "job_title": "الوظيفة",
+        "job_title_placeholder": "مطور كامل المكدس",
+        "company": "الشركة",
+        "company_placeholder": "لوفيكة",
+        "bio_short": "نبذة قصيرة",
+        "bio_short_placeholder": "سطر واحد جذاب",
+        "bio_long": "السيرة الذاتية الكاملة",
+        "bio_long_placeholder": "مسيرتك، شغفك، قيمك..."
+      },
+      "contact": {
+        "title": "معلومات الاتصال",
+        "email": "البريد الإلكتروني",
+        "email_placeholder": "hassan@luvika.me",
+        "phone": "الهاتف",
+        "phone_placeholder": "+243 999 123 456",
+        "address": "العنوان",
+        "address_placeholder": "كينشاسا، جمهورية الكونغو الديمقراطية",
+        "website": "الموقع الإلكتروني"
+      },
+      "visibility": {
+        "title": "الرؤية",
+        "description": "اختر ما يظهر في ملفك العام",
+        "portfolio_locked": "افتح معرض الأعمال مع اشتراك بريميوم",
+        "certificates_locked": "الشهادات مخصصة لحسابات بريميوم/مؤسسة"
+      },
+      "advanced": {
+        "title": "خيارات متقدمة",
+        "public_profile": "الملف العام",
+        "public_profile_desc": "مرئي دون تسجيل الدخول",
+        "contact_requests": "الرسائل العامة",
+        "contact_requests_desc": "السماح للزوار بإرسال رسائل لك",
+        "profile_url": "رابط الملف"
+      },
+      "privacy": {
+        "title": "الخصوصية",
+        "hide_birth_year": "إخفاء سنة الميلاد",
+        "hide_birth_year_desc": "عرض اليوم/الشهر فقط",
+        "disable_birthday_icon": "تعطيل أيقونة عيد الميلاد",
+        "disable_birthday_icon_desc": "إخفاء 🎂 في يوم عيد الميلاد",
+        "verified_badge": "شارة التحقق",
+        "verified_badge_desc": "تظهر بجانب اسمك",
+        "verified_tooltip": "ملف موثق",
+        "enterprise_only": "مخصص للمؤسسات"
+      }
     }
   },
   "navbar": {
