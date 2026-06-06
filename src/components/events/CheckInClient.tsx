@@ -36,16 +36,13 @@ export default function CheckInClient({
 }: CheckInClientProps) {
   const t = useTranslations('CheckInClient');
   
-  // États pour le formulaire de check-in
   const [status, setStatus] = useState<'idle' | 'checking' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
   const [inputName, setInputName] = useState('');
 
-  // États pour le compte à rebours et statut événement
   const [timeRemaining, setTimeRemaining] = useState<{ minutes: number; seconds: number } | null>(null);
   const [eventStatus, setEventStatus] = useState<'upcoming' | 'live' | 'ended'>('upcoming');
 
-  // États pour le compteur de participants en temps réel
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
   const [isRealtimeActive, setIsRealtimeActive] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
@@ -81,7 +78,7 @@ export default function CheckInClient({
     return () => clearInterval(interval);
   }, [startsAt, endsAt]);
 
-  // 🔹 Charger le nombre initial de participants (uniquement si l'événement est public)
+  // 🔹 Charger le nombre initial de participants
   useEffect(() => {
     if (!isPublic) {
       setLoadingCount(false);
@@ -102,7 +99,7 @@ export default function CheckInClient({
     fetchInitialCount();
   }, [eventId, isPublic]);
 
-  // 🔹 Abonnement Realtime pour les participants (événements publics uniquement)
+  // 🔹 Abonnement Realtime
   useEffect(() => {
     if (!isPublic) return;
 
@@ -117,7 +114,6 @@ export default function CheckInClient({
           filter: `event_id=eq.${eventId}`
         },
         (payload) => {
-          console.log('🔄 Nouveau participant inscrit:', payload.new);
           setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
           setLastUpdate(new Date());
         }
@@ -131,7 +127,7 @@ export default function CheckInClient({
     };
   }, [eventId, isPublic]);
 
-  // 🔹 Gestion du check-in (appel à l'API existante)
+  // 🔹 Gestion du check-in
   const handleCheckIn = async () => {
     if (!token) {
       setMessage(t('invalid_qr_message'));
@@ -164,45 +160,17 @@ export default function CheckInClient({
         toast.error(data.error || t('checkin_error_failed'));
       }
     } catch (err) {
-      console.error('Erreur réseau:', err);
       setStatus('error');
       setMessage(t('network_error_message'));
       toast.error(t('network_error_toast'));
     }
   };
 
-  // 🔹 Rendu conditionnel selon le statut de l'événement
-  if (eventStatus === 'upcoming' && timeRemaining) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
-        <Card className="glass-border p-8 text-center max-w-md">
-          <Clock className="w-16 h-16 mx-auto text-cyan-400 mb-4 animate-pulse" />
-          <h2 className="text-2xl font-bold text-white mb-2">{t('upcoming_title')}</h2>
-          <p className="text-gray-300 text-lg">
-            {t('upcoming_description', { title: eventTitle })}
-          </p>
-          <div className="mt-4 text-4xl font-mono font-bold text-cyan-300">
-            {timeRemaining.minutes.toString().padStart(2, '0')}:
-            {timeRemaining.seconds.toString().padStart(2, '0')}
-          </div>
-          <p className="text-sm text-gray-400 mt-2">{t('minutes_seconds_label')}</p>
-        </Card>
-      </div>
-    );
-  }
+  // ========================
+  // 🔹 RENDU CONDITIONNEL - ORDRE CORRIGÉ
+  // ========================
 
-  if (eventStatus === 'ended') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
-        <Card className="glass-border p-8 text-center max-w-md">
-          <XCircle className="w-16 h-16 mx-auto text-red-400 mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">{t('ended_title')}</h2>
-          <p className="text-gray-300">{t('ended_description')}</p>
-        </Card>
-      </div>
-    );
-  }
-
+  // 1. Événement PRIVÉ → bloqué en premier
   if (!isPublic) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
@@ -215,11 +183,69 @@ export default function CheckInClient({
     );
   }
 
-  // 🔹 Écran principal (événement en cours et public)
+  // 2. Événement À VENIR
+  if (eventStatus === 'upcoming' && timeRemaining) {
+  const startDate = new Date(startsAt);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
+      <Card className="glass-border p-8 text-center max-w-md">
+        <Clock className="w-16 h-16 mx-auto text-cyan-400 mb-4 animate-pulse" />
+        <h2 className="text-2xl font-bold text-white mb-2">{t('upcoming_title')}</h2>
+        <p className="text-gray-300 text-lg">
+          {t('upcoming_description', { title: eventTitle })}
+        </p>
+        <p className="text-gray-400 text-sm mt-1">
+          Prévu le{' '}
+          {startDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })} à{' '}
+          {startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+        </p>
+        <div className="mt-4 text-4xl font-mono font-bold text-cyan-300">
+          {timeRemaining.minutes.toString().padStart(2, '0')}:
+          {timeRemaining.seconds.toString().padStart(2, '0')}
+        </div>
+        <p className="text-sm text-gray-400 mt-2">{t('minutes_seconds_label')}</p>
+      </Card>
+    </div>
+  );
+}
+
+  // 3. Événement TERMINÉ → affiche le message + compteur final
+  if (eventStatus === 'ended') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/10 to-indigo-900/20 py-12 px-4">
+        <div className="max-w-2xl mx-auto text-center">
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-300 text-sm mb-4">
+              <XCircle className="w-4 h-4" />
+              {t('ended_title')}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">{eventTitle}</h1>
+            <p className="text-gray-400">{t('ended_description')}</p>
+
+            {!loadingCount && participantsCount !== null && (
+              <Card className="glass-border bg-white/5 border-white/10 px-6 py-3 inline-flex items-center gap-3 mt-6">
+                <Users className="w-5 h-5 text-cyan-400" />
+                <span className="text-2xl font-bold text-white">{participantsCount}</span>
+                <span className="text-gray-400 text-sm">
+                  {participantsCount === 1 ? t('participant_singular') : t('participant_plural')}
+                </span>
+              </Card>
+            )}
+            {loadingCount && (
+              <div className="mt-4">
+                <RefreshCw className="w-5 h-5 text-cyan-400 animate-spin mx-auto" />
+              </div>
+            )}
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Événement EN COURS et PUBLIC → check-in normal
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/10 to-indigo-900/20 py-12 px-4">
       <div className="max-w-2xl mx-auto">
-        {/* En-tête avec titre et compteur */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -233,7 +259,6 @@ export default function CheckInClient({
             {eventTitle}
           </h1>
 
-          {/* Compteur de participants */}
           {!loadingCount && participantsCount !== null && (
             <div className="flex items-center justify-center gap-3 mt-4">
               <Card className="glass-border bg-white/5 border-white/10 px-6 py-3 inline-flex items-center gap-3">
@@ -242,22 +267,15 @@ export default function CheckInClient({
                 <span className="text-gray-400 text-sm">
                   {participantsCount === 1 ? t('participant_singular') : t('participant_plural')}
                 </span>
-
                 <div className={`flex items-center gap-1 ml-2 px-2 py-1 rounded-full text-xs ${
                   isRealtimeActive
                     ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                     : 'bg-red-500/20 text-red-300 border border-red-500/30'
                 }`}>
                   {isRealtimeActive ? (
-                    <>
-                      <Wifi className="w-3 h-3" />
-                      <span>{t('live_status')}</span>
-                    </>
+                    <><Wifi className="w-3 h-3" /><span>{t('live_status')}</span></>
                   ) : (
-                    <>
-                      <WifiOff className="w-3 h-3" />
-                      <span>{t('offline_status')}</span>
-                    </>
+                    <><WifiOff className="w-3 h-3" /><span>{t('offline_status')}</span></>
                   )}
                 </div>
               </Card>
@@ -275,13 +293,8 @@ export default function CheckInClient({
           )}
         </motion.div>
 
-        {/* Carte de check-in */}
         {status === 'success' ? (
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-center"
-          >
+          <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
             <Card className="glass-border bg-emerald-900/20 border-emerald-500/30 p-8">
               <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-10 h-10 text-emerald-400" />
@@ -326,22 +339,13 @@ export default function CheckInClient({
                 className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
               >
                 {status === 'checking' ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('checking_button')}
-                  </>
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('checking_button')}</>
                 ) : (
-                  <>
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    {t('checkin_button')}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
+                  <><CheckCircle className="mr-2 h-4 w-4" />{t('checkin_button')}<ArrowRight className="ml-2 h-4 w-4" /></>
+                )}f
               </Button>
               {!token && (
-                <p className="text-xs text-gray-400 mt-4 text-center">
-                  {t('invalid_qr_hint')}
-                </p>
+                <p className="text-xs text-gray-400 mt-4 text-center">{t('invalid_qr_hint')}</p>
               )}
             </CardContent>
           </Card>

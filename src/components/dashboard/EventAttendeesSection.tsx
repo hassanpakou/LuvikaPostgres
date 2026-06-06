@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { createClient } from '@/src/lib/supabase/client';
 import QRModal from '@/src/components/profile/QRModal';
-import { toast } from 'sonner'; // 👈 import manquant
+import { toast } from 'sonner';
 
 type Event = {
   id: string;
@@ -50,7 +50,9 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
 
   const fetchEvents = async () => {
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch('/api/events', {
+        credentials: 'include',
+      });
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
         throw new Error(errorData.error || `HTTP error ${res.status}`);
@@ -98,7 +100,9 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
         cleanupRef.current = null;
       }
 
-      const participantsRes = await fetch(`/api/events/${event.id}/participants`);
+      const participantsRes = await fetch(`/api/events/${event.id}/participants`, {
+        credentials: 'include',
+      });
       if (!participantsRes.ok) {
         throw new Error('Erreur chargement participants');
       }
@@ -153,6 +157,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
       const res = await fetch(`/api/events/${selectedEvent.id}/participants`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ name: newParticipant.name.trim(), email: newParticipant.email.trim() || null }),
       });
 
@@ -178,6 +183,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
       const res = await fetch(`/api/events/${selectedEvent?.id}/participants`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           participantId: editingParticipant.id,
           name: editingParticipant.name.trim(),
@@ -207,6 +213,7 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
       const res = await fetch(`/api/events/${selectedEvent?.id}/participants`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ participantId }),
       });
 
@@ -349,10 +356,19 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
-                      <Clock className="w-3.5 h-3.5" />
-                      {starts.toLocaleDateString()} ·{' '}
-                      {starts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
+  <Clock className="w-3.5 h-3.5" />
+  {starts.toLocaleDateString('fr-FR', { 
+    day: '2-digit', 
+    month: '2-digit', 
+    year: 'numeric',
+    timeZone: 'UTC'
+  })} ·{' '}
+  {starts.toLocaleTimeString('fr-FR', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    timeZone: 'UTC'
+  })}
+</div>
                     {event.location && (
                       <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
                         <MapPin className="w-3.5 h-3.5" />

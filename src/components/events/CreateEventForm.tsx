@@ -14,8 +14,13 @@ import { Card } from '../../../components/ui/card';
 import { Badge } from '../../../components/ui/badge';
 import { Switch } from '../../../components/ui/switch';
 
-const formatDateForInput = (dateStr: string): string => new Date(dateStr).toISOString().slice(0, 16);
-
+const formatDateForInput = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  // Soustrait le décalage UTC pour que l'input affiche l'heure locale
+  const offset = date.getTimezoneOffset();
+  const localDate = new Date(date.getTime() - offset * 60000);
+  return localDate.toISOString().slice(0, 16);
+};
 type EventData = {
   title: string;
   description?: string;
@@ -160,20 +165,27 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSubmit = async (ev: React.FormEvent) => {
-    ev.preventDefault();
-    if (!validateStep1() || !validateStep2()) return;
-    
-    await onSubmit({
-      title,
-      description: description.trim() || undefined,
-      location: location.trim() || undefined,
-      starts_at: startsAt,
-      ends_at: endsAt || undefined,
-      is_public: isPublic,
-      max_participants: maxParticipants ? Number(maxParticipants) : undefined,
-    });
-  };
+ const handleSubmit = async (ev: React.FormEvent) => {
+  ev.preventDefault();
+  if (!validateStep1() || !validateStep2()) return;
+  
+  // ✅ Convertit explicitement l'heure locale en UTC
+  const localStart = new Date(startsAt);
+  const utcStart = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000);
+  
+  const localEnd = endsAt ? new Date(endsAt) : null;
+  const utcEnd = localEnd ? new Date(localEnd.getTime() - localEnd.getTimezoneOffset() * 60000) : undefined;
+  
+  await onSubmit({
+    title,
+    description: description.trim() || undefined,
+    location: location.trim() || undefined,
+    starts_at: utcStart.toISOString(),
+    ends_at: utcEnd?.toISOString(),
+    is_public: isPublic,
+    max_participants: maxParticipants ? Number(maxParticipants) : undefined,
+  });
+};
 
   const getStepTitle = () => {
     switch(step) {

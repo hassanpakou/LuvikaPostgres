@@ -15,6 +15,7 @@ type ContactRequest = {
   created_at: string;
 };
 
+// Dans ContactRequestsModal
 export default function ContactRequestsModal({
   isOpen,
   onClose,
@@ -46,11 +47,15 @@ export default function ContactRequestsModal({
     fetchRequests();
   }, [isOpen]);
 
+// Dans ContactRequestsModal.tsx, remplace la fonction markAsRead par :
 const markAsRead = async (id: string) => {
   try {
     const res = await fetch(`/api/contact-requests/${id}/read`, { method: 'PATCH' });
     if (res.ok) {
-      setRequests(prev => prev.map(req => req.id === id ? { ...req, is_read: true } : req));
+      setRequests(prev => {
+        const updated = prev.map(req => req.id === id ? { ...req, is_read: true } : req);
+        return updated;
+      });
       
       // ✅ Recalcule après mise à jour et appelle hors du rendu
       setTimeout(() => {
