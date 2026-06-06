@@ -36,6 +36,7 @@ import NFCModal from './Modals/NFCModal';
 import { NFCCard } from '../../types/nfc';
 import { normalizeNfcCard } from '@/src/lib/utils/nfc';
 import CompanyTypeModal from './CompanyTypeModal';
+import ContactRequestsModal from '../../../src/components/dashboard/ContactRequestsSection';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -141,19 +142,34 @@ const SuccessModal = ({
   );
 };
 
-// 🔹 ✅ Modal : Message personnalisé
+// 🔹 ✅ Modal : Message personnalisé (avec possibilité de répondre aux messages)
 const CustomMessageModal = ({
-  value,
-  onChange,
-  onSubmit,
+  isOpen,
   onClose,
+  messages = [], // Liste des messages reçus
+  replyingTo, // ID du message auquel on répond
+  replyContent,
+  onReplyChange,
+  onSendReply,
+  onSendCustomMessage,
+  customMessage,
+  onCustomMessageChange,
+  sending,
 }: {
-  value: string;
-  onChange: (v: string) => void;
-  onSubmit: () => void;
+  isOpen: boolean;
   onClose: () => void;
+  messages?: { id: string; name: string; email: string; message: string; created_at: string; replied_at?: string }[];
+  replyingTo?: string | null;
+  replyContent?: string;
+  onReplyChange?: (v: string) => void;
+  onSendReply?: (messageId: string) => void;
+  onSendCustomMessage?: () => void;
+  customMessage?: string;
+  onCustomMessageChange?: (v: string) => void;
+  sending?: boolean;
 }) => {
-  const t = useTranslations('dashboard.other_features');
+  if (!isOpen) return null;
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -163,46 +179,94 @@ const CustomMessageModal = ({
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.9, y: 20 }}
+        initial={{ scale: 0.95, y: 15 }}
         animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-md p-6 border border-white/15"
+        exit={{ scale: 0.95, y: 15 }}
+        transition={{ duration: 0.3, ease: 'easeOut' }}
+        className="w-full max-w-lg bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-white/[0.08] max-h-[85vh] overflow-y-auto p-5"
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <MessageSquare size={20} className="text-cyan-400" />
-            {t('custom_message')}
+        {/* Header */}
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-white/80 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-cyan-400/60" />
+            Messages
           </h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X size={18} />
-          </Button>
+          <button onClick={onClose} className="text-gray-400/60 hover:text-white/70">
+            <X className="w-4 h-4" />
+          </button>
         </div>
-        <Textarea
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={t('custom_message_placeholder')}
-          className="bg-white/10 border-white/20 text-white placeholder:text-gray-500 mb-4"
-          rows={4}
-        />
-        <div className="flex gap-3">
-          <Button variant="outline" className="flex-1" onClick={onClose}>
-            Annuler
-          </Button>
-          <Button
-            className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-500"
-            disabled={!value.trim()}
-            onClick={onSubmit}
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {t('send_message')}
-          </Button>
+
+                 {/* Liste des messages reçus */}
+        {messages && messages.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {messages.map((msg) => (
+              <div key={msg.id} className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <div>
+                    <p className="text-xs text-white/70 font-medium">{msg.name}</p>
+                    <p className="text-[11px] text-gray-400/50 font-light">{msg.email}</p>
+                    <p className="text-[10px] text-gray-500/40 font-light mt-0.5">
+                      {new Date(msg.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {msg.replied_at ? (
+                    <span className="text-[10px] text-emerald-400/60 font-light bg-emerald-500/10 px-1.5 py-0.5 rounded-full flex-shrink-0">Répondu</span>
+                  ) : (
+                    <button
+                      onClick={() => onReplyChange?.(replyingTo === msg.id ? '' : msg.id)}
+                      className={`text-[10px] font-light px-1.5 py-0.5 rounded-full transition-all flex-shrink-0 ${
+                        replyingTo === msg.id
+                          ? 'bg-cyan-500/10 text-cyan-300/60 border border-cyan-500/20'
+                          : 'text-cyan-400/60 hover:text-cyan-300/70 hover:bg-cyan-500/[0.04]'
+                      }`}
+                    >
+                      {replyingTo === msg.id ? 'Fermer' : 'Répondre'}
+                    </button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-300/70 font-light mt-1.5">{msg.message}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Si aucun message */}
+        {(!messages || messages.length === 0) && (
+          <p className="text-xs text-gray-400/60 font-light text-center py-6">Aucun message reçu.</p>
+        )}
+
+        {/* Nouveau message personnalisé */}
+        <div className="pt-3 border-t border-white/[0.06]">
+          <p className="text-xs text-gray-400/60 font-light mb-2">Nouveau message</p>
+          <textarea
+            value={customMessage || ''}
+            onChange={e => onCustomMessageChange?.(e.target.value)}
+            placeholder="Écrivez votre message..."
+            rows={3}
+            className="w-full text-xs bg-white/[0.03] border border-white/[0.08] text-white/80 rounded-xl p-2.5 resize-none font-light placeholder:text-gray-500/40"
+          />
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={onClose}
+              className="flex-1 h-7 text-[11px] text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-lg transition-all"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={onSendCustomMessage}
+              disabled={sending || !customMessage?.trim()}
+              className="flex-1 h-7 text-[11px] bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white font-light rounded-lg transition-all disabled:opacity-50"
+            >
+              <Send className="w-3 h-3 mr-1" />
+              {sending ? 'Envoi...' : 'Envoyer'}
+            </button>
+          </div>
         </div>
       </motion.div>
     </motion.div>
   );
 };
-
 // 🔹 ✅ Modal : Upgrade
 const UpgradeModal = ({
   isOpen,
@@ -574,6 +638,10 @@ export default function DashboardContent({
   const [showCompanyTypeModal, setShowCompanyTypeModal] = useState(false);
   const [companyId, setCompanyId] = useState<string>('');
   const [needsCompanyType, setNeedsCompanyType] = useState(false);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -605,6 +673,9 @@ const [checkingUpgrade, setCheckingUpgrade] = useState(true);
   const closeModal = () => {
   setActiveModal(null);
 };
+const updateUnreadCount = (count: number) => {
+  setUnreadMessagesCount(Math.max(0, count));
+};
   // 🔹 Références pour les canaux realtime
   const channelsRef = useRef<any>({});
   const subscription = useMemo(() => {
@@ -614,6 +685,53 @@ const [checkingUpgrade, setCheckingUpgrade] = useState(true);
   
   const handleLike = () => setHasLiked(!hasLiked);
   
+// Ajouter cette fonction pour charger les messages
+const fetchMessages = async () => {
+  try {
+    const res = await fetch(`/api/contact-requests?profile_id=${profile.id}`);
+    if (res.ok) {
+      const data = await res.json();
+      setMessages(data.requests || []);
+    }
+  } catch (err) {
+    console.error('Erreur chargement messages:', err);
+  }
+};
+
+// Charger les messages quand le modal s'ouvre
+useEffect(() => {
+  if (activeModal === 'message') {
+    fetchMessages();
+  }
+}, [activeModal]);
+
+// Fonction pour envoyer une réponse
+const handleSendReply = async (messageId: string) => {
+  if (!replyContent.trim()) return;
+  setSendingReply(true);
+  try {
+    const res = await fetch('/api/contact-requests/reply', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requestId: messageId, message: replyContent }),
+    });
+    if (res.ok) {
+      toast.success('Réponse envoyée');
+      setReplyContent('');
+      setReplyingTo(null);
+      fetchMessages();
+    } else {
+      throw new Error();
+    }
+  } catch {
+    toast.error('Erreur');
+  } finally {
+    setSendingReply(false);
+  }
+};
+
+
+
   // 🔹 Nouveaux gestionnaires d'actions
   const handleQuickAction = (actionId: string) => {
     // 🔹 Rediriger vers les nouvelles pages
@@ -653,6 +771,9 @@ const [checkingUpgrade, setCheckingUpgrade] = useState(true);
         break;
       case 'logout':
         setShowSignOutConfirm(true);
+        break;
+      case 'message':
+        setActiveModal('message');
         break;
       default:
         setActiveModal(actionId);
@@ -929,25 +1050,31 @@ useEffect(() => {
   };
   
   const handleCreateEvent = async (data: any) => {
-    try {
-      const res = await fetch('/api/events', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+  try {
+    const res = await fetch('/api/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
 
-      if (res.ok) {
-        setShowEventForm(false);
-        setIsEventFormOpen(false);
-        setIsEventModalOpen(true);
-      } else {
-        const errorData = await res.json();
-        console.error('❌ Création échouée:', errorData.error || 'Erreur inconnue');
-      }
-    } catch (err) {
-      console.error('❌ Erreur réseau lors de la création:', err);
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
+      throw new Error(errorData.error || 'Échec de la création');
     }
-  };
+
+    const eventData = await res.json();
+    setIsEventFormOpen(false);
+    toast.success('Événement créé', {
+      description: 'Votre événement a été créé avec succès.',
+      icon: <CheckCircle className="w-4 h-4 text-emerald-400/70" />,
+    });
+  } catch (err: any) {
+    console.error('Erreur création événement:', err);
+    toast.error('Erreur', {
+      description: err.message || 'Veuillez réessayer.',
+    });
+  }
+};
 
   // 🔹 ✅ Nouveau gestionnaire de déconnexion
   const handleLogout = async () => {
@@ -1342,6 +1469,7 @@ const quickActions: Action[] = [
   { id: 'portfolio', label: 'Portfolio', icon: <Folder size={18} />, color: 'from-sky-500 to-cyan-500' },
   { id: 'certificates', label: 'Certificat', icon: <Award size={18} />, color: 'from-yellow-500 to-amber-500' },
   { id: 'parameters', label: 'Paramètres', icon: <Settings size={18} />, color: 'from-slate-500 to-gray-500' },
+  { id: 'message', label: 'Messages', icon: <MessageSquare size={18} />, color: 'from-green-500 to-emerald-500' },
   { id: 'logout', label: 'Déconnexion', icon: <LogOut size={18} />, color: 'from-red-500 to-rose-500' },
 ];
   
@@ -1562,22 +1690,22 @@ const handleToggleFollow = async (profileId: string) => {
       </div>
     </Button>
 
-    {/* 💬 Messages - VERT */}
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => { setIsContactModalOpen(true); setUnreadMessagesCount(0); }}
-      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-green-500/10 hover:shadow-green-500/20"
-      aria-label={`Messages${unreadMessagesCount > 0 ? `: ${unreadMessagesCount} non lus` : ''}`}
-    >
-      <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-green-300 group-hover:scale-110 transition-transform" />
-      {unreadMessagesCount > 0 && (
-        <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white text-[11px] font-bold border-2 border-black shadow-lg shadow-red-500/40 z-10">
-          {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
-        </div>
-      )}
-      <div className="absolute inset-0 rounded-xl sm:rounded-full bg-green-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-    </Button>
+   {/* 💬 Messages - VERT */}
+<Button
+  variant="ghost"
+  size="icon"
+  onClick={() => setIsContactModalOpen(true)} // ✅ Sans setUnreadMessagesCount(0)
+  className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-green-500/10 hover:shadow-green-500/20"
+  aria-label={`Messages${unreadMessagesCount > 0 ? `: ${unreadMessagesCount} non lus` : ''}`}
+>
+  <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-green-300 group-hover:scale-110 transition-transform" />
+  {unreadMessagesCount > 0 && (
+    <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white text-[11px] font-bold border-2 border-black shadow-lg shadow-red-500/40 z-10">
+      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+    </div>
+  )}
+  <div className="absolute inset-0 rounded-xl sm:rounded-full bg-green-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
+</Button>
 
     {/* ❤️ Likes - ROUGE */}
     <Button
@@ -2578,12 +2706,34 @@ const handleToggleFollow = async (profileId: string) => {
 {isContactModalOpen && (
   <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-br from-gray-900/95 to-black/95 border border-white/10 shadow-2xl">
-      <ContactRequestsSection
+      <ContactRequestsModal
         isOpen={true}
         onClose={() => setIsContactModalOpen(false)}
+        onMarkAsRead={updateUnreadCount} // ✅ Passe la nouvelle fonction
       />
     </div>
   </div>
+)}
+{/* 🔹 MODAL MESSAGES (avec réponse) */}
+{activeModal === 'message' && (
+  <CustomMessageModal
+    isOpen={true}
+    onClose={closeModal}
+    messages={messages}
+    replyingTo={replyingTo}
+    replyContent={replyContent}
+    onReplyChange={(v) => {
+      if (v === '') {
+        setReplyingTo(null);
+      }
+      setReplyContent(typeof v === 'string' ? v : '');
+    }}
+    onSendReply={handleSendReply}
+    onSendCustomMessage={handleSendCustomMessage}
+    customMessage={customMessage}
+    onCustomMessageChange={setCustomMessage}
+    sending={sendingReply}
+  />
 )}
 {showSignOutConfirm && (
   <SignOutConfirmSheet

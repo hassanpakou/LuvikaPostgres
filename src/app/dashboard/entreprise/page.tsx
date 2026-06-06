@@ -25,7 +25,6 @@ import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/src/lib/supabase/client';
 import AnalyticsChart from '@/src/components/dashboard/AnalyticsChart';
 import Loading from '@/src/components/system/Loading';
-import { ThemeToggle } from '@/src/components/system/ThemeToggle';
 
 // ✅ Contenu spécifique pour chaque type d'entreprise
 const TYPE_CONTENT: Record<string, {
@@ -418,7 +417,6 @@ function CompanyTypeModal({ companyId, onClose, onSaved }: { companyId: string; 
           ))}
         </div>
         <div className="flex gap-2">
-            <ThemeToggle />
 
           <Button variant="ghost" onClick={onClose} className="flex-1 h-8 text-xs text-gray-400/60 hover:text-gray-300/80 hover:bg-white/[0.04] font-light rounded-lg">Plus tard</Button>
           <Button onClick={handleSave} disabled={!selected || saving} className="flex-1 h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-lg">

@@ -9,7 +9,6 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
 import { SiSocialblade } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ThemeToggle } from '@/src/components/system/ThemeToggle';
 
 const languages: Record<string, { name: string; flag: string }> = {
   fr: { name: 'Français', flag: '🇫🇷' },
@@ -110,8 +109,6 @@ export function AdminHeader() {
 
           {/* Right - Actions */}
           <div className="flex items-center gap-2">
-            {/* Theme Toggle */}
-            <ThemeToggle />
 
             {/* Langues */}
             <div ref={langRef} className="relative">

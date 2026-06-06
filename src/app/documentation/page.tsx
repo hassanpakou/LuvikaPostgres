@@ -13,7 +13,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { ThemeToggle } from '@/src/components/system/ThemeToggle';
 
 // Types
 interface DocumentationItem {
@@ -558,7 +557,6 @@ export default function DocumentationPage() {
                 Trouvez tout ce dont vous avez besoin pour démarrer.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                  <ThemeToggle />
 
                 <Button size="sm" className="bg-gradient-to-r from-blue-600/80 to-cyan-500/80 hover:from-blue-500 hover:to-cyan-400 text-white text-xs">
                   <Book className="w-3.5 h-3.5 mr-1.5" />

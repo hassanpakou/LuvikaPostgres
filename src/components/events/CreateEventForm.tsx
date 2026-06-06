@@ -428,10 +428,14 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
                   <Button type="button" variant="outline" onClick={handleBack} className="flex-1 border-white/10 text-gray-300 hover:bg-white/5 h-11">
                     <ChevronLeft className="w-4 h-4 mr-2" /> {t('edit_button')}
                   </Button>
-                  <Button type="submit" disabled={isLoading || !isFormValid || isGeneratingQR} className="flex-[2] bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white h-11 shadow-lg shadow-green-900/20">
-                    {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-                    {t('create_button')}
-                  </Button>
+                                   <Button 
+  type="submit" 
+  disabled={isLoading} 
+  className="flex-[2] bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white h-11 shadow-lg shadow-green-900/20"
+>
+  {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+  {t('create_button')}
+</Button>
                 </div>
               </motion.div>
             )}

@@ -4,8 +4,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Phone, Clock, CheckCircle, User } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
 
 type ContactRequest = {
   id: string;
@@ -20,23 +18,27 @@ type ContactRequest = {
 export default function ContactRequestsModal({
   isOpen,
   onClose,
+  onMarkAsRead,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onMarkAsRead?: (unreadCount: number) => void;
 }) {
   const [requests, setRequests] = useState<ContactRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const fetchRequests = async () => {
       try {
         const res = await fetch('/api/contact-requests');
-        const { requests } = await res.json();
-        setRequests(requests);
+        if (!res.ok) throw new Error('Erreur chargement');
+        const data = await res.json();
+        setRequests(data.requests || []);
       } catch (err) {
-        console.error('❌ Failed to load contact requests', err);
+        console.error('Erreur chargement messages:', err);
+        setRequests([]);
       } finally {
         setLoading(false);
       }
@@ -44,19 +46,25 @@ export default function ContactRequestsModal({
     fetchRequests();
   }, [isOpen]);
 
-  const markAsRead = async (id: string) => {
-    try {
-      await fetch(`/api/contact-requests/${id}/read`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      setRequests(prev => 
-        prev.map(req => req.id === id ? { ...req, is_read: true } : req)
-      );
-    } catch (err) {
-      console.error('❌ Failed to mark as read', err);
+const markAsRead = async (id: string) => {
+  try {
+    const res = await fetch(`/api/contact-requests/${id}/read`, { method: 'PATCH' });
+    if (res.ok) {
+      setRequests(prev => prev.map(req => req.id === id ? { ...req, is_read: true } : req));
+      
+      // ✅ Recalcule après mise à jour et appelle hors du rendu
+      setTimeout(() => {
+        setRequests(prev => {
+          const unreadCount = prev.filter(r => !r.is_read).length;
+          onMarkAsRead?.(unreadCount);
+          return prev;
+        });
+      }, 0);
     }
-  };
+  } catch (err) {
+    console.error('Erreur marquage lu:', err);
+  }
+};
 
   if (!isOpen) return null;
 
@@ -66,109 +74,101 @@ export default function ContactRequestsModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/50 backdrop-blur-md z-50 flex items-center justify-center p-2 sm:p-4"
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
         onClick={onClose}
       >
         <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="glass-border backdrop-blur-xl rounded-2xl w-full max-w-2xl border border-white/20 overflow-hidden mx-2 sm:mx-0"
+          initial={{ y: '100%', opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: '100%', opacity: 0 }}
+          transition={{ type: 'spring', damping: 28, stiffness: 260 }}
+          className="w-full sm:max-w-lg max-h-[85vh] flex flex-col bg-slate-900/90 backdrop-blur-xl rounded-t-2xl sm:rounded-2xl border border-white/[0.08] shadow-2xl"
           onClick={e => e.stopPropagation()}
         >
+          {/* Handle mobile */}
+          <div className="sm:hidden flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-white/20" />
+          </div>
+
           {/* Header */}
-          <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between sticky top-0 bg-gray-900/80 backdrop-blur-sm z-10">
-            <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
-              <Mail className="text-cyan-400" size={18} />
-              Messages reçus
+          <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06] flex-shrink-0">
+            <h2 className="text-base font-semibold text-white/80 flex items-center gap-2">
+              <Mail className="w-4 h-4 text-cyan-400/60" />
+              Messages
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white -mr-2"
+            <button
               onClick={onClose}
+              className="p-1 text-gray-400/60 hover:text-white/70 rounded-lg hover:bg-white/[0.04] transition-colors"
             >
-              <X size={18} />
-            </Button>
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Body */}
-          <div className="max-h-[70vh] overflow-y-auto p-3 sm:p-4">
+          <div className="flex-1 overflow-y-auto px-5 py-4">
             {loading ? (
-              <div className="text-center py-8 text-gray-400">Chargement...</div>
+              <div className="flex items-center justify-center py-12">
+                <div className="w-6 h-6 border-2 border-cyan-400/30 border-t-cyan-400 rounded-full animate-spin" />
+              </div>
             ) : requests.length === 0 ? (
-              <div className="text-center py-10 text-gray-500">
-                <Mail className="mx-auto h-12 w-12 mb-3 opacity-50" />
-                <p>Aucun message pour le moment</p>
-                <p className="text-sm mt-1">Les demandes apparaîtront ici</p>
+              <div className="text-center py-12">
+                <Mail className="w-10 h-10 text-gray-500/30 mx-auto mb-3" />
+                <p className="text-sm text-gray-400/60 font-light">Aucun message</p>
               </div>
             ) : (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2">
                 {requests.map((req) => (
                   <div
                     key={req.id}
-                    className={`glass-border bg-white/5 p-3 sm:p-4 rounded-xl border ${
-                      req.is_read ? 'border-white/10' : 'border-cyan-400/30 bg-cyan-400/5'
+                    className={`rounded-xl p-4 transition-all ${
+                      req.is_read
+                        ? 'bg-white/[0.02] border border-white/[0.04]'
+                        : 'bg-cyan-500/[0.04] border border-cyan-500/[0.1]'
                     }`}
                   >
-                    {/* En-tête : Avatar + infos */}
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                      {/* Partie gauche : avatar + nom/email/téléphone */}
-                      <div className="flex items-start gap-3 flex-1 min-w-0">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500 flex items-center justify-center text-white shrink-0">
-                          <User className="w-5 h-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-medium text-white truncate">{req.name}</h3>
-                            {!req.is_read && (
-                              <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-300 px-2 py-0.5 text-xs whitespace-nowrap">
-                                Nouveau
-                              </Badge>
-                            )}
-                          </div>
-                          {/* Email + téléphone avec wrap sécurisé */}
-                          <div className="flex flex-col sm:flex-row sm:flex-wrap gap-x-3 gap-y-1 mt-1 text-xs sm:text-sm text-gray-400">
-                            <span className="flex items-center gap-1 min-w-0">
-                              <Mail className="w-3.5 h-3.5 shrink-0" />
-                              <span className="break-all">{req.email}</span>
-                            </span>
-                            {req.phone && (
-                              <span className="flex items-center gap-1 min-w-0">
-                                <Phone className="w-3.5 h-3.5 shrink-0" />
-                                <span className="break-all">{req.phone}</span>
-                              </span>
-                            )}
-                          </div>
-                        </div>
+                    {/* Infos + badge */}
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <User className="w-4 h-4 text-cyan-400/60" />
                       </div>
-
-                      {/* Partie droite : date + bouton "Lu" - empilée verticalement sur mobile */}
-                      <div className="flex flex-row sm:flex-col items-center justify-start sm:items-end gap-3 sm:gap-1 mt-2 sm:mt-0">
-                        <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-                          <Clock className="w-3 h-3" />
-                          {new Date(req.created_at).toLocaleDateString()}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm text-white/70 font-medium truncate">{req.name}</p>
+                          {!req.is_read && (
+                            <span className="text-[10px] bg-cyan-500/10 text-cyan-300/60 px-1.5 py-0.5 rounded-full font-light flex-shrink-0">
+                              Nouveau
+                            </span>
+                          )}
                         </div>
+                        <p className="text-[11px] text-gray-400/50 font-light mt-0.5 truncate">{req.email}</p>
+                        {req.phone && (
+                          <p className="text-[11px] text-gray-500/40 font-light mt-0.5 flex items-center gap-1">
+                            <Phone className="w-3 h-3" />
+                            {req.phone}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex-shrink-0 text-right">
+                        <p className="text-[10px] text-gray-500/40 font-light">
+                          {new Date(req.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}
+                        </p>
                         {!req.is_read && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 px-2 text-xs text-cyan-400 hover:text-cyan-300 hover:bg-cyan-400/10"
+                          <button
                             onClick={() => markAsRead(req.id)}
+                            className="mt-1 text-[10px] text-cyan-400/60 hover:text-cyan-300/70 font-light transition-colors"
                           >
-                            <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                            <CheckCircle className="w-3 h-3 inline mr-0.5" />
                             Lu
-                          </Button>
+                          </button>
                         )}
                       </div>
                     </div>
 
                     {/* Message */}
-                    <div className="mt-3 pt-3 border-t border-white/10">
-                      <p className="text-gray-300 text-xs sm:text-sm whitespace-pre-line break-words">
-                        {req.message}
-                      </p>
-                    </div>
+                    <p className="text-xs text-gray-300/60 font-light mt-2.5 leading-relaxed">
+                      {req.message}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -176,9 +176,8 @@ export default function ContactRequestsModal({
           </div>
 
           {/* Footer */}
-          <div className="p-3 sm:p-4 border-t border-white/10 text-center text-[10px] sm:text-xs text-gray-500">
-            ✅ Les messages sont stockés temporairement dans votre compte<br />
-            🔒 Conformément au RGPD, ils ne sont ni vendus ni partagés
+          <div className="px-5 py-3 border-t border-white/[0.06] text-center text-[10px] text-gray-500/40 font-light flex-shrink-0">
+            Messages stockés dans votre compte
           </div>
         </motion.div>
       </motion.div>

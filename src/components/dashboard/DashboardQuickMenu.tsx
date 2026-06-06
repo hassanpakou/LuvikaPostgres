@@ -196,6 +196,7 @@ const getGradient = (cls: string): string => {
     'from-yellow-500 to-amber-500': '#eab308, #f59e0b',
     'from-slate-500 to-gray-500': '#64748b, #6b7280',
     'from-red-500 to-rose-500': '#ef4444, #f43f5e',
+    'from-green-500 to-emerald-500': '#22c55e, #10b981', 
   };
   return map[cls] || '#06b6d4, #3b82f6';
 };
