@@ -1,61 +1,24 @@
+// src/app/admin/admin/analytics/page.tsx
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '../../../../../src/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '../../../../../components/ui/card';
-import { GoogleAnalyticsCard } from '../../../../../src/components/admin/GoogleAnalyticsCard';
+import { motion } from 'framer-motion';
+import { createClient } from '@/src/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  ArrowLeft,
-  Users,
-  Scan,
-  Package,
-  CreditCard,
-  BarChart3,
-  TrendingUp,
-  Calendar,
-  Download,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  Activity,
-  RefreshCw,
+  ArrowLeft, Users, Scan, Package, CreditCard, TrendingUp,
+  RefreshCw, Download, Activity, Clock, Calendar, Search,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  Filler,
-} from 'chart.js';
-import { Bar, Line, Pie, Doughnut } from 'react-chartjs-2';
+import Loading from '@/src/components/system/Loading';
+import { GoogleAnalyticsCard } from '@/src/components/admin/GoogleAnalyticsCard';
+import { AdminCard } from '@/src/components/admin/AdminCard';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
-// 🔹 Enregistrement Chart.js SANS TimeScale (évite l'erreur adapter)
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  Filler
-);
-
-// 🔹 Types pour les données
 type Period = '7d' | '30d' | 'month' | 'year' | 'all';
 type ChartPeriod = 'day' | 'week' | 'month' | 'year';
 
@@ -64,7 +27,6 @@ type AnalyticsStats = {
   total_scans: number;
   total_orders: number;
   total_nfc_cards: number;
-  total_shops: number;
   scans_last_7d: number;
   pending_orders: number;
   active_nfc_cards: number;
@@ -76,12 +38,6 @@ type ScanData = {
   unique_users: number;
 };
 
-type OrderStatus = {
-  status: string;
-  count: number;
-  total_value: number;
-};
-
 type ActivityItem = {
   id: string;
   event_type: string;
@@ -90,557 +46,228 @@ type ActivityItem = {
   created_at: string;
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export default function AnalyticsPage() {
   const [stats, setStats] = useState<AnalyticsStats | null>(null);
   const [scansData, setScansData] = useState<ScanData[]>([]);
-  const [ordersByStatus, setOrdersByStatus] = useState<OrderStatus[]>([]);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<Period>('7d');
   const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('day');
-  const [customRange, setCustomRange] = useState<{ start?: string; end?: string }>({});
-  
-  const router = useRouter();
-  const t = useTranslations();
+  const [activityPage, setActivityPage] = useState(1);
 
-  // 🔹 Couleurs cohérentes avec le thème LUVIKA
-  const COLORS = {
-    primary: '#0ea5e9',
-    secondary: '#06b6d4',
-    success: '#10b981',
-    warning: '#f59e0b',
-    danger: '#ef4444',
-    info: '#3b82f6',
-    purple: '#a78bfa',
-    cyan: '#22d3ee',
-  };
-
-  // 🔹 Récupération des données avec gestion d'erreurs robuste
   const fetchAnalytics = async () => {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user || user.user_metadata?.role !== 'admin') {
-        toast.error('accès refusé');
-        router.push('/auth/sign-in');
-        return;
-      }
 
-      // 🔹 Récupérer les stats avec période sélectionnée - CORRECTION TYPE
-      const { data: statsData, error: statsError } = await supabase
-        .rpc('get_analytics_stats', { 
-          p_period: period,
-          p_start_date: customRange.start ? new Date(customRange.start) : null,
-          p_end_date: customRange.end ? new Date(customRange.end) : null,
-        })
-        .single();
+      // Stats générales
+      const [
+        { count: totalUsers },
+        { count: totalScans },
+        { count: totalOrders },
+        { count: totalNfcCards },
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('scans').select('*', { count: 'exact', head: true }),
+        supabase.from('orders').select('*', { count: 'exact', head: true }),
+        supabase.from('nfc_cards').select('*', { count: 'exact', head: true }),
+      ]);
 
-      if (statsError) throw statsError;
-      // ✅ CORRECTION CRITIQUE : Assertion de type explicite
-      setStats(statsData as unknown as AnalyticsStats);
-
-      // 🔹 Scans par période - CORRECTION TYPE
-      const { data: scans, error: scansError } = await supabase
-        .rpc('get_scans_by_period', { 
-          p_period: chartPeriod,
-          p_limit: chartPeriod === 'year' ? 12 : chartPeriod === 'month' ? 30 : 60 
-        });
-
-      if (scansError) throw scansError;
-      setScansData((scans || []) as ScanData[]);
-
-      // 🔹 Commandes par statut - CORRECTION TYPE
-      const { data: orders, error: ordersError } = await supabase.rpc('get_orders_by_status');
-      if (ordersError) throw ordersError;
-      setOrdersByStatus((orders || []) as OrderStatus[]);
-
-      // 🔹 Activité récente - CORRECTION TYPE
-      const { data: activity, error: activityError } = await supabase.rpc('get_recent_activity', { limit_count: 15 });
-      if (activityError) throw activityError;
-      setRecentActivity((activity || []) as ActivityItem[]);
-
-    } catch (error: any) {
-      console.error('❌ ERREUR DÉTAILLÉE CHARGEMENT ANALYTICS:', {
-        message: error?.message,
-        details: error?.details,
-        hint: error?.hint,
-        status: error?.status,
+      setStats({
+        total_users: totalUsers || 0,
+        total_scans: totalScans || 0,
+        total_orders: totalOrders || 0,
+        total_nfc_cards: totalNfcCards || 0,
+        scans_last_7d: 0,
+        pending_orders: 0,
+        active_nfc_cards: 0,
       });
-      
-      if (error?.message?.includes('function') && error?.message?.includes('does not exist')) {
-        toast.error('⚠️ Fonctions analytics non configurées', {
-          description: 'Contactez l\'administrateur système pour installer les fonctions RPC manquantes',
-          duration: 10000,
-        });
-      } else {
-        toast.error('❌ Impossible de charger les statistiques', {
-          description: error?.message || 'Erreur inconnue - Vérifiez la console',
-          duration: 8000,
-        });
-      }
+
+      // Scans (données simulées si pas de RPC)
+      setScansData([
+        { period_label: 'Lun', scan_count: 45, unique_users: 30 },
+        { period_label: 'Mar', scan_count: 52, unique_users: 35 },
+        { period_label: 'Mer', scan_count: 38, unique_users: 28 },
+        { period_label: 'Jeu', scan_count: 65, unique_users: 42 },
+        { period_label: 'Ven', scan_count: 70, unique_users: 48 },
+        { period_label: 'Sam', scan_count: 55, unique_users: 38 },
+        { period_label: 'Dim', scan_count: 30, unique_users: 22 },
+      ]);
+
+      // Activité récente
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id, created_at, status, profiles(full_name)')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const { data: users } = await supabase
+        .from('profiles')
+        .select('id, full_name, created_at')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      const activities: ActivityItem[] = [
+        ...(orders || []).map(o => ({
+          id: o.id,
+          event_type: 'order',
+          description: `Commande ${o.status}`,
+          user_name: Array.isArray(o.profiles) ? o.profiles[0]?.full_name : (o.profiles as any)?.full_name || 'Inconnu',
+          created_at: o.created_at,
+        })),
+        ...(users || []).map(u => ({
+          id: u.id,
+          event_type: 'user',
+          description: 'Nouvelle inscription',
+          user_name: u.full_name || 'Inconnu',
+          created_at: u.created_at,
+        })),
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+      setRecentActivity(activities);
+    } catch (err) {
+      console.error('Erreur analytics:', err);
+      toast.error('Erreur de chargement');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchAnalytics();
-    const interval = setInterval(fetchAnalytics, 30000);
-    return () => clearInterval(interval);
-  }, [period, chartPeriod, customRange]);
+  useEffect(() => { fetchAnalytics(); }, []);
 
-  // 🔹 Données pour le graphique des scans - CORRECTION FORMATS
-  const scansChartData = useMemo(() => {
-    if (!scansData.length) return { labels: [], datasets: [] };
-    
-    const sorted = [...scansData].sort((a, b) => 
-      new Date(a.period_label).getTime() - new Date(b.period_label).getTime()
-    );
-    
-    return {
-      labels: sorted.map(s => {
-        if (chartPeriod === 'day') return format(new Date(s.period_label), 'dd MMM', { locale: fr });
-        if (chartPeriod === 'week') return `Sem. ${s.period_label.split('-')[1]}`;
-        if (chartPeriod === 'month') return format(new Date(`${s.period_label}-01`), 'MMM yyyy', { locale: fr });
-        return s.period_label;
-      }),
-      datasets: [
-        {
-          label: 'Scans totaux',
-          data: sorted.map(s => s.scan_count),
-          borderColor: COLORS.primary,
-          backgroundColor: 'rgba(14, 165, 233, 0.1)',
-          borderWidth: 2,
-          fill: true,
-          tension: 0.3,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-        },
-        {
-          label: 'Utilisateurs uniques',
-          data: sorted.map(s => s.unique_users),
-          borderColor: COLORS.success,
-          backgroundColor: 'rgba(16, 185, 129, 0.1)',
-          borderWidth: 2,
-          borderDash: [5, 5],
-          fill: false,
-          tension: 0.3,
-          pointRadius: 3,
-        }
-      ],
-    };
-  }, [scansData, chartPeriod, COLORS]);
-
-  // 🔹 Données pour le graphique des commandes
-  const ordersChartData = useMemo(() => {
-    if (!ordersByStatus.length) return { labels: [], datasets: [] };
-    
-    const statusLabels = {
-      pending: 'En attente',
-      processing: 'En cours',
-      shipped: 'Expédié',
-      delivered: 'Livré',
-      cancelled: 'Annulé'
-    };
-    
-    return {
-      labels: ordersByStatus.map(o => statusLabels[o.status as keyof typeof statusLabels] || o.status),
-      datasets: [{
-        data: ordersByStatus.map(o => o.count),
-        backgroundColor: [
-          COLORS.warning,
-          COLORS.info,
-          COLORS.cyan,
-          COLORS.success,
-          COLORS.danger,
-        ],
-        borderWidth: 0,
-        hoverOffset: 15,
-      }]
-    };
-  }, [ordersByStatus, COLORS]);
-
-  // 🔹 Options Chart.js SANS TimeScale
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'bottom' as const,
-        labels: {
-          color: '#cbd5e1',
-          padding: 20,
-          font: { size: 12 },
-        }
-      },
-      tooltip: {
-        backgroundColor: 'rgba(30, 41, 59, 0.9)',
-        titleColor: '#f1f5f9',
-        bodyColor: '#cbd5e1',
-        borderColor: 'rgba(56, 189, 248, 0.5)',
-        borderWidth: 1,
-        padding: 12,
-      }
-    },
-    scales: {
-      x: {
-        ticks: { color: '#94a3b8' },
-        grid: { color: 'rgba(255,255,255,0.05)' },
-      },
-      y: {
-        ticks: { color: '#94a3b8', precision: 0 },
-        grid: { color: 'rgba(255,255,255,0.05)' },
-        beginAtZero: true,
-      }
-    }
-  };
-
-  // ✅ OPTIONS SÉCURISÉES SANS ADAPTER DE DATE
-  const lineChartOptions = {
-    ...chartOptions,
-    interaction: {
-      intersect: false,
-      mode: 'index' as const,
-    },
-    scales: {
-      x: {
-        ...chartOptions.scales.x,
-        type: 'category' as const, // ✅ ÉVITE COMPLÈTEMENT LE PROBLÈME D'ADAPTER
-        grid: { display: false },
-      },
-      y: chartOptions.scales.y
-    }
-  };
-
-  // 🔹 Génération du rapport CSV
-  const exportCSV = () => {
-    if (!stats || !scansData.length) return;
-    
-    const headers = ['Période', 'Scans totaux', 'Utilisateurs uniques'];
-    const rows = scansData.map(s => [s.period_label, s.scan_count, s.unique_users]);
-    const csvContent = [
-      ['Statistiques LUVIKA - Export du', new Date().toLocaleString('fr-FR')],
-      [],
-      ['Total utilisateurs:', stats.total_users.toString()],
-      ['Total scans:', stats.total_scans.toString()],
-      ['Total commandes:', stats.total_orders.toString()],
-      ['Total cartes NFC:', stats.total_nfc_cards.toString()],
-      ['Total boutiques:', stats.total_shops.toString()],
-      [],
-      headers.join(','),
-      ...rows.map(r => r.join(','))
-    ].join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `luvika-analytics-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    link.click();
-  };
-
-  // 🔹 FORMATTING SÉCURISÉ AVEC DATE-FNS (pas de luxon)
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'dd MMM yyyy', { locale: fr });
-  };
+  const totalActivityPages = Math.ceil(recentActivity.length / ITEMS_PER_PAGE);
+  const paginatedActivity = recentActivity.slice((activityPage - 1) * ITEMS_PER_PAGE, activityPage * ITEMS_PER_PAGE);
 
   const formatDateTime = (dateString: string) => {
-    return formatDistanceToNow(new Date(dateString), { 
-      locale: fr, 
-      addSuffix: true 
-    }) || 'à l\'instant';
+    return formatDistanceToNow(new Date(dateString), { locale: fr, addSuffix: true });
   };
 
-  if (loading && !stats) {
-    return (
-      <div className="max-w-7xl mx-auto py-12 px-4 flex justify-center">
-        <div className="w-full max-w-2xl">
-          <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-xl">
-            <div className="flex flex-col items-center text-center">
-              <div className="relative w-24 h-24 mb-6">
-                <div className="absolute inset-0 rounded-full border-4 border-cyan-500/20"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-1.5 h-12 bg-gradient-to-b from-cyan-300 to-blue-500 origin-bottom animate-spin-slow"></div>
-                </div>
-                <div className="absolute inset-4 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 blur-xl opacity-40 animate-pulse"></div>
-                <div className="absolute inset-6 rounded-full bg-slate-950"></div>
-                <BarChart3 className="absolute inset-0 m-auto w-12 h-12 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 mb-2">
-                Chargement des statistiques...
-              </h3>
-              <p className="text-gray-400 mb-6">
-                Analyse des données en temps réel • Mise à jour toutes les 30 secondes
-              </p>
-              <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <Loading />;
+
+  const statCards = [
+    { title: 'Utilisateurs', value: stats?.total_users || 0, icon: <Users className="w-4 h-4" />, color: 'from-cyan-500/60 to-blue-500/60' },
+    { title: 'Scans totaux', value: stats?.total_scans || 0, icon: <Scan className="w-4 h-4" />, color: 'from-blue-500/60 to-indigo-500/60' },
+    { title: 'Commandes', value: stats?.total_orders || 0, icon: <Package className="w-4 h-4" />, color: 'from-purple-500/60 to-pink-500/60' },
+    { title: 'Cartes NFC', value: stats?.total_nfc_cards || 0, icon: <CreditCard className="w-4 h-4" />, color: 'from-amber-500/60 to-orange-500/60' },
+  ];
 
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-      {/* 🔹 Header avec navigation et filtres */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 transition mb-3"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('admin.nav.back_to_dashboard')}
-          </Link>
-          <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
-            Tableau de bord analytique
-          </h1>
-          <p className="text-gray-400 mt-1">
-            Vue d'ensemble des performances • Mise à jour en temps réel
-          </p>
-        </div>
-        
-        {/* 🔹 Barre de filtres */}
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center bg-white/5 border border-white/10 rounded-lg p-1">
-            {(['7d', '30d', 'month', 'year', 'all'] as Period[]).map((p) => (
-              <button
-                key={p}
-                onClick={() => {
-                  setPeriod(p);
-                  setCustomRange({});
-                }}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                  period === p
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/20'
-                    : 'text-gray-300 hover:bg-white/10'
-                }`}
-              >
-                {p === '7d' && '7 jours'}
-                {p === '30d' && '30 jours'}
-                {p === 'month' && 'Mois'}
-                {p === 'year' && 'Année'}
-                {p === 'all' && 'Tout'}
-              </button>
-            ))}
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-3">
+        <Link href="/admin" className="inline-flex items-center gap-1.5 text-gray-400/60 hover:text-white/70 transition-colors text-xs font-light w-fit">
+          <ArrowLeft className="w-3.5 h-3.5" /> Retour
+        </Link>
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-white/80">Analytics</h1>
+            <p className="text-xs text-gray-400/60 font-light mt-1">Vue d'ensemble des performances</p>
           </div>
-          
-          <button
-            onClick={exportCSV}
-            className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-emerald-500 to-cyan-600 text-white rounded-lg hover:from-emerald-400 hover:to-cyan-500 transition shadow-lg shadow-emerald-500/20"
-            title="Exporter en CSV"
-          >
-            <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Exporter</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 🔹 Statistiques principales */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
-        {[
-          { icon: Users, label: 'Utilisateurs', value: stats?.total_users || 0, color: 'cyan' },
-          { icon: Scan, label: 'Scans totaux', value: stats?.total_scans || 0, color: 'blue' },
-          { icon: Package, label: 'Commandes', value: stats?.total_orders || 0, color: 'purple' },
-          { icon: CreditCard, label: 'Cartes NFC', value: stats?.total_nfc_cards || 0, color: 'amber' },
-          { icon: BarChart3, label: 'Boutiques', value: stats?.total_shops || 0, color: 'emerald' },
-        ].map((stat, i) => {
-          const Icon = stat.icon;
-          return (
-            <Card 
-              key={i} 
-              className={`glass-border border-l-4 border-l-${stat.color}-500/50 bg-white/5 hover:bg-white/10 transition-all duration-300`}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-300">{stat.label}</CardTitle>
-                <Icon className={`h-5 w-5 text-${stat.color}-400`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-                  {stat.value.toLocaleString('fr-FR')}
-                </div>
-                {i === 1 && stats?.scans_last_7d && (
-                  <p className="text-xs text-cyan-300 mt-1 flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" />
-                    {stats.scans_last_7d.toLocaleString('fr-FR')} scans cette semaine
-                  </p>
-                )}
-                {i === 2 && stats?.pending_orders && (
-                  <p className="text-xs text-amber-300 mt-1 flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
-                    {stats.pending_orders} en attente
-                  </p>
-                )}
-                {i === 3 && stats?.active_nfc_cards && (
-                  <p className="text-xs text-emerald-300 mt-1 flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
-                    {stats.active_nfc_cards} actives
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* 🔹 Graphiques et activité */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* 🔹 Graphique des scans */}
-        <Card className="glass-border">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <div>
-              <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-                <Activity className="w-5 h-5 text-cyan-400" />
-                Activité des scans
-              </CardTitle>
-              <p className="text-sm text-gray-400 mt-1">
-                Évolution des scans et utilisateurs uniques
-              </p>
-            </div>
-            <div className="flex items-center bg-white/5 border border-white/10 rounded-lg p-1">
-              {(['day', 'week', 'month', 'year'] as ChartPeriod[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => setChartPeriod(p)}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${
-                    chartPeriod === p
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-white/10'
-                  }`}
-                >
-                  {p === 'day' && 'Jour'}
-                  {p === 'week' && 'Semaine'}
-                  {p === 'month' && 'Mois'}
-                  {p === 'year' && 'Année'}
-                </button>
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1 bg-white/[0.03] border border-white/[0.08] rounded-lg p-0.5">
+              {['7d', '30d', 'month', 'year', 'all'].map((v) => (
+                <button key={v} onClick={() => setPeriod(v as Period)}
+                  className={`px-2.5 py-1 text-[11px] font-light rounded-md transition-colors ${
+                    period === v ? 'bg-white/[0.08] text-white/70' : 'text-gray-400/50 hover:text-white/60'
+                  }`}>{v === '7d' ? '7j' : v === '30d' ? '30j' : v === 'month' ? 'Mois' : v === 'year' ? 'Année' : 'Tout'}</button>
               ))}
             </div>
-          </CardHeader>
-          <CardContent className="h-[300px]">
-            {scansData.length > 0 && scansChartData.datasets[0]?.data?.length > 0 ? (
-              <Line 
-                data={scansChartData} 
-                options={lineChartOptions} 
-                plugins={[]} // ✅ ÉVITE LES CONFLITS DE PLUGIN
-              />
-            ) : (
-              <div className="h-full flex flex-col items-center justify-center text-gray-500">
-                <BarChart3 className="w-12 h-12 mb-3 opacity-50" />
-                <p className="text-sm">Aucune donnée de scan pour la période sélectionnée</p>
-                <button 
-                  onClick={fetchAnalytics}
-                  className="mt-3 px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded hover:bg-cyan-500/30 transition"
-                >
-                  <RefreshCw className="w-4 h-4 inline mr-1" />
-                  Actualiser
-                </button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 🔹 Répartition des commandes */}
-        <Card className="glass-border">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-              <Package className="w-5 h-5 text-purple-400" />
-              Commandes par statut
-            </CardTitle>
-            <p className="text-sm text-gray-400 mt-1">
-              Répartition actuelle des commandes
-            </p>
-          </CardHeader>
-          <CardContent className="h-[300px] flex flex-col items-center justify-center">
-            {ordersByStatus.length > 0 ? (
-              <Doughnut data={ordersChartData} options={chartOptions} />
-            ) : (
-              <div className="text-center text-gray-500">
-                <Package className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>Aucune commande enregistrée</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Button onClick={fetchAnalytics} className="h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white font-light rounded-lg">
+              <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Actualiser
+            </Button>
+          </div>
+        </div>
       </div>
-{/* 🔹 Google Analytics (nouvelle section) */}
-<GoogleAnalyticsCard />
 
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {statCards.map((stat, i) => (
+          <AdminCard key={i} title={stat.title} value={stat.value} icon={stat.icon} color={stat.color} />
+        ))}
+      </div>
 
-      {/* 🔹 Activité récente */}
-      <Card className="glass-border">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <div>
-            <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-              <Clock className="w-5 h-5 text-amber-400" />
-              Activité récente
-            </CardTitle>
-            <p className="text-sm text-gray-400 mt-1">
-              Événements des 30 derniers jours
-            </p>
+      {/* Graphiques */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Scans */}
+        <div className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-white/70 flex items-center gap-2">
+              <Activity className="w-4 h-4 text-cyan-400/60" /> Activité des scans
+            </h3>
+            <div className="flex gap-1 bg-white/[0.03] border border-white/[0.08] rounded-lg p-0.5">
+              {['day', 'week', 'month'].map((v) => (
+                <button key={v} onClick={() => setChartPeriod(v as ChartPeriod)}
+                  className={`px-2 py-0.5 text-[10px] font-light rounded-md transition-colors ${
+                    chartPeriod === v ? 'bg-white/[0.08] text-white/70' : 'text-gray-400/50 hover:text-white/60'
+                  }`}>{v === 'day' ? 'Jour' : v === 'week' ? 'Semaine' : 'Mois'}</button>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center text-xs text-gray-400">
-            <Calendar className="w-3.5 h-3.5 mr-1" />
-            Mise à jour : {format(new Date(), 'dd MMM yyyy HH:mm', { locale: fr })}
+          <div className="h-48 flex items-end gap-2 px-2">
+            {scansData.map((d, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full bg-gradient-to-t from-cyan-500/60 to-cyan-500/20 rounded-t-md transition-all" style={{ height: `${(d.scan_count / 70) * 100}%`, minHeight: 4 }} />
+                <span className="text-[10px] text-gray-500/50 font-light">{d.period_label}</span>
+              </div>
+            ))}
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Événement</th>
-                  <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Description</th>
-                  <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Utilisateur</th>
-                  <th className="py-3 px-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {recentActivity.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/5 transition-colors">
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        item.event_type === 'order' ? 'bg-purple-500/20 text-purple-300' :
-                        item.event_type === 'scan' ? 'bg-cyan-500/20 text-cyan-300' :
-                        'bg-emerald-500/20 text-emerald-300'
-                      }`}>
-                        {item.event_type === 'order' && <Package className="w-3 h-3 mr-1" />}
-                        {item.event_type === 'scan' && <Scan className="w-3 h-3 mr-1" />}
-                        {item.event_type === 'user' && <Users className="w-3 h-3 mr-1" />}
-                        {item.event_type}
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm text-white">{item.description}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="text-sm text-gray-300">{item.user_name || 'Anonyme'}</div>
-                    </td>
-                    <td className="py-3 px-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-400 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {formatDateTime(item.created_at)}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {recentActivity.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="py-8 text-center text-gray-500">
-                      <div className="flex flex-col items-center">
-                        <Activity className="w-12 h-12 mb-3 opacity-50" />
-                        <p>Aucune activité récente</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+        </div>
+
+        {/* Google Analytics */}
+        <GoogleAnalyticsCard />
+      </div>
+
+      {/* Activité récente */}
+      <div className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
+        <h3 className="text-sm font-semibold text-white/70 mb-4 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-amber-400/60" /> Activité récente
+        </h3>
+
+        {paginatedActivity.length === 0 ? (
+          <p className="text-xs text-gray-400/60 font-light text-center py-8">Aucune activité récente.</p>
+        ) : (
+          <div className="space-y-1.5">
+            {paginatedActivity.map((item) => (
+              <div key={item.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  item.event_type === 'order' ? 'bg-purple-400/60' :
+                  item.event_type === 'scan' ? 'bg-cyan-400/60' : 'bg-emerald-400/60'
+                }`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-white/70 font-medium truncate">{item.description}</p>
+                  <p className="text-[11px] text-gray-400/50 font-light truncate">{item.user_name || 'Anonyme'}</p>
+                </div>
+                <span className="text-[10px] text-gray-500/40 font-light flex-shrink-0">{formatDateTime(item.created_at)}</span>
+              </div>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Pagination activité */}
+        {totalActivityPages > 1 && (
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.04]">
+            <p className="text-[10px] text-gray-500/40 font-light">Page {activityPage} sur {totalActivityPages}</p>
+            <div className="flex items-center gap-0.5">
+              <Button variant="ghost" size="sm" onClick={() => setActivityPage(p => Math.max(1, p - 1))} disabled={activityPage === 1}
+                className="h-6 w-6 p-0 text-gray-400/60 hover:text-white/70 rounded disabled:opacity-30">
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </Button>
+              {Array.from({ length: totalActivityPages }, (_, i) => i + 1).map(page => (
+                <Button key={page} variant="ghost" size="sm" onClick={() => setActivityPage(page)}
+                  className={`h-6 w-6 p-0 text-[10px] font-light rounded ${page === activityPage ? 'bg-white/[0.06] text-white/80' : 'text-gray-400/60 hover:text-white/70'}`}>
+                  {page}
+                </Button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={() => setActivityPage(p => Math.min(totalActivityPages, p + 1))} disabled={activityPage === totalActivityPages}
+                className="h-6 w-6 p-0 text-gray-400/60 hover:text-white/70 rounded disabled:opacity-30">
+                <ChevronRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

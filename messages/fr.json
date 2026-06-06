@@ -447,6 +447,26 @@
     "best_day_desc": "Date avec le plus de scans",
     "security": "Sécurité",
     "security_desc": "Tous vos scans sont chiffrés et sécurisés"
+  },"subscription": {
+    "title": "Abonnement",
+    "active_indicator": " Actif",
+    "inactive_indicator": "Inactif",
+    "status_active": "Abonnement actif",
+    "plans": {
+      "freemium": "Basic",
+      "basic": "Basic",
+      "premium": "Professionnel",
+      "entreprise": "Business"
+    },
+    "active": " Actif",
+    "inactive": "⚠️ Inactif",
+    "active_until": "Votre plan est actif jusqu’au {date}.",
+    "upgrade_prompt": "Votre compte est en mode Basic. Contactez l’administrateur pour activer un plan.",
+    "request_upgrade": "Demander une mise à niveau",
+    "success_title": "✅ Succès !",
+    "success_message": "Un administrateur vous contactera sous 24h.",
+    "upgrade_to_premium": "Passer à Professionnel",
+    "request_enterprise": "Convertir en compte BUSINESS"
   },
     "subscribers": {
     "title": "Abonnés",

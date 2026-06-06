@@ -31,7 +31,7 @@ export function ClientProviders({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="luvika-theme">
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="luvika-theme">
       {children}
       <Toaster 
         richColors 

@@ -1,95 +1,134 @@
 // src/app/(admin)/admin/orders/_components/OrderActions.tsx
 'use client';
 
-import { Button } from '../../../../../../components/ui/button';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Truck, 
-  RotateCcw 
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { CheckCircle, XCircle, Truck, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
-export function OrderActions({ 
-  orderId, 
-  currentStatus 
-}: { 
-  orderId: string; 
-  currentStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' 
-}) {
-  const router = useRouter();
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 
-  const updateStatus = async (newStatus: string, actionName: string) => {
+type Props = {
+  orderId: string;
+  currentStatus: OrderStatus;
+  onStatusChange?: (orderId: string, newStatus: OrderStatus) => void;
+};
+
+export function OrderActions({ orderId, currentStatus, onStatusChange }: Props) {
+  const [loading, setLoading] = useState<string | null>(null);
+
+  const updateStatus = async (newStatus: OrderStatus, label: string) => {
+    setLoading(newStatus);
     try {
       const res = await fetch(`/api/admin/orders/${orderId}/update-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
-      
-      if (res.ok) {
-        toast.success(`✅ ${actionName} effectuée`);
-        router.refresh();
-      } else {
+
+      if (!res.ok) {
         const data = await res.json();
-        toast.error(`❌ ${data.error || 'Action échouée'}`);
+        throw new Error(data.error || 'Échec');
       }
-    } catch (error) {
-      toast.error('❌ Erreur de connexion');
+
+      toast.success(`${label} effectuée`);
+      onStatusChange?.(orderId, newStatus);
+    } catch (err: any) {
+      toast.error(err.message || 'Erreur');
+    } finally {
+      setLoading(null);
     }
   };
 
   return (
-    <div className="flex flex-wrap gap-2 pt-3 border-t border-white/10 mt-4">
+    <div className="flex flex-wrap gap-1.5">
+      {/* Pending → Processing */}
       {currentStatus === 'pending' && (
-        <Button 
-          size="sm" 
-          className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+        <button
           onClick={() => updateStatus('processing', 'Validation')}
+          disabled={loading !== null}
+          className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-gradient-to-r from-emerald-600/80 to-teal-600/80 hover:from-emerald-500 hover:to-teal-500 text-white font-light rounded-lg transition-all disabled:opacity-50"
         >
-          <CheckCircle className="h-4 w-4 mr-1" /> Valider
-        </Button>
+          {loading === 'processing' ? (
+            <RefreshCw className="w-3 h-3 animate-spin" />
+          ) : (
+            <CheckCircle className="w-3 h-3" />
+          )}
+          Valider
+        </button>
       )}
-      
+
+      {/* Processing → Shipped / Cancelled */}
       {currentStatus === 'processing' && (
         <>
-          <Button 
-            size="sm" 
-            className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+          <button
             onClick={() => updateStatus('shipped', 'Expédition')}
+            disabled={loading !== null}
+            className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-lg transition-all disabled:opacity-50"
           >
-            <Truck className="h-4 w-4 mr-1" /> Expédier
-          </Button>
-          <Button 
-            size="sm" 
-            variant="destructive"
+            {loading === 'shipped' ? (
+              <RefreshCw className="w-3 h-3 animate-spin" />
+            ) : (
+              <Truck className="w-3 h-3" />
+            )}
+            Expédier
+          </button>
+          <button
             onClick={() => updateStatus('cancelled', 'Annulation')}
+            disabled={loading !== null}
+            className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] border border-red-500/[0.15] text-red-400/60 hover:text-red-300/70 hover:bg-red-500/[0.04] font-light rounded-lg transition-all disabled:opacity-50"
           >
-            <XCircle className="h-4 w-4 mr-1" /> Annuler
-          </Button>
+            {loading === 'cancelled' ? (
+              <RefreshCw className="w-3 h-3 animate-spin" />
+            ) : (
+              <XCircle className="w-3 h-3" />
+            )}
+            Annuler
+          </button>
         </>
       )}
-      
+
+      {/* Shipped → Delivered */}
       {currentStatus === 'shipped' && (
-        <Button 
-          size="sm" 
-          className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
-          onClick={() => updateStatus('delivered', 'Confirmation de livraison')}
+        <button
+          onClick={() => updateStatus('delivered', 'Livraison')}
+          disabled={loading !== null}
+          className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-white font-light rounded-lg transition-all disabled:opacity-50"
         >
-          <CheckCircle className="h-4 w-4 mr-1" /> Confirmer livraison
-        </Button>
+          {loading === 'delivered' ? (
+            <RefreshCw className="w-3 h-3 animate-spin" />
+          ) : (
+            <CheckCircle className="w-3 h-3" />
+          )}
+          Livrer
+        </button>
       )}
-      
-      {['processing', 'shipped', 'delivered', 'cancelled'].includes(currentStatus) && (
-        <Button 
-          size="sm" 
-          variant="outline"
-          className="border-amber-500/30 text-amber-400 hover:bg-amber-500/10"
+
+      {/* Delivered / Cancelled → Lecture seule */}
+      {currentStatus === 'delivered' && (
+        <span className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-emerald-500/10 text-emerald-300/60 border border-emerald-500/20 font-light rounded-lg">
+          <CheckCircle className="w-3 h-3" /> Livrée
+        </span>
+      )}
+      {currentStatus === 'cancelled' && (
+        <span className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-red-500/10 text-red-300/60 border border-red-500/20 font-light rounded-lg">
+          <XCircle className="w-3 h-3" /> Annulée
+        </span>
+      )}
+
+      {/* Réinitialiser (tous sauf pending) */}
+      {currentStatus !== 'pending' && (
+        <button
           onClick={() => updateStatus('pending', 'Réinitialisation')}
+          disabled={loading !== null}
+          className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] text-amber-400/60 hover:text-amber-300/70 hover:bg-amber-500/[0.04] font-light rounded-lg transition-all disabled:opacity-50"
         >
-          <RotateCcw className="h-4 w-4 mr-1" /> Réinitialiser
-        </Button>
+          {loading === 'pending' ? (
+            <RefreshCw className="w-3 h-3 animate-spin" />
+          ) : (
+            <RefreshCw className="w-3 h-3" />
+          )}
+          Réinit.
+        </button>
       )}
     </div>
   );

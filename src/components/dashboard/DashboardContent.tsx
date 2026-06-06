@@ -8,7 +8,9 @@ import {
   Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Folder, Building, Plus, Calendar, 
   QrCode, Package, ArrowUp, Search, Users, ChevronRight, ShoppingBag, UserPlus, UserMinus,Layers,AlertCircle, CreditCard, XCircle,
   User, Globe, Calendar as Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing,
-  Search as SearchIcon, CheckCircle, BarChart3, Leaf
+  Search as SearchIcon, CheckCircle, BarChart3, Leaf,
+  RefreshCw,
+  Clock
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -389,176 +391,78 @@ const QRModal = ({
 };
 
 
-// 🔹 ✅ Modal : Déconnexion - Confirmation
 const SignOutConfirmSheet = ({
   isOpen,
   onClose,
   onConfirm,
-  t,
   tNavbar,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  t: (key: string) => string;
   tNavbar: (key: string) => string;
 }) => {
-  const [dragOffset, setDragOffset] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [showFarewell, setShowFarewell] = useState(false);
-  const startYRef = useRef(0);
-
-  const handleStart = (clientY: number) => {
-    setIsDragging(true);
-    startYRef.current = clientY;
-  };
-
-  const handleMove = (clientY: number) => {
-    if (!isDragging) return;
-    const deltaY = clientY - startYRef.current;
-    if (deltaY > 0) setDragOffset(Math.min(deltaY, 300));
-  };
-
-  const handleEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-    if (dragOffset > 120) {
-      onClose();
-    }
-    setDragOffset(0);
-  };
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientY);
-    const handleTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientY);
-    const handleMouseUp = () => handleEnd();
-    const handleTouchEnd = () => handleEnd();
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      document.addEventListener('touchend', handleTouchEnd);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isDragging]);
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  };
-
-  const handleConfirm = () => {
-    onConfirm();
-    setShowFarewell(true);
-    setTimeout(onClose, 300);
-  };
+  if (!isOpen) return null;
 
   return (
-    <>
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/20 backdrop-blur-[2px] z-[100]"
-              onClick={handleBackdropClick}
-            >
-          
-            </motion.div>
-
-            {/* Bottom Sheet */}
-            <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{
-                y: isDragging ? dragOffset : 0,
-                opacity: 1,
-                transition: isDragging
-                  ? { type: 'tween' }
-                  : { type: 'spring', damping: 26, stiffness: 280 },
-              }}
-              exit={{ y: '100%', opacity: 0 }}
-              className="fixed bottom-0 left-0 right-0 z-[101]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="mx-4 sm:mx-6 md:mx-10 lg:mx-16 xl:mx-28">
-                <div className="relative rounded-t-[36px] border border-white/15 bg-gradient-to-b from-white/10 to-white/5 backdrop-blur-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.35)] overflow-hidden">
-
-                
-
-                  {/* Handle */}
-                  <div
-                    className="flex justify-center pt-4 pb-3 touch-none cursor-grab active:cursor-grabbing"
-                    onMouseDown={(e) => handleStart(e.clientY)}
-                    onTouchStart={(e) => handleStart(e.touches[0].clientY)}
-                  >
-                    <div className="w-16 h-1.5 rounded-full bg-white/30" />
-                  </div>
-
-                  {/* Header */}
-                  <div className="text-center px-6 pt-2">
-                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center shadow-inner">
-                      <ShieldAlert className="w-8 h-8 text-red-400" />
-                    </div>
-
-                      <h3 className="text-xl font-bold text-white tracking-wide">
-                        {t('navbar.sign_out_confirm_title')}
-                      </h3>
-
-                      <p className="text-gray-200 text-sm mt-2 max-w-xs mx-auto">
-                        {t('navbar.sign_out_confirm_message')}
-                      </p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="px-6 pt-6 pb-8 space-y-4 relative z-10">
-
-                    <Button
-                      variant="destructive"
-                      size="lg"
-                      onClick={handleConfirm}
-                      className="w-full h-14 rounded-xl font-semibold text-base 
-                               bg-gradient-to-r from-red-500/80 to-red-600/80 
-                               hover:from-red-500 hover:to-red-600 
-                               border border-red-400/40 shadow-lg shadow-red-500/30"
-                    >
-                      <LogOut className="mr-2 h-5 w-5" />
-                      {t('navbar.sign_out_confirm_yes')}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={onClose}
-                      className="w-full h-14 rounded-xl text-white border-white/20 
-                               hover:bg-white/10 backdrop-blur-md"
-                    >
-                      <X className="mr-2 h-5 w-5" />
-                      {t('navbar.sign_out_confirm_no')}
-                    </Button>
-
-                  </div>
-
-                </div>
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-end sm:items-center justify-center"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ y: '100%', opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: '100%', opacity: 0 }}
+          transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+          className="w-full sm:max-w-sm mx-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mx-4 sm:mx-0 mb-6 sm:mb-0 rounded-2xl p-6 bg-slate-900/90 backdrop-blur-xl border border-white/[0.08] shadow-2xl">
+            {/* Icône */}
+            <div className="flex justify-center mb-4">
+              <div className="w-12 h-12 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                <LogOut className="w-5 h-5 text-red-400/70" />
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+            </div>
+
+            {/* Titre */}
+            <h3 className="text-lg font-semibold text-white/80 text-center mb-1.5">
+              {tNavbar('sign_out_confirm_title')}
+            </h3>
+
+            {/* Message */}
+            <p className="text-sm text-gray-400/60 text-center font-light mb-6">
+              {tNavbar('sign_out_confirm_message')}
+            </p>
+
+            {/* Actions */}
+            <div className="space-y-2">
+              <button
+                onClick={onConfirm}
+                className="w-full h-10 inline-flex items-center justify-center gap-2 text-sm bg-gradient-to-r from-red-600/80 to-rose-600/80 hover:from-red-500 hover:to-rose-500 text-white font-light rounded-xl transition-all"
+              >
+                <LogOut className="w-4 h-4" />
+                {tNavbar('sign_out_confirm_yes')}
+              </button>
+
+              <button
+                onClick={onClose}
+                className="w-full h-10 inline-flex items-center justify-center gap-2 text-sm text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-xl transition-all"
+              >
+                <X className="w-4 h-4" />
+                {tNavbar('sign_out_confirm_no')}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 };
-
 // 🔹 ✅ Composant bulles (réutilisable partout)
 const IceBubbles = () => (
   <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -694,6 +598,9 @@ export default function DashboardContent({
   const [activeCardStats, setActiveCardStats] = useState<{ scans: number; unique_visitors: number } | null>(null);
   const [loadingCards, setLoadingCards] = useState(true);
   const [loadingMessagesCount, setLoadingMessagesCount] = useState(true);
+  const [upgradeStatus, setUpgradeStatus] = useState<'idle' | 'pending' | 'approved' | 'rejected'>('idle');
+const [checkingUpgrade, setCheckingUpgrade] = useState(true);
+
     // 🔹 Fonction pour fermer les modaux contrôlés par activeModal
   const closeModal = () => {
   setActiveModal(null);
@@ -814,40 +721,71 @@ const activeCard = cards[0];
     setLoadingMessagesCount(false);
   }
 };
-  const handleUpgradeRequest = async () => {
-    if (!user || !profile) return;
-    setIsSubmitting(true);
+  useEffect(() => {
+  const checkUpgradeStatus = async () => {
+    if (!profile?.id) return;
     try {
-      let targetPlan = 'premium';
-      if (profile.plan === 'premium') {
-        targetPlan = 'entreprise';
+      const supabase = createClient();
+      const { data } = await supabase
+        .from('upgrade_requests')
+        .select('status')
+        .eq('profile_id', profile.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setUpgradeStatus(data.status);
       }
-      const res = await fetch('/api/upgrade-request', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id,
-          profile_id: profile.id,
-          target_plan: targetPlan
-        }),
-      });
-      if (res.ok) {
-        closeModal();
-        alert(
-          targetPlan === 'entreprise'
-            ? '✅ Demande de conversion en Business envoyée.'
-            : '✅ Demande de passage à Pro envoyée.'
-        );
-        window.location.reload();
-      } else {
-        throw new Error();
-      }
-    } catch {
-      alert('❌ Échec. Veuillez réessayer.');
+    } catch (err) {
+      setUpgradeStatus('idle');
     } finally {
-      setIsSubmitting(false);
+      setCheckingUpgrade(false);
     }
   };
+
+  if (profile?.plan !== 'entreprise') {
+    checkUpgradeStatus();
+  } else {
+    setCheckingUpgrade(false);
+  }
+}, [profile?.id, profile?.plan]);
+
+// Modifier handleUpgradeRequest pour mettre à jour l'état local
+const handleUpgradeRequest = async () => {
+  if (!user || !profile) return;
+  setIsSubmitting(true);
+  try {
+    let targetPlan = 'premium';
+    if (profile.plan === 'premium') {
+      targetPlan = 'entreprise';
+    }
+    const res = await fetch('/api/upgrade-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: user.id,
+        profile_id: profile.id,
+        target_plan: targetPlan
+      }),
+    });
+    if (res.ok) {
+      setUpgradeStatus('pending'); // ✅ Met à jour l'état local
+      closeModal();
+      toast.success('Demande envoyée', {
+        description: 'Un administrateur examinera votre demande sous 24h.',
+      });
+    } else {
+      throw new Error();
+    }
+  } catch {
+    toast.error('Erreur', {
+      description: 'Impossible d\'envoyer la demande.',
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
 const loadNfcCards = async () => {
   const supabase = createClient();
@@ -1074,6 +1012,7 @@ useEffect(() => {
     audio.play().catch(() => {});
   }
 }, [unreadMessagesCount]);
+
   useEffect(() => {
     const fetchScans = async () => {
       try {
@@ -1958,7 +1897,6 @@ const handleToggleFollow = async (profileId: string) => {
 
   
 </motion.div>
-{/* 🔹 Section 4: Boutons Actions - DESIGN PREMIUM */}
 <style>{`
   @keyframes floatBubble {
     0% { transform: translateY(0) scale(0.6); opacity: 0.6; }
@@ -2004,7 +1942,6 @@ const handleToggleFollow = async (profileId: string) => {
     transform: translateY(0.5px) scale(0.985) !important;
   }
 `}</style>
-
 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
   
   {/* 🌐 Voir mon profil public */}
@@ -2359,28 +2296,64 @@ const handleToggleFollow = async (profileId: string) => {
   
   <CardContent className="pt-0">
     {subscription.active ? (
-      <p className="text-sm text-gray-400">Votre abonnement est actif et renouvelé automatiquement.</p>
+      <p className="text-sm text-gray-400/60 font-light">Votre abonnement est actif et renouvelé automatiquement.</p>
     ) : (
-      <p className="text-sm text-gray-400">💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités.</p>
+      <p className="text-sm text-gray-400/60 font-light">💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités.</p>
     )}
     
+    {/* ✅ Bouton de demande de mise à niveau avec gestion d'état */}
     {profile.plan !== 'entreprise' && (
-      <Button
-        size="sm"
-        onClick={() => setActiveModal('upgrade')}
-        className={`w-full mt-4 font-medium rounded-xl ${
-          profile.plan === 'basic'
-            ? 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500'
-            : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500'
-        } text-white`}
-      >
-        {profile.plan === 'basic' ? (
-          <><Crown className="w-4 h-4 mr-2" />{t('subscription.upgrade_to_premium')}</>
+      <>
+        {checkingUpgrade ? (
+          // Chargement de la vérification
+          <div className="w-full mt-3 h-9 bg-white/[0.03] rounded-xl animate-pulse" />
+        ) : upgradeStatus === 'pending' ? (
+          // ✅ Demande en attente - bouton désactivé
+          <button
+            disabled
+            className="w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs bg-amber-500/10 text-amber-300/60 border border-amber-500/20 font-light rounded-xl cursor-not-allowed"
+          >
+            <Clock className="w-4 h-4" />
+            Demande en attente d'approbation
+          </button>
+        ) : upgradeStatus === 'approved' ? (
+          // ✅ Demande approuvée - bouton pour finaliser
+          <button
+            onClick={() => setActiveModal('upgrade')}
+            className="w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-white font-light rounded-xl transition-all"
+          >
+            <Building className="w-4 h-4" />
+            Demande approuvée — Finaliser le passage
+            <ChevronRight className="w-4 h-4 ml-auto" />
+          </button>
+        ) : upgradeStatus === 'rejected' ? (
+          // ✅ Demande rejetée - bouton pour renvoyer
+          <button
+            onClick={handleUpgradeRequest}
+            className="w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs bg-red-500/10 text-red-300/60 border border-red-500/20 hover:bg-red-500/20 font-light rounded-xl transition-all"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Demande rejetée — Renvoyer la demande
+          </button>
         ) : (
-          <><Building className="w-4 h-4 mr-2" />{t('subscription.request_enterprise')}</>
+          // ✅ Aucune demande - bouton normal
+          <button
+            onClick={() => setActiveModal('upgrade')}
+            className={`w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs font-light rounded-xl transition-all ${
+              profile.plan === 'basic'
+                ? 'bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white'
+                : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-white'
+            }`}
+          >
+            {profile.plan === 'basic' ? (
+              <><Crown className="w-4 h-4" />{t('subscription.upgrade_to_premium')}</>
+            ) : (
+              <><Building className="w-4 h-4" />{t('subscription.request_enterprise')}</>
+            )}
+            <ChevronRight className="w-4 h-4 ml-auto" />
+          </button>
         )}
-        <ChevronRight className="w-4 h-4 ml-auto" />
-      </Button>
+      </>
     )}
   </CardContent>
 </motion.div>
@@ -2612,16 +2585,14 @@ const handleToggleFollow = async (profileId: string) => {
     </div>
   </div>
 )}
-  {showSignOutConfirm && (
-    <SignOutConfirmSheet
-      key="signout-confirm-modal" // ✅ STATIQUE
-      isOpen={true}
-      onClose={() => setShowSignOutConfirm(false)}
-      onConfirm={handleLogout}
-      t={t}
-      tNavbar={tNavbar}
-    />
-  )}
+{showSignOutConfirm && (
+  <SignOutConfirmSheet
+    isOpen={true}
+    onClose={() => setShowSignOutConfirm(false)}
+    onConfirm={handleLogout}
+    tNavbar={tNavbar}
+  />
+)}f
 
   {/* 🔹 MODAUX NFC - CONDITIONNELS AVEC CLÉS EXPLICITES */}
   {isNFCModalOpen && ( // ✅ Conditionnel + key explicite

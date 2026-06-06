@@ -1,34 +1,24 @@
-// src/app/admin/admin/layout.tsx
+// src/app/admin/layout.tsx
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { Toaster } from 'sonner';
-import { AdminHeader } from '../../components/admin/AdminHeader';
-import { AdminLayoutProvider } from '../../contexts/AdminLayoutContext';
-import { NetworkWatcher } from '../../components/system/NetworkWatcher';
+import { AdminHeader } from '@/src/components/admin/AdminHeader';
+import { AdminSidebar } from '@/src/components/admin/AdminSidebar';
+import { AdminLayoutProvider } from '@/src/contexts/AdminLayoutContext';
+import { NetworkWatcher } from '@/src/components/system/NetworkWatcher';
 
-// 🔹 METADATA ADMIN SPÉCIFIQUE
 export const metadata = {
   title: 'Admin Panel • LUVIKA',
   description: 'Espace administrateur - Gestion des utilisateurs, abonnements, commandes NFC et statistiques',
 };
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
+    { cookies: { get(name) { return cookieStore.get(name)?.value; } } }
   );
 
   const { data: { user } } = await supabase.auth.getUser();
@@ -38,21 +28,17 @@ export default async function AdminLayout({
 
   return (
     <AdminLayoutProvider>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-indigo-950 text-white">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white" suppressHydrationWarning>
         <AdminHeader />
-        <main className="pt-20">
-          {children}
-        </main>
-        
-        {/* 🔹 Toaster optimisé - UN SEUL */}
-        <Toaster 
-          position="top-right" 
-          richColors 
-          closeButton
-          duration={5000}
-          visibleToasts={3}
-        />
-        
+        <div className="flex">
+          <AdminSidebar />
+          <main className="flex-1 ml-16 lg:ml-56 pt-14 min-h-screen">
+            <div className="p-4 md:p-6">
+              {children}
+            </div>
+          </main>
+        </div>
+        <Toaster position="top-right" richColors closeButton duration={5000} visibleToasts={3} />
         <NetworkWatcher />
       </div>
     </AdminLayoutProvider>

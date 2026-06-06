@@ -2,14 +2,14 @@
 'use client';
 
 import Link from 'next/link';
-import { LogOut, Settings, Globe, User, Shield, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { LogOut, Settings, Globe, User, Shield, ChevronDown, ArrowLeft } from 'lucide-react';
 import { createClient } from '@/src/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useState, useEffect, useRef } from 'react';
 import { SiSocialblade } from 'react-icons/si';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from '@/src/components/system/ThemeToggle';
 
 const languages: Record<string, { name: string; flag: string }> = {
   fr: { name: 'Français', flag: '🇫🇷' },
@@ -58,7 +58,6 @@ export function AdminHeader() {
     fetchUser();
   }, []);
 
-  // Fermer les dropdowns au clic extérieur
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) setOpenLang(false);
@@ -86,22 +85,34 @@ export function AdminHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-slate-950/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-slate-950/80 backdrop-blur-xl">
+      <div className="w-full px-4">
         <div className="flex items-center justify-between h-14">
-          {/* Left - Logo */}
-          <Link href="/admin" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-r from-cyan-500/60 to-blue-500/60 flex items-center justify-center">
-              <SiSocialblade className="w-3.5 h-3.5 text-white/80" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-white/80">LUVIKA</span>
-              <span className="text-[10px] text-cyan-400/50 font-light">Admin</span>
-            </div>
-          </Link>
+          {/* Left - Logo + Retour */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 text-gray-400/60 hover:text-white/70 transition-colors text-xs font-light"
+            >
+              <span className="hidden sm:inline">Accueil</span>
+            </Link>
+
+            <Link href="/admin" className="flex items-center gap-2 group">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-r from-red-500/60 to-rose-500/60 flex items-center justify-center">
+                <Shield className="w-3.5 h-3.5 text-white/80" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-white/80">LUVIKA</span>
+                <span className="text-[10px] text-cyan-400/50 font-light">Admin</span>
+              </div>
+            </Link>
+          </div>
 
           {/* Right - Actions */}
           <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Langues */}
             <div ref={langRef} className="relative">
               <button
@@ -166,7 +177,6 @@ export function AdminHeader() {
                     exit={{ opacity: 0, y: -5 }}
                     className="absolute right-0 top-full mt-1 w-48 bg-slate-900/90 backdrop-blur-xl border border-white/[0.08] rounded-xl py-1 shadow-xl z-50"
                   >
-                    {/* Info user */}
                     <div className="px-3 py-2 border-b border-white/[0.04]">
                       <p className="text-xs text-white/70 font-medium truncate">
                         {profile?.full_name || user?.email?.split('@')[0] || 'Admin'}
