@@ -114,13 +114,13 @@ export default function QRModal({
           className="max-w-md w-full"
         >
           <div className="glass-border backdrop-blur-2xl bg-gradient-to-br from-cyan-900/20 to-blue-900/30 border border-cyan-400/30 rounded-3xl overflow-hidden shadow-2xl relative">
-            {/* Bouton de fermeture en haut à droite */}
+            {/* Bouton de fermeture corrigé - en haut à droite dans le coin */}
             <button
               onClick={onClose}
-              className="absolute -top-3 -right-3 w-10 h-10 rounded-full bg-black/40 flex items-center justify-center text-white hover:bg-black/60 transition-colors shadow-lg"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 hover:scale-105 transition-all duration-200 z-10"
               aria-label="Fermer le modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
 
             <div className="p-6 text-center">

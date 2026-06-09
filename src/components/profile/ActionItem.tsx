@@ -9,7 +9,7 @@ interface ActionItemProps {
   label: string;
   value: string;
   href: string;
-    gradient?: string;  // <-- ajoute cette ligne
+  gradient?: string;
   className?: string;
 }
 
