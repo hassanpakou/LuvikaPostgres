@@ -3,9 +3,10 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
 import { 
-  Mail, MapPin, Phone, MessageCircle, Send, ChevronRight, CheckCircle, AlertCircle,
-  User, Lock, Clock, Star
+  Mail, MapPin, Phone, MessageCircle, Send, CheckCircle, AlertCircle,
+  User, Lock, Clock, Star, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,11 +41,68 @@ export default function ContactContent({
 }) {
   const t = useTranslations('contact_page');
   const currentYear = new Date().getFullYear();
+  
+  // États du formulaire
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Gestion des changements
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    });
+    // Réinitialiser le statut quand l'utilisateur modifie le formulaire
+    if (submitStatus !== 'idle') {
+      setSubmitStatus('idle');
+      setErrorMessage('');
+    }
+  };
+
+  // Soumission du formulaire
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSubmitStatus('success');
+        setFormData({ name: '', email: '', message: '' });
+        // Réinitialiser après 5 secondes
+        setTimeout(() => setSubmitStatus('idle'), 5000);
+      } else {
+        setSubmitStatus('error');
+        setErrorMessage(data.error || 'Une erreur est survenue');
+      }
+    } catch (error) {
+      setSubmitStatus('error');
+      setErrorMessage('Erreur de connexion. Veuillez réessayer.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen py-10 bg-transparent">
       <div className="max-w-5xl mx-auto px-4">
-        {/* Header */}
+        {/* Header - inchangé */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -60,7 +118,7 @@ export default function ContactContent({
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Informations de contact */}
+          {/* Informations de contact - inchangé */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -96,7 +154,11 @@ export default function ContactContent({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 + index * 0.05 }}
                 whileHover={{ y: -2 }}
-                className="group relative"
+                className="group relative cursor-pointer"
+                onClick={() => {
+                  if (item.title === email) window.location.href = `mailto:${item.value}`;
+                  if (item.title === phone) window.location.href = `tel:${item.value.replace(/\s/g, '')}`;
+                }}
               >
                 <div className="absolute -inset-0.5 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl blur-sm"
                   style={{ 
@@ -119,7 +181,7 @@ export default function ContactContent({
               </motion.div>
             ))}
             
-            {/* Horaires */}
+            {/* Horaires - inchangé */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -140,7 +202,7 @@ export default function ContactContent({
             </motion.div>
           </motion.div>
 
-          {/* Formulaire */}
+          {/* Formulaire modifié */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -156,12 +218,45 @@ export default function ContactContent({
               <p className="text-gray-400 text-sm mt-1">{t('form_subtitle')}</p>
             </div>
             
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Message de succès */}
+              {submitStatus === 'success' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-emerald-500/15 border border-emerald-500/30 rounded-lg p-3 flex items-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <p className="text-emerald-300 text-sm">Message envoyé avec succès ! Nous vous répondrons rapidement.</p>
+                </motion.div>
+              )}
+
+              {/* Message d'erreur */}
+              {submitStatus === 'error' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-500/15 border border-red-500/30 rounded-lg p-3 flex items-center gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <p className="text-red-300 text-sm">{errorMessage}</p>
+                </motion.div>
+              )}
+
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-gray-300 text-sm">{name}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input id="name" type="text" placeholder={name_placeholder} className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30" />
+                  <Input 
+                    id="name" 
+                    type="text" 
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    placeholder={name_placeholder} 
+                    className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30" 
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
@@ -169,7 +264,16 @@ export default function ContactContent({
                 <Label htmlFor="email" className="text-gray-300 text-sm">{email}</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input id="email" type="email" placeholder="votre@email.com" className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="votre@email.com" 
+                    className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30" 
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
@@ -177,16 +281,45 @@ export default function ContactContent({
                 <Label htmlFor="message" className="text-gray-300 text-sm">{message}</Label>
                 <div className="relative">
                   <MessageCircle className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                  <Textarea id="message" rows={4} placeholder={message_placeholder} className="pl-10 pt-3 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30 resize-none" />
+                  <Textarea 
+                    id="message" 
+                    rows={4} 
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    placeholder={message_placeholder} 
+                    className="pl-10 pt-3 bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/30 resize-none" 
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
               
               <AnimatePresence mode="wait">
-                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }}>
-                  <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-300 group">
+                <motion.div 
+                  key={submitStatus}
+                  initial={{ opacity: 0, y: 10 }} 
+                  animate={{ opacity: 1, y: 0 }} 
+                  exit={{ opacity: 0, y: -10 }} 
+                  transition={{ duration: 0.2 }}
+                >
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
                     <span className="flex items-center justify-center gap-2">
-                      {send}
-                      <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          Envoi en cours...
+                        </>
+                      ) : (
+                        <>
+                          {send}
+                          <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </>
+                      )}
                     </span>
                   </Button>
                 </motion.div>
@@ -207,7 +340,7 @@ export default function ContactContent({
           </motion.div>
         </div>
 
-        {/* CTA finale */}
+        {/* CTA finale - modifié pour être cliquable */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -219,8 +352,8 @@ export default function ContactContent({
               <div className="text-center md:text-left">
                 <h3 className="text-lg font-bold text-white mb-1">{t('cta_title')}</h3>
                 <p className="text-gray-300 text-sm">
-                  {t('cta_call_text')} <span className="font-medium text-cyan-300">{phone}</span><br />
-                  {t('cta_email_text')} <span className="font-medium text-cyan-300">luvika@gmail.com</span>
+                  {t('cta_call_text')} <button onClick={() => window.location.href = 'tel:+2438901776601'} className="font-medium text-cyan-300 hover:text-cyan-200 transition-colors">{phone}</button><br />
+                  {t('cta_email_text')} <button onClick={() => window.location.href = 'mailto:luvika@gmail.com'} className="font-medium text-cyan-300 hover:text-cyan-200 transition-colors">luvika@gmail.com</button>
                 </p>
               </div>
               <Button size="sm" variant="outline" className="border-cyan-400/30 text-cyan-300 hover:bg-cyan-500/10 hover:text-cyan-200" onClick={() => window.location.href = 'tel:+2438901776601'}>
@@ -230,7 +363,7 @@ export default function ContactContent({
           </div>
         </motion.div>
 
-        {/* Footer */}
+        {/* Footer - inchangé */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
