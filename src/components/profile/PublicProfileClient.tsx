@@ -935,18 +935,38 @@ const showLinksSection =
           </motion.div>
         )}
       </div>
-{/* 🔹 Badge Pionnier LUVIKA */}
+{/* 🔹 Badge Pionnier LUVIKA - Version élégante */}
 {localProfile.badges?.includes('pioneer') && (
   <motion.div
-    initial={{ scale: 0, opacity: 0, rotate: -15 }}
-    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+    initial={{ scale: 0, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
     transition={{ delay: 0.4, type: "spring", stiffness: 200 }}
     className="absolute -bottom-2 -right-2"
   >
-    <Badge className="px-2 py-0.5 text-xs font-medium rounded-full border border-amber-400/30 bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20">
-      <Star className="w-3 h-3 inline mr-0.5 fill-white" />
-      Pionnier
-    </Badge>
+    <div className="relative group">
+      {/* Anneau lumineux */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm" />
+      
+      <div className="relative flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-600/80 to-orange-600/80 backdrop-blur-sm border border-amber-400/40 shadow-lg">
+        {/* Étoile animée */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+          className="relative"
+        >
+          <Star className="w-3 h-3 text-white fill-amber-300" />
+        </motion.div>
+        
+        <span className="text-xs font-bold text-white tracking-wide">PIONNIER</span>
+        
+        {/* Petit point lumineux */}
+        <motion.div
+          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="w-1.5 h-1.5 rounded-full bg-amber-300"
+        />
+      </div>
+    </div>
   </motion.div>
 )}
       {/* 🔹 TEXTE : Username + Full Name - À droite de l'avatar sur mobile */}
