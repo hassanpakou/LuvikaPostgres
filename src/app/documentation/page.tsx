@@ -510,7 +510,7 @@ export default function DocumentationPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br bg-transparent flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -533,10 +533,10 @@ export default function DocumentationPage() {
 
   return (
     <AnimatePresence>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="min-h-screen bg-gradient-to-br bg-transparent">
         {/* Header */}
         <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute inset-0 bg-gradient-to-r bg-transparent rounded-full blur-3xl"></div>
           <div className="container mx-auto px-4 py-12 relative">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -544,7 +544,7 @@ export default function DocumentationPage() {
               transition={{ duration: 0.5, ease: 'easeOut' }}
               className="text-center"
             >
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r bg-transparent px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
                 <Book className="w-3.5 h-3.5 text-cyan-300/80" />
                 <span className="text-cyan-300/80 font-medium text-sm">Documentation</span>
               </div>

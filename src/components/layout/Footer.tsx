@@ -41,6 +41,7 @@ export default function PublicProfileFooter() {
   const legalLinks = [
     { label: t('privacy'), href: '/privacy' },
     { label: t('terms'), href: '/terms' },
+    { label: t('cookies'), href: '/cookies' },
   ];
 
   // Réseaux sociaux

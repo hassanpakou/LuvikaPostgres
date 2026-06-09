@@ -78,7 +78,7 @@ export default function TermsPage() {
 
   return (
     <AnimatePresence>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-10">
+      <div className="min-h-screen bg-gradient-to-br bg-transparent py-10">
         <div className="max-w-4xl mx-auto px-4">
           {/* Header compact */}
           <motion.div
@@ -87,8 +87,7 @@ export default function TermsPage() {
             transition={{ duration: 0.5, ease: 'easeOut' }}
             className="text-center mb-8"
           >
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
-              <Sparkle className="w-3.5 h-3.5 text-cyan-300/80 animate-pulse" />
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r bg-transparent px-3.5 py-1.5 rounded-full border border-cyan-500/20 mb-4">
               <span className="text-cyan-300/80 font-medium text-sm">{t('badge')}</span>
             </div>
             
@@ -154,7 +153,6 @@ export default function TermsPage() {
           >
             <p>{t('footer_text', { date: new Date().toLocaleDateString('fr-FR') })}</p>
             <p className="mt-1 flex items-center justify-center gap-1.5">
-              <Sparkle className="w-3 h-3 text-cyan-400/50 animate-pulse" />
               <span>{t('made_with')}</span>
             </p>
           </motion.div>

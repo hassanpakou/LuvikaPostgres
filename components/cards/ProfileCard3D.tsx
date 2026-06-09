@@ -2,10 +2,14 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 
-export default function ProfileCard3D() {
+type ProfileCard3DProps = {
+  onTap?: () => void;
+};
+
+export default function ProfileCard3D({ onTap }: ProfileCard3DProps) {
   const t = useTranslations('profile_card_3d');
   const [isHovered, setIsHovered] = useState(false);
   const [flashKey, setFlashKey] = useState(0);
@@ -45,6 +49,14 @@ export default function ProfileCard3D() {
     setIsHovered(true);
   };
 
+  // ✅ Gestion du clic/tap
+  const handleClick = useCallback(() => {
+    if (onTap) {
+      onTap();
+      setFlashKey(prev => prev + 1); // Déclenche aussi le flash au clic
+    }
+  }, [onTap]);
+
   // Générer des blocs QR aléatoires pour l'aperçu (statique)
   const qrBlocks = Array(9).fill(0).map((_, i) => ({
     isDark: [0, 2, 6, 8].includes(i),
@@ -83,6 +95,15 @@ export default function ProfileCard3D() {
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
     >
       {/* Glass Border Frame */}
       <div className="absolute inset-0 rounded-2xl border border-white/20 backdrop-blur-xl bg-white/5" />
@@ -93,7 +114,7 @@ export default function ProfileCard3D() {
 
       {/* Light Orbs */}
       <motion.div
-        className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-white-400/10 blur-xl"
+        className="absolute top-1/4 left-1/4 w-32 h-32 rounded-full bg-white/10 blur-xl"
         animate={{ opacity: [0.3, 0.8, 0.3], scale: [1, 1.2, 1] }}
         transition={{ duration: 4, repeat: Infinity }}
       />

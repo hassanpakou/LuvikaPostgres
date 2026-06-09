@@ -34,7 +34,7 @@ const CONFIG = {
     titleKey: 'download.cta_title',
     descKey: 'download.cta_desc',
     primaryButton: { textKey: 'download.download_now', link: '/auth/sign-up' },
-    secondaryButton: { textKey: 'navbar.pricing', link: '/public/pricing' },
+    secondaryButton: { textKey: 'navbar.pricing', link: '/pricing' },
     stats: [
       { value: '50K+', labelKey: 'home.stats.users', icon: Users },
       { value: '250K+', labelKey: 'home.stats.scans', icon: ScanLine },
@@ -70,12 +70,39 @@ const CONFIG = {
       { Icon: Twitter, href: 'https://twitter.com/luvika', color: 'text-cyan-400', hover: 'hover:bg-cyan-500/10' },
       { Icon: SiInstagram, href: 'https://instagram.com/luvika', color: 'text-pink-400', hover: 'hover:bg-pink-500/10' },
       { Icon: Linkedin, href: 'https://linkedin.com/company/luvika', color: 'text-blue-400', hover: 'hover:bg-blue-500/10' },
-      { Icon: Github, href: 'https://github.com/luvika', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
+      { Icon: Github, href: 'https://github.com/hassanpakou/Luvika2026', color: 'text-gray-400', hover: 'hover:bg-gray-500/10' },
     ],
     links: [
-      { titleKey: 'home.footer.product', icon: Globe, iconColor: 'text-cyan-400', items: ['home.footer.features', 'home.footer.pricing', 'home.footer.download', 'home.footer.documentation'] },
-      { titleKey: 'home.footer.company', icon: Heart, iconColor: 'text-rose-400', items: ['home.footer.about', 'home.footer.contact', 'home.footer.blog', 'home.footer.careers'] },
-      { titleKey: 'home.footer.legal', icon: Gavel, iconColor: 'text-amber-400', items: ['home.footer.privacy', 'home.footer.terms', 'home.footer.cookies', 'home.footer.security'] },
+      { 
+        titleKey: 'home.footer.product', 
+        icon: Globe, 
+        iconColor: 'text-cyan-400', 
+        items: [
+          { labelKey: 'home.footer.features', href: '/features' },
+          { labelKey: 'home.footer.download', href: '/fr/download' },
+          { labelKey: 'home.footer.documentation', href: '/documentation' },
+        ]
+      },
+      { 
+        titleKey: 'home.footer.company', 
+        icon: Heart, 
+        iconColor: 'text-rose-400', 
+        items: [
+          { labelKey: 'home.footer.about', href: '/about' },
+          { labelKey: 'home.footer.contact', href: '/contact' },
+          { labelKey: 'home.footer.blog', href: '/blog' },
+        ]
+      },
+      { 
+        titleKey: 'home.footer.legal', 
+        icon: Gavel, 
+        iconColor: 'text-amber-400', 
+        items: [
+          { labelKey: 'home.footer.privacy', href: '/privacy' },
+          { labelKey: 'home.footer.terms', href: '/terms' },
+          { labelKey: 'home.footer.cookies', href: '/cookies' },
+        ]
+      },
     ],
     contactEmail: 'support@luvika.me',
   },
@@ -136,7 +163,6 @@ const HeroSection = () => {
 
 const CTASection = () => {
   const t = useTranslations();
-  const locale = useLocale();
   return (
     <section className="relative py-16 text-center">
       <GlassCard className="max-w-4xl mx-auto p-8 md:p-12">
@@ -148,7 +174,7 @@ const CTASection = () => {
               {t(CONFIG.cta.primaryButton.textKey)} <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition" />
             </motion.button>
           </Link>
-          <Link href={`/${locale}${CONFIG.cta.secondaryButton.link}`}>
+          <Link href={CONFIG.cta.secondaryButton.link}>
             <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="px-8 py-3 rounded-full font-bold text-gray-200 bg-black/40 border border-white/20 hover:bg-white/10 transition">
               {t(CONFIG.cta.secondaryButton.textKey)}
             </motion.button>
@@ -386,7 +412,13 @@ const Footer = () => {
             <div key={idx} className="space-y-3">
               <h3 className="font-semibold text-white flex items-center gap-2"><group.icon className={`w-4 h-4 ${group.iconColor}`} />{t(group.titleKey)}</h3>
               <ul className="space-y-2 text-sm">
-                {group.items.map((itemKey) => (<li key={itemKey}><Link href="#" className="text-gray-400 hover:text-cyan-300 transition">{t(itemKey)}</Link></li>))}
+                {group.items.map((item) => (
+                  <li key={item.href}>
+                    <Link href={item.href} className="text-gray-400 hover:text-cyan-300 transition">
+                      {t(item.labelKey)}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}
