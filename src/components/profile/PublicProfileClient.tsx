@@ -361,6 +361,13 @@ export default function PublicProfileClient({
   const [localCardConfigs, setLocalCardConfigs] = useState<CardConfig[]>(cardConfigs);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [showCard3D, setShowCard3D] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
+  const [showCertificatesModal, setShowCertificatesModal] = useState(false);
+  const [showSkillsModal, setShowSkillsModal] = useState(false);
+  const [showAvatarFullscreen, setShowAvatarFullscreen] = useState(false);
+
   const showBirthday = 
   isSectionEnabled('profile', localCardConfigs) && 
   !localProfile.disable_birthday_icon;
@@ -500,11 +507,6 @@ useEffect(() => {
   </div>
 )}
 
-  const [showContactModal, setShowContactModal] = useState(false);
-  const [showPortfolioModal, setShowPortfolioModal] = useState(false);
-  const [showCertificatesModal, setShowCertificatesModal] = useState(false);
-  const [showSkillsModal, setShowSkillsModal] = useState(false);
-  const [showAvatarFullscreen, setShowAvatarFullscreen] = useState(false);
 
   // 🔹 Composant réutilisable pour les cartes de statistiques
 interface StatCardProps {
@@ -1103,7 +1105,7 @@ const showLinksSection =
 )}
               
 
-{/* 🔹 SECTION STATS - Icônes avec tooltips et actions au clic */}
+{/* 🔹 SECTION STATS - Icônes avec compteurs au survol ET au clic */}
 <motion.div
   initial={{ opacity: 0, y: 20 }}
   animate={{ opacity: 1, y: 0 }}
@@ -1120,7 +1122,7 @@ const showLinksSection =
     {/* Barre d'icônes centrée */}
     <div className="flex items-center justify-center gap-1">
       
-      {/* ❤️ Likes - clic = like */}
+      {/* ❤️ Likes - survol=compteur, clic=like */}
       <motion.div
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}
@@ -1129,10 +1131,11 @@ const showLinksSection =
         <div className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer">
           <GlacialLikeButton profileId={localProfile.id} initialLikes={localProfile.likes_count || 0} hideCount />
         </div>
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+        {/* Tooltip compteur */}
+        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
           <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
-            <p className="text-[11px] font-medium text-white whitespace-nowrap">
-              {localProfile.likes_count || 0} J'aime
+            <p className="text-[11px] font-semibold text-white whitespace-nowrap">
+              ❤️ {localProfile.likes_count || 0} J'aime
             </p>
           </div>
         </div>
@@ -1141,7 +1144,7 @@ const showLinksSection =
       {/* Séparateur */}
       <span className="w-px h-5 bg-white/[0.06] mx-2" />
 
-      {/* 👥 Followers - clic = liste */}
+      {/* 👥 Followers - survol=compteur, clic=modal */}
       <motion.div
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}
@@ -1154,10 +1157,10 @@ const showLinksSection =
         >
           <Users className="w-5 h-5 text-cyan-400" />
         </button>
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
           <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
-            <p className="text-[11px] font-medium text-white whitespace-nowrap">
-              {followersCount} Abonnés
+            <p className="text-[11px] font-semibold text-white whitespace-nowrap">
+              👥 {followersCount} Abonnés
             </p>
           </div>
         </div>
@@ -1166,7 +1169,7 @@ const showLinksSection =
       {/* Séparateur */}
       <span className="w-px h-5 bg-white/[0.06] mx-2" />
 
-      {/* 📱 Abonnements - clic = liste */}
+      {/* 📱 Abonnements - survol=compteur, clic=modal */}
       <motion.div
         whileHover={{ scale: 1.15 }}
         whileTap={{ scale: 0.9 }}
@@ -1179,62 +1182,125 @@ const showLinksSection =
         >
           <UserPlus className="w-5 h-5 text-purple-400" />
         </button>
-        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
           <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
-            <p className="text-[11px] font-medium text-white whitespace-nowrap">
-              {initialFollowing} Suivi(e)s
+            <p className="text-[11px] font-semibold text-white whitespace-nowrap">
+              📱 {initialFollowing} Suivi(e)s
             </p>
           </div>
         </div>
       </motion.div>
 
-      {/* Séparateur */}
+           {/* Séparateur */}
       <span className="w-px h-5 bg-white/[0.06] mx-2" />
 
-                {/* 🪪 Carte NFC - infobulle au survol + prévisualisation 3D */}
-      {(() => {
-        const nfcCards = localProfile.nfc_cards || [];
-        const getStatus = () => {
-          if (!nfcCards.length) return { label: 'Aucune', dot: 'bg-gray-400', icon: 'text-gray-400', color: 'gray' };
-          if (nfcCards.some(c => c.status === 'blocked')) return { label: 'Bloquée', dot: 'bg-red-400', icon: 'text-red-400', color: 'red' };
-          if (nfcCards.some(c => c.status === 'reported')) return { label: 'Signalée', dot: 'bg-orange-400', icon: 'text-orange-400', color: 'orange' };
-          if (nfcCards.some(c => c.status === 'lost')) return { label: 'Perdue', dot: 'bg-amber-400', icon: 'text-amber-400', color: 'amber' };
-          if (nfcCards.some(c => c.status === 'active')) return { label: 'Active', dot: 'bg-emerald-400 animate-pulse', icon: 'text-emerald-400', color: 'emerald' };
-          return { label: 'Inactive', dot: 'bg-gray-400', icon: 'text-gray-400', color: 'gray' };
-        };
-        const s = getStatus();
+      {/* 🪪 Carte NFC - Visible uniquement par le propriétaire */}
+      {isOwner && (
+        <>
+          {(() => {
+            const nfcCards = localProfile.nfc_cards || [];
+            const getStatus = () => {
+              if (!nfcCards.length) return { label: 'Aucune', dot: 'bg-gray-400', icon: 'text-gray-400', color: 'gray' };
+              if (nfcCards.some(c => c.status === 'blocked')) return { label: 'Bloquée', dot: 'bg-red-400', icon: 'text-red-400', color: 'red' };
+              if (nfcCards.some(c => c.status === 'reported')) return { label: 'Signalée', dot: 'bg-orange-400', icon: 'text-orange-400', color: 'orange' };
+              if (nfcCards.some(c => c.status === 'lost')) return { label: 'Perdue', dot: 'bg-amber-400', icon: 'text-amber-400', color: 'amber' };
+              if (nfcCards.some(c => c.status === 'active')) return { label: 'Active', dot: 'bg-emerald-400 animate-pulse', icon: 'text-emerald-400', color: 'emerald' };
+              return { label: 'Inactive', dot: 'bg-gray-400', icon: 'text-gray-400', color: 'gray' };
+            };
+            const s = getStatus();
 
-        return (
-          <motion.div
-            whileHover={{ scale: 1 }}
-            className="group relative"
-          >
-            {/* Icône + pastille */}
-            <div className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer flex items-center gap-1.5">
-              <CreditCard className={`w-5 h-5 ${s.icon}`} />
-              <span className={`w-1.5 h-1.5 rounded-full ${s.dot} flex-shrink-0`} />
-            </div>
+            return (
+              <motion.div
+                whileHover={{ scale: 1 }}
+                className="group relative"
+              >
+                <button
+                  onClick={() => setShowCard3D(!showCard3D)}
+                  className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer flex items-center gap-1.5"
+                  aria-label="Voir la carte NFC"
+                >
+                  <CreditCard className={`w-5 h-5 ${s.icon}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${s.dot} flex-shrink-0`} />
+                </button>
 
-            {/* Tooltip statut */}
-            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20">
-              <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
-                <p className="text-[11px] font-medium text-white whitespace-nowrap">
-                  NFC · {s.label}
-                </p>
-              </div>
-            </div>
-
-            {/* 🎴 CARTE 3D AU SURVOL - uniquement si carte active */}
-            {s.color === 'emerald' && (
-              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-30">
-                <div className="w-[280px] scale-75 origin-bottom">
-                  <ProfileCard3D onTap={() => {}} />
+                <div className="absolute -bottom-9 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20">
+                  <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
+                    <p className="text-[11px] font-semibold text-white whitespace-nowrap">
+                      🪪 NFC · {s.label}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            )}
-          </motion.div>
-        );
-      })()}
+
+                <AnimatePresence>
+                  {showCard3D && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, y: 10 }}
+                      className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 z-30"
+                    >
+                      <div className="w-[300px]">
+                        <ProfileCard3D onTap={() => setShowCard3D(false)} />
+                      </div>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setShowCard3D(false); }}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center hover:bg-slate-700 transition-colors"
+                      >
+                        <X className="w-3 h-3 text-gray-400" />
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="hidden sm:block absolute left-1/2 -translate-x-1/2 bottom-full mb-3 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-30">
+                  <div className="w-[300px]">
+                    <ProfileCard3D onTap={() => {}} />
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
+        </>
+      )}
+ {/* 🔹 BOUTON S'ABONNER - Visible pour les visiteurs connectés (non propriétaires) */}
+      {!isOwner && currentUserId && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="flex justify-center w-full mt-2"
+        >
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleFollowToggle}
+            className={`
+              group relative overflow-hidden
+              px-5 py-2 rounded-full
+              font-medium text-sm
+              transition-all duration-300
+              ${isFollowing 
+                ? 'bg-white/[0.06] border border-white/[0.12] text-gray-300 hover:bg-red-500/15 hover:text-red-300 hover:border-red-500/25' 
+                : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35'
+              }
+            `}
+          >
+            <span className="relative z-10 flex items-center gap-1.5">
+              {isFollowing ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  Abonné
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  S'abonner
+                </>
+              )}
+            </span>
+          </motion.button>
+        </motion.div>
+      )}
 
     </div>
 
