@@ -47,6 +47,8 @@ import ContactForm from './ContactForm';
 import { createClient } from '../../lib/supabase/client';
 import FollowersList from './FollowersList';
 import { PublicProfile } from '../../types/profile';
+import FollowersModal from '../dashboard/FollowersModal';
+import ProfileCard3D from '@/components/cards/ProfileCard3D';
 
 // 🔹 Types
 type Profile = {
@@ -357,7 +359,8 @@ export default function PublicProfileClient({
   const [followersCount, setFollowersCount] = useState(initialFollowers);
   const [localProfile, setLocalProfile] = useState<Profile>(profile);
   const [localCardConfigs, setLocalCardConfigs] = useState<CardConfig[]>(cardConfigs);
-
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
   const showBirthday = 
   isSectionEnabled('profile', localCardConfigs) && 
   !localProfile.disable_birthday_icon;
@@ -1100,109 +1103,176 @@ const showLinksSection =
 )}
               
 
-{/* 🔹 SECTION STATS - Design premium en cartes */}
-{isSectionEnabled('profile', localCardConfigs) && (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.6 }}
-    className="w-full px-4 mt-8"
-  >
-    <div className="max-w-5xl mx-auto">
-      {/* Titre section */}
-      <div className="mb-6 text-center">
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <BarChart3 className="w-6 h-6 text-cyan-400" />
-          <h2 className="text-xl font-bold text-white">Statistiques</h2>
+{/* 🔹 SECTION STATS - Icônes avec tooltips et actions au clic */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.6, duration: 0.5, ease: "easeOut" }}
+  className="w-full px-4 mt-6"
+>
+  <div className="max-w-xl mx-auto">
+    
+    {/* Ligne décorative subtile */}
+    <div className="mb-5 flex justify-center">
+      <div className="w-10 h-0.5 bg-gradient-to-r from-cyan-400/50 to-blue-500/50 rounded-full" />
+    </div>
+
+    {/* Barre d'icônes centrée */}
+    <div className="flex items-center justify-center gap-1">
+      
+      {/* ❤️ Likes - clic = like */}
+      <motion.div
+        whileHover={{ scale: 1.15 }}
+        whileTap={{ scale: 0.9 }}
+        className="group relative"
+      >
+        <div className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer">
+          <GlacialLikeButton profileId={localProfile.id} initialLikes={localProfile.likes_count || 0} hideCount />
         </div>
-        <p className="text-sm text-gray-400">
-          Découvrez les interactions et l'engagement autour de ce profil
-        </p>
-      </div>
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+          <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
+            <p className="text-[11px] font-medium text-white whitespace-nowrap">
+              {localProfile.likes_count || 0} J'aime
+            </p>
+          </div>
+        </div>
+      </motion.div>
 
-      {/* Grille responsive moderne */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* ❤️ Likes - Carte premium */}
-        <StatCard
-          icon={
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Heart className="w-5 h-5 text-white fill-white" />
-                <GlacialLikeButton profileId={localProfile.id} initialLikes={localProfile.likes_count || 0} hideCount />
+      {/* Séparateur */}
+      <span className="w-px h-5 bg-white/[0.06] mx-2" />
 
-            </div>
-          }
-          label="J'aime"
-          value={localProfile.likes_count || 0}
-          gradient="from-rose-500/15 to-pink-500/10"
-          borderColor="border-rose-500/20"
-          hoverColor="hover:border-rose-500/40 hover:shadow-rose-500/10"
+      {/* 👥 Followers - clic = liste */}
+      <motion.div
+        whileHover={{ scale: 1.15 }}
+        whileTap={{ scale: 0.9 }}
+        className="group relative"
+      >
+        <button
+          onClick={() => setShowFollowersModal(true)}
+          className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer"
+          aria-label="Voir les abonnés"
         >
-        </StatCard>
-
-        {/* 👥 Followers - Carte premium */}
-        <StatCard
-          icon={
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Users className="w-5 h-5 text-white" />
-            </div>
-          }
-          label="Followers"
-          value={followersCount}
-          gradient="from-cyan-500/15 to-blue-500/10"
-          borderColor="border-cyan-500/20"
-          hoverColor="hover:border-cyan-500/40 hover:shadow-cyan-500/10"
-        />
-
-        {/* 📱 Following - Carte premium (conditionnelle) */}
-        {initialFollowing > 0 && (
-          <StatCard
-            icon={
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-fuchsia-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <UserPlus className="w-5 h-5 text-white" />
-              </div>
-            }
-            label="Suivi(e)s"
-            value={initialFollowing}
-            gradient="from-purple-500/15 to-fuchsia-500/10"
-            borderColor="border-purple-500/20"
-            hoverColor="hover:border-purple-500/40 hover:shadow-purple-500/10"
-          />
-        )}
-
-        {/* 🪪 NFC - Carte premium avec état dynamique */}
-        <StatCard
-          icon={
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform ${
-              hasLostCard 
-                ? 'bg-gradient-to-br from-yellow-500 to-amber-500' 
-                : 'bg-gradient-to-br from-emerald-500 to-teal-500'
-            }`}>
-              <CreditCard className="w-5 h-5 text-white" />
-            </div>
-          }
-          label="Carte NFC"
-          value={hasLostCard ? "Perdue" : "Active"}
-          gradient={hasLostCard ? "from-yellow-500/15 to-amber-500/10" : "from-emerald-500/15 to-teal-500/10"}
-          borderColor={hasLostCard ? "border-yellow-500/20" : "border-emerald-500/20"}
-          hoverColor={hasLostCard ? "hover:border-yellow-500/40 hover:shadow-yellow-500/10" : "hover:border-emerald-500/40 hover:shadow-emerald-500/10"}
-          pulse={true}
-          pulseColor={hasLostCard ? "rgba(250,204,21,0.35)" : "rgba(16,185,129,0.35)"}
-        />
-      </div>
-
-      {/* Divider décoratif */}
-      <div className="mt-10 pt-8 border-t border-white/10">
-        <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-500"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-rose-400"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-purple-400"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-          <span>Statistiques en temps réel</span>
+          <Users className="w-5 h-5 text-cyan-400" />
+        </button>
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+          <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
+            <p className="text-[11px] font-medium text-white whitespace-nowrap">
+              {followersCount} Abonnés
+            </p>
+          </div>
         </div>
+      </motion.div>
+
+      {/* Séparateur */}
+      <span className="w-px h-5 bg-white/[0.06] mx-2" />
+
+      {/* 📱 Abonnements - clic = liste */}
+      <motion.div
+        whileHover={{ scale: 1.15 }}
+        whileTap={{ scale: 0.9 }}
+        className="group relative"
+      >
+        <button
+          onClick={() => setShowFollowingModal(true)}
+          className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer"
+          aria-label="Voir les abonnements"
+        >
+          <UserPlus className="w-5 h-5 text-purple-400" />
+        </button>
+        <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+          <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
+            <p className="text-[11px] font-medium text-white whitespace-nowrap">
+              {initialFollowing} Suivi(e)s
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Séparateur */}
+      <span className="w-px h-5 bg-white/[0.06] mx-2" />
+
+                {/* 🪪 Carte NFC - infobulle au survol + prévisualisation 3D */}
+      {(() => {
+        const nfcCards = localProfile.nfc_cards || [];
+        const getStatus = () => {
+          if (!nfcCards.length) return { label: 'Aucune', dot: 'bg-gray-400', icon: 'text-gray-400', color: 'gray' };
+          if (nfcCards.some(c => c.status === 'blocked')) return { label: 'Bloquée', dot: 'bg-red-400', icon: 'text-red-400', color: 'red' };
+          if (nfcCards.some(c => c.status === 'reported')) return { label: 'Signalée', dot: 'bg-orange-400', icon: 'text-orange-400', color: 'orange' };
+          if (nfcCards.some(c => c.status === 'lost')) return { label: 'Perdue', dot: 'bg-amber-400', icon: 'text-amber-400', color: 'amber' };
+          if (nfcCards.some(c => c.status === 'active')) return { label: 'Active', dot: 'bg-emerald-400 animate-pulse', icon: 'text-emerald-400', color: 'emerald' };
+          return { label: 'Inactive', dot: 'bg-gray-400', icon: 'text-gray-400', color: 'gray' };
+        };
+        const s = getStatus();
+
+        return (
+          <motion.div
+            whileHover={{ scale: 1 }}
+            className="group relative"
+          >
+            {/* Icône + pastille */}
+            <div className="p-2 rounded-xl hover:bg-white/[0.04] transition-colors cursor-pointer flex items-center gap-1.5">
+              <CreditCard className={`w-5 h-5 ${s.icon}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${s.dot} flex-shrink-0`} />
+            </div>
+
+            {/* Tooltip statut */}
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-20">
+              <div className="bg-slate-800/95 backdrop-blur-sm border border-white/[0.08] rounded-lg px-2.5 py-1 shadow-xl">
+                <p className="text-[11px] font-medium text-white whitespace-nowrap">
+                  NFC · {s.label}
+                </p>
+              </div>
+            </div>
+
+            {/* 🎴 CARTE 3D AU SURVOL - uniquement si carte active */}
+            {s.color === 'emerald' && (
+              <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none z-30">
+                <div className="w-[280px] scale-75 origin-bottom">
+                  <ProfileCard3D onTap={() => {}} />
+                </div>
+              </div>
+            )}
+          </motion.div>
+        );
+      })()}
+
+    </div>
+
+    {/* Indicateur temps réel */}
+    <div className="mt-5 flex justify-center">
+      <div className="inline-flex items-center gap-1.5">
+        <span className="relative flex h-1.5 w-1.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+        </span>
+        <span className="text-[10px] text-gray-500/40 font-light">En direct</span>
       </div>
     </div>
-  </motion.div>
-)}
+
+  </div>
+</motion.div>
+
+{/* 🔹 MODALS pour Followers et Following */}
+<AnimatePresence>
+  {showFollowersModal && (
+    <FollowersModal
+      key="modal-followers"
+      isOpen={showFollowersModal}
+      onClose={() => setShowFollowersModal(false)}
+      profileId={localProfile.id}
+      totalFollowers={followersCount}
+    />
+  )}
+  {showFollowingModal && (
+    <FollowersModal
+      key="modal-following"
+      isOpen={showFollowingModal}
+      onClose={() => setShowFollowingModal(false)}
+      profileId={localProfile.id}
+      totalFollowers={initialFollowing}
+    />
+  )}
+</AnimatePresence>
 
     {/* 🔹 BIO - Design premium avec citation et animation subtile */}
 {isSectionEnabled('profile', localCardConfigs) && localProfile.bio_short && (

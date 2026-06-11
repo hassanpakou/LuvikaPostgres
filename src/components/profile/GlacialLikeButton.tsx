@@ -4,12 +4,11 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
-import { createClient } from '../../lib/supabase/client';
 
 interface GlacialLikeButtonProps {
   profileId: string;
   initialLikes: number;
-  hideCount?: boolean; // ← nouvelle prop pour cacher le compteur
+  hideCount?: boolean;
 }
 
 export default function GlacialLikeButton({
@@ -17,77 +16,56 @@ export default function GlacialLikeButton({
   initialLikes,
   hideCount = false,
 }: GlacialLikeButtonProps) {
-  const [likes, setLikes] = useState(initialLikes);
+  const [likes, setLikes] = useState(initialLikes ?? 0);
   const [hasLiked, setHasLiked] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // ✅ Correction : tableau de dépendances constant
   useEffect(() => {
     const liked = localStorage.getItem(`luvika_liked_${profileId}`) === 'true';
     setHasLiked(liked);
-    if (liked && initialLikes === likes) {
-      setLikes(prev => prev + 1);
-    }
-  }, [profileId, initialLikes]);
+  }, [profileId]); // ✅ OK - ne change pas
 
+  // ✅ Correction : utiliser un ref ou vérifier le changement
   useEffect(() => {
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`profile-${profileId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'profiles',
-          filter: `id=eq.${profileId}`
-        },
-        (payload) => {
-          if (payload.new.likes_count !== undefined) {
-            setLikes(payload.new.likes_count);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [profileId]);
+    if (initialLikes !== undefined && initialLikes !== null) {
+      setLikes(initialLikes);
+    }
+  }, [initialLikes]); // ✅ initialLikes est un nombre, pas undefined
 
   const handleLike = async () => {
     if (isAnimating) return;
     
     setIsAnimating(true);
+    
+    // Optimistic update
     const newHasLiked = !hasLiked;
     const newLikes = hasLiked ? likes - 1 : likes + 1;
-
     setHasLiked(newHasLiked);
     setLikes(newLikes);
-    localStorage.setItem(`luvika_liked_${profileId}`, String(newHasLiked));
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ 
-          likes_count: newLikes,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', profileId)
-        .select('likes_count')
-        .single();
+      const res = await fetch('/api/interactions/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ profile_id: profileId }),
+      });
 
-      if (error) {
-        console.error('❌ Like update failed:', error);
-        setHasLiked(!newHasLiked);
-        setLikes(hasLiked ? likes + 1 : likes - 1);
+      if (res.ok) {
+        const data = await res.json();
+        setLikes(data.likes_count ?? newLikes);
+        setHasLiked(data.liked);
+        localStorage.setItem(`luvika_liked_${profileId}`, String(data.liked));
       } else {
-        setLikes(data.likes_count);
+        // Rollback
+        setHasLiked(hasLiked);
+        setLikes(likes);
       }
     } catch (err) {
       console.error('❌ Like error:', err);
-      setHasLiked(!newHasLiked);
-      setLikes(hasLiked ? likes + 1 : likes - 1);
+      // Rollback
+      setHasLiked(hasLiked);
+      setLikes(likes);
     }
 
     setTimeout(() => setIsAnimating(false), 600);
@@ -99,7 +77,7 @@ export default function GlacialLikeButton({
       whileTap={{ scale: 0.95 }}
       onClick={handleLike}
       disabled={isAnimating}
-      className="flex items-center justify-center px-6 py-3 rounded-full transition-all shadow-lg group"
+      className="flex items-center justify-center rounded-full transition-all group"
       aria-label={hasLiked ? "Retirer un like" : "Ajouter un like"}
     >
       <motion.div
@@ -114,13 +92,14 @@ export default function GlacialLikeButton({
       >
         <Heart 
           size={22} 
-          fill={hasLiked ? "#3700FF" : "none"} 
-          className={`${hasLiked ? "text-blue-400" : "text-gray-300 group-hover:text-red-300"} transition-colors`}
+          fill={hasLiked ? "#ec4899" : "none"} 
+          className={`${hasLiked ? "text-pink-400" : "text-gray-400 group-hover:text-pink-300"} transition-colors`}
         />
       </motion.div>
 
-      {/* Affiche le compteur seulement si hideCount=false */}
-      {!hideCount && <span className="text-white font-medium text-lg ml-2">{likes}</span>}
+      {!hideCount && (
+        <span className="text-white font-medium text-lg ml-2">{likes}</span>
+      )}
     </motion.button>
   );
 }

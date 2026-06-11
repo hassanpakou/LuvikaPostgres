@@ -67,24 +67,24 @@ export default async function PublicProfilePage({
   if (decodedInput.startsWith('lkv_')) {
     searchBy = 'public_id';
     const { data, error } = await supabase
-      .from('profiles')
-      .select(`*, plan, accepts_contact_requests, cover_url, theme`)
-      .eq('public_id', decodedInput)
-      .maybeSingle();
+  .from('profiles')
+  .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
+  .eq('public_id', decodedInput)
+  .maybeSingle();
     profileData = data;
     profileError = error;
   } else {
     searchBy = 'username';
     const { data, error } = await supabase
-      .from('profiles')
-      .select(`*, plan, accepts_contact_requests, cover_url, theme`)
-      .ilike('username', decodedInput)
-      .maybeSingle();
+  .from('profiles')
+  .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
+  .ilike('username', decodedInput)
+  .maybeSingle();
 
     if (error || !data) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('profiles')
-        .select(`*, plan, accepts_contact_requests, cover_url, theme`)
+  .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`) 
         .ilike('username', `%${decodedInput}%`)
         .limit(1)
         .maybeSingle();

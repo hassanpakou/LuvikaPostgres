@@ -258,27 +258,27 @@ export default function PublicProfileClientWrapper({
       })
       .subscribe();
 
-    // 🔸 Canal : mises à jour des cartes NFC
-    const nfcChannel = supabase.current
-      .channel(`nfc-${profileId}-${Date.now()}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'nfc_cards',
-        filter: `profile_id=eq.${profileId}`,
-      }, async () => {
-        const { data } = await supabase.current
-          .from('nfc_cards')
-          .select('status, scan_count, last_scan_at')
-          .eq('profile_id', profileId);
-        
-        setProfileData((prev: any) => ({
-          ...prev,
-          nfc_cards: data || []
-        }));
-        setLastUpdate(new Date());
-      })
-      .subscribe();
+  // 🔸 Canal : mises à jour des cartes NFC
+const nfcChannel = supabase.current
+  .channel(`nfc-${profileId}-${Date.now()}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'nfc_cards',
+    filter: `user_id=eq.${profileId}`,  // ✅ profile_id → user_id
+  }, async () => {
+    const { data } = await supabase.current
+      .from('nfc_cards')
+      .select('status, scan_count, last_scan_at')
+      .eq('user_id', profileId);  // ✅ profile_id → user_id
+    
+    setProfileData((prev: any) => ({
+      ...prev,
+      nfc_cards: data || []
+    }));
+    setLastUpdate(new Date());
+  })
+  .subscribe();
 
     // 🔸 Canal : mises à jour des portfolios
     const portfolioChannel = supabase.current

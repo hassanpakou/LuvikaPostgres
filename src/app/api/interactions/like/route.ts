@@ -2,15 +2,12 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-
-const LikeSchema = z.object({
-  profile_id: z.string().uuid(),
-});
 
 export async function POST(req: NextRequest) {
   try {
     const cookieStore = await cookies();
+    
+    // Client ANON pour la lecture
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -23,69 +20,84 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
+    const { profile_id } = await req.json();
+
+    if (!profile_id) {
+      return NextResponse.json({ error: 'profile_id requis' }, { status: 400 });
     }
 
-    const body = await req.json();
-    const parsed = LikeSchema.parse(body);
-    const userId = session.user.id;
-    const targetProfileId = parsed.profile_id;
-
-    // 🔐 Vérifie que le profil cible existe
-    const profileRes = await supabase
+    // Récupérer le profil
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('id, user_id, is_public')
-      .eq('id', targetProfileId)
+      .select('likes_count')
+      .eq('id', profile_id)
       .single();
 
-    if (profileRes.error || !profileRes.data) {
+    if (!profile) {
       return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 });
     }
 
-    const profile = profileRes.data;
-    const isOwner = profile.user_id === userId;
-    if (!profile.is_public && !isOwner) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
-    }
+    // Vérifier si déjà liké (cookie)
+    const cookieName = `luvika_like_${profile_id}`;
+    const hasLiked = req.cookies.get(cookieName)?.value === 'true';
 
-    // 🔍 Vérifie si le like existe déjà
-    const existingRes = await supabase
-      .from('profile_interactions')
-      .select('id')
-      .eq('profile_id', targetProfileId)
-      .eq('visitor_id', userId)
-      .eq('type', 'like')
-      .maybeSingle();
+    let newLikesCount: number;
+    let newLiked: boolean;
 
-    if (existingRes.data) {
-      // 👉 Déjà liké → on supprime
-      await supabase
-        .from('profile_interactions')
-        .delete()
-        .eq('id', existingRes.data.id);
-
-      await supabase.rpc('decrement_likes_count', { target_profile_id: targetProfileId });
-      return NextResponse.json({ success: true, liked: false });
+    if (hasLiked) {
+      newLikesCount = Math.max(0, (profile.likes_count || 0) - 1);
+      newLiked = false;
     } else {
-      // 👉 Nouveau like
-      await supabase
-        .from('profile_interactions')
-        .insert({
-          profile_id: targetProfileId,
-          visitor_id: userId,
-          type: 'like',
-        });
-
-      await supabase.rpc('increment_likes_count', { target_profile_id: targetProfileId });
-      return NextResponse.json({ success: true, liked: true });
+      newLikesCount = (profile.likes_count || 0) + 1;
+      newLiked = true;
     }
-  } catch (err: any) {
-    console.error('Erreur API /like:', err);
-    return NextResponse.json(
-      { success: false, error: err.message || 'Erreur inconnue' },
-      { status: 400 }
+
+    // ✅ Utiliser le SERVICE ROLE pour contourner RLS
+    const adminClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          get(name) { return cookieStore.get(name)?.value; },
+          set(name, value, options) { cookieStore.set({ name, value, ...options }); },
+          remove(name, options) { cookieStore.delete({ name, ...options }); },
+        },
+      }
     );
+
+    const { error } = await adminClient
+      .from('profiles')
+      .update({ 
+        likes_count: newLikesCount,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', profile_id);
+
+    if (error) {
+      console.error('Update error:', error);
+      return NextResponse.json({ error: 'Échec mise à jour' }, { status: 500 });
+    }
+
+    const response = NextResponse.json({
+      liked: newLiked,
+      likes_count: newLikesCount,
+    });
+
+    // Définir le cookie
+    if (newLiked) {
+      response.cookies.set(cookieName, 'true', {
+        maxAge: 60 * 60 * 24 * 365,
+        path: '/',
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+      });
+    } else {
+      response.cookies.delete(cookieName);
+    }
+
+    return response;
+  } catch (err: any) {
+    console.error('❌ API Like error:', err);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

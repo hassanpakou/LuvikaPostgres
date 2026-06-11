@@ -574,7 +574,7 @@ type Card = {
   matricule: string;
   id: string;
   card_id: string;
-  status: 'active' | 'lost' | 'blocked' | 'inactive';
+  status: 'active' | 'lost' | 'blocked' | 'inactive' | 'reported';
   created_at: string;
 };
 
@@ -2172,7 +2172,8 @@ const handleToggleFollow = async (profileId: string) => {
   isTransparent 
     ? 'bg-transparent backdrop-blur-none' 
     : 'bg-white/5 backdrop-blur-sm'
-}`}>  <CardHeader className="border-b border-white/10 pb-4">
+}`}>
+  <CardHeader className="border-b border-white/10 pb-4">
     <CardTitle className="flex items-center flex-wrap gap-3">
       {/* Icône NFC */}
       <div className="p-2 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-lg">
@@ -2181,41 +2182,43 @@ const handleToggleFollow = async (profileId: string) => {
       
       <span>{t('nfc.title') || 'Carte NFC'}</span>
       
-      {/* Badge statut - CORRIGÉ */}
+      {/* Badge statut dynamique */}
       {loadingCards ? (
-        <div className="w-20 h-6 bg-white/10 rounded-lg" />
+        <div className="w-20 h-6 bg-white/10 rounded-lg animate-pulse" />
       ) : hasOrderedCard ? (
         <Badge 
           className={`
+            inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
             ${
               activeCard?.status === 'active'
-                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                 : activeCard?.status === 'lost'
-                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                : activeCard?.status === 'blocked'
+                ? 'bg-red-500/15 text-red-300 border-red-500/30'
+                : activeCard?.status === 'reported'
+                ? 'bg-orange-500/15 text-orange-300 border-orange-500/30'
+                : 'bg-gray-500/15 text-gray-300 border-gray-500/30'
             }
           `}
         >
-          {activeCard?.status === 'active' ? (
-            <>
-              <CheckCircle className="w-3 h-3 mr-1 inline" />
-              {t('nfc.active') || 'Active'}
-            </>
-          ) : activeCard?.status === 'lost' ? (
-            <>
-              <XCircle className="w-3 h-3 mr-1 inline" />
-              {t('nfc.lost') || 'Perdue'}
-            </>
-          ) : (
-            <>
-              <AlertTriangle className="w-3 h-3 mr-1 inline" />
-              {t('nfc.inactive') || 'Inactive'}
-            </>
-          )}
+          {/* Icône selon statut */}
+          {activeCard?.status === 'active' && <CheckCircle className="w-3 h-3" />}
+          {activeCard?.status === 'lost' && <XCircle className="w-3 h-3" />}
+          {activeCard?.status === 'blocked' && <ShieldAlert className="w-3 h-3" />}
+          {activeCard?.status === 'reported' && <AlertTriangle className="w-3 h-3" />}
+          {(!activeCard?.status || activeCard?.status === 'inactive') && <AlertTriangle className="w-3 h-3" />}
+          
+          {/* Label selon statut */}
+          {activeCard?.status === 'active' && (t('nfc.active') || 'Active')}
+          {activeCard?.status === 'lost' && (t('nfc.lost') || 'Perdue')}
+          {activeCard?.status === 'blocked' && 'Bloquée'}
+          {activeCard?.status === 'reported' && (t('nfc.reported') || 'Signalée')}
+          {(!activeCard?.status || activeCard?.status === 'inactive') && (t('nfc.inactive') || 'Inactive')}
         </Badge>
       ) : (
-        <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
-          <XCircle className="w-3 h-3 mr-1 inline" />
+        <Badge className="bg-red-500/15 text-red-300 border-red-500/30 inline-flex items-center gap-1.5">
+          <XCircle className="w-3 h-3" />
           {t('nfc.none') || 'Aucune'}
         </Badge>
       )}
@@ -2223,7 +2226,7 @@ const handleToggleFollow = async (profileId: string) => {
   </CardHeader>
   
   <CardContent className="pt-4">
-    {/* 🔹 Cas 1: Utilisateur n'a pas encore commandé de carte */}
+    {/* Cas 1: Pas de carte */}
     {!hasOrderedCard && (
       <div className="space-y-4">
         <div className="space-y-2">
@@ -2235,7 +2238,6 @@ const handleToggleFollow = async (profileId: string) => {
           </p>
         </div>
 
-        {/* Avantages */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
           <div className="p-3 bg-white/5 rounded-lg border border-white/10">
             <div className="flex items-center gap-2 mb-2">
@@ -2274,7 +2276,6 @@ const handleToggleFollow = async (profileId: string) => {
           </div>
         </div>
 
-        {/* Bouton commander */}
         <Button
           onClick={handleOrderCard}
           className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 group relative overflow-hidden"
@@ -2287,25 +2288,92 @@ const handleToggleFollow = async (profileId: string) => {
       </div>
     )}
 
-    {/* 🔹 Cas 2: Utilisateur a au moins une carte - SANS SECTION STATS */}
+    {/* Cas 2: A des cartes */}
     {hasOrderedCard && (
       <div className="space-y-4">
-        {/* Informations sur la carte */}
+        {/* Message contextuel selon statut */}
+        {activeCard?.status === 'lost' && (
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+            <p className="text-sm text-amber-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              <span className="font-medium">Carte déclarée perdue</span>
+            </p>
+            <p className="text-xs text-amber-400/70 mt-1">
+              Votre carte a été désactivée. Commandez-en une nouvelle ou contactez le support.
+            </p>
+          </div>
+        )}
+
+        {activeCard?.status === 'blocked' && (
+          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-sm text-red-300 flex items-center gap-2">
+              <ShieldAlert className="w-4 h-4" />
+              <span className="font-medium">Carte bloquée</span>
+            </p>
+            <p className="text-xs text-red-400/70 mt-1">
+              Votre carte a été bloquée pour des raisons de sécurité. Contactez le support pour la débloquer.
+            </p>
+          </div>
+        )}
+
+        {activeCard?.status === 'reported' && (
+          <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+            <p className="text-sm text-orange-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              <span className="font-medium">Carte signalée</span>
+            </p>
+            <p className="text-xs text-orange-400/70 mt-1">
+              Votre carte est en cours de vérification par notre équipe.
+            </p>
+          </div>
+        )}
+
+        {/* Détails de la carte */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+          <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+            activeCard?.status === 'active'
+              ? 'bg-emerald-500/5 border-emerald-500/20'
+              : activeCard?.status === 'lost'
+              ? 'bg-amber-500/5 border-amber-500/20'
+              : activeCard?.status === 'blocked'
+              ? 'bg-red-500/5 border-red-500/20'
+              : activeCard?.status === 'reported'
+              ? 'bg-orange-500/5 border-orange-500/20'
+              : 'bg-white/5 border-white/10'
+          }`}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
-                <CreditCard className="w-5 h-5 text-purple-400" />
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                activeCard?.status === 'active'
+                  ? 'bg-emerald-500/20'
+                  : activeCard?.status === 'lost'
+                  ? 'bg-amber-500/20'
+                  : activeCard?.status === 'blocked'
+                  ? 'bg-red-500/20'
+                  : activeCard?.status === 'reported'
+                  ? 'bg-orange-500/20'
+                  : 'bg-purple-500/20'
+              }`}>
+                <CreditCard className={`w-5 h-5 ${
+                  activeCard?.status === 'active' ? 'text-emerald-400' :
+                  activeCard?.status === 'lost' ? 'text-amber-400' :
+                  activeCard?.status === 'blocked' ? 'text-red-400' :
+                  activeCard?.status === 'reported' ? 'text-orange-400' :
+                  'text-purple-400'
+                }`} />
               </div>
               <div>
                 <p className="text-sm font-medium text-white">
-                  {t('nfc.card_id') || 'Carte'} #{activeCard?.card_id || activeCard?.matricule || activeCard?.id.slice(0, 8)}
+                  {t('nfc.card_id') || 'Carte'} #{activeCard?.card_id || activeCard?.matricule || activeCard?.id?.slice(0, 8)}
                 </p>
                 <p className="text-xs text-gray-400">
-                  {new Date(activeCard?.created_at).toLocaleDateString()}
+                  Créée le {new Date(activeCard?.created_at).toLocaleDateString('fr-FR', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
                 </p>
                 {activeCard?.matricule && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 font-mono">
                     Matricule: {activeCard.matricule}
                   </p>
                 )}
@@ -2313,48 +2381,107 @@ const handleToggleFollow = async (profileId: string) => {
             </div>
             <Badge 
               className={`
+                inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
                 ${
                   activeCard?.status === 'active'
-                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                    ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
                     : activeCard?.status === 'lost'
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                    : 'bg-gray-500/20 text-gray-300 border-gray-500/30'
+                    ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                    : activeCard?.status === 'blocked'
+                    ? 'bg-red-500/15 text-red-300 border-red-500/30'
+                    : activeCard?.status === 'reported'
+                    ? 'bg-orange-500/15 text-orange-300 border-orange-500/30'
+                    : 'bg-gray-500/15 text-gray-300 border-gray-500/30'
                 }
               `}
             >
-              {activeCard?.status === 'active' ? (
-                <>
-                  <CheckCircle className="w-3 h-3 mr-1 inline" />
-                  {t('nfc.active') || 'Active'}
-                </>
-              ) : activeCard?.status === 'lost' ? (
-                <>
-                  <XCircle className="w-3 h-3 mr-1 inline" />
-                  {t('nfc.lost') || 'Perdue'}
-                </>
-              ) : (
-                <>
-                  <AlertTriangle className="w-3 h-3 mr-1 inline" />
-                  {t('nfc.inactive') || 'Inactive'}
-                </>
-              )}
+              {activeCard?.status === 'active' && <><CheckCircle className="w-3 h-3" /> Active</>}
+              {activeCard?.status === 'lost' && <><XCircle className="w-3 h-3" /> Perdue</>}
+              {activeCard?.status === 'blocked' && <><ShieldAlert className="w-3 h-3" /> Bloquée</>}
+              {activeCard?.status === 'reported' && <><AlertTriangle className="w-3 h-3" /> Signalée</>}
+              {(!activeCard?.status || activeCard?.status === 'inactive') && <><AlertTriangle className="w-3 h-3" /> Inactive</>}
             </Badge>
           </div>
         </div>
 
+        {/* Liste de toutes les cartes (si plusieurs) */}
+        {cards.length > 1 && (
+          <div className="mt-4 pt-4 border-t border-white/10">
+            <h4 className="text-sm font-medium text-gray-300 mb-3">Toutes vos cartes</h4>
+            <div className="space-y-2">
+              {cards.map((card) => (
+                <div
+                  key={card.id}
+                  className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${
+                    card.status === 'active'
+                      ? 'bg-emerald-500/5 border-emerald-500/20'
+                      : card.status === 'lost'
+                      ? 'bg-amber-500/5 border-amber-500/20'
+                      : card.status === 'blocked'
+                      ? 'bg-red-500/5 border-red-500/20'
+                      : card.status === 'reported'
+                      ? 'bg-orange-500/5 border-orange-500/20'
+                      : 'bg-white/5 border-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`relative flex h-2.5 w-2.5`}>
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                        card.status === 'active' ? 'bg-emerald-400' :
+                        card.status === 'lost' ? 'bg-amber-400' :
+                        card.status === 'blocked' ? 'bg-red-400' :
+                        card.status === 'reported' ? 'bg-orange-400' :
+                        'bg-gray-400'
+                      }`} />
+                      <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                        card.status === 'active' ? 'bg-emerald-400' :
+                        card.status === 'lost' ? 'bg-amber-400' :
+                        card.status === 'blocked' ? 'bg-red-400' :
+                        card.status === 'reported' ? 'bg-orange-400' :
+                        'bg-gray-400'
+                      }`} />
+                    </span>
+                    <div>
+                      <p className="text-xs font-medium text-white">
+                        Carte #{card.card_id || card.matricule || card.id.slice(0, 8)}
+                      </p>
+                      <p className="text-[10px] text-gray-400">
+                        {new Date(card.created_at).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className={`text-[10px] ${
+                    card.status === 'active' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' :
+                    card.status === 'lost' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' :
+                    card.status === 'blocked' ? 'bg-red-500/15 text-red-300 border-red-500/30' :
+                    card.status === 'reported' ? 'bg-orange-500/15 text-orange-300 border-orange-500/30' :
+                    'bg-gray-500/15 text-gray-300 border-gray-500/30'
+                  }`}>
+                    {card.status === 'active' && 'Active'}
+                    {card.status === 'lost' && 'Perdue'}
+                    {card.status === 'blocked' && 'Bloquée'}
+                    {card.status === 'reported' && 'Signalée'}
+                    {(!card.status || card.status === 'inactive') && 'Inactive'}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Boutons d'action */}
         <div className="flex flex-col sm:flex-row gap-3">
           <Button
-  onClick={() => {
-    loadNfcCards(); // Recharger au cas où
-    setIsNFCModalOpen(true);
-  }}
-  className="flex-1 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 hover:from-purple-600/30 hover:to-indigo-600/30 border border-purple-500/30 text-purple-300 font-semibold py-3 rounded-lg transition-all duration-300 group relative"
->
-  <Settings className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-  {t('nfc.manage_button') || 'Gérer mes cartes'}
-  <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-</Button>
+            onClick={() => {
+              loadNfcCards();
+              setIsNFCModalOpen(true);
+            }}
+            className="flex-1 bg-gradient-to-r from-purple-600/20 to-indigo-600/20 hover:from-purple-600/30 hover:to-indigo-600/30 border border-purple-500/30 text-purple-300 font-semibold py-3 rounded-lg transition-all duration-300 group relative"
+          >
+            <Settings className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+            {t('nfc.manage_button') || 'Gérer mes cartes'}
+            <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+          </Button>
 
           <Button
             onClick={handleOrderCard}
@@ -2376,11 +2503,11 @@ const handleToggleFollow = async (profileId: string) => {
       </div>
     )}
 
-    {/* 🔹 Indicateur de chargement */}
+    {/* Indicateur de chargement */}
     {loadingCards && (
       <div className="flex items-center justify-center py-8">
-        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mr-3" />
-        <span className="text-gray-400">{'Chargement...'}</span>
+        <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mr-3" />
+        <span className="text-gray-400">Chargement...</span>
       </div>
     )}
   </CardContent>
