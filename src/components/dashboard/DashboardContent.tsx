@@ -37,6 +37,8 @@ import { NFCCard } from '../../types/nfc';
 import { normalizeNfcCard } from '@/src/lib/utils/nfc';
 import CompanyTypeModal from './CompanyTypeModal';
 import ContactRequestsModal from '../../../src/components/dashboard/ContactRequestsSection';
+import BadgeLevel from '../ui/BadgeLevel';
+import { getBadgeInfo } from '@/src/lib/utils/badgeLevel';
 
 const formatDistance = (dateString: string, t: any): string => {
   const date = new Date(dateString);
@@ -1724,6 +1726,100 @@ const handleToggleFollow = async (profileId: string) => {
   </div>
 </div>
 
+{/* 🔹 BADGE NIVEAU & SCANS - Dashboard */}
+{scansCount > 0 && (
+  <motion.div
+    initial={{ opacity: 0, y: -10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
+    className="w-full"
+  >
+    {(() => {
+      const badgeInfo = getBadgeInfo(scansCount);
+      const isMaxLevel = badgeInfo.nextThreshold === Infinity;
+      const nextThreshold = isMaxLevel ? scansCount : (badgeInfo.nextThreshold || scansCount + 50);
+      const progress = isMaxLevel ? 100 : Math.min((scansCount / nextThreshold) * 100, 100);
+
+      return (
+        <div className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+          isMaxLevel 
+            ? 'bg-gradient-to-br from-amber-500/[0.06] to-yellow-500/[0.03] border-amber-500/20 hover:border-amber-500/30' 
+            : 'bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.03] border-cyan-500/10 hover:border-cyan-500/20'
+        }`}>
+          {/* Fond décoratif */}
+          <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 ${
+            isMaxLevel ? 'bg-amber-500/5' : 'bg-cyan-500/5'
+          }`} />
+          
+          <div className="relative flex items-center gap-4 px-4 py-3.5">
+            {/* Badge niveau (icône) */}
+            <div className="flex-shrink-0">
+              <BadgeLevel info={badgeInfo} />
+            </div>
+
+            {/* Contenu */}
+            <div className="flex-1 min-w-0">
+              {/* Ligne 1 : compteur + niveau */}
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xl font-bold text-white tabular-nums">
+                    {scansCount.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-gray-400/80 font-light">
+                    scan{scansCount > 1 ? 's' : ''}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                    isMaxLevel ? 'bg-amber-400' : 'bg-cyan-400'
+                  }`} />
+                  <span className={`text-[11px] font-medium tracking-wide uppercase ${
+                    isMaxLevel ? 'text-amber-400/80' : 'text-cyan-400/80'
+                  }`}>
+                    Niv. {badgeInfo.level} · {badgeInfo.label}
+                  </span>
+                </div>
+              </div>
+
+              {/* Barre de progression */}
+              <div className="relative h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+                  className={`absolute inset-y-0 left-0 rounded-full ${
+                    isMaxLevel
+                      ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
+                      : 'bg-gradient-to-r from-cyan-400 to-blue-500'
+                  }`}
+                >
+                  {/* Point lumineux au bout */}
+                  <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-lg ${
+                    isMaxLevel ? 'shadow-amber-400/50' : 'shadow-cyan-400/50'
+                  }`} />
+                </motion.div>
+              </div>
+
+              {/* Ligne 3 : progression texte */}
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-gray-500/60 font-light tabular-nums">
+                  {scansCount.toLocaleString()} / {isMaxLevel ? '∞' : nextThreshold.toLocaleString()}
+                </span>
+                <span className="text-[10px] text-gray-500/40 font-light">
+                  {isMaxLevel ? (
+                    <span className="text-amber-400/60">🏆 Niveau maximum atteint</span>
+                  ) : (
+                    <>Prochain : <span className="text-gray-400/60">{nextThreshold.toLocaleString()}</span></>
+                  )}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    })()}
+  </motion.div>
+)}
 
 {/* 🔹 Carte profil utilisateur - DESIGN ULTRA PREMIUM */}
 <motion.div

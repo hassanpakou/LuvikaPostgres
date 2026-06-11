@@ -35,8 +35,6 @@ import ScanTracker from './ScanTracker';
 import QRModal from './QRModal';
 import { Card } from '@/components/ui/card';
 import ContactModal from './ContactModal';
-import BadgeLevel from '../../components/ui/BadgeLevel';
-import { getBadgeInfo } from '../../lib/utils/badgeLevel';
 import PortfolioSection from './PortfolioSection';
 import CertificatesSection from './CertificatesSection';
 import ProfileModal from './ProfileModal';
@@ -1042,68 +1040,6 @@ const showLinksSection =
   </div>
   </div>
 )}
-
-{/* 🔹 BADGE NIVEAU & SCANS - Design intégré premium */}
-{scansCount > 0 && (
-  <motion.div
-    initial={{ opacity: 0, y: 5 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.5 }}
-    className="mt-5 max-w-4xl mx-auto px-4"
-  >
-    {(() => {
-      const badgeInfo = getBadgeInfo(scansCount);
-      
-      // ✅ UTILISATION DE nextThreshold AU LIEU DE nextLevel (correction de l'erreur TypeScript)
-      const nextLevelNum = badgeInfo.nextThreshold;
-      
-      // ✅ GESTION SÉCURISÉE DES VALEURS INVALIDES
-      const safeNextLevel = Math.max(
-        isNaN(nextLevelNum) ? scansCount + 10 : nextLevelNum,
-        1 // Évite la division par zéro
-      );
-      
-      // ✅ CALCUL FINAL SANS ERREUR
-      const progress = Math.min((scansCount / safeNextLevel) * 100, 100);
-
-      return (
-        <div className="flex flex-col items-center">
-          <div className="flex items-center gap-3 bg-gradient-to-r from-cyan-500/15 to-blue-500/10 border border-cyan-500/20 rounded-full px-4 py-2.5 backdrop-blur-sm">
-            <BadgeLevel info={badgeInfo} />
-            <div className="text-center">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-xl font-bold text-white">{scansCount}</span>
-                <span className="text-xs text-gray-400">scan{scansCount > 1 ? 's' : ''}</span>
-              </div>
-              <div className="mt-0.5">
-                <span className="text-[10px] uppercase tracking-wider text-cyan-400 font-medium">
-                  Niveau {badgeInfo.level} · {badgeInfo.label}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Barre de progression sécurisée */}
-          <div className="mt-3 w-full max-w-xs">
-            <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500"
-                style={{ width: `${progress.toFixed(1)}%` }}
-              />
-            </div>
-            <div className="mt-1 flex justify-between text-[10px] text-gray-500">
-              <span>
-                {scansCount} / {badgeInfo.nextThreshold ?? '∞'}
-              </span>
-              <span>Prochain niveau</span>
-            </div>
-          </div>
-        </div>
-      );
-    })()}
-  </motion.div>
-)}
-              
 
 {/* 🔹 SECTION STATS - Icônes avec compteurs au survol ET au clic */}
 <motion.div
