@@ -1639,187 +1639,113 @@ const handleToggleFollow = async (profileId: string) => {
 };
   
 
-  return (
-  <div className="space-y-6 pb-24 bg-transparent">
-  {/* 🎨 En-tête - Design Compact et Glassmorphic */}
-{/* 🔹 Barre d'icônes compacte - DESIGN OPTIMISÉ */}
-<div className="flex items-center justify-between gap-2 sm:gap-3 mt-3 sm:mt-4">
-  {/* ⬅️ Boutons Événements à gauche */}
-  <div className="flex items-center gap-2">
-    {/* 📅 Voir vos événements */}
-    {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
-      <Button
-        onClick={() => setIsEventModalOpen(true)}
-        variant="ghost"
-        size="sm"
-        className="h-9 px-3 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 text-cyan-300 hover:text-cyan-200 transition-all duration-300 group relative shadow-md shadow-cyan-500/10 hover:shadow-cyan-500/20"
-      >
-        <Calendar className="h-4 w-4 mr-1.5 group-hover:rotate-3 transition-transform" />
-        <span className="text-xs font-medium hidden sm:inline">Événements</span>
-      </Button>
-    )}
+return (
+  <div className="space-y-0 pb-24 bg-transparent">
+    
+    {/* 🔒 HEADER FIXE - Barre d'icônes + Badge niveau */}
+    <div className="sticky top-0 z-40 backdrop-blur-xl -mx-4 px-4 pb-4 pt-3 sm:pt-4 border-b border-white/[0.04]">
+      
+      {/* Barre d'icônes compacte */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
+        {/* ⬅️ Boutons Événements à gauche */}
+        <div className="flex items-center gap-2">
+          {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+            <Button
+              onClick={() => setIsEventModalOpen(true)}
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 text-cyan-300 hover:text-cyan-200 transition-all duration-300"
+            >
+              <Calendar className="h-4 w-4 mr-1.5" />
+              <span className="text-xs font-medium hidden sm:inline">Événements</span>
+            </Button>
+          )}
+          {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
+            <Button
+              onClick={() => setIsEventFormOpen(true)}
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 text-emerald-300 hover:text-emerald-200 transition-all duration-300"
+            >
+              <Plus className="h-4 w-4 mr-1.5" />
+              <span className="text-xs font-medium hidden sm:inline">Créer</span>
+            </Button>
+          )}
+        </div>
 
-    {/* ➕ Créer un événement */}
-    {(subscription.plan === 'premium' || (subscription.plan === 'entreprise' && hasCompany)) && (
-      <Button
-        onClick={() => setIsEventFormOpen(true)}
-        variant="ghost"
-        size="sm"
-        className="h-9 px-3 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 text-emerald-300 hover:text-emerald-200 transition-all duration-300 group relative shadow-md shadow-emerald-500/10 hover:shadow-emerald-500/20"
-      >
-        <Plus className="h-4 w-4 mr-1.5 group-hover:scale-110 transition-transform" />
-        <span className="text-xs font-medium hidden sm:inline">Créer</span>
-      </Button>
-    )}
-  </div>
-
-  {/* ➡️ Icônes à droite */}
-  <div className="flex items-center gap-2 sm:gap-3">
-    {/* 🔍 Recherche - VIOLET */}
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setIsSearchModalOpen(true)}
-      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-purple-500/10 hover:shadow-purple-500/20"
-      aria-label="Rechercher des profils"
-    >
-      <SearchIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-300 group-hover:scale-110 transition-transform" />
-      <div className="absolute inset-0 rounded-xl sm:rounded-full bg-purple-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 hidden sm:block">
-        <div className="flex items-center gap-1 bg-purple-500/20 text-purple-200 text-[10px] px-1.5 py-0.5 rounded-full border border-purple-500/30">
-          <span>Recherche</span>
+        {/* ➡️ Icônes à droite */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Button variant="ghost" size="icon" onClick={() => setIsSearchModalOpen(true)}
+            className="h-10 w-10 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300">
+            <SearchIcon className="h-5 w-5 text-purple-300" />
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => setIsContactModalOpen(true)}
+            className="h-10 w-10 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 relative">
+            <Mail className="h-5 w-5 text-green-300" />
+            {unreadMessagesCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-[#0a0a0f]">
+                {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+              </span>
+            )}
+          </Button>
+          <Button variant="ghost" size="icon"
+            className="h-10 w-10 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300">
+            <Heart size={18} className={(profile?.likes_count ?? 0) > 0 ? 'fill-red-500 text-red-300' : 'text-gray-400'} />
+          </Button>
         </div>
       </div>
-    </Button>
 
-   {/* 💬 Messages - VERT */}
-<Button
-  variant="ghost"
-  size="icon"
-  onClick={() => setIsContactModalOpen(true)} // ✅ Sans setUnreadMessagesCount(0)
-  className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-green-500/10 hover:shadow-green-500/20"
-  aria-label={`Messages${unreadMessagesCount > 0 ? `: ${unreadMessagesCount} non lus` : ''}`}
->
-  <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-green-300 group-hover:scale-110 transition-transform" />
-  {unreadMessagesCount > 0 && (
-    <div className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white text-[11px] font-bold border-2 border-black shadow-lg shadow-red-500/40 z-10">
-      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
-    </div>
-  )}
-  <div className="absolute inset-0 rounded-xl sm:rounded-full bg-green-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-</Button>
+      {/* Badge niveau (sous la barre) */}
+      {scansCount > 0 && (
+        <div className="mt-3">
+          {(() => {
+            const badgeInfo = getBadgeInfo(scansCount);
+            const isMaxLevel = badgeInfo.nextThreshold === Infinity;
+            const nextThreshold = isMaxLevel ? scansCount : (badgeInfo.nextThreshold || scansCount + 50);
+            const progress = isMaxLevel ? 100 : Math.min((scansCount / nextThreshold) * 100, 100);
 
-    {/* ❤️ Likes - ROUGE */}
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => console.log('Likes clicked')}
-      className="h-11 w-11 sm:h-12 sm:w-12 rounded-xl sm:rounded-full bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300 group relative shadow-md shadow-red-500/10 hover:shadow-red-500/20"
-      aria-label={`Likes: ${(profile?.likes_count ?? 0)}`}
-    >
-      <Heart size={20} className={`relative z-10 drop-shadow-sm group-hover:scale-110 transition-transform ${(profile?.likes_count ?? 0) > 0 ? 'fill-red-500 text-red-300' : 'text-gray-400'}`} />
-      <span className={`absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 rounded-full ${(profile?.likes_count ?? 0) > 0 ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white' : 'bg-gray-700/50 text-gray-300'} text-[11px] font-bold border-2 border-black shadow-lg ${(profile?.likes_count ?? 0) > 0 ? 'shadow-red-500/40' : ''} z-10`}>
-        {(profile?.likes_count ?? 0) > 99 ? '99+' : (profile?.likes_count ?? 0)}
-      </span>
-      <div className="absolute inset-0 rounded-xl sm:rounded-full bg-red-500/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-    </Button>
-  </div>
-</div>
-
-{/* 🔹 BADGE NIVEAU & SCANS - Dashboard */}
-{scansCount > 0 && (
-  <motion.div
-    initial={{ opacity: 0, y: -10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: 0.1, duration: 0.4, ease: "easeOut" }}
-    className="w-full"
-  >
-    {(() => {
-      const badgeInfo = getBadgeInfo(scansCount);
-      const isMaxLevel = badgeInfo.nextThreshold === Infinity;
-      const nextThreshold = isMaxLevel ? scansCount : (badgeInfo.nextThreshold || scansCount + 50);
-      const progress = isMaxLevel ? 100 : Math.min((scansCount / nextThreshold) * 100, 100);
-
-      return (
-        <div className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
-          isMaxLevel 
-            ? 'bg-gradient-to-br from-amber-500/[0.06] to-yellow-500/[0.03] border-amber-500/20 hover:border-amber-500/30' 
-            : 'bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.03] border-cyan-500/10 hover:border-cyan-500/20'
-        }`}>
-          {/* Fond décoratif */}
-          <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 ${
-            isMaxLevel ? 'bg-amber-500/5' : 'bg-cyan-500/5'
-          }`} />
-          
-          <div className="relative flex items-center gap-4 px-4 py-3.5">
-            {/* Badge niveau (icône) */}
-            <div className="flex-shrink-0">
-              <BadgeLevel info={badgeInfo} />
-            </div>
-
-            {/* Contenu */}
-            <div className="flex-1 min-w-0">
-              {/* Ligne 1 : compteur + niveau */}
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xl font-bold text-white tabular-nums">
-                    {scansCount.toLocaleString()}
-                  </span>
-                  <span className="text-xs text-gray-400/80 font-light">
-                    scan{scansCount > 1 ? 's' : ''}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
-                    isMaxLevel ? 'bg-amber-400' : 'bg-cyan-400'
-                  }`} />
-                  <span className={`text-[11px] font-medium tracking-wide uppercase ${
-                    isMaxLevel ? 'text-amber-400/80' : 'text-cyan-400/80'
-                  }`}>
-                    Niv. {badgeInfo.level} · {badgeInfo.label}
-                  </span>
+            return (
+              <div className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+                isMaxLevel 
+                  ? 'bg-gradient-to-br from-amber-500/[0.06] to-yellow-500/[0.03] border-amber-500/20' 
+                  : 'bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.03] border-cyan-500/10'
+              }`}>
+                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 ${
+                  isMaxLevel ? 'bg-amber-500/5' : 'bg-cyan-500/5'
+                }`} />
+                <div className="relative flex items-center gap-3 px-4 py-2.5">
+                  <div className="flex-shrink-0">
+                    <BadgeLevel info={badgeInfo} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-lg font-bold text-white">{scansCount.toLocaleString()}</span>
+                      <span className={`text-[10px] font-medium uppercase ${isMaxLevel ? 'text-amber-400' : 'text-cyan-400'}`}>
+                        {badgeInfo.level} · {badgeInfo.label}
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        className={`h-full rounded-full ${isMaxLevel ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : 'bg-gradient-to-r from-cyan-400 to-blue-500'}`}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-0.5">
+                      <span className="text-[9px] text-gray-500">{scansCount.toLocaleString()} / {isMaxLevel ? '∞' : nextThreshold.toLocaleString()}</span>
+                      <span className="text-[9px] text-gray-500">
+                        {isMaxLevel ? '🏆 Niveau max' : `Prochain : ${nextThreshold.toLocaleString()}`}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Barre de progression */}
-              <div className="relative h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                  className={`absolute inset-y-0 left-0 rounded-full ${
-                    isMaxLevel
-                      ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
-                      : 'bg-gradient-to-r from-cyan-400 to-blue-500'
-                  }`}
-                >
-                  {/* Point lumineux au bout */}
-                  <div className={`absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-lg ${
-                    isMaxLevel ? 'shadow-amber-400/50' : 'shadow-cyan-400/50'
-                  }`} />
-                </motion.div>
-              </div>
-
-              {/* Ligne 3 : progression texte */}
-              <div className="flex justify-between mt-1">
-                <span className="text-[10px] text-gray-500/60 font-light tabular-nums">
-                  {scansCount.toLocaleString()} / {isMaxLevel ? '∞' : nextThreshold.toLocaleString()}
-                </span>
-                <span className="text-[10px] text-gray-500/40 font-light">
-                  {isMaxLevel ? (
-                    <span className="text-amber-400/60">🏆 Niveau maximum atteint</span>
-                  ) : (
-                    <>Prochain : <span className="text-gray-400/60">{nextThreshold.toLocaleString()}</span></>
-                  )}
-                </span>
-              </div>
-            </div>
-          </div>
+            );
+          })()}
         </div>
-      );
-    })()}
-  </motion.div>
-)}
+      )}
+    </div>
+
 
 {/* 🔹 Carte profil utilisateur - DESIGN ULTRA PREMIUM */}
 <motion.div
