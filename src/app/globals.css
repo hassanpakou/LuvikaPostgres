@@ -198,3 +198,36 @@
     transition: none !important;
   }
 }
+
+
+/* Forcer l'expansion complète pour l'espace entreprise */
+.enterprise-layout-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.enterprise-layout-container main {
+  width: 100%;
+}
+
+.enterprise-layout-container main > div {
+  width: 100%;
+  max-width: 100% !important;
+}
+
+/* Supprimer les conteneurs restrictifs potentiels */
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.container {
+  max-width: 100% !important;
+}
+
+/* Pour les grands écrans, garder un peu d'espace mais pas de centrage serré */
+@media (min-width: 1920px) {
+  .enterprise-layout-container main > div {
+    max-width: 1600px !important;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

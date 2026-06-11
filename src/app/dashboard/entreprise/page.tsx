@@ -1,429 +1,299 @@
 // src/app/dashboard/entreprise/page.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { motion } from 'framer-motion';
+import { createClient } from '@/src/lib/supabase/client';
 import { 
-  LayoutDashboard, Settings, Building, CreditCard,
-  Store, Truck, Hotel, Pill, Scissors, Briefcase, ShoppingCart,
-  Cpu, GraduationCap, Stethoscope, HeartPulse, Home, Dumbbell,
-  Wine, Croissant, Book, Fuel, Wrench, Bus, Plane, Monitor,
-  Camera, HardHat, Wheat, HandHeart, Landmark, MoreHorizontal,
-  ArrowRight, ArrowLeft, Menu, X, LogOut, User, Bell,
-  UtensilsCrossed, BedDouble, Dumbbell as Gym, Sandwich, Car,
-  ShoppingBag, Laptop, School, Heart, MapPin, DollarSign, Users2,
-  Calendar, Package, TrendingUp, ClipboardList,
-  Clock,
-  FileText,
-  Sparkles,
-  Star
+  Settings, Package, Users, TrendingUp, BarChart3, 
+  ShoppingBag, Calendar, CreditCard, Star, Image,
+  MessageSquare, Bell, ArrowRight, Plus, ChevronRight,
+  Wifi, MapPin, Clock, Phone, Mail, Globe
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { createClient } from '@/src/lib/supabase/client';
-import AnalyticsChart from '@/src/components/dashboard/AnalyticsChart';
+import { getCompanyModules, CompanyModule, getCompanyConfig } from '@/src/config/company-modules';
 import Loading from '@/src/components/system/Loading';
 
-// ✅ Contenu spécifique pour chaque type d'entreprise
-const TYPE_CONTENT: Record<string, {
-  title: string;
-  description: string;
-  quickActions: { label: string; icon: React.ReactNode; path: string; color: string }[];
-  stats: { label: string; value: string; icon: React.ReactNode }[];
-  tips: string[];
-}> = {
-  restaurant: {
-    title: 'Gestion Restaurant',
-    description: 'Gérez votre menu, réservations et commandes en ligne.',
-    quickActions: [
-      { label: 'Menu', icon: <UtensilsCrossed className="w-4 h-4" />, path: '/dashboard/entreprise/menu', color: 'from-orange-500/60 to-red-500/60' },
-      { label: 'Réservations', icon: <Calendar className="w-4 h-4" />, path: '/dashboard/entreprise/reservations', color: 'from-amber-500/60 to-orange-500/60' },
-      { label: 'Commandes', icon: <ShoppingBag className="w-4 h-4" />, path: '/dashboard/entreprise/orders', color: 'from-green-500/60 to-emerald-500/60' },
-      { label: 'Avis clients', icon: <Star className="w-4 h-4" />, path: '/dashboard/entreprise/reviews', color: 'from-yellow-500/60 to-amber-500/60' },
-    ],
-    stats: [
-      { label: 'Commandes du jour', value: '0', icon: <ShoppingBag className="w-4 h-4" /> },
-      { label: 'Réservations', value: '0', icon: <Calendar className="w-4 h-4" /> },
-      { label: 'Note moyenne', value: '--', icon: <Star className="w-4 h-4" /> },
-    ],
-    tips: ['Mettez à jour votre menu régulièrement', 'Activez les commandes en ligne pour plus de visibilité', 'Répondez aux avis clients rapidement'],
-  },
-  hotel: {
-    title: 'Gestion Hôtel',
-    description: 'Configurez vos chambres, tarifs et réservations.',
-    quickActions: [
-      { label: 'Chambres', icon: <BedDouble className="w-4 h-4" />, path: '/dashboard/entreprise/rooms', color: 'from-purple-500/60 to-indigo-500/60' },
-      { label: 'Réservations', icon: <Calendar className="w-4 h-4" />, path: '/dashboard/entreprise/reservations', color: 'from-blue-500/60 to-cyan-500/60' },
-      { label: 'Tarifs', icon: <DollarSign className="w-4 h-4" />, path: '/dashboard/entreprise/pricing', color: 'from-green-500/60 to-emerald-500/60' },
-      { label: 'Services', icon: <ClipboardList className="w-4 h-4" />, path: '/dashboard/entreprise/services', color: 'from-amber-500/60 to-orange-500/60' },
-    ],
-    stats: [
-      { label: 'Taux d\'occupation', value: '0%', icon: <Home className="w-4 h-4" /> },
-      { label: 'Réservations', value: '0', icon: <Calendar className="w-4 h-4" /> },
-      { label: 'Revenus/mois', value: '0 €', icon: <DollarSign className="w-4 h-4" /> },
-    ],
-    tips: ['Ajoutez des photos de qualité de vos chambres', 'Proposez des offres spéciales pour les séjours longs', 'Configurez le check-in/check-out en ligne'],
-  },
-  shop: {
-    title: 'Gestion Boutique',
-    description: 'Ajoutez vos produits, gérez votre stock et promotions.',
-    quickActions: [
-      { label: 'Produits', icon: <Package className="w-4 h-4" />, path: '/dashboard/entreprise/products', color: 'from-blue-500/60 to-cyan-500/60' },
-      { label: 'Commandes', icon: <ShoppingBag className="w-4 h-4" />, path: '/dashboard/entreprise/orders', color: 'from-green-500/60 to-emerald-500/60' },
-      { label: 'Promotions', icon: <TrendingUp className="w-4 h-4" />, path: '/dashboard/entreprise/promotions', color: 'from-pink-500/60 to-rose-500/60' },
-      { label: 'Clients', icon: <Users2 className="w-4 h-4" />, path: '/dashboard/entreprise/customers', color: 'from-violet-500/60 to-purple-500/60' },
-    ],
-    stats: [
-      { label: 'Produits actifs', value: '0', icon: <Package className="w-4 h-4" /> },
-      { label: 'Ventes du mois', value: '0', icon: <ShoppingBag className="w-4 h-4" /> },
-      { label: 'Clients', value: '0', icon: <Users2 className="w-4 h-4" /> },
-    ],
-    tips: ['Ajoutez des descriptions détaillées à vos produits', 'Utilisez des photos de qualité', 'Créez des promotions pour attirer les clients'],
-  },
-  tech: {
-    title: 'Gestion Entreprise Tech',
-    description: 'Présentez vos services numériques et portfolio.',
-    quickActions: [
-      { label: 'Services', icon: <Laptop className="w-4 h-4" />, path: '/dashboard/entreprise/services', color: 'from-cyan-500/60 to-blue-500/60' },
-      { label: 'Portfolio', icon: <Briefcase className="w-4 h-4" />, path: '/dashboard/entreprise/portfolio', color: 'from-violet-500/60 to-purple-500/60' },
-      { label: 'Équipe', icon: <Users2 className="w-4 h-4" />, path: '/dashboard/entreprise/team', color: 'from-emerald-500/60 to-teal-500/60' },
-      { label: 'Projets', icon: <ClipboardList className="w-4 h-4" />, path: '/dashboard/entreprise/projects', color: 'from-amber-500/60 to-orange-500/60' },
-    ],
-    stats: [
-      { label: 'Projets actifs', value: '0', icon: <ClipboardList className="w-4 h-4" /> },
-      { label: 'Clients', value: '0', icon: <Users2 className="w-4 h-4" /> },
-      { label: 'Taux satisfaction', value: '--', icon: <Star className="w-4 h-4" /> },
-    ],
-    tips: ['Mettez en avant vos projets récents', 'Ajoutez des témoignages clients', 'Proposez des démos de vos services'],
-  },
-  school: {
-    title: 'Gestion École',
-    description: 'Gérez vos classes, élèves et calendrier.',
-    quickActions: [
-      { label: 'Classes', icon: <School className="w-4 h-4" />, path: '/dashboard/entreprise/classes', color: 'from-yellow-500/60 to-amber-500/60' },
-      { label: 'Élèves', icon: <Users2 className="w-4 h-4" />, path: '/dashboard/entreprise/students', color: 'from-blue-500/60 to-cyan-500/60' },
-      { label: 'Emploi du temps', icon: <Calendar className="w-4 h-4" />, path: '/dashboard/entreprise/schedule', color: 'from-green-500/60 to-emerald-500/60' },
-      { label: 'Notes', icon: <ClipboardList className="w-4 h-4" />, path: '/dashboard/entreprise/grades', color: 'from-purple-500/60 to-indigo-500/60' },
-    ],
-    stats: [
-      { label: 'Élèves', value: '0', icon: <Users2 className="w-4 h-4" /> },
-      { label: 'Classes', value: '0', icon: <School className="w-4 h-4" /> },
-      { label: 'Taux réussite', value: '--', icon: <TrendingUp className="w-4 h-4" /> },
-    ],
-    tips: ['Publiez les emplois du temps en ligne', 'Activez les notifications pour les parents', 'Utilisez les cartes d\'identité pour les élèves'],
-  },
-  pharmacy: {
-    title: 'Gestion Pharmacie',
-    description: 'Gérez votre stock de médicaments et vos gardes.',
-    quickActions: [
-      { label: 'Stock', icon: <Package className="w-4 h-4" />, path: '/dashboard/entreprise/stock', color: 'from-red-500/60 to-rose-500/60' },
-      { label: 'Gardes', icon: <Calendar className="w-4 h-4" />, path: '/dashboard/entreprise/gardes', color: 'from-blue-500/60 to-cyan-500/60' },
-      { label: 'Commandes', icon: <ShoppingBag className="w-4 h-4" />, path: '/dashboard/entreprise/orders', color: 'from-green-500/60 to-emerald-500/60' },
-      { label: 'Clients', icon: <Users2 className="w-4 h-4" />, path: '/dashboard/entreprise/customers', color: 'from-violet-500/60 to-purple-500/60' },
-    ],
-    stats: [
-      { label: 'Produits en stock', value: '0', icon: <Package className="w-4 h-4" /> },
-      { label: 'Ordonnances', value: '0', icon: <ClipboardList className="w-4 h-4" /> },
-      { label: 'Clients fidèles', value: '0', icon: <Users2 className="w-4 h-4" /> },
-    ],
-    tips: ['Mettez à jour votre stock quotidiennement', 'Indiquez vos horaires de garde', 'Proposez la livraison à domicile'],
-  },
-  beauty: {
-    title: 'Gestion Salon de Beauté',
-    description: 'Proposez vos services, gérez vos rendez-vous.',
-    quickActions: [
-      { label: 'Services', icon: <Scissors className="w-4 h-4" />, path: '/dashboard/entreprise/services', color: 'from-pink-500/60 to-rose-500/60' },
-      { label: 'Rendez-vous', icon: <Calendar className="w-4 h-4" />, path: '/dashboard/entreprise/appointments', color: 'from-fuchsia-500/60 to-pink-500/60' },
-      { label: 'Clients', icon: <Users2 className="w-4 h-4" />, path: '/dashboard/entreprise/customers', color: 'from-violet-500/60 to-purple-500/60' },
-      { label: 'Promotions', icon: <TrendingUp className="w-4 h-4" />, path: '/dashboard/entreprise/promotions', color: 'from-amber-500/60 to-orange-500/60' },
-    ],
-    stats: [
-      { label: 'RDV aujourd\'hui', value: '0', icon: <Calendar className="w-4 h-4" /> },
-      { label: 'Clients', value: '0', icon: <Users2 className="w-4 h-4" /> },
-      { label: 'Note moyenne', value: '--', icon: <Star className="w-4 h-4" /> },
-    ],
-    tips: ['Affichez vos disponibilités en temps réel', 'Proposez des forfaits fidélité', 'Partagez vos réalisations en photos'],
-  },
-  medical: {
-    title: 'Gestion Cabinet Médical',
-    description: 'Gérez vos patients, rendez-vous et dossiers.',
-    quickActions: [
-      { label: 'Patients', icon: <Users2 className="w-4 h-4" />, path: '/dashboard/entreprise/patients', color: 'from-sky-500/60 to-blue-500/60' },
-      { label: 'Rendez-vous', icon: <Calendar className="w-4 h-4" />, path: '/dashboard/entreprise/appointments', color: 'from-cyan-500/60 to-blue-500/60' },
-      { label: 'Dossiers', icon: <ClipboardList className="w-4 h-4" />, path: '/dashboard/entreprise/records', color: 'from-violet-500/60 to-purple-500/60' },
-      { label: 'Ordonnances', icon: <FileText className="w-4 h-4" />, path: '/dashboard/entreprise/prescriptions', color: 'from-emerald-500/60 to-teal-500/60' },
-    ],
-    stats: [
-      { label: 'Patients', value: '0', icon: <Users2 className="w-4 h-4" /> },
-      { label: 'RDV aujourd\'hui', value: '0', icon: <Calendar className="w-4 h-4" /> },
-      { label: 'En attente', value: '0', icon: <Clock className="w-4 h-4" /> },
-    ],
-    tips: ['Envoyez des rappels de rendez-vous automatiques', 'Sécurisez les dossiers patients', 'Proposez la téléconsultation'],
-  },
-};
-
-// Contenu par défaut pour les autres types
-const DEFAULT_CONTENT = {
-  title: 'Configuration',
-  description: 'Configurez les informations spécifiques à votre activité.',
-  quickActions: [
-    { label: 'Paramètres', icon: <Settings className="w-4 h-4" />, path: '/dashboard/entreprise/settings', color: 'from-gray-500/60 to-gray-600/60' },
-    { label: 'Cartes Membres', icon: <CreditCard className="w-4 h-4" />, path: '/dashboard/entreprise/cards', color: 'from-violet-500/60 to-purple-500/60' },
-  ],
-  stats: [
-    { label: 'Membres', value: '0', icon: <Users2 className="w-4 h-4" /> },
-    { label: 'Cartes actives', value: '0', icon: <CreditCard className="w-4 h-4" /> },
-  ],
-  tips: ['Complétez votre profil entreprise', 'Ajoutez votre logo et vos informations', 'Créez des cartes pour vos membres'],
-};
-
-const COMPANY_TYPES_MAP: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
-  restaurant: { label: 'Restaurant', icon: <UtensilsCrossed className="w-4 h-4" />, color: 'from-orange-500/60 to-red-500/60' },
-  shop: { label: 'Boutique', icon: <Store className="w-4 h-4" />, color: 'from-blue-500/60 to-cyan-500/60' },
-  delivery: { label: 'Livraison', icon: <Truck className="w-4 h-4" />, color: 'from-green-500/60 to-emerald-500/60' },
-  hotel: { label: 'Hôtel', icon: <Hotel className="w-4 h-4" />, color: 'from-purple-500/60 to-indigo-500/60' },
-  pharmacy: { label: 'Pharmacie', icon: <Pill className="w-4 h-4" />, color: 'from-red-500/60 to-rose-500/60' },
-  beauty: { label: 'Salon de beauté', icon: <Scissors className="w-4 h-4" />, color: 'from-pink-500/60 to-rose-500/60' },
-  agency: { label: 'Agence', icon: <Briefcase className="w-4 h-4" />, color: 'from-amber-500/60 to-orange-500/60' },
-  supermarket: { label: 'Supermarché', icon: <ShoppingCart className="w-4 h-4" />, color: 'from-emerald-500/60 to-teal-500/60' },
-  tech: { label: 'Tech', icon: <Cpu className="w-4 h-4" />, color: 'from-cyan-500/60 to-blue-500/60' },
-  school: { label: 'École', icon: <GraduationCap className="w-4 h-4" />, color: 'from-yellow-500/60 to-amber-500/60' },
-  medical: { label: 'Cabinet médical', icon: <Stethoscope className="w-4 h-4" />, color: 'from-sky-500/60 to-blue-500/60' },
-  clinic: { label: 'Clinique', icon: <HeartPulse className="w-4 h-4" />, color: 'from-red-600/60 to-rose-600/60' },
-  realestate: { label: 'Immobilier', icon: <Home className="w-4 h-4" />, color: 'from-violet-500/60 to-purple-500/60' },
-  gym: { label: 'Salle de sport', icon: <Dumbbell className="w-4 h-4" />, color: 'from-lime-500/60 to-green-500/60' },
-  bar: { label: 'Bar / Lounge', icon: <Wine className="w-4 h-4" />, color: 'from-fuchsia-500/60 to-pink-500/60' },
-  bakery: { label: 'Boulangerie', icon: <Croissant className="w-4 h-4" />, color: 'from-amber-400/60 to-yellow-500/60' },
-  library: { label: 'Librairie', icon: <Book className="w-4 h-4" />, color: 'from-stone-500/60 to-neutral-500/60' },
-  gasstation: { label: 'Station-service', icon: <Fuel className="w-4 h-4" />, color: 'from-slate-500/60 to-gray-500/60' },
-  repair: { label: 'Réparation', icon: <Wrench className="w-4 h-4" />, color: 'from-zinc-500/60 to-gray-600/60' },
-  transport: { label: 'Transport', icon: <Bus className="w-4 h-4" />, color: 'from-teal-500/60 to-cyan-500/60' },
-  travel: { label: 'Voyage', icon: <Plane className="w-4 h-4" />, color: 'from-sky-400/60 to-blue-400/60' },
-  cybercafe: { label: 'Cybercafé', icon: <Monitor className="w-4 h-4" />, color: 'from-indigo-500/60 to-blue-500/60' },
-  photography: { label: 'Photo', icon: <Camera className="w-4 h-4" />, color: 'from-gray-500/60 to-slate-500/60' },
-  construction: { label: 'Construction', icon: <HardHat className="w-4 h-4" />, color: 'from-amber-600/60 to-orange-600/60' },
-  farm: { label: 'Ferme', icon: <Wheat className="w-4 h-4" />, color: 'from-green-600/60 to-emerald-600/60' },
-  ngo: { label: 'ONG', icon: <HandHeart className="w-4 h-4" />, color: 'from-rose-500/60 to-pink-500/60' },
-  bank: { label: 'Banque', icon: <Landmark className="w-4 h-4" />, color: 'from-blue-700/60 to-indigo-700/60' },
-  other: { label: 'Autre', icon: <MoreHorizontal className="w-4 h-4" />, color: 'from-gray-400/60 to-gray-500/60' },
-};
-
 export default function EnterpriseDashboard() {
-  const t = useTranslations('enterprise');
   const router = useRouter();
   const supabase = createClient();
-  const realtimeChannels = useRef<any[]>([]);
-
+  const [company, setCompany] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [companyType, setCompanyType] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string>('');
-  const [userName, setUserName] = useState<string>('');
-  const [showTypeModal, setShowTypeModal] = useState(false);
-  const [stats, setStats] = useState({ totalCards: 0, activeCards: 0, suspendedCards: 0, revokedCards: 0, profileId: '', companyId: '' });
-
-  const fetchStats = async (companyId: string, userId: string) => {
-    try {
-      const { data: orgCards } = await supabase.from('org_cards').select('status').eq('org_id', companyId);
-      setStats({
-        totalCards: (orgCards || []).length,
-        activeCards: (orgCards || []).filter((c: any) => c.status === 'active').length,
-        suspendedCards: (orgCards || []).filter((c: any) => c.status === 'suspended').length,
-        revokedCards: (orgCards || []).filter((c: any) => c.status === 'revoked').length,
-        profileId: userId, companyId
-      });
-    } catch (err) { console.error('Erreur chargement stats:', err); }
-    finally { setLoading(false); }
-  };
+  const [stats, setStats] = useState({
+    orders: 0,
+    revenue: 0,
+    members: 0,
+    rating: 0,
+  });
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) { router.push('/auth/sign-in'); return; }
-        const [{ data: profile }, { data: company }] = await Promise.all([
-          supabase.from('profiles').select('plan, full_name').eq('id', user.id).single(),
-          supabase.from('companies').select('*').eq('owner_id', user.id).maybeSingle()
-        ]);
-        setUserName(profile?.full_name || user.email?.split('@')[0] || 'Utilisateur');
-        if (!company && profile?.plan?.toLowerCase() !== 'entreprise') { router.push('/dashboard'); return; }
-        if (!company) { router.push('/dashboard'); return; }
-        setCompanyName(company.name || '');
-        setCompanyType(company.company_type || null);
-        if (!company.company_type) { setShowTypeModal(true); }
-        await fetchStats(company.id, user.id);
-        const channel = supabase.channel(`org-cards-${company.id}`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'org_cards', filter: `org_id=eq.${company.id}` },
-            () => fetchStats(company.id, user.id)).subscribe();
-        realtimeChannels.current = [channel];
-      } catch (err) { console.error('Init échouée:', err); router.push('/dashboard'); }
+    const fetchData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { router.push('/auth/sign-in'); return; }
+
+      const { data: companyData } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('owner_id', user.id)
+        .single();
+
+      if (!companyData) {
+        // Rediriger vers la configuration si pas encore configuré
+        router.push('/dashboard/entreprise/setup');
+        return;
+      }
+
+      setCompany(companyData);
+
+      // Charger les statistiques selon le type d'entreprise
+      await loadStats(companyData);
+      
+      setLoading(false);
     };
-    init();
-    return () => { realtimeChannels.current.forEach(ch => ch?.unsubscribe?.()); };
+
+    fetchData();
   }, []);
 
-  const typeInfo = companyType ? COMPANY_TYPES_MAP[companyType] : null;
-  const contentType = companyType ? (TYPE_CONTENT[companyType] || DEFAULT_CONTENT) : null;
+  const loadStats = async (companyData: any) => {
+    const companyId = companyData.id;
+    
+    // Stats communes
+    const [
+      { count: ordersCount },
+      { count: membersCount },
+    ] = await Promise.all([
+      supabase.from('ecommerce_orders').select('*', { count: 'exact', head: true }).eq('seller_id', companyId),
+      supabase.from('org_cards').select('*', { count: 'exact', head: true }).eq('org_id', companyId),
+    ]);
+
+    setStats({
+      orders: ordersCount || 0,
+      revenue: 0, // À calculer selon les commandes
+      members: membersCount || 0,
+      rating: 4.5, // À récupérer des reviews
+    });
+  };
 
   if (loading) return <Loading />;
 
-  const statCards = [
-    { title: "Total cartes", value: stats.totalCards, color: "from-blue-500/60 to-cyan-500/60" },
-    { title: "Actives", value: stats.activeCards, color: "from-emerald-500/60 to-teal-500/60" },
-    { title: "Suspendues", value: stats.suspendedCards, color: "from-amber-500/60 to-orange-500/60" },
-    { title: "Révoquées", value: stats.revokedCards, color: "from-red-500/60 to-rose-500/60" }
-  ];
+  const companyConfig = getCompanyConfig(company.company_type);
+  const modules = getCompanyModules(company.company_type, companyConfig.features);
+  
+  // Grouper les modules par catégorie
+  const modulesByCategory = modules.reduce((acc, module) => {
+    if (!acc[module.category]) acc[module.category] = [];
+    acc[module.category].push(module);
+    return acc;
+  }, {} as Record<string, CompanyModule[]>);
+
+  const categoryLabels: Record<string, string> = {
+    core: 'Principaux',
+    commerce: 'Commerce',
+    management: 'Gestion',
+    communication: 'Communication',
+    specialized: 'Spécialisés',
+  };
+
+  const categoryIcons: Record<string, React.ReactNode> = {
+    core: <Package className="w-4 h-4" />,
+    commerce: <ShoppingBag className="w-4 h-4" />,
+    management: <TrendingUp className="w-4 h-4" />,
+    communication: <MessageSquare className="w-4 h-4" />,
+    specialized: <Star className="w-4 h-4" />,
+  };
+
+  // Widgets rapides selon le type
+  const quickActions = {
+    restaurant: [
+      { label: 'Nouveau plat', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+      { label: 'Voir commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+    ],
+    hotel: [
+      { label: 'Nouvelle chambre', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/rooms' },
+      { label: 'Réservations', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/bookings' },
+    ],
+    clinic: [
+      { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+      { label: 'Patients', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/patients' },
+    ],
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br bg-transparent">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <main className="space-y-6">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/[0.08] to-purple-500/[0.08] mb-4 border border-indigo-500/[0.08]">
-              <Building className="w-7 h-7 text-indigo-300/70" />
+    <div className="w-full max-w-full space-y-8">
+      {/* Header avec info entreprise */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl p-6 bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08]"
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${companyConfig.color} flex items-center justify-center`}>
+              {companyConfig.icon}
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white/90 to-cyan-200/70 bg-clip-text text-transparent">
-              {companyName || t('title')}
-            </h1>
-            <div className="mt-3 flex items-center justify-center gap-2">
-              {typeInfo ? (
-                <Badge className={`px-3 py-1 text-xs bg-gradient-to-r ${typeInfo.color} text-white/80 border-0 font-light`}>
-                  <span className="mr-1.5">{typeInfo.icon}</span>
-                  {typeInfo.label}
+            <div>
+              <h1 className="text-2xl font-bold text-white/90">{company.name}</h1>
+              <div className="flex items-center gap-3 mt-1">
+                <Badge className="bg-white/[0.06] text-white/60 text-[11px] font-light border-white/[0.08]">
+                  {companyConfig.label}
                 </Badge>
-              ) : (
-                <Button onClick={() => setShowTypeModal(true)} className="h-7 text-xs bg-gradient-to-r from-amber-600/80 to-orange-600/80 text-white font-light rounded-lg">
-                  Définir la catégorie
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </Button>
+                {company.verified && (
+                  <Badge className="bg-emerald-500/10 text-emerald-300/70 text-[11px] font-light border-emerald-500/20">
+                    Vérifié
+                  </Badge>
+                )}
+              </div>
+              {company.description && (
+                <p className="text-sm text-gray-400/60 font-light mt-2 max-w-xl">{company.description}</p>
               )}
             </div>
           </div>
-
-          {/* ✅ Contenu spécifique au type d'entreprise */}
-          {contentType && (
-            <div className="space-y-6">
-              {/* Description */}
-              <div className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
-                <h2 className="text-lg font-semibold text-white/80 mb-2">{contentType.title}</h2>
-                <p className="text-gray-400/60 text-sm font-light">{contentType.description}</p>
-              </div>
-
-              {/* Actions rapides */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {contentType.quickActions.map((action, i) => (
-                  <button
-                    key={i}
-                    onClick={() => router.push(action.path)}
-                    className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] transition-all text-center group"
-                  >
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${action.color} flex items-center justify-center mx-auto mb-2 group-hover:scale-105 transition-transform`}>
-                      {action.icon}
-                    </div>
-                    <span className="text-xs text-white/70 font-light">{action.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Stats spécifiques */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {contentType.stats.map((stat, i) => (
-                  <div key={i} className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-gray-400/60">
-                      {stat.icon}
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-400/60 font-light">{stat.label}</p>
-                      <p className="text-lg font-semibold text-white/80">{stat.value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Conseils */}
-              <div className="rounded-2xl p-5 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
-                <h3 className="text-sm font-semibold text-white/70 mb-3 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-cyan-400/60" />
-                  Conseils pour votre activité
-                </h3>
-                <ul className="space-y-2">
-                  {contentType.tips.map((tip, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-gray-400/60 font-light">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400/50 mt-1.5 flex-shrink-0" />
-                      {tip}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* Statistiques générales (toujours visibles) */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {statCards.map((stat, index) => (
-              <div key={index} className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] transition-all duration-300">
-                <div className={`w-9 h-9 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center mb-3`}>
-                  <CreditCard className="w-4 h-4 text-white/80" />
-                </div>
-                <p className="text-gray-400/60 text-xs font-light mb-0.5">{stat.title}</p>
-                <p className="text-xl font-semibold text-white/80">{stat.value}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Graphique */}
-          <div className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06]">
-            <AnalyticsChart profileId={stats.profileId} />
-          </div>
-
-           v
-        </main>
-      </div>
-
-      {/* Modal choix du type */}
-      {showTypeModal && (
-        <CompanyTypeModal companyId={stats.companyId} onClose={() => setShowTypeModal(false)}
-          onSaved={(type) => { setCompanyType(type); setShowTypeModal(false); window.location.reload(); }} />
-      )}
-    </div>
-  );
-}
-
-// Modal choix du type (inchangé)
-function CompanyTypeModal({ companyId, onClose, onSaved }: { companyId: string; onClose: () => void; onSaved: (type: string) => void }) {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const handleSave = async () => {
-    if (!selected) return;
-    setSaving(true);
-    const supabase = createClient();
-    const { error } = await supabase.from('companies').update({ company_type: selected, updated_at: new Date().toISOString() }).eq('id', companyId);
-    if (error) { setSaving(false); return; }
-    onSaved(selected);
-  };
-  const types = Object.entries(COMPANY_TYPES_MAP);
-  return (
-    <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-slate-900/90 backdrop-blur-xl rounded-2xl border border-white/[0.08] max-h-[80vh] overflow-y-auto p-5" onClick={e => e.stopPropagation()}>
-        <h2 className="text-lg font-semibold text-white/80 mb-4">Choisissez votre catégorie</h2>
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4">
-          {types.map(([id, info]) => (
-            <div key={id} onClick={() => setSelected(id)} className={`cursor-pointer p-3 rounded-xl text-center border transition-all duration-200 ${selected === id ? 'border-cyan-400/30 bg-cyan-500/[0.06]' : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'}`}>
-              <div className={`w-8 h-8 mx-auto mb-1.5 rounded-lg bg-gradient-to-br ${info.color} flex items-center justify-center`}>{info.icon}</div>
-              <p className="text-[11px] text-white/60 font-light">{info.label}</p>
-            </div>
-          ))}
-        </div>
-        <div className="flex gap-2">
-
-          <Button variant="ghost" onClick={onClose} className="flex-1 h-8 text-xs text-gray-400/60 hover:text-gray-300/80 hover:bg-white/[0.04] font-light rounded-lg">Plus tard</Button>
-          <Button onClick={handleSave} disabled={!selected || saving} className="flex-1 h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-lg">
-            {saving ? 'Enregistrement...' : 'Confirmer'}
+          <Button 
+            onClick={() => router.push('/dashboard/entreprise/settings')}
+            variant="outline" 
+            className="h-9 text-xs border-white/[0.08] text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-lg"
+          >
+            <Settings className="w-3.5 h-3.5 mr-1.5" />
+            Paramètres
           </Button>
         </div>
+
+        {/* Infos rapides */}
+        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-white/[0.04]">
+          {company.address && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-400/60 font-light">
+              <MapPin className="w-3.5 h-3.5" />
+              {company.address}
+            </div>
+          )}
+          {company.phone && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-400/60 font-light">
+              <Phone className="w-3.5 h-3.5" />
+              {company.phone}
+            </div>
+          )}
+          {company.email && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-400/60 font-light">
+              <Mail className="w-3.5 h-3.5" />
+              {company.email}
+            </div>
+          )}
+          {company.opening_hours && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-400/60 font-light">
+              <Clock className="w-3.5 h-3.5" />
+              {company.opening_hours}
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Stats rapides */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { icon: <ShoppingBag className="w-5 h-5 text-emerald-400/70" />, label: 'Commandes', value: stats.orders },
+          { icon: <TrendingUp className="w-5 h-5 text-cyan-400/70" />, label: 'Revenus', value: `${stats.revenue.toLocaleString()} $` },
+          { icon: <Users className="w-5 h-5 text-violet-400/70" />, label: 'Membres', value: stats.members },
+          { icon: <Star className="w-5 h-5 text-amber-400/70" />, label: 'Note', value: `${stats.rating}/5` },
+        ].map((stat, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] text-center"
+          >
+            <div className="flex justify-center mb-2">{stat.icon}</div>
+            <p className="text-lg font-semibold text-white/80">{stat.value}</p>
+            <p className="text-xs text-gray-400/60 font-light">{stat.label}</p>
+          </motion.div>
+        ))}
       </div>
+
+      {/* Quick actions */}
+      {quickActions[company.company_type as keyof typeof quickActions] && (
+        <div className="flex gap-2">
+          {quickActions[company.company_type as keyof typeof quickActions].map((action, i) => (
+            <Button
+              key={i}
+              onClick={() => router.push(action.path)}
+              className="h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-lg"
+            >
+              {action.icon}
+              <span className="ml-1.5">{action.label}</span>
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {/* Modules par catégorie */}
+      {Object.entries(modulesByCategory).map(([category, categoryModules]) => (
+        <motion.div
+          key={category}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-3"
+        >
+          <h2 className="text-sm font-semibold text-white/60 flex items-center gap-2">
+            {categoryIcons[category]}
+            {categoryLabels[category] || category}
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {categoryModules.map((module) => (
+              <motion.button
+                key={module.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push(module.path)}
+                className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all text-left group"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="w-9 h-9 rounded-xl bg-white/[0.04] flex items-center justify-center group-hover:bg-white/[0.08] transition-colors">
+                    {module.icon}
+                  </div>
+                  {module.required && (
+                    <Badge className="bg-cyan-500/10 text-cyan-300/60 text-[9px] font-light border-cyan-500/20">
+                      Requis
+                    </Badge>
+                  )}
+                </div>
+                <h3 className="text-sm text-white/70 font-medium mb-1">{module.label}</h3>
+                <p className="text-[11px] text-gray-400/50 font-light leading-tight">{module.description}</p>
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      ))}
+
+      {/* Configuration rapide si pas complète */}
+      {company.company_config && Object.keys(company.company_config).length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-2xl p-5 bg-amber-500/[0.04] border border-amber-500/[0.12]"
+        >
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+              <Bell className="w-4 h-4 text-amber-400/70" />
+            </div>
+            <div>
+              <h3 className="text-sm text-amber-300/70 font-medium mb-1">Configuration incomplète</h3>
+              <p className="text-xs text-amber-400/50 font-light mb-3">
+                Complétez la configuration de votre {companyConfig.label.toLowerCase()} pour débloquer toutes les fonctionnalités.
+              </p>
+              <Button
+                onClick={() => router.push(`/dashboard/entreprise/setup/${company.company_type}`)}
+                className="h-8 text-xs bg-amber-600/60 hover:bg-amber-500/60 text-white font-light rounded-lg"
+              >
+                <Settings className="w-3.5 h-3.5 mr-1.5" />
+                Configurer maintenant
+                <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
