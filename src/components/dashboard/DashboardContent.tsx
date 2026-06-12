@@ -7,11 +7,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
   Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Folder, Building, Plus, Calendar, 
   QrCode, Package, ArrowUp, Search, Users, ChevronRight, ShoppingBag, UserPlus, UserMinus,Layers,AlertCircle, CreditCard, XCircle,
-  User, Globe, Calendar as Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing,
-  Search as SearchIcon, CheckCircle, BarChart3, Leaf,
-  RefreshCw,
-  Clock,
-  Trophy
+  User, Globe, Calendar as Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing, Infinity as InfinityIcon, Circle,
+  Info, Lock, Zap, Unlock, MessageCircle, Search as SearchIcon, CheckCircle, BarChart3, Leaf, RefreshCw, Clock, Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -694,7 +691,28 @@ export default function DashboardContent({
       setLoadingLeaderboard(false);
     }
   };
+// 🔹 Mapping du plan utilisateur pour la logique NFC
+const userPlan = useMemo(() => {
+  const plan = (profile.plan || 'gratuit').toLowerCase();
+  if (plan === 'premium') return 'professionnel';
+  if (plan === 'entreprise') return 'business';
+  return 'gratuit';
+}, [profile.plan]);
 
+// Fonction pour déterminer si l'utilisateur peut commander plus de cartes
+const canOrderMoreCards = useMemo(() => {
+  if (userPlan === 'business') return true;       // Illimité
+  if (userPlan === 'professionnel') return cards.length < 10;  // Max 10
+  if (userPlan === 'gratuit') return cards.length < 1;         // Max 1
+  return false;
+}, [userPlan, cards.length]);
+
+
+// Gestionnaire pour l'upgrade de plan
+const handleUpgradePlan = () => {
+  window.location.href = '/pricing?upgrade=true';
+};
+  
     // 🔹 Fonction pour fermer les modaux contrôlés par activeModal
   const closeModal = () => {
   setActiveModal(null);
@@ -2268,7 +2286,7 @@ return (
   {/* ========================================
    SECTION: Gestion des Cartes NFC
    ======================================== */}
-<Card className={`glass-section border border-white/15 rounded-xl  gap-4 mt-4 ${
+<Card className={`glass-section border border-white/15 rounded-xl gap-4 mt-4 ${
   isTransparent 
     ? 'bg-transparent backdrop-blur-none' 
     : 'bg-white/5 backdrop-blur-sm'
@@ -2322,10 +2340,59 @@ return (
           {t('nfc.none') || 'Aucune'}
         </Badge>
       )}
+
+      {/* Badge de limite selon le plan */}
+      {userPlan && (
+        <Badge className={`
+          inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border
+          ${userPlan === 'business' 
+            ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' 
+            : userPlan === 'professionnel'
+            ? 'bg-blue-500/15 text-blue-300 border-blue-500/30'
+            : 'bg-gray-500/15 text-gray-300 border-gray-500/30'
+          }
+        `}>
+          {userPlan === 'business' && <InfinityIcon className="w-3 h-3" />}
+          {userPlan === 'professionnel' && <Layers className="w-3 h-3" />}
+          {userPlan === 'gratuit' && <Circle className="w-3 h-3" />}
+          
+          {userPlan === 'business' && 'Illimité'}
+          {userPlan === 'professionnel' && `${cards.length}/10`}
+          {userPlan === 'gratuit' && `${cards.length}/1`}
+        </Badge>
+      )}
     </CardTitle>
   </CardHeader>
   
   <CardContent className="pt-4">
+    {/* Message de limite atteinte */}
+    {!canOrderMoreCards && hasOrderedCard && (
+      <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+        <p className="text-sm text-amber-300 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          <span>
+            {userPlan === 'gratuit' 
+              ? 'Limite de carte NFC atteinte pour le plan Gratuit (1 carte maximum).'
+              : 'Limite de cartes NFC atteinte pour le plan Professionnel (10 cartes maximum).'
+            }
+          </span>
+        </p>
+        <p className="text-xs text-amber-400/70 mt-1">
+          Passez au plan supérieur pour commander plus de cartes NFC.
+        </p>
+      </div>
+    )}
+
+    {/* Message plan Gratuit : avertissement avant commande */}
+    {!hasOrderedCard && userPlan === 'gratuit' && (
+      <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+        <p className="text-sm text-blue-300 flex items-center gap-2">
+          <Info className="w-4 h-4 flex-shrink-0" />
+          <span>Le plan Gratuit inclut <strong>1 carte NFC</strong>. Une fois commandée, vous ne pourrez plus en commander d'autre.</span>
+        </p>
+      </div>
+    )}
+
     {/* Cas 1: Pas de carte */}
     {!hasOrderedCard && (
       <div className="space-y-4">
@@ -2376,6 +2443,7 @@ return (
           </div>
         </div>
 
+        {/* Bouton commander - toujours visible car pas de carte */}
         <Button
           onClick={handleOrderCard}
           className="w-full mt-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 group relative overflow-hidden"
@@ -2507,7 +2575,14 @@ return (
         {/* Liste de toutes les cartes (si plusieurs) */}
         {cards.length > 1 && (
           <div className="mt-4 pt-4 border-t border-white/10">
-            <h4 className="text-sm font-medium text-gray-300 mb-3">Toutes vos cartes</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-medium text-gray-300">Toutes vos cartes</h4>
+              {userPlan !== 'business' && (
+                <span className="text-xs text-gray-400">
+                  {cards.length} / {userPlan === 'professionnel' ? '10' : '1'}
+                </span>
+              )}
+            </div>
             <div className="space-y-2">
               {cards.map((card) => (
                 <div
@@ -2583,15 +2658,40 @@ return (
             <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
 
-          <Button
-            onClick={handleOrderCard}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 group relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Plus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
-            {t('nfc.order_another') || 'Commander une autre'}
-          </Button>
+          {/* Bouton Commander - visible seulement si peut encore commander */}
+          {canOrderMoreCards ? (
+            <Button
+              onClick={handleOrderCard}
+              className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 group relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <Plus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />
+              {t('nfc.order_another') || 'Commander une autre'}
+            </Button>
+          ) : (
+            <Button
+              disabled
+              className="flex-1 bg-gray-600/50 text-gray-400 font-semibold py-3 rounded-lg cursor-not-allowed border border-gray-500/20"
+            >
+              <Lock className="mr-2 h-4 w-4" />
+              Limite atteinte
+            </Button>
+          )}
         </div>
+
+        {/* Bouton upgrade pour plans limités */}
+        {!canOrderMoreCards && userPlan !== 'business' && (
+          <Button
+            onClick={handleUpgradePlan}
+            className="w-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/30 text-amber-300 font-semibold py-3 rounded-lg transition-all duration-300"
+          >
+            <Zap className="mr-2 h-4 w-4" />
+            {userPlan === 'gratuit' 
+              ? 'Passer au plan Professionnel ou Business'
+              : 'Passer au plan Business (illimité)'
+            }
+          </Button>
+        )}
 
         {/* Message d'information */}
         <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
@@ -3240,7 +3340,7 @@ return (
     onConfirm={handleLogout}
     tNavbar={tNavbar}
   />
-)}f
+)}
 
   {/* 🔹 MODAUX NFC - CONDITIONNELS AVEC CLÉS EXPLICITES */}
   {isNFCModalOpen && ( // ✅ Conditionnel + key explicite
