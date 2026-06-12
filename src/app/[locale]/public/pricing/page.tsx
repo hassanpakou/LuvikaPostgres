@@ -1,19 +1,15 @@
-// src/app/[locale]/public/pricing/page.tsx - PRICING PAGE COMPONENT
-import { getTranslations, setRequestLocale } from 'next-intl/server';
+// src/app/[locale]/(public)/pricing/page.tsx
+import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
-import PricingPlans from '../../../../components/pricing/PricingPlans'; // ✅ Chemin corrigé
+import PricingPlans from '@/src/components/pricing/PricingPlans';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'pricing' });
   return {
     title: t('title'),
-    description: t('plans.freemium.desc'),
+    description: t('plans.gratuit.desc'),
   };
-}
-
-export async function generateStaticParams() {
-  return [{ locale: 'fr' }, { locale: 'en' }, { locale: 'ln' }];
 }
 
 export default async function PricingPage({
@@ -26,73 +22,84 @@ export default async function PricingPage({
   if (!supported.includes(locale as any)) notFound();
 
   const t = await getTranslations({ locale, namespace: 'pricing' });
-  const tFooter = await getTranslations({ locale, namespace: 'footer' });
 
   const plans = [
+    //  GRATUIT
     {
-      key: 'freemium' as const,
-      title: t('plans.freemium.title'),
-      desc: t('plans.freemium.desc'),
+      key: 'gratuit' as const,
+      title: t('plans.gratuit.title'),
+      desc: t('plans.gratuit.desc'),
       features: [
-        t('plans.freemium.features.nfc'),
-        t('plans.freemium.features.users'),
-        t('plans.freemium.features.events'),
-        t('plans.freemium.features.presence'),
-        t('plans.freemium.features.stats'),
-        t('plans.freemium.features.roles'),
-        t('plans.freemium.features.dashboard'),
+        t('plans.gratuit.features.nfc'),
+        t('plans.gratuit.features.profile'),
+        t('plans.gratuit.features.link'),
+        t('plans.gratuit.features.nfc_management'),
+        t('plans.gratuit.features.order_nfc'),
+        t('plans.gratuit.features.qr'),
+        t('plans.gratuit.features.support'),
       ],
-      badge: '',
-      price: { mensuel: 0, annuel: 0 },
+      price: { annuel: 0 },
+      periods: [{ label: t('free_lifetime'), value: 'lifetime', price: 0 }],
     },
+    //  PROFESSIONNEL
     {
-      key: 'premium' as const,
-      title: t('plans.premium.title'),
-      desc: t('plans.premium.desc'),
+      key: 'professionnel' as const,
+      title: t('plans.professionnel.title'),
+      desc: t('plans.professionnel.desc'),
       features: [
-        t('plans.premium.features.nfc'),
-        t('plans.premium.features.users'),
-        t('plans.premium.features.events'),
-        t('plans.premium.features.presence'),
-        t('plans.premium.features.stats'),
-        t('plans.premium.features.roles'),
-        t('plans.premium.features.dashboard'),
+        t('plans.professionnel.features.nfc'),
+        t('plans.professionnel.features.profile'),
+        t('plans.professionnel.features.photo'),
+        t('plans.professionnel.features.social'),
+        t('plans.professionnel.features.portfolio'),
+        t('plans.professionnel.features.certificates'),
+        t('plans.professionnel.features.subscribers'),
+        t('plans.professionnel.features.events'),
+        t('plans.professionnel.features.tracking'),
+        t('plans.professionnel.features.stats'),
+        t('plans.professionnel.features.advanced_management'),
+        t('plans.professionnel.features.priority_support'),
       ],
-      badge: t('plans.premium.popular'),
+      badge: t('plans.professionnel.popular'),
       highlight: true,
-      price: { mensuel: 12, annuel: 120 },
-    },
-    {
-      key: 'entreprise' as const,
-      title: t('plans.entreprise.title'),
-      desc: t('plans.entreprise.desc'),
-      features: [
-        t('plans.entreprise.features.nfc'),
-        t('plans.entreprise.features.users'),
-        t('plans.entreprise.features.events'),
-        t('plans.entreprise.features.presence'),
-        t('plans.entreprise.features.stats'),
-        t('plans.entreprise.features.roles'),
-        t('plans.entreprise.features.dashboard'),
+      price: { semestriel: 3, annuel: 5 },
+      periods: [
+        { label: '6 mois', value: 'semestriel', price: 3 },
+        { label: '12 mois', value: 'annuel', price: 5, savings: 17 },
       ],
-      badge: '',
-      price: { mensuel: 39, annuel: 390 },
+    },
+    //  BUSINESS
+    {
+      key: 'business' as const,
+      title: t('plans.business.title'),
+      desc: t('plans.business.desc'),
+      features: [
+        t('plans.business.features.nfc'),
+        t('plans.business.features.team'),
+        t('plans.business.features.events'),
+        t('plans.business.features.tracking'),
+        t('plans.business.features.analytics'),
+        t('plans.business.features.advanced_management'),
+        t('plans.business.features.employees'),
+        t('plans.business.features.dashboard'),
+        t('plans.business.features.clients'),
+        t('plans.business.features.assign_cards'),
+        t('plans.business.features.export'),
+        t('plans.business.features.support'),
+      ],
+      price: { bimestriel: 3.99, semestriel: 9.99, annuel: 15 },
+      periods: [
+        { label: '2 mois', value: 'bimestriel', price: 3.99 },
+        { label: '6 mois', value: 'semestriel', price: 9.99 },
+        { label: '12 mois', value: 'annuel', price: 15, savings: 38 },
+      ],
     },
   ];
 
   return (
-    <>
-      <PricingPlans
-  title={t('title')}
-  billingMonthly={t('billing.monthly')}
-  billingYearly={t('billing.yearly')}
-  ctaChoose={{
-    freemium: t('cta.choose', { plan: t('plans.freemium.title') }),
-    premium: t('cta.choose', { plan: t('plans.premium.title') }),
-    entreprise: t('cta.choose', { plan: t('plans.entreprise.title') }),
-  }}
-  plans={plans}
-/>
-    </>
+    <PricingPlans
+      title={t('title')}
+      plans={plans}
+    />
   );
 }

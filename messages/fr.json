@@ -1334,62 +1334,71 @@
     "scroll_to_top": "Retour en haut"
   },
   "pricing": {
-    "title": "Plans Tarifaires",
-    "description": "Choisissez le plan qui correspond à vos besoins",
-    "billing": {
-      "monthly": "Mensuel",
-      "yearly": "Annuel",
-      "per_month": "par mois",
-      "per_year": "par an"
-    },
+    "title": "Choisissez votre plan Luvika",
+    "subtitle": "Créez votre présence numérique avec une carte NFC intelligente",
+    "free_lifetime": "À vie",
+    "recommended_badge": "Recommandé",
+    "launch_offer": "Offre de lancement : 15 $/an au lieu de 24 $/an",
+    "save_percent": "-{percent}%",
+    "cta_start_free": "Commencer gratuitement",
+    "cta_choose_premium": "Choisir Professionnel",
+    "cta_contact_us": "Contactez-nous",
+    "no_card_required": "Sans carte bancaire",
+    "cancel_anytime": "Annulation à tout moment",
+    "footer_note": "Tous les prix sont en dollars américains (USD).",
+    "default_title": "Plans et tarifs",
+    
     "plans": {
-      "freemium": {
-        "title": "Gratuit",
-        "desc": "Parfait pour commencer",
+      "gratuit": {
+        "title": " Gratuit",
+        "desc": "Pour découvrir Luvika et créer sa présence numérique.",
         "features": {
           "nfc": "1 carte NFC",
-          "users": "Profil personnel",
-          "events": "1 événement",
-          "presence": "Suivi des présences",
-          "stats": "Statistiques de base",
-          "roles": "Rôle utilisateur",
-          "dashboard": "Tableau de bord"
+          "profile": "Profil personnel",
+          "link": "Lien public partageable",
+          "nfc_management": "Gestion de carte NFC",
+          "order_nfc": "Commande de cartes NFC",
+          "qr": "QR Code personnel",
+          "support": "Support standard"
         }
       },
-      "premium": {
-        "title": "Professionnel",
+      "professionnel": {
+        "title": " Professionnel",
+        "desc": "Pour les indépendants, étudiants, consultants et créateurs.",
         "popular": "Populaire",
-        "desc": "Pour les professionnels",
         "features": {
-          "nfc": "10 cartes NFC",
-          "users": "Équipe jusqu'à 5",
+          "nfc": "Jusqu'à 10 cartes NFC",
+          "profile": "Profil professionnel complet",
+          "photo": "Photo de profil",
+          "social": "Réseaux sociaux illimités",
+          "portfolio": "Portfolio",
+          "certificates": "Certificats et diplômes",
+          "subscribers": "Gestion des abonnés",
           "events": "Événements illimités",
-          "presence": "Suivi avancé",
+          "tracking": "Suivi en temps réel",
           "stats": "Statistiques détaillées",
-          "roles": "Gestion des rôles",
-          "dashboard": "Dashboard avancé"
+          "advanced_management": "Gestion avancée des cartes",
+          "priority_support": "Priorité sur le support"
         }
       },
-      "entreprise": {
-        "title": "Business",
-        "desc": "Solution complète",
+      "business": {
+        "title": " Business",
+        "desc": "Pour les entreprises, commerces et équipes.",
         "features": {
           "nfc": "Cartes NFC illimitées",
-          "users": "Équipe illimitée",
+          "team": "Membres d'équipe illimités",
           "events": "Événements illimités",
-          "presence": "Suivi en temps réel",
-          "stats": "Analytics complètes",
-          "roles": "Contrôle d'accès avancé",
-          "dashboard": "Dashboard personnalisé"
+          "tracking": "Suivi en temps réel",
+          "analytics": "Analytics complètes",
+          "advanced_management": "Gestion avancée des cartes",
+          "employees": "Gestion des employés",
+          "dashboard": "Tableau de bord entreprise",
+          "clients": "Gestion des clients",
+          "assign_cards": "Attribution des cartes aux équipes",
+          "export": "Export des statistiques",
+          "support": "Support prioritaire"
         }
       }
-    },
-    "cta": {
-      "choose": "Choisir {plan}"
-    },
-    "footer": {
-      "custom_plan": "Plan personnalisé",
-      "contact_us": "Nous contacter"
     }
   },
   "validate_button": "Valider",
