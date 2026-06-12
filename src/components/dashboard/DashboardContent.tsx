@@ -2812,8 +2812,13 @@ return (
     )}
   </CardContent>
 </motion.div>
+
       {/* 🔹 Menu flottant - reste en overlay */}
-      <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
+    <DashboardQuickMenu 
+      onAction={handleQuickAction} 
+      actions={quickActions} 
+      userPlan={userPlan}
+    />
 
 {/* 🔹 MODAL RÉCOMPENSE 10K SCANS */}
 <AnimatePresence>

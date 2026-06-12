@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Action = {
@@ -14,19 +14,30 @@ type Action = {
   disabled?: boolean;
 };
 
+type Props = {
+  onAction: (id: string) => void;
+  actions: Action[];
+  userPlan?: 'gratuit' | 'professionnel' | 'business';
+};
+
 export default function DashboardQuickMenu({
   onAction,
   actions,
-}: {
-  onAction: (id: string) => void;
-  actions: Action[];
-}) {
+  userPlan = 'gratuit', // Par défaut gratuit
+}: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
   const [dragY, setDragY] = useState(0);
+
+  // 🔒 Actions bloquées pour le plan Gratuit
+  const FREE_RESTRICTED_ACTIONS = ['statistics', 'subscribers', 'portfolio', 'certificates'];
+
+  const isActionRestricted = (actionId: string): boolean => {
+    return userPlan === 'gratuit' && FREE_RESTRICTED_ACTIONS.includes(actionId);
+  };
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -37,6 +48,14 @@ export default function DashboardQuickMenu({
 
   const handleAction = (id: string) => {
     if (!isOpen) return;
+    
+    // 🔒 Bloquer l'action si restreinte pour le plan Gratuit
+    if (isActionRestricted(id)) {
+      // Optionnel : rediriger vers la page d'upgrade
+      // window.location.href = '/pricing?upgrade=true';
+      return;
+    }
+    
     onAction(id);
     setIsOpen(false);
     setDragY(0);
@@ -88,6 +107,8 @@ export default function DashboardQuickMenu({
                 const radius = 110;
                 const x = Math.cos(angle) * radius;
                 const y = Math.sin(angle) * radius;
+                const restricted = isActionRestricted(action.id);
+                
                 return (
                   <motion.button
                     key={action.id}
@@ -96,18 +117,33 @@ export default function DashboardQuickMenu({
                     exit={{ scale: 0, opacity: 0 }}
                     transition={{ delay: i * 0.02, duration: 0.15 }}
                     onClick={() => handleAction(action.id)}
-                    disabled={action.disabled}
+                    disabled={action.disabled || restricted}
                     style={{
                       position: 'absolute',
                       left: '50%',
                       top: '50%',
-                      background: `linear-gradient(135deg, ${getGradient(action.color)})`,
-                      opacity: action.disabled ? 0.4 : 1,
+                      background: restricted 
+                        ? 'linear-gradient(135deg, #4b5563, #374151)' // Gris pour bloqué
+                        : `linear-gradient(135deg, ${getGradient(action.color)})`,
+                      opacity: restricted ? 0.5 : 1,
                     }}
-                    className="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:scale-110 active:scale-95 transition-all"
-                    title={action.label}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center border border-white/20 shadow-lg hover:scale-110 active:scale-95 transition-all ${
+                      restricted ? 'cursor-not-allowed' : 'cursor-pointer'
+                    }`}
+                    title={restricted ? `${action.label} (🔒 Premium)` : action.label}
                   >
-                    <span className="text-white scale-90">{action.icon}</span>
+                    {/* Icône + Cadenas si restreint */}
+                    <div className="relative">
+                      <span className={`text-white scale-90 ${restricted ? 'opacity-60' : ''}`}>
+                        {action.icon}
+                      </span>
+                      {restricted && (
+                        <Lock 
+                          className="absolute -top-1.5 -right-1.5 w-3 h-3 text-amber-400/80" 
+                          style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}
+                        />
+                      )}
+                    </div>
                   </motion.button>
                 );
               })}
@@ -146,26 +182,68 @@ export default function DashboardQuickMenu({
               {/* Grille */}
               <div className="p-4">
                 <div className="grid grid-cols-3 gap-3">
-                  {actions.map((action) => (
-                    <button
-                      key={action.id}
-                      onClick={() => handleAction(action.id)}
-                      disabled={action.disabled}
-                      className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${
-                        action.disabled ? 'opacity-40' : 'bg-white/5 hover:bg-white/10 active:bg-white/15'
-                      }`}
-                    >
-                      <span
-                        className="w-11 h-11 rounded-xl flex items-center justify-center mb-1.5"
-                        style={{ background: `linear-gradient(135deg, ${getGradient(action.color)})` }}
+                  {actions.map((action) => {
+                    const restricted = isActionRestricted(action.id);
+                    
+                    return (
+                      <button
+                        key={action.id}
+                        onClick={() => handleAction(action.id)}
+                        disabled={action.disabled || restricted}
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all relative ${
+                          restricted 
+                            ? 'opacity-50 cursor-not-allowed' 
+                            : action.disabled 
+                              ? 'opacity-40' 
+                              : 'bg-white/5 hover:bg-white/10 active:bg-white/15'
+                        }`}
                       >
-                        <span className="text-white scale-90">{action.icon}</span>
-                      </span>
-                      <span className="text-[11px] text-gray-300 font-medium">{action.label}</span>
-                    </button>
-                  ))}
+                        <div className="relative">
+                          <span
+                            className="w-11 h-11 rounded-xl flex items-center justify-center mb-1.5"
+                            style={{ 
+                              background: restricted 
+                                ? 'linear-gradient(135deg, #4b5563, #374151)' 
+                                : `linear-gradient(135deg, ${getGradient(action.color)})` 
+                            }}
+                          >
+                            <span className={`text-white scale-90 ${restricted ? 'opacity-50' : ''}`}>
+                              {action.icon}
+                            </span>
+                          </span>
+                          {/* Cadenas sur mobile */}
+                          {restricted && (
+                            <Lock 
+                              className="absolute -top-1 -right-1 w-3.5 h-3.5 text-amber-400/80" 
+                              style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.6))' }}
+                            />
+                          )}
+                        </div>
+                        <span className={`text-[11px] font-medium ${
+                          restricted ? 'text-gray-500' : 'text-gray-300'
+                        }`}>
+                          {action.label}
+                        </span>
+                        {restricted && (
+                          <span className="text-[9px] text-amber-400/60 mt-0.5">Premium</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
+
+              {/* Message pour les utilisateurs Free */}
+              {userPlan === 'gratuit' && (
+                <div className="px-4 pb-2">
+                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-center">
+                    <p className="text-[11px] text-amber-300/80 font-light flex items-center justify-center gap-1.5">
+                      <Lock className="w-3 h-3" />
+                      Débloquez toutes les fonctionnalités avec Premium
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Fermer */}
               <div className="p-4 pt-2 border-t border-white/10">
