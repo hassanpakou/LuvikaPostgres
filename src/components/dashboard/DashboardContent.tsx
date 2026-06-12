@@ -10,7 +10,8 @@ import {
   User, Globe, Calendar as Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing,
   Search as SearchIcon, CheckCircle, BarChart3, Leaf,
   RefreshCw,
-  Clock
+  Clock,
+  Trophy
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -644,6 +645,9 @@ export default function DashboardContent({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [sendingReply, setSendingReply] = useState(false);
+  const [hasScanReward, setHasScanReward] = useState(false);
+  const [showRewardModal, setShowRewardModal] = useState(false);
+
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
       bio: true,
@@ -669,7 +673,27 @@ export default function DashboardContent({
   const [loadingCards, setLoadingCards] = useState(true);
   const [loadingMessagesCount, setLoadingMessagesCount] = useState(true);
   const [upgradeStatus, setUpgradeStatus] = useState<'idle' | 'pending' | 'approved' | 'rejected'>('idle');
-const [checkingUpgrade, setCheckingUpgrade] = useState(true);
+  const [checkingUpgrade, setCheckingUpgrade] = useState(true);
+
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+  // Fonction pour charger le top 5
+  const fetchLeaderboard = async () => {
+    setLoadingLeaderboard(true);
+    try {
+      const res = await fetch(`/api/leaderboard?limit=5`);
+      if (res.ok) {
+        const data = await res.json();
+        setLeaderboardData(data.leaderboard || []);
+      }
+    } catch (err) {
+      console.error('Erreur leaderboard:', err);
+    } finally {
+      setLoadingLeaderboard(false);
+    }
+  };
 
     // 🔹 Fonction pour fermer les modaux contrôlés par activeModal
   const closeModal = () => {
@@ -706,6 +730,51 @@ useEffect(() => {
     fetchMessages();
   }
 }, [activeModal]);
+
+useEffect(() => {
+  console.log('🔍 Vérification récompense:', { scansCount, profileId: profile.id });
+  
+  if (scansCount >= 10000) {
+    const rewardApplied = localStorage.getItem(`luvika_scan_reward_${profile.id}`);
+    console.log('🎯 Reward check:', { rewardApplied });
+    
+    if (!rewardApplied) {
+      console.log('🏆 Affichage modal récompense !');
+      setHasScanReward(true);
+      setShowRewardModal(true);
+    }
+  }
+}, [scansCount, profile.id]);
+
+const handleApplyScanReward = async () => {
+  try {
+    const res = await fetch('/api/subscription/apply-scan-reward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        profile_id: profile.id,
+        discount_percent: 5,
+        reason: '10 000 scans atteints',
+      }),
+    });
+
+    if (res.ok) {
+      localStorage.setItem(`luvika_scan_reward_${profile.id}`, 'true');
+      setHasScanReward(false);
+      setShowRewardModal(false);
+      toast.success('🎉 Récompense débloquée !', {
+        description: '5% de réduction appliquée à votre abonnement mensuel.',
+        icon: <Trophy className="w-4 h-4 text-amber-400" />,
+      });
+    } else {
+      throw new Error();
+    }
+  } catch (err) {
+    toast.error('Erreur', {
+      description: 'Impossible d\'appliquer la réduction.',
+    });
+  }
+};
 
 // Fonction pour envoyer une réponse
 const handleSendReply = async (messageId: string) => {
@@ -1695,55 +1764,64 @@ return (
         </div>
       </div>
 
-      {/* Badge niveau (sous la barre) */}
-      {scansCount > 0 && (
-        <div className="mt-3">
-          {(() => {
-            const badgeInfo = getBadgeInfo(scansCount);
-            const isMaxLevel = badgeInfo.nextThreshold === Infinity;
-            const nextThreshold = isMaxLevel ? scansCount : (badgeInfo.nextThreshold || scansCount + 50);
-            const progress = isMaxLevel ? 100 : Math.min((scansCount / nextThreshold) * 100, 100);
+      {/* Badge niveau - CLIQUABLE pour voir le classement */}
+{scansCount > 0 && (
+  <div className="mt-3">
+    {(() => {
+      const badgeInfo = getBadgeInfo(scansCount);
+      const isMaxLevel = badgeInfo.nextThreshold === Infinity;
+      const nextThreshold = isMaxLevel ? scansCount : (badgeInfo.nextThreshold || scansCount + 50);
+      const progress = isMaxLevel ? 100 : Math.min((scansCount / nextThreshold) * 100, 100);
 
-            return (
-              <div className={`relative overflow-hidden rounded-2xl border transition-all duration-300 ${
-                isMaxLevel 
-                  ? 'bg-gradient-to-br from-amber-500/[0.06] to-yellow-500/[0.03] border-amber-500/20' 
-                  : 'bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.03] border-cyan-500/10'
-              }`}>
-                <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 ${
-                  isMaxLevel ? 'bg-amber-500/5' : 'bg-cyan-500/5'
-                }`} />
-                <div className="relative flex items-center gap-3 px-4 py-2.5">
-                  <div className="flex-shrink-0">
-                    <BadgeLevel info={badgeInfo} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-lg font-bold text-white">{scansCount.toLocaleString()}</span>
-                      <span className={`text-[10px] font-medium uppercase ${isMaxLevel ? 'text-amber-400' : 'text-cyan-400'}`}>
-                        {badgeInfo.level} · {badgeInfo.label}
-                      </span>
-                    </div>
-                    <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${progress}%` }}
-                        className={`h-full rounded-full ${isMaxLevel ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : 'bg-gradient-to-r from-cyan-400 to-blue-500'}`}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-0.5">
-                      <span className="text-[9px] text-gray-500">{scansCount.toLocaleString()} / {isMaxLevel ? '∞' : nextThreshold.toLocaleString()}</span>
-                      <span className="text-[9px] text-gray-500">
-                        {isMaxLevel ? '🏆 Niveau max' : `Prochain : ${nextThreshold.toLocaleString()}`}
-                      </span>
-                    </div>
-                  </div>
+      return (
+        <button
+          onClick={() => {
+            fetchLeaderboard();
+            setShowLeaderboardModal(true);
+          }}
+          className={`w-full relative overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer hover:scale-[1.01] ${
+            isMaxLevel 
+              ? 'bg-gradient-to-br from-amber-500/[0.06] to-yellow-500/[0.03] border-amber-500/20 hover:border-amber-500/30' 
+              : 'bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.03] border-cyan-500/10 hover:border-cyan-500/20'
+          }`}
+        >
+          <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 ${
+            isMaxLevel ? 'bg-amber-500/5' : 'bg-cyan-500/5'
+          }`} />
+          <div className="relative flex items-center gap-3 px-4 py-2.5 text-left">
+            <div className="flex-shrink-0">
+              <BadgeLevel info={badgeInfo} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-lg font-bold text-white">{scansCount.toLocaleString()}</span>
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] font-medium uppercase ${isMaxLevel ? 'text-amber-400' : 'text-cyan-400'}`}>
+                    {badgeInfo.level} · {badgeInfo.label}
+                  </span>
+                  <ChevronRight className="w-3 h-3 text-gray-500" />
                 </div>
               </div>
-            );
-          })()}
-        </div>
-      )}
+              <div className="h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className={`h-full rounded-full ${isMaxLevel ? 'bg-gradient-to-r from-amber-400 to-yellow-500' : 'bg-gradient-to-r from-cyan-400 to-blue-500'}`}
+                />
+              </div>
+              <div className="flex justify-between mt-0.5">
+                <span className="text-[9px] text-gray-500">{scansCount.toLocaleString()} / {isMaxLevel ? '∞' : nextThreshold.toLocaleString()}</span>
+                <span className="text-[9px] text-gray-500">
+                  {isMaxLevel ? '🏆 Niveau max' : `Prochain : ${nextThreshold.toLocaleString()}`}
+                </span>
+              </div>
+            </div>
+          </div>
+        </button>
+      );
+    })()}
+  </div>
+)}
     </div>
 
 
@@ -2092,7 +2170,7 @@ return (
     transform: translateY(0.5px) scale(0.985) !important;
   }
 `}</style>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
   
   {/* 🌐 Voir mon profil public */}
   <Link href={`/${locale}/${profile.username}`} target="_blank" className="group">
@@ -2190,7 +2268,7 @@ return (
   {/* ========================================
    SECTION: Gestion des Cartes NFC
    ======================================== */}
-<Card className={`glass-section border border-white/15 rounded-xl ${
+<Card className={`glass-section border border-white/15 rounded-xl  gap-4 mt-4 ${
   isTransparent 
     ? 'bg-transparent backdrop-blur-none' 
     : 'bg-white/5 backdrop-blur-sm'
@@ -2538,7 +2616,7 @@ return (
 {/* 🔹 Abonnement - Design léger et transparent */}
 <motion.div
   whileHover={{ y: -1 }}
-  className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm w-full transition-all duration-300 hover:border-cyan-500/30"
+  className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm w-full transition-all duration-300 hover:border-cyan-500/30  gap-4 mt-4"
 >
   <CardHeader className="pb-4">
     <CardTitle className="flex items-center flex-wrap gap-3">
@@ -2636,6 +2714,277 @@ return (
 </motion.div>
       {/* 🔹 Menu flottant - reste en overlay */}
       <DashboardQuickMenu onAction={handleQuickAction} actions={quickActions} />
+
+{/* 🔹 MODAL RÉCOMPENSE 10K SCANS */}
+<AnimatePresence>
+  {showRewardModal && (
+    <motion.div
+      key="scan-reward-modal"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={() => setShowRewardModal(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        className="relative w-full max-w-sm bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Fond décoratif */}
+        <div className="absolute inset-0 bg-gradient-to-b from-amber-500/10 to-transparent" />
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl" />
+        
+        {/* Contenu */}
+        <div className="relative p-6 text-center">
+          {/* Icône animée */}
+          <motion.div
+            animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 5, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-2xl shadow-amber-500/30"
+          >
+            <Trophy className="w-8 h-8 text-white" />
+          </motion.div>
+
+          {/* Titre */}
+          <h2 className="text-xl font-bold text-white mb-2">
+            🎉 10 000 Scans !
+          </h2>
+          
+          {/* Message */}
+          <p className="text-sm text-gray-300 mb-1 font-medium">
+            Félicitations ! Vous avez atteint les 10 000 scans.
+          </p>
+          <p className="text-xs text-gray-400 mb-4">
+            En récompense, bénéficiez de <span className="text-amber-400 font-bold">-5%</span> sur votre abonnement mensuel.
+          </p>
+
+          {/* Barre de progression 100% */}
+          <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden mb-4">
+            <div className="h-full bg-gradient-to-r from-amber-400 to-yellow-500 rounded-full w-full relative">
+              <motion.div
+                animate={{ opacity: [1, 0.3, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white shadow-lg shadow-amber-400/50"
+              />
+            </div>
+          </div>
+
+          {/* Détail récompense */}
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-amber-300/70 font-light">Abonnement mensuel</span>
+              <span className="text-xs text-amber-300 font-bold">-5%</span>
+            </div>
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-xs text-gray-400 font-light">Statut</span>
+              <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Disponible</span>
+            </div>
+          </div>
+
+          {/* Boutons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowRewardModal(false)}
+              className="flex-1 h-9 text-xs text-gray-400 hover:text-white hover:bg-white/[0.04] font-light rounded-xl transition-all"
+            >
+              Plus tard
+            </button>
+            <button
+              onClick={handleApplyScanReward}
+              className="flex-1 h-9 text-xs bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-white font-medium rounded-xl transition-all shadow-lg shadow-amber-500/20"
+            >
+              <Trophy className="w-3.5 h-3.5 mr-1.5 inline" />
+              Activer la réduction
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
+{/* 🔹 MODAL CLASSEMENT - Top 5 avec Trophées */}
+<AnimatePresence>
+  {showLeaderboardModal && (
+    <motion.div
+      key="leaderboard-modal"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={() => setShowLeaderboardModal(false)}
+    >
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        className="relative w-full max-w-md bg-slate-900/95 backdrop-blur-xl rounded-2xl border border-white/[0.08] shadow-2xl overflow-hidden"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header avec podium */}
+        <div className="relative p-5 pb-8 border-b border-white/[0.06] overflow-hidden">
+          {/* Fond décoratif */}
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent" />
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl" />
+          
+          <div className="relative flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-white/80">Classement</h2>
+                <p className="text-[10px] text-gray-500 font-light">Top scanners Luvika</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowLeaderboardModal(false)}
+              className="p-1.5 rounded-lg hover:bg-white/[0.04] text-gray-400 hover:text-white transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Podium trophées */}
+          <div className="flex items-end justify-center gap-4 mt-4">
+            {/* 2ème place */}
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-lg shadow-gray-400/20 mb-1">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <div className="w-16 h-12 bg-gradient-to-t from-gray-400/20 to-gray-300/10 rounded-t-lg border border-gray-400/20 flex items-center justify-center">
+                <span className="text-lg font-bold text-gray-300">2</span>
+              </div>
+            </div>
+
+            {/* 1ère place */}
+            <div className="flex flex-col items-center">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-yellow-500 flex items-center justify-center shadow-lg shadow-amber-500/30 mb-1"
+              >
+                <Trophy className="w-6 h-6 text-white" />
+              </motion.div>
+              <div className="w-16 h-16 bg-gradient-to-t from-amber-400/20 to-amber-300/10 rounded-t-lg border border-amber-400/30 flex items-center justify-center">
+                <span className="text-2xl font-bold text-amber-400">1</span>
+              </div>
+            </div>
+
+            {/* 3ème place */}
+            <div className="flex flex-col items-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/20 mb-1">
+                <Trophy className="w-5 h-5 text-white" />
+              </div>
+              <div className="w-16 h-10 bg-gradient-to-t from-orange-400/20 to-orange-300/10 rounded-t-lg border border-orange-400/20 flex items-center justify-center">
+                <span className="text-lg font-bold text-orange-300">3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Liste */}
+        <div className="p-4">
+          {loadingLeaderboard ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : leaderboardData.length === 0 ? (
+            <div className="text-center py-8">
+              <Trophy className="w-10 h-10 text-gray-600 mx-auto mb-3" />
+              <p className="text-sm text-gray-500 font-light">Aucune donnée disponible</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {leaderboardData.map((user, index) => {
+                const positionColors = [
+                  { bg: 'bg-amber-500/10', border: 'border-amber-500/20', badge: 'bg-amber-400 text-white shadow-amber-400/30', badgeIcon: '🥇' },
+                  { bg: 'bg-slate-400/5', border: 'border-slate-400/10', badge: 'bg-slate-300 text-slate-800 shadow-slate-400/20', badgeIcon: '🥈' },
+                  { bg: 'bg-orange-500/5', border: 'border-orange-500/10', badge: 'bg-orange-400 text-white shadow-orange-400/20', badgeIcon: '🥉' },
+                  { bg: 'bg-white/[0.02]', border: 'border-white/[0.04]', badge: 'bg-white/[0.06] text-gray-400', badgeIcon: index + 1 },
+                  { bg: 'bg-white/[0.02]', border: 'border-white/[0.04]', badge: 'bg-white/[0.06] text-gray-400', badgeIcon: index + 1 },
+                ];
+                const colors = positionColors[index] || positionColors[4];
+
+                return (
+                  <div
+                    key={user.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:scale-[1.01] cursor-pointer ${colors.bg} ${colors.border}`}
+                    onClick={() => window.open(`/${locale}/${user.username}`, '_blank')}
+                  >
+                    {/* Badge position avec icône trophée */}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shadow-lg flex-shrink-0 ${colors.badge}`}>
+                      {index <= 2 ? colors.badgeIcon : (
+                        <span className="text-[11px]">{index + 1}</span>
+                      )}
+                    </div>
+
+                    {/* Avatar */}
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center overflow-hidden flex-shrink-0 ring-1 ring-white/10">
+                      {user.avatar_url ? (
+                        <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <User className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+
+                    {/* Infos */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white/80 font-medium truncate">
+                        {user.full_name || user.username}
+                      </p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <p className="text-[10px] text-gray-500 font-light">
+                          @{user.username}
+                        </p>
+                        {/* Badge niveau */}
+                        <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${
+                          (user.scans_count || 0) >= 500
+                            ? 'bg-amber-500/15 text-amber-400 border border-amber-500/20'
+                            : (user.scans_count || 0) >= 100
+                            ? 'bg-slate-400/10 text-slate-400 border border-slate-400/20'
+                            : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                        }`}>
+                          {(user.scans_count || 0) >= 500 ? 'Or' : (user.scans_count || 0) >= 100 ? 'Argent' : 'Bronze'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Scans */}
+                    <div className="text-right flex-shrink-0">
+                      <span className={`text-sm font-bold tabular-nums ${
+                        index === 0 ? 'text-amber-400' : index <= 2 ? 'text-gray-300' : 'text-gray-400'
+                      }`}>
+                        {(user.scans_count || 0).toLocaleString()}
+                      </span>
+                      <p className="text-[9px] text-gray-500 font-light">scans</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-3 border-t border-white/[0.04] flex justify-center">
+          <div className="flex items-center gap-1.5">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
+            </span>
+            <span className="text-[10px] text-gray-500/50 font-light">
+              Classement en temps réel
+            </span>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
 
         {/* 🔹 MODAL ÉVÉNEMENTS - Scroll fluide et sans débordement */}
 <AnimatePresence>
