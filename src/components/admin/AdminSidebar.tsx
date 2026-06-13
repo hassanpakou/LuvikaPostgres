@@ -6,7 +6,8 @@ import {
   LayoutDashboard, Users, Crown, CreditCard, ShoppingCart, 
   FileText, MessageSquare, Sparkle, LogOut,
   ChevronLeft, ChevronRight,
-  ArrowUpCircle
+  ArrowUpCircle,
+  Trophy
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -18,6 +19,7 @@ const menuItems = [
   { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
   { name: 'Utilisateurs', icon: Users, href: '/admin/admin/users' },
   { name: 'Abonnements', icon: Crown, href: '/admin/admin/subscriptions' },
+  { name: 'Récompenses', icon: Trophy, href: '/admin/admin/rewards' },
   { name: 'Commandes', icon: ShoppingCart, href: '/admin/admin/orders' },
   { name: 'Cartes NFC', icon: CreditCard, href: '/admin/admin/nfc' },
   { name: 'Événements', icon: FileText, href: '/admin/admin/events' },

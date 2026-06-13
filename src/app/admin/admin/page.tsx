@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Building, Users, Package, TrendingUp, Wallet, RefreshCw, Activity, UserPlus, ArrowUpRight, Zap } from 'lucide-react';
+import { Building, Users, Package, TrendingUp, Wallet, RefreshCw, Activity, UserPlus, ArrowUpRight, Zap, Link, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/src/lib/supabase/client';

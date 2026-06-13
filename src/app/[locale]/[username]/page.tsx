@@ -24,9 +24,10 @@ export default async function PublicProfilePage({
 
   // --- 2️⃣ Vérification des routes réservées ---
   const RESERVED_ROUTES = [
-    'pricing', 'about', 'contact', 'download', 'dashboard',
-    'auth', 'complete-profile', 'api', 'private',
-  ];
+  'pricing', 'about', 'contact', 'download', 'dashboard',
+  'auth', 'complete-profile', 'api', 'private',
+  'admin', 'rewards',
+];
   if (RESERVED_ROUTES.includes(decodedInput)) notFound();
 
   // --- 3️⃣ Supabase Server Client (ANON) ---
