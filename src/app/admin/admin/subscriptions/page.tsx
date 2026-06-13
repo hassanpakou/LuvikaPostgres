@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import {
   ArrowLeft, CreditCard, Search, CheckCircle, XCircle, Calendar,
   User, Mail, RefreshCw, Crown, Building, Package,
-  ChevronLeft, ChevronRight, ShieldCheck
+  ChevronLeft, ChevronRight, ShieldCheck, Infinity, Clock, Edit3
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -35,6 +35,17 @@ export default function SubscriptionsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  
+  // État pour le modal d'édition
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    subscription: Subscription | null;
+  }>({ isOpen: false, subscription: null });
+  
+  // États pour le formulaire d'édition
+  const [editExpiresAt, setEditExpiresAt] = useState('');
+  const [editIsLifetime, setEditIsLifetime] = useState(false);
+  const [editPlan, setEditPlan] = useState<'basic' | 'premium' | 'entreprise'>('basic');
 
   useEffect(() => {
     const fetchSubscriptions = async () => {
@@ -69,19 +80,68 @@ export default function SubscriptionsPage() {
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   useEffect(() => setCurrentPage(1), [planFilter, statusFilter, search]);
 
-  const updateStatus = async (id: string, action: 'activate' | 'deactivate') => {
-    setUpdatingId(id);
-    try {
-      const res = await fetch(`/api/admin/subscriptions/${id}/${action}`, { method: 'POST' });
-      if (!res.ok) throw new Error();
-      toast.success(action === 'activate' ? 'Abonnement activé' : 'Abonnement désactivé');
-      setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, status: action === 'activate' ? 'active' : 'canceled' } : s));
-    } catch {
-      toast.error('Erreur lors de la mise à jour');
-    } finally {
-      setUpdatingId(null);
-    }
+  // Ouvrir le modal d'édition
+  const openEditModal = (sub: Subscription) => {
+    setEditModal({ isOpen: true, subscription: sub });
+    setEditPlan(sub.plan);
+    setEditIsLifetime(!sub.expires_at);
+    setEditExpiresAt(sub.expires_at ? new Date(sub.expires_at).toISOString().slice(0, 16) : '');
   };
+
+  // Fermer le modal d'édition
+  const closeEditModal = () => {
+    setEditModal({ isOpen: false, subscription: null });
+  };
+
+  // Mettre à jour l'abonnement (avec date d'expiration)
+  const updateSubscription = async (id: string, data: {
+  status?: string;
+  plan?: string;
+  expires_at?: string | null;
+}) => {
+  setUpdatingId(id);
+  try {
+    const res = await fetch(`/api/admin/subscriptions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    
+    if (!res.ok) throw new Error();
+    
+    const updated = await res.json();
+    toast.success('Abonnement mis à jour');
+    
+    setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, ...updated } : s));
+    closeEditModal();
+  } catch {
+    toast.error('Erreur lors de la mise à jour');
+  } finally {
+    setUpdatingId(null);
+  }
+};
+
+  // Activer/Désactiver rapidement
+const toggleStatus = async (id: string, newStatus: 'active' | 'canceled') => {
+  setUpdatingId(id);
+  try {
+    // Utiliser activate ou deactivate selon le cas
+    const endpoint = newStatus === 'active' 
+      ? `/api/admin/subscriptions/${id}/activate`
+      : `/api/admin/subscriptions/${id}/deactivate`;
+    
+    const res = await fetch(endpoint, { method: 'POST' });
+    
+    if (!res.ok) throw new Error();
+    
+    toast.success(newStatus === 'active' ? 'Abonnement activé' : 'Abonnement désactivé');
+    setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
+  } catch {
+    toast.error('Erreur lors de la mise à jour');
+  } finally {
+    setUpdatingId(null);
+  }
+};
 
   const planConfig: Record<string, { icon: React.ReactNode; className: string; label: string }> = {
     premium: { icon: <Crown className="w-3 h-3" />, className: 'bg-cyan-500/10 text-cyan-300/60 border-cyan-500/20', label: 'Premium' },
@@ -178,21 +238,36 @@ export default function SubscriptionsPage() {
                     <p className="text-[11px] text-gray-400/50 font-light mt-0.5">{sub.profiles?.email}</p>
                     <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-500/50 font-light">
                       <span>Créé le {new Date(sub.created_at).toLocaleDateString('fr-FR')}</span>
-                      {sub.expires_at && <span>• Expire le {new Date(sub.expires_at).toLocaleDateString('fr-FR')}</span>}
+                      {sub.expires_at ? (
+                        <span>• Expire le {new Date(sub.expires_at).toLocaleDateString('fr-FR')}</span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-emerald-400/60">
+                          • <Infinity className="w-3 h-3" /> À vie
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
                 {/* Actions */}
                 <div className="flex items-center gap-2 flex-shrink-0 lg:ml-4">
                   <span className="text-[10px] text-gray-500/40 font-light"><ShieldCheck className="w-3 h-3 inline mr-0.5" />{sub.id.slice(0, 8)}</span>
+                  
+                  {/* Bouton Éditer */}
+                  <Button onClick={() => openEditModal(sub)}
+                    className="h-7 text-[11px] border border-blue-500/[0.15] text-blue-400/60 hover:text-blue-300/70 hover:bg-blue-500/[0.04] font-light rounded-lg">
+                    <Edit3 className="w-3 h-3 mr-1" />
+                    Éditer
+                  </Button>
+                  
+                  {/* Toggle Activer/Désactiver */}
                   {sub.status !== 'active' ? (
-                    <Button onClick={() => updateStatus(sub.id, 'activate')} disabled={updatingId === sub.id}
+                    <Button onClick={() => toggleStatus(sub.id, 'active')} disabled={updatingId === sub.id}
                       className="h-7 text-[11px] bg-gradient-to-r from-emerald-600/80 to-teal-600/80 hover:from-emerald-500 hover:to-teal-500 text-white font-light rounded-lg">
                       {updatingId === sub.id ? <RefreshCw className="w-3 h-3 animate-spin mr-1" /> : <CheckCircle className="w-3 h-3 mr-1" />}
                       Activer
                     </Button>
                   ) : (
-                    <Button onClick={() => updateStatus(sub.id, 'deactivate')} disabled={updatingId === sub.id}
+                    <Button onClick={() => toggleStatus(sub.id, 'canceled')} disabled={updatingId === sub.id}
                       className="h-7 text-[11px] border border-red-500/[0.15] text-red-400/60 hover:text-red-300/70 hover:bg-red-500/[0.04] font-light rounded-lg">
                       {updatingId === sub.id ? <RefreshCw className="w-3 h-3 animate-spin mr-1" /> : <XCircle className="w-3 h-3 mr-1" />}
                       Désactiver
@@ -203,6 +278,137 @@ export default function SubscriptionsPage() {
             </motion.div>
           ))}
         </div>
+      )}
+
+      {/* Modal d'édition de l'abonnement */}
+      {editModal.isOpen && editModal.subscription && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={closeEditModal}
+        >
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-gray-900/95 to-black/95 backdrop-blur-xl rounded-2xl border border-white/10 p-6 w-full max-w-md"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-cyan-500/10 rounded-xl">
+                  <Edit3 className="w-5 h-5 text-cyan-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-white/80">Modifier l'abonnement</h2>
+                  <p className="text-xs text-gray-400/60 font-light">
+                    {editModal.subscription.profiles?.full_name}
+                  </p>
+                </div>
+              </div>
+              <button onClick={closeEditModal} className="p-1.5 rounded-lg hover:bg-white/[0.04] text-gray-500">
+                <XCircle className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* Plan */}
+              <div>
+                <label className="text-xs text-gray-400/60 font-light mb-2 block">Plan</label>
+                <select
+                  value={editPlan}
+                  onChange={(e) => setEditPlan(e.target.value as any)}
+                  className="w-full h-9 px-3 text-xs bg-white/[0.03] border border-white/[0.08] text-white/80 rounded-xl"
+                >
+                  <option value="basic">Basic</option>
+                  <option value="premium">Premium</option>
+                  <option value="entreprise">Entreprise</option>
+                </select>
+              </div>
+
+              {/* À vie ou avec expiration */}
+              <div>
+                <label className="text-xs text-gray-400/60 font-light mb-2 block">Type d'abonnement</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setEditIsLifetime(true)}
+                    className={`flex-1 h-9 rounded-xl text-xs font-light transition-all border ${
+                      editIsLifetime
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400/60'
+                        : 'bg-white/[0.03] border-white/[0.08] text-gray-400/60 hover:text-white/70'
+                    }`}
+                  >
+                    <Infinity className="w-3.5 h-3.5 inline mr-1.5" />
+                    À vie
+                  </button>
+                  <button
+                    onClick={() => setEditIsLifetime(false)}
+                    className={`flex-1 h-9 rounded-xl text-xs font-light transition-all border ${
+                      !editIsLifetime
+                        ? 'bg-blue-500/10 border-blue-500/20 text-blue-400/60'
+                        : 'bg-white/[0.03] border-white/[0.08] text-gray-400/60 hover:text-white/70'
+                    }`}
+                  >
+                    <Calendar className="w-3.5 h-3.5 inline mr-1.5" />
+                    Avec expiration
+                  </button>
+                </div>
+              </div>
+
+              {/* Date d'expiration (si pas à vie) */}
+              {!editIsLifetime && (
+                <div>
+                  <label className="text-xs text-gray-400/60 font-light mb-2 block">Date d'expiration</label>
+                  <input
+                    type="datetime-local"
+                    value={editExpiresAt}
+                    onChange={(e) => setEditExpiresAt(e.target.value)}
+                    min={new Date().toISOString().slice(0, 16)}
+                    className="w-full h-9 px-3 text-xs bg-white/[0.03] border border-white/[0.08] text-white/80 rounded-xl [color-scheme:dark]"
+                  />
+                  <p className="text-[10px] text-gray-500/50 font-light mt-1">
+                    L'abonnement expirera automatiquement à cette date
+                  </p>
+                </div>
+              )}
+
+              {/* Message si à vie */}
+              {editIsLifetime && (
+                <div className="p-3 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/15">
+                  <p className="text-xs text-emerald-400/60 font-light flex items-center gap-2">
+                    <Infinity className="w-3.5 h-3.5" />
+                    Abonnement à vie - n'expire jamais
+                  </p>
+                </div>
+              )}
+
+              {/* Boutons d'action */}
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={closeEditModal}
+                  className="flex-1 h-9 text-xs text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-xl transition-all border border-white/[0.08]"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={() => updateSubscription(editModal.subscription!.id, {
+                    plan: editPlan,
+                    expires_at: editIsLifetime ? null : new Date(editExpiresAt).toISOString(),
+                    status: 'active', // On active automatiquement si on définit les paramètres
+                  })}
+                  disabled={updatingId === editModal.subscription!.id}
+                  className="flex-1 h-9 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-xl transition-all disabled:opacity-50"
+                >
+                  {updatingId === editModal.subscription!.id ? (
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    'Sauvegarder'
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
       )}
 
       {/* Pagination */}

@@ -51,6 +51,26 @@ const formatDistance = (dateString: string, t: any): string => {
   if (diffMin > 0) return `${diffMin} ${t('time.minutes', { count: diffMin })}`;
   return `${diffSec} ${t('time.seconds', { count: diffSec })}`;
 };
+
+const formatExpirationDate = (expiresAt: string | undefined) => {
+  if (!expiresAt) return null;
+  
+  const date = new Date(expiresAt);
+  const now = new Date();
+  const diffTime = date.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  return {
+    date: date.toLocaleDateString('fr-FR', { 
+      day: '2-digit', 
+      month: 'short', 
+      year: 'numeric' 
+    }),
+    daysLeft: Math.max(0, diffDays),
+    isExpiringSoon: diffDays <= 7,
+  };
+};
+
 const SuccessModal = ({
   isOpen,
   onClose,
@@ -722,11 +742,68 @@ const updateUnreadCount = (count: number) => {
 };
   // 🔹 Références pour les canaux realtime
   const channelsRef = useRef<any>({});
-  const subscription = useMemo(() => {
-    const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
-    return { plan, active: plan === 'premium' || plan === 'entreprise', expires_at: undefined };
-  }, [profile.plan]);
   
+// Ajoutez cet état
+const [subscriptionData, setSubscriptionData] = useState<{
+  plan: string;
+  status: string;
+  expires_at: string | null;
+  started_at: string | null;
+} | null>(null);
+
+// Ajoutez ce useEffect pour charger les données réelles
+useEffect(() => {
+  const fetchSubscription = async () => {
+    if (!profile?.id) return;
+    
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('plan, status, expires_at, started_at')
+        .eq('profile_id', profile.id)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data) {
+        setSubscriptionData(data);
+      }
+    } catch (err) {
+      console.error('❌ Erreur chargement abonnement:', err);
+    }
+  };
+
+  fetchSubscription();
+}, [profile?.id]);
+
+  const subscription = useMemo(() => {
+    // Utiliser les données réelles de la table subscriptions si disponibles
+    if (subscriptionData) {
+      return {
+        plan: subscriptionData.plan as 'basic' | 'premium' | 'entreprise',
+        active: subscriptionData.status === 'active' && (
+          !subscriptionData.expires_at || 
+          new Date(subscriptionData.expires_at) > new Date()
+        ),
+        expires_at: subscriptionData.expires_at || undefined,
+        started_at: subscriptionData.started_at || undefined,
+      };
+    }
+    
+    // Fallback sur les données du profil
+    const plan = (profile.plan || 'basic').toLowerCase() as 'basic' | 'premium' | 'entreprise';
+    return { 
+      plan, 
+      active: plan === 'premium' || plan === 'entreprise', 
+      expires_at: undefined,
+      started_at: undefined,
+    };
+  }, [profile.plan, subscriptionData]);
+
   const handleLike = () => setHasLiked(!hasLiked);
   
 // Ajouter cette fonction pour charger les messages
@@ -2713,13 +2790,12 @@ return (
     )}
   </CardContent>
 </Card>
-     
-{/* 🔹 Abonnement - Design léger et transparent */}
+  {/* 🔹 Abonnement - Design avec barre de jours restants */}
 <motion.div
   whileHover={{ y: -1 }}
   className="relative rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm w-full transition-all duration-300 hover:border-cyan-500/30  gap-4 mt-4"
 >
-  <CardHeader className="pb-4">
+  <CardHeader className="pb-3">
     <CardTitle className="flex items-center flex-wrap gap-3">
       <div className={`p-2 rounded-lg ${
         subscription.plan === 'premium' ? 'bg-cyan-500/10 text-cyan-400' :
@@ -2750,61 +2826,139 @@ return (
     </CardTitle>
   </CardHeader>
   
-  <CardContent className="pt-0">
+  <CardContent className="pt-0 space-y-4">
+    {/* Barre de progression des jours restants - DONNÉES RÉELLES */}
+    {subscription.active && subscription.expires_at && (
+      <div className="space-y-2">
+        {(() => {
+          const now = new Date();
+          const expiresAt = new Date(subscription.expires_at);
+          const startedAt = subscription.started_at ? new Date(subscription.started_at) : new Date(expiresAt.getTime() - 30 * 86400000);
+          
+          const totalDuration = expiresAt.getTime() - startedAt.getTime();
+          const elapsed = now.getTime() - startedAt.getTime();
+          const remaining = expiresAt.getTime() - now.getTime();
+          
+          const totalDays = Math.ceil(totalDuration / 86400000);
+          const remainingDays = Math.max(0, Math.ceil(remaining / 86400000));
+          const elapsedDays = totalDays - remainingDays;
+          const progressPercent = Math.min((elapsed / totalDuration) * 100, 100);
+          
+          const getBarColor = () => {
+            if (remainingDays <= 5) return 'from-red-500 to-rose-500';
+            if (remainingDays <= 10) return 'from-amber-500 to-orange-500';
+            return 'from-emerald-500 to-teal-500';
+          };
+
+          const getTextColor = () => {
+            if (remainingDays <= 5) return 'text-red-400';
+            if (remainingDays <= 10) return 'text-amber-400';
+            return 'text-emerald-400';
+          };
+
+          return (
+            <>
+              <div className="flex justify-between items-center">
+                <span className="text-[11px] text-gray-400/60 font-light">Période d'abonnement</span>
+                <span className={`text-[11px] font-medium ${getTextColor()}`}>
+                  {remainingDays} jour{remainingDays > 1 ? 's' : ''} restant{remainingDays > 1 ? 's' : ''}
+                </span>
+              </div>
+              
+              <div className="relative h-2 bg-white/[0.04] rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className={`h-full rounded-full bg-gradient-to-r ${getBarColor()}`}
+                >
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white shadow-lg" />
+                </motion.div>
+              </div>
+
+              <div className="flex justify-between text-[9px] text-gray-500/40 font-light">
+                <span>{startedAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
+                <span className={remainingDays <= 5 ? 'text-red-400/60' : ''}>
+                  {remainingDays <= 5 ? '⚠️ Expire bientôt' : `Expire le ${expiresAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}`}
+                </span>
+                <span>{expiresAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })}</span>
+              </div>
+            </>
+          );
+        })()}
+      </div>
+    )}
+
+    {/* Si pas de date d'expiration (abonnement à vie) */}
+{subscription.active && !subscription.expires_at && (
+  <div className="p-3 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/15 text-center">
+    <p className="text-xs text-emerald-400/60 font-light">
+      {subscriptionData?.status === 'active' && !subscriptionData?.expires_at 
+        ? 'Abonnement à vie — pas de date d\'expiration' 
+        : 'Abonnement actif'}
+    </p>
+  </div>
+)}
+
+    {/* Carte info */}
+    <div className={`p-3 rounded-xl border ${
+      subscription.active 
+        ? 'bg-emerald-500/[0.04] border-emerald-500/15' 
+        : 'bg-amber-500/[0.04] border-amber-500/15'
+    }`}>
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-gray-400/60 font-light">Plan actuel</span>
+        <span className={`text-xs font-medium ${
+          subscription.plan === 'premium' ? 'text-cyan-400' :
+          subscription.plan === 'entreprise' ? 'text-purple-400' : 'text-blue-400'
+        }`}>
+          {subscription.plan === 'premium' ? 'Premium' :
+           subscription.plan === 'entreprise' ? 'Entreprise' : 'Basic'}
+        </span>
+      </div>
+      {subscription.active ? (
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-xs text-gray-400/60 font-light">Renouvellement</span>
+          <span className="text-xs text-gray-400/60 font-light">Automatique</span>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between mt-1">
+          <span className="text-xs text-gray-400/60 font-light">Statut</span>
+          <span className="text-xs text-amber-400/60 font-light">Inactif</span>
+        </div>
+      )}
+    </div>
+
+    {/* Message */}
     {subscription.active ? (
-      <p className="text-sm text-gray-400/60 font-light">Votre abonnement est actif et renouvelé automatiquement.</p>
+      <p className="text-xs text-gray-400/50 font-light">Votre abonnement est actif et renouvelé automatiquement.</p>
     ) : (
-      <p className="text-sm text-gray-400/60 font-light">💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités.</p>
+      <p className="text-xs text-gray-400/50 font-light">💡 Passez au niveau supérieur pour débloquer toutes les fonctionnalités.</p>
     )}
     
-    {/* ✅ Bouton de demande de mise à niveau avec gestion d'état */}
+    {/* Bouton d'upgrade */}
     {profile.plan !== 'entreprise' && (
       <>
         {checkingUpgrade ? (
-          // Chargement de la vérification
-          <div className="w-full mt-3 h-9 bg-white/[0.03] rounded-xl animate-pulse" />
+          <div className="w-full mt-2 h-9 bg-white/[0.03] rounded-xl animate-pulse" />
         ) : upgradeStatus === 'pending' ? (
-          // ✅ Demande en attente - bouton désactivé
-          <button
-            disabled
-            className="w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs bg-amber-500/10 text-amber-300/60 border border-amber-500/20 font-light rounded-xl cursor-not-allowed"
-          >
+          <button disabled className="w-full mt-2 h-9 inline-flex items-center justify-center gap-2 text-xs bg-amber-500/10 text-amber-300/60 border border-amber-500/20 font-light rounded-xl cursor-not-allowed">
             <Clock className="w-4 h-4" />
-            Demande en attente d'approbation
-          </button>
-        ) : upgradeStatus === 'approved' ? (
-          // ✅ Demande approuvée - bouton pour finaliser
-          <button
-            onClick={() => setActiveModal('upgrade')}
-            className="w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-white font-light rounded-xl transition-all"
-          >
-            <Building className="w-4 h-4" />
-            Demande approuvée — Finaliser le passage
-            <ChevronRight className="w-4 h-4 ml-auto" />
-          </button>
-        ) : upgradeStatus === 'rejected' ? (
-          // ✅ Demande rejetée - bouton pour renvoyer
-          <button
-            onClick={handleUpgradeRequest}
-            className="w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs bg-red-500/10 text-red-300/60 border border-red-500/20 hover:bg-red-500/20 font-light rounded-xl transition-all"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Demande rejetée — Renvoyer la demande
+            Demande en attente
           </button>
         ) : (
-          // ✅ Aucune demande - bouton normal
           <button
             onClick={() => setActiveModal('upgrade')}
-            className={`w-full mt-3 h-9 inline-flex items-center justify-center gap-2 text-xs font-light rounded-xl transition-all ${
+            className={`w-full mt-2 h-9 inline-flex items-center justify-center gap-2 text-xs font-light rounded-xl transition-all ${
               profile.plan === 'basic'
                 ? 'bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white'
                 : 'bg-gradient-to-r from-purple-600/80 to-indigo-600/80 hover:from-purple-500 hover:to-indigo-500 text-white'
             }`}
           >
             {profile.plan === 'basic' ? (
-              <><Crown className="w-4 h-4" />{t('subscription.upgrade_to_premium')}</>
+              <><Crown className="w-4 h-4" />Passer à Premium</>
             ) : (
-              <><Building className="w-4 h-4" />{t('subscription.request_enterprise')}</>
+              <><Building className="w-4 h-4" />Passer à Entreprise</>
             )}
             <ChevronRight className="w-4 h-4 ml-auto" />
           </button>
@@ -2813,7 +2967,6 @@ return (
     )}
   </CardContent>
 </motion.div>
-
       {/* 🔹 Menu flottant - reste en overlay */}
     <DashboardQuickMenu 
       onAction={handleQuickAction} 

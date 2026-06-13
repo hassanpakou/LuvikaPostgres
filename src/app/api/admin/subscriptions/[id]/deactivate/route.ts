@@ -37,11 +37,11 @@ export async function POST(
     return NextResponse.json({ error: 'Souscription introuvable' }, { status: 404 });
   }
 
-  // ✅ SEULEMENT status
+  // ❌ Utiliser 'canceled' au lieu de 'inactive' (conformément à la contrainte CHECK)
   const { error: updateError } = await supabase
     .from('subscriptions')
     .update({
-      status: 'inactive',
+      status: 'canceled', // Changé de 'inactive' à 'canceled'
       updated_at: new Date().toISOString(),
     })
     .eq('id', id);
@@ -49,6 +49,17 @@ export async function POST(
   if (updateError) {
     console.error('Erreur désactivation:', updateError);
     return NextResponse.json({ error: 'Échec de la désactivation' }, { status: 500 });
+  }
+
+  // Mettre aussi à jour le profil (remettre en basic)
+  if (subscription.profile_id) {
+    await supabase
+      .from('profiles')
+      .update({ 
+        plan: 'basic',
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', subscription.profile_id);
   }
 
   return NextResponse.json({ success: true });

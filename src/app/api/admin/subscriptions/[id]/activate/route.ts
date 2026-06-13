@@ -27,6 +27,17 @@ export async function POST(
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
+  // Récupérer l'abonnement pour avoir le plan et le profile_id
+  const { data: subscription, error: fetchError } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError || !subscription) {
+    return NextResponse.json({ error: 'Souscription introuvable' }, { status: 404 });
+  }
+
   const { error } = await supabase
     .from('subscriptions')
     .update({
@@ -37,6 +48,17 @@ export async function POST(
 
   if (error) {
     return NextResponse.json({ error: 'Échec activation' }, { status: 500 });
+  }
+
+  // Mettre à jour le plan dans la table profiles
+  if (subscription.profile_id) {
+    await supabase
+      .from('profiles')
+      .update({ 
+        plan: subscription.plan,
+        updated_at: new Date().toISOString() 
+      })
+      .eq('id', subscription.profile_id);
   }
 
   return NextResponse.json({ success: true });
