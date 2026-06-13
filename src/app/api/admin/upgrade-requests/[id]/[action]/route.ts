@@ -6,7 +6,7 @@ export async function POST(
   request: Request,
   context: { params: Promise<{ id: string; action: string }> }
 ) {
-  // ✅ Service role pour contourner RLS
+  // Service role pour contourner RLS
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -20,74 +20,122 @@ export async function POST(
 
   try {
     // Récupère la demande
-    const { data : req } = await supabase
+    const { data: req, error: fetchError } = await supabase
       .from('upgrade_requests')
       .select('profile_id, target_plan, status')
       .eq('id', id)
       .single();
 
-    if (!req || req.status !== 'pending') {
+    if (fetchError || !req || req.status !== 'pending') {
       return NextResponse.json({ error: 'Demande invalide' }, { status: 400 });
     }
 
     const { profile_id, target_plan } = req;
 
+    if (action === 'rejected') {
+      // Mise à jour simple pour le rejet
+      await supabase
+        .from('upgrade_requests')
+        .update({ 
+          status: 'rejected',
+          processed_at: new Date().toISOString()
+        })
+        .eq('id', id);
+
+      return NextResponse.json({ success: true });
+    }
+
+    // Pour l'approbation, lire les données supplémentaires
+    const body = await request.json().catch(() => ({}));
+    const { expires_at, admin_notes } = body;
+
+    // expires_at peut être:
+    // - undefined/null: si on n'a pas envoyé le champ → À VIE
+    // - null explicitement: si isLifetime = true → À VIE
+    // - une date: si choisie
+
     // Met à jour la demande
     await supabase
       .from('upgrade_requests')
       .update({ 
-        status: action,
-        processed_at: new Date().toISOString()
+        status: 'approved',
+        processed_at: new Date().toISOString(),
+        admin_notes: admin_notes || null
       })
       .eq('id', id);
 
-    if (action === 'approved') {
-      // 1. Annule tous les abonnements actifs
-      await supabase
-        .from('subscriptions')
-        .update({ status: 'canceled' })
-        .eq('profile_id', profile_id)
-        .eq('status', 'active');
+    // 1. Annule tous les abonnements actifs existants
+    await supabase
+      .from('subscriptions')
+      .update({ 
+        status: 'canceled',
+        updated_at: new Date().toISOString()
+      })
+      .eq('profile_id', profile_id)
+      .eq('status', 'active');
 
-      // 2. Crée le nouvel abonnement
-      await supabase
-        .from('subscriptions')
-        .insert({
-          profile_id,
-          plan: target_plan,
-          status: 'active',
-          provider: 'manual'
-        });
+    // 2. Crée le nouvel abonnement avec la date d'expiration
+    const newSubscription: any = {
+      profile_id,
+      plan: target_plan,
+      status: 'active',
+      provider: 'manual',
+      started_at: new Date().toISOString(),
+    };
 
-      // 3. Met à jour le profil
-      await supabase
-        .from('profiles')
-        .update({ plan: target_plan })
-        .eq('id', profile_id);
+    // Gérer expires_at :
+    // - Si expires_at est null ou undefined → à vie (ne pas mettre de expires_at)
+    // - Si expires_at est une date valide → la mettre
+    if (expires_at && expires_at !== null) {
+      const date = new Date(expires_at);
+      if (!isNaN(date.getTime())) {
+        newSubscription.expires_at = date.toISOString();
+      }
+    }
+    // Sinon, expires_at reste undefined → NULL en base → à vie
 
-      // 4. Crée l'entreprise si nécessaire
-      if (target_plan === 'entreprise') {
-        const { data : company } = await supabase
+    await supabase
+      .from('subscriptions')
+      .insert(newSubscription);
+
+    // 3. Met à jour le profil
+    await supabase
+      .from('profiles')
+      .update({ 
+        plan: target_plan,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', profile_id);
+
+    // 4. Crée l'entreprise si nécessaire
+    if (target_plan === 'entreprise') {
+      const { data: company } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('owner_id', profile_id)
+        .maybeSingle();
+
+      if (!company) {
+        const slug = `entreprise-${profile_id.substring(0, 8)}`;
+        await supabase
           .from('companies')
-          .select('id')
-          .eq('owner_id', profile_id)
-          .single();
-
-        if (!company) {
-          const slug = `entreprise-${profile_id.substring(0, 8)}`;
-          await supabase
-            .from('companies')
-            .insert({
-              owner_id: profile_id,
-              name: 'Mon Entreprise',
-              slug: slug,
-              plan: 'entreprise'
-            });
-        }
+          .insert({
+            owner_id: profile_id,
+            name: 'Mon Entreprise',
+            slug: slug,
+            plan: 'entreprise'
+          });
       }
     }
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ 
+      success: true,
+      subscription: {
+        plan: target_plan,
+        expires_at: newSubscription.expires_at || null,
+        is_lifetime: !newSubscription.expires_at
+      }
+    });
   } catch (error: any) {
     console.error('Erreur:', error);
     return NextResponse.json({ error: 'Échec' }, { status: 500 });
