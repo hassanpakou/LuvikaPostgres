@@ -40,10 +40,37 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { userId, email, name } = await request.json();
+    const body = await request.json();
+    console.log('📦 Données reçues:', JSON.stringify(body));
 
-    if (!email || !name) {
-      return NextResponse.json({ error: 'Email et nom requis' }, { status: 400 });
+    const { userId, email, name } = body;
+
+    // Si pas d'email, on le récupère depuis la base
+    let userEmail = email;
+    let userName = name;
+
+    if (!userEmail && userId) {
+      console.log('🔍 Récupération email depuis la base pour:', userId);
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('email, full_name')
+        .eq('id', userId)
+        .single();
+
+      if (userData) {
+        userEmail = userData.email;
+        userName = userData.full_name || name;
+        console.log('✅ Email trouvé:', userEmail);
+      }
+    }
+
+    if (!userEmail) {
+      console.log('❌ Aucun email trouvé');
+      return NextResponse.json({ error: 'Email introuvable' }, { status: 400 });
+    }
+
+    if (!userName) {
+      userName = 'Utilisateur';
     }
 
     // Vérifier Resend
@@ -55,11 +82,12 @@ export async function POST(request: Request) {
     }
 
     // Envoi email
-    const { error: emailError } = await resend.emails.send({
-      from: 'LUVIKA <welcome@luvika.me>',
-      to: [email],
+    console.log(`📧 Envoi email à ${userEmail}...`);
+    const { data, error: emailError } = await resend.emails.send({
+from: 'LUVIKA <onboarding@resend.dev>',
+      to: [userEmail],
       subject: '🎉 Bienvenue sur LUVIKA - Votre identité digitale vous attend !',
-      html: generateWelcomeEmail(name),
+      html: generateWelcomeEmail(userName),
     });
 
     if (emailError) {
@@ -69,11 +97,11 @@ export async function POST(request: Request) {
       }, { status: 500 });
     }
 
-    console.log(`✅ Email bienvenue envoyé à ${email} (${name}) par admin ${user.id}`);
+    console.log(`✅ Email bienvenue envoyé à ${userEmail} (${userName}) - ID Resend: ${data?.id}`);
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Email de bienvenue envoyé avec succès' 
+      message: `Email envoyé à ${userEmail}` 
     });
   } catch (error: any) {
     console.error('❌ Erreur:', error);

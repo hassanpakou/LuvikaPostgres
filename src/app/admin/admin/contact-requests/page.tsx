@@ -7,127 +7,143 @@ import { createClient } from '@/src/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  ArrowLeft, Mail, Phone, MessageSquare, Eye, CheckCircle, X, Send,
-  RefreshCw, AlertCircle, User, Clock, ReplyAll, Trash2,
-  ChevronDown, ChevronUp, Search, ChevronLeft, ChevronRight
+  ArrowLeft, Mail, User, Send, RefreshCw,
+  ChevronDown, ChevronUp, Search, ChevronLeft, ChevronRight,
+  UserPlus, PartyPopper, Clock, CheckCircle, Users
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import Loading from '@/src/components/system/Loading';
 
-type ContactRequest = {
+type NewUser = {
   id: string;
-  name: string;
+  full_name: string;
+  username: string;
   email: string;
-  phone: string | null;
-  message: string;
+  plan: string;
   created_at: string;
-  is_read: boolean;
-  replied_at?: string | null;
-  profiles: { full_name: string; username: string } | null;
+  welcome_email_sent: boolean;
 };
 
 const ITEMS_PER_PAGE = 8;
 
-export default function ContactRequestsPage() {
-  const [requests, setRequests] = useState<ContactRequest[]>([]);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'replied'>('all');
+export default function NewUsersPage() {
+  const [users, setUsers] = useState<NewUser[]>([]);
+  const [filter, setFilter] = useState<'all' | 'not_sent' | 'sent'>('all');
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [replyMessage, setReplyMessage] = useState('');
-  const [sending, setSending] = useState(false);
+  const [sendingIds, setSendingIds] = useState<Set<string>>(new Set());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchNewUsers = async () => {
       const supabase = createClient();
+      // Récupérer les utilisateurs créés dans les 7 derniers jours
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
       const { data } = await supabase
-        .from('contact_requests')
-        .select('*, profiles!inner(id, full_name, username)')
+        .from('profiles')
+        .select('id, full_name, username, email, plan, created_at')
+        .gte('created_at', sevenDaysAgo.toISOString())
         .order('created_at', { ascending: false });
-      setRequests(data || []);
+
+      // Vérifier si un email de bienvenue a déjà été envoyé (localStorage admin)
+      const sentUsers = JSON.parse(localStorage.getItem('luvika_welcome_emails_sent') || '[]');
+      
+      setUsers((data || []).map(u => ({
+        ...u,
+        welcome_email_sent: sentUsers.includes(u.id),
+      })));
       setLoading(false);
     };
-    fetchRequests();
+    fetchNewUsers();
   }, []);
 
   const filtered = useMemo(() => {
-    let result = requests.filter(req => {
-      if (filter === 'unread' && req.is_read) return false;
-      if (filter === 'replied' && !req.replied_at) return false;
+    let result = users.filter(u => {
+      if (filter === 'not_sent' && u.welcome_email_sent) return false;
+      if (filter === 'sent' && !u.welcome_email_sent) return false;
       if (search) {
         const term = search.toLowerCase();
         return (
-          req.name.toLowerCase().includes(term) ||
-          req.email.toLowerCase().includes(term) ||
-          req.message.toLowerCase().includes(term) ||
-          req.profiles?.full_name?.toLowerCase().includes(term)
+          u.full_name?.toLowerCase().includes(term) ||
+          u.username?.toLowerCase().includes(term) ||
+          u.email?.toLowerCase().includes(term)
         );
       }
       return true;
     });
     return result;
-  }, [requests, filter, search]);
+  }, [users, filter, search]);
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
   useEffect(() => setCurrentPage(1), [filter, search]);
 
-  const markAsRead = async (id: string) => {
-    const supabase = createClient();
-    await supabase.from('contact_requests').update({ is_read: true }).eq('id', id);
-    setRequests(prev => prev.map(r => r.id === id ? { ...r, is_read: true } : r));
-    toast.success('Marqué comme lu');
-  };
-
-  const handleReply = async () => {
-    if (!replyingTo || !replyMessage.trim()) return;
-    setSending(true);
+  const handleSendWelcomeEmail = async (userId: string, email: string, name: string) => {
+    setSendingIds(prev => new Set(prev).add(userId));
     try {
-      const req = requests.find(r => r.id === replyingTo);
-      const res = await fetch('/api/admin/contact-requests/reply', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ requestId: replyingTo, toEmail: req?.email, toName: req?.name, message: replyMessage }),
+      const res = await fetch('/api/admin/send-welcome-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email, name }),
       });
-      if (!res.ok) throw new Error();
-      setRequests(prev => prev.map(r => r.id === replyingTo ? { ...r, is_read: true, replied_at: new Date().toISOString() } : r));
-      toast.success('Réponse envoyée');
-      setReplyingTo(null);
-      setReplyMessage('');
+
+      if (res.ok) {
+        // Marquer comme envoyé dans le localStorage admin
+        const sentUsers = JSON.parse(localStorage.getItem('luvika_welcome_emails_sent') || '[]');
+        sentUsers.push(userId);
+        localStorage.setItem('luvika_welcome_emails_sent', JSON.stringify(sentUsers));
+
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, welcome_email_sent: true } : u));
+        toast.success('Email de bienvenue envoyé !', {
+          description: `Envoyé à ${name}`,
+          icon: <PartyPopper className="w-4 h-4 text-amber-400" />,
+        });
+      } else {
+        throw new Error();
+      }
     } catch {
-      toast.error('Erreur');
+      toast.error('Erreur', { description: 'Impossible d\'envoyer l\'email' });
     } finally {
-      setSending(false);
+      setSendingIds(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Supprimer ce message ?')) return;
-    const supabase = createClient();
-    await supabase.from('contact_requests').delete().eq('id', id);
-    setRequests(prev => prev.filter(r => r.id !== id));
-    toast.success('Message supprimé');
+  const handleSendAll = async () => {
+    const notSent = users.filter(u => !u.welcome_email_sent);
+    if (notSent.length === 0) {
+      toast.info('Tous les emails ont déjà été envoyés');
+      return;
+    }
+    if (!confirm(`Envoyer un email de bienvenue aux ${notSent.length} nouveaux utilisateurs ?`)) return;
+
+    for (const user of notSent) {
+      await handleSendWelcomeEmail(user.id, user.email, user.full_name);
+    }
   };
 
-  const toggleExpand = (id: string) => {
-    setExpanded(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+  const getPlanBadge = (plan: string) => {
+    const configs: Record<string, { className: string; label: string }> = {
+      premium: { className: 'bg-cyan-500/10 text-cyan-300/60 border-cyan-500/20', label: 'Premium' },
+      entreprise: { className: 'bg-purple-500/10 text-purple-300/60 border-purple-500/20', label: 'Entreprise' },
+      basic: { className: 'bg-gray-500/10 text-gray-300/60 border-gray-500/20', label: 'Basic' },
+    };
+    const config = configs[plan] || configs.basic;
+    return (
+      <span className={`inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-light ${config.className}`}>
+        {config.label}
+      </span>
+    );
   };
 
-  const getStatusBadge = (req: ContactRequest) => {
-    if (req.replied_at) {
-      return <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-light bg-emerald-500/10 text-emerald-300/60 border-emerald-500/20"><CheckCircle className="w-3 h-3" />Répondu</span>;
-    }
-    if (req.is_read) {
-      return <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-light bg-blue-500/10 text-blue-300/60 border-blue-500/20"><Eye className="w-3 h-3" />Lu</span>;
-    }
-    return <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-light bg-cyan-500/10 text-cyan-300/60 border-cyan-500/20"><AlertCircle className="w-3 h-3" />Nouveau</span>;
-  };
+  const notSentCount = users.filter(u => !u.welcome_email_sent).length;
 
   if (loading) return <Loading />;
 
@@ -140,121 +156,156 @@ export default function ContactRequestsPage() {
         </Link>
         <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3">
           <div>
-            <h1 className="text-xl font-semibold text-white/80">Messages</h1>
-            <p className="text-xs text-gray-400/60 font-light mt-1">{filtered.length} message{filtered.length > 1 ? 's' : ''}</p>
+            <h1 className="text-xl font-semibold text-white/80 flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyan-400/20 to-blue-500/20 border border-cyan-500/20 flex items-center justify-center">
+                <UserPlus className="w-4 h-4 text-cyan-400" />
+              </div>
+              Nouveaux utilisateurs
+            </h1>
+            <p className="text-xs text-gray-400/60 font-light mt-1.5 ml-10">
+              Souhaitez la bienvenue aux nouveaux membres de LUVIKA
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex gap-1 bg-white/[0.03] border border-white/[0.08] rounded-lg p-0.5">
-              {['all', 'unread', 'replied'].map((v) => (
-                <button key={v} onClick={() => setFilter(v as any)}
-                  className={`px-2.5 py-1 text-[11px] font-light rounded-md transition-colors ${
-                    filter === v ? 'bg-white/[0.08] text-white/70' : 'text-gray-400/50 hover:text-white/60'
-                  }`}>{v === 'all' ? 'Tous' : v === 'unread' ? 'Non lus' : 'Répondus'}</button>
-              ))}
+            {notSentCount > 0 && (
+              <Button
+                onClick={handleSendAll}
+                className="h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-lg"
+              >
+                <Send className="w-3.5 h-3.5 mr-1.5" />
+                Envoyer à tous ({notSentCount})
+              </Button>
+            )}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <span className="text-[10px] text-amber-400/60 font-light">{users.length} nouveaux / 7 jours</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Recherche */}
-      <div className="relative w-full">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500/50" />
-        <Input placeholder="Rechercher un message..." value={search} onChange={e => setSearch(e.target.value)}
-          className="pl-9 h-9 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 rounded-xl w-full" />
+      {/* Stats rapides */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-2xl p-4 bg-gradient-to-br from-cyan-500/[0.06] to-blue-500/[0.03] border border-cyan-500/20 text-center">
+          <Users className="w-5 h-5 text-cyan-400 mx-auto mb-1" />
+          <p className="text-xl font-bold text-white">{users.length}</p>
+          <p className="text-[10px] text-cyan-400/60 font-light">Nouveaux</p>
+        </div>
+        <div className="rounded-2xl p-4 bg-gradient-to-br from-emerald-500/[0.06] to-teal-500/[0.03] border border-emerald-500/20 text-center">
+          <CheckCircle className="w-5 h-5 text-emerald-400 mx-auto mb-1" />
+          <p className="text-xl font-bold text-white">{users.length - notSentCount}</p>
+          <p className="text-[10px] text-emerald-400/60 font-light">Accueillis</p>
+        </div>
+        <div className="rounded-2xl p-4 bg-gradient-to-br from-amber-500/[0.06] to-yellow-500/[0.03] border border-amber-500/20 text-center">
+          <Mail className="w-5 h-5 text-amber-400 mx-auto mb-1" />
+          <p className="text-xl font-bold text-white">{notSentCount}</p>
+          <p className="text-[10px] text-amber-400/60 font-light">En attente</p>
+        </div>
+      </div>
+
+      {/* Filtres + Recherche */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex gap-1 bg-white/[0.03] border border-white/[0.08] rounded-lg p-0.5">
+          {[
+            { value: 'all', label: 'Tous' },
+            { value: 'not_sent', label: 'En attente' },
+            { value: 'sent', label: 'Accueillis' },
+          ].map((item) => (
+            <button
+              key={item.value}
+              onClick={() => setFilter(item.value as any)}
+              className={`px-2.5 py-1 text-[11px] font-light rounded-md transition-colors whitespace-nowrap ${
+                filter === item.value ? 'bg-white/[0.08] text-white/70' : 'text-gray-400/50 hover:text-white/60'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500/50" />
+          <Input
+            placeholder="Rechercher un utilisateur..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="pl-9 h-9 text-xs bg-white/[0.03] border-white/[0.08] text-white/80 rounded-xl w-full"
+          />
+        </div>
       </div>
 
       {/* Liste */}
       {paginated.length === 0 ? (
         <div className="text-center py-12 rounded-2xl bg-white/[0.02] border border-dashed border-white/[0.06]">
-          <Mail className="w-10 h-10 text-gray-500/40 mx-auto mb-3" />
-          <p className="text-gray-400/60 text-sm font-light">Aucun message trouvé</p>
+          <UserPlus className="w-10 h-10 text-gray-500/40 mx-auto mb-3" />
+          <p className="text-gray-400/60 text-sm font-light">Aucun nouvel utilisateur trouvé</p>
         </div>
       ) : (
         <div className="space-y-2 w-full">
-          {paginated.map((req) => {
-            const isExpanded = expanded.has(req.id);
-            return (
-              <motion.div key={req.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                className="rounded-2xl p-4 bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] hover:bg-white/[0.04] transition-all w-full">
-                <div className="flex flex-col gap-3">
-                  {/* Infos */}
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 flex items-center justify-center flex-shrink-0">
-                      <User className="w-4 h-4 text-cyan-400/60" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="text-sm text-white/70 font-medium">{req.name}</p>
-                        {getStatusBadge(req)}
-                      </div>
-                      <p className="text-[11px] text-gray-400/50 font-light mt-0.5">{req.email}{req.phone && <> • {req.phone}</>}</p>
-                      <p className="text-[10px] text-gray-500/40 font-light mt-0.5">
-                        Pour {req.profiles?.full_name} • {new Date(req.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </div>
+          {paginated.map((u) => (
+            <motion.div
+              key={u.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`rounded-2xl p-4 backdrop-blur-sm border transition-all w-full ${
+                u.welcome_email_sent
+                  ? 'bg-emerald-500/[0.02] border-emerald-500/20'
+                  : 'bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04]'
+              }`}
+            >
+              <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                    u.welcome_email_sent
+                      ? 'bg-gradient-to-br from-emerald-500/20 to-teal-500/20'
+                      : 'bg-gradient-to-br from-cyan-500/20 to-blue-500/20'
+                  }`}>
+                    <User className={`w-4 h-4 ${u.welcome_email_sent ? 'text-emerald-400/60' : 'text-cyan-400/60'}`} />
                   </div>
-
-                  {/* Message expansible */}
-                  <button onClick={() => toggleExpand(req.id)} className="flex items-center gap-1 text-[11px] text-gray-400/60 hover:text-white/70 font-light w-fit">
-                    {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                    {isExpanded ? 'Réduire' : 'Voir le message'}
-                  </button>
-                  {isExpanded && (
-                    <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                      <p className="text-xs text-gray-300/70 font-light whitespace-pre-line">{req.message}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm text-white/70 font-medium truncate">{u.full_name}</p>
+                      {getPlanBadge(u.plan)}
+                      {u.welcome_email_sent ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-light bg-emerald-500/10 text-emerald-300/60 border-emerald-500/20">
+                          <CheckCircle className="w-3 h-3" />Accueilli
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded-full border font-light bg-amber-500/10 text-amber-300/60 border-amber-500/20">
+                          Nouveau
+                        </span>
+                      )}
                     </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    {!req.is_read && (
-                      <button onClick={() => markAsRead(req.id)}
-                        className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] text-blue-400/60 hover:text-blue-300/70 hover:bg-blue-500/[0.04] font-light rounded-lg transition-all">
-                        <Eye className="w-3 h-3" />Lu
-                      </button>
-                    )}
-                    {!req.replied_at && (
-                      <button onClick={() => { setReplyingTo(req.id); setReplyMessage(`Bonjour ${req.name},\n\nMerci pour votre message.\n\nCordialement,\nL'équipe LUVIKA`); }}
-                        className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-gradient-to-r from-cyan-600/80 to-blue-600/80 text-white font-light rounded-lg transition-all">
-                        <ReplyAll className="w-3 h-3" />Répondre
-                      </button>
-                    )}
-                    <button onClick={() => handleDelete(req.id)}
-                      className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] text-red-400/60 hover:text-red-300/70 hover:bg-red-500/[0.04] font-light rounded-lg transition-all">
-                      <Trash2 className="w-3 h-3" />Supprimer
-                    </button>
-                    {req.replied_at && (
-                      <span className="inline-flex items-center gap-1 h-7 px-2.5 text-[11px] bg-emerald-500/10 text-emerald-300/60 font-light rounded-lg">
-                        <CheckCircle className="w-3 h-3" />Répondu
-                      </span>
-                    )}
+                    <p className="text-[11px] text-gray-400/50 font-light mt-0.5">@{u.username}</p>
+                    <p className="text-[11px] text-gray-500/40 font-light truncate mt-0.5">{u.email}</p>
                   </div>
-
-                  {/* Formulaire réponse */}
-                  <AnimatePresence>
-                    {replyingTo === req.id && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden">
-                        <div className="p-3 rounded-xl bg-cyan-500/[0.04] border border-cyan-500/[0.08] space-y-2">
-                          <textarea value={replyMessage} onChange={e => setReplyMessage(e.target.value)}
-                            rows={3} placeholder="Votre réponse..."
-                            className="w-full text-xs bg-white/[0.03] border border-white/[0.08] text-white/80 rounded-xl p-2.5 resize-none font-light placeholder:text-gray-500/40" />
-                          <div className="flex gap-2">
-                            <button onClick={() => { setReplyingTo(null); setReplyMessage(''); }}
-                              className="flex-1 h-7 text-[11px] text-gray-400/60 hover:text-white/70 hover:bg-white/[0.04] font-light rounded-lg transition-all">Annuler</button>
-                            <button onClick={handleReply} disabled={sending || !replyMessage.trim()}
-                              className="flex-1 h-7 text-[11px] bg-gradient-to-r from-emerald-600/80 to-cyan-600/80 text-white font-light rounded-lg transition-all disabled:opacity-50">
-                              <Send className="w-3 h-3 mr-1" />{sending ? 'Envoi...' : 'Envoyer'}
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
-              </motion.div>
-            );
-          })}
+
+                <div className="flex items-center gap-3 flex-shrink-0 lg:ml-4">
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-500/40 font-light flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(u.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                  {!u.welcome_email_sent && (
+                    <Button
+                      onClick={() => handleSendWelcomeEmail(u.id, u.email, u.full_name)}
+                      disabled={sendingIds.has(u.id)}
+                      className="h-8 text-xs bg-gradient-to-r from-cyan-600/80 to-blue-600/80 hover:from-cyan-500 hover:to-blue-500 text-white font-light rounded-lg"
+                    >
+                      {sendingIds.has(u.id) ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5 mr-1" />
+                          Accueillir
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       )}
 
@@ -280,6 +331,12 @@ export default function ContactRequestsPage() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-between text-[10px] text-gray-500/30 font-light pt-4 border-t border-white/[0.04]">
+        <span>Les emails sont envoyés via le service SMTP configuré</span>
+        <span>7 derniers jours</span>
+      </div>
     </div>
   );
 }
