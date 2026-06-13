@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, username, avatar_url, scans_count')
+    .select('id, full_name, username, avatar_url, scans_count, badges') // ✅ Ajout de badges
     .order('scans_count', { ascending: false })
     .limit(limit);
 

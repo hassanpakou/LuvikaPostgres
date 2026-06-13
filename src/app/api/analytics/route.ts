@@ -18,15 +18,16 @@ export async function GET(request: Request) {
     { cookies: { get: (name) => cookieStore.get(name)?.value } }
   );
 
-  // ✅ Requête directe sur la table scans (pas de RPC)
-  const { count, error } = await supabase
-    .from('scans')
-    .select('*', { count: 'exact', head: true })
-    .eq('profile_id', profileId);
+  // ✅ Utilise scans_count du profil (comme le leaderboard)
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('scans_count')
+    .eq('id', profileId)
+    .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ total: count || 0 });
+  return NextResponse.json({ total: data?.scans_count || 0 });
 }
