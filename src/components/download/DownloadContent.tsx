@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Download, QrCode, Scan, Nfc, Smartphone, 
-  CreditCard, Share2, Zap, ArrowRight, CheckCircle2 
+  CreditCard, Share2, Zap, ArrowRight, CheckCircle2,
+  Smartphone as AndroidIcon, Apple, Monitor, Shield
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -26,6 +27,17 @@ type Step = {
   title: string;
   desc: string;
   highlight?: string;
+};
+
+type Platform = {
+  icon: React.ReactNode;
+  name: string;
+  description: string;
+  url: string;
+  available: boolean;
+  version?: string;
+  size?: string;
+  comingSoon?: boolean;
 };
 
 export default function DownloadContent({
@@ -56,6 +68,37 @@ export default function DownloadContent({
   const [loading, setLoading] = useState(true);
   const [activeStep, setActiveStep] = useState<number | null>(null);
   const [showDemo, setShowDemo] = useState(false);
+  const [downloadStarted, setDownloadStarted] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+
+  // ✅ Plateformes disponibles
+  const platforms: Platform[] = [
+    {
+      icon: <AndroidIcon className="w-6 h-6" />,
+      name: 'Android APK',
+      description: 'Téléchargez directement le fichier APK pour Android',
+      url: '/downloads/luvika-latest.apk',
+      available: true,
+      version: 'v2.4.1',
+      size: '40,2 Mo',
+    },
+    {
+      icon: <Apple className="w-6 h-6" />,
+      name: 'App Store',
+      description: 'Bientôt disponible sur l\'App Store',
+      url: '#',
+      available: false,
+      comingSoon: true,
+    },
+    {
+      icon: <Monitor className="w-6 h-6" />,
+      name: 'Web App',
+      description: 'Utilisez la version web sans installation',
+      url: '/',
+      available: true,
+      version: 'v2.4.1',
+    },
+  ];
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 600);
@@ -74,16 +117,16 @@ export default function DownloadContent({
 
   const steps: Step[] = [
     {
-      icon: <CreditCard className="w-5 h-5" />,
+      icon: <Download className="w-5 h-5" />,
       title: step1_title,
       desc: step1_desc,
-      highlight: 'NFC',
+      highlight: 'APK',
     },
     {
       icon: <Smartphone className="w-5 h-5" />,
       title: step2_title,
       desc: step2_desc,
-      highlight: 'QR',
+      highlight: 'NFC',
     },
     {
       icon: <Share2 className="w-5 h-5" />,
@@ -92,6 +135,24 @@ export default function DownloadContent({
       highlight: 'Instant',
     },
   ];
+
+  const handleDownload = (platform: Platform) => {
+    if (!platform.available) return;
+    setSelectedPlatform(platform.name);
+    setDownloadStarted(true);
+    
+    // Simuler le démarrage du téléchargement
+    setTimeout(() => {
+      if (platform.url && platform.url.startsWith('/')) {
+        window.open(platform.url, '_blank');
+      } else if (platform.url) {
+        window.location.href = platform.url;
+      }
+      setDownloadStarted(false);
+    }, 1500);
+  };
+
+  const apkPlatform = platforms.find(p => p.name === 'Android APK');
 
   if (loading) {
     return (
@@ -128,8 +189,9 @@ export default function DownloadContent({
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
+            <AndroidIcon className="w-3.5 h-3.5 text-cyan-400" />
             <span className="text-xs text-cyan-300/80 font-medium tracking-wide">
-              Technologie NFC + QR
+              Application Android disponible
             </span>
           </motion.div>
 
@@ -142,12 +204,118 @@ export default function DownloadContent({
           </p>
         </motion.div>
 
+        {/* Section Téléchargement APK - Mise en avant */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="mb-12"
+        >
+          <div className="rounded-2xl p-6 md:p-8 bg-gradient-to-br from-emerald-500/[0.04] to-cyan-500/[0.04] backdrop-blur-sm border border-emerald-500/20 overflow-hidden relative">
+            {/* Fond décoratif */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute -top-20 -right-20 w-60 h-60 bg-emerald-500/5 rounded-full blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-cyan-500/5 rounded-full blur-3xl" />
+            </div>
+
+            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
+              {/* Icône Android + Infos */}
+              <div className="flex-shrink-0">
+                <motion.div
+                  animate={{ 
+                    boxShadow: [
+                      '0 0 20px rgba(16, 185, 129, 0.2)',
+                      '0 0 40px rgba(16, 185, 129, 0.4)',
+                      '0 0 20px rgba(16, 185, 129, 0.2)'
+                    ]
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 flex items-center justify-center"
+                >
+                  <AndroidIcon className="w-10 h-10 md:w-12 md:h-12 text-emerald-400" />
+                </motion.div>
+              </div>
+
+              {/* Texte */}
+              <div className="flex-1 text-center lg:text-left">
+                <div className="flex items-center justify-center lg:justify-start gap-2 mb-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-white">
+                    Application Android
+                  </h3>
+                  {apkPlatform?.version && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-medium">
+                      {apkPlatform.version}
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-gray-300/80 mb-1">
+                  Téléchargez l'APK pour Android — scannez vos cartes NFC en un clin d'œil
+                </p>
+                <div className="flex items-center justify-center lg:justify-start gap-3 text-xs text-gray-400/60">
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-emerald-400/60" />
+                    Sécurisé
+                  </span>
+                  <span>•</span>
+                  <span>{apkPlatform?.size}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400/60" />
+                    Gratuit
+                  </span>
+                </div>
+              </div>
+
+              {/* Bouton Télécharger */}
+              <div className="flex-shrink-0">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDownload(platforms[0])}
+                  disabled={downloadStarted}
+                  className={`
+                    group relative inline-flex items-center gap-3 px-8 py-4 
+                    rounded-2xl font-semibold text-sm transition-all duration-300
+                    ${downloadStarted 
+                      ? 'bg-emerald-500/20 text-emerald-300 cursor-wait'
+                      : 'bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white shadow-lg shadow-emerald-500/25'
+                    }
+                  `}
+                >
+                  {downloadStarted ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
+                      >
+                        <Download className="w-5 h-5" />
+                      </motion.div>
+                      Téléchargement...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-5 h-5" />
+                      Télécharger l'APK
+                      <motion.div
+                        animate={{ x: [0, 4, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                      >
+                        <ArrowRight className="w-4 h-4 opacity-70" />
+                      </motion.div>
+                    </>
+                  )}
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Carte interactive avec démo scan */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2 }}
-          className="relative mb-16"
+          className="relative mb-12"
         >
           {/* Indicateur de scan */}
           <AnimatePresence>
@@ -189,9 +357,7 @@ export default function DownloadContent({
             )}
           </AnimatePresence>
 
-          <ProfileCard3D
-            onTap={() => setShowDemo(true)}
-          />
+          <ProfileCard3D onTap={() => setShowDemo(true)} />
 
           {/* Badge "Tap to preview" */}
           <motion.p
@@ -208,7 +374,7 @@ export default function DownloadContent({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-16"
+          className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12"
         >
           {steps.map((step, i) => (
             <motion.div
@@ -230,7 +396,6 @@ export default function DownloadContent({
                   : 'border-white/[0.06] hover:border-white/[0.1]'
                 }
               `}>
-                {/* Numéro d'étape */}
                 <div className="flex items-center gap-3 mb-4">
                   <motion.div
                     className={`
@@ -248,7 +413,6 @@ export default function DownloadContent({
                       {step.icon}
                     </div>
                   </motion.div>
-
                   {step.highlight && (
                     <span className={`
                       text-[10px] px-2 py-0.5 rounded-full font-medium
@@ -262,19 +426,15 @@ export default function DownloadContent({
                     </span>
                   )}
                 </div>
-
                 <h3 className={`
                   text-lg font-semibold mb-2 transition-colors duration-300
                   ${activeStep === i ? 'text-white' : 'text-white/70'}
                 `}>
                   {step.title}
                 </h3>
-                
                 <p className="text-sm text-gray-400/70 font-light leading-relaxed">
                   {step.desc}
                 </p>
-
-                {/* Flèche de progression (sauf dernière étape) */}
                 {i < steps.length - 1 && (
                   <motion.div
                     className="hidden md:block absolute -right-3 top-1/2 -translate-y-1/2 text-cyan-400/30"
@@ -287,6 +447,62 @@ export default function DownloadContent({
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Autres plateformes */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mb-12"
+        >
+          <h3 className="text-sm font-medium text-gray-400/80 text-center mb-4">
+            Également disponible sur
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
+            {platforms.slice(1).map((platform, i) => (
+              <motion.button
+                key={i}
+                whileHover={platform.available ? { scale: 1.02 } : {}}
+                onClick={() => handleDownload(platform)}
+                disabled={!platform.available}
+                className={`
+                  flex items-center gap-3 p-4 rounded-xl border transition-all duration-300
+                  ${platform.available 
+                    ? 'bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] hover:bg-white/[0.04] cursor-pointer'
+                    : 'bg-white/[0.01] border-white/[0.04] cursor-not-allowed opacity-50'
+                  }
+                `}
+              >
+                <div className={`
+                  w-10 h-10 rounded-lg flex items-center justify-center
+                  ${platform.available ? 'bg-white/[0.05]' : 'bg-white/[0.02]'}
+                `}>
+                  <div className={platform.available ? 'text-gray-300' : 'text-gray-600'}>
+                    {platform.icon}
+                  </div>
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-sm font-medium ${platform.available ? 'text-white/80' : 'text-gray-600'}`}>
+                      {platform.name}
+                    </span>
+                    {platform.comingSoon && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400/80 border border-amber-500/20">
+                        Bientôt
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-gray-500/60 mt-0.5">
+                    {platform.description}
+                  </p>
+                </div>
+                {platform.available && (
+                  <ArrowRight className="w-4 h-4 text-gray-500" />
+                )}
+              </motion.button>
+            ))}
+          </div>
         </motion.div>
 
         {/* CTA */}
@@ -316,6 +532,12 @@ export default function DownloadContent({
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
+              onClick={() => {
+                const apkSection = document.getElementById('apk-download');
+                if (apkSection) {
+                  apkSection.scrollIntoView({ behavior: 'smooth' });
+                }
+              }}
               className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 rounded-2xl text-white font-medium shadow-lg shadow-cyan-500/20 transition-all duration-300"
             >
               <span>{download_now}</span>
@@ -334,6 +556,7 @@ export default function DownloadContent({
                 { icon: Nfc, text: 'Compatible NFC' },
                 { icon: QrCode, text: 'QR Code inclus' },
                 { icon: CheckCircle2, text: 'Sans engagement' },
+                { icon: AndroidIcon, text: 'Android APK dispo' },
               ].map((item, i) => (
                 <motion.div
                   key={i}
