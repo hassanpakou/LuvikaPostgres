@@ -94,7 +94,7 @@ export default function SubscriptionsPage() {
   };
 
   // Mettre à jour l'abonnement (avec date d'expiration)
-  const updateSubscription = async (id: string, data: {
+ const updateSubscription = async (id: string, data: {
   status?: string;
   plan?: string;
   expires_at?: string | null;
@@ -107,15 +107,30 @@ export default function SubscriptionsPage() {
       body: JSON.stringify(data),
     });
     
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      const errorData = await res.json();
+      
+      // Gérer l'erreur de doublon (409 Conflict)
+      if (res.status === 409) {
+        toast.error('Doublon détecté', {
+          description: errorData.error || 'Cet utilisateur a déjà un abonnement pour ce plan.',
+          duration: 5000,
+        });
+        return;
+      }
+      
+      throw new Error(errorData.error || 'Erreur');
+    }
     
     const updated = await res.json();
     toast.success('Abonnement mis à jour');
     
     setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, ...updated } : s));
     closeEditModal();
-  } catch {
-    toast.error('Erreur lors de la mise à jour');
+  } catch (err: any) {
+    toast.error('Erreur lors de la mise à jour', {
+      description: err.message,
+    });
   } finally {
     setUpdatingId(null);
   }
@@ -125,19 +140,33 @@ export default function SubscriptionsPage() {
 const toggleStatus = async (id: string, newStatus: 'active' | 'canceled') => {
   setUpdatingId(id);
   try {
-    // Utiliser activate ou deactivate selon le cas
     const endpoint = newStatus === 'active' 
       ? `/api/admin/subscriptions/${id}/activate`
       : `/api/admin/subscriptions/${id}/deactivate`;
     
     const res = await fetch(endpoint, { method: 'POST' });
     
-    if (!res.ok) throw new Error();
+    if (!res.ok) {
+      const errorData = await res.json();
+      
+      // Gérer l'erreur de doublon
+      if (res.status === 409) {
+        toast.error('Impossible d\'activer', {
+          description: errorData.error || 'Un abonnement actif existe déjà pour ce plan.',
+          duration: 5000,
+        });
+        return;
+      }
+      
+      throw new Error(errorData.error || 'Erreur');
+    }
     
     toast.success(newStatus === 'active' ? 'Abonnement activé' : 'Abonnement désactivé');
     setSubscriptions(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
-  } catch {
-    toast.error('Erreur lors de la mise à jour');
+  } catch (err: any) {
+    toast.error('Erreur lors de la mise à jour', {
+      description: err.message,
+    });
   } finally {
     setUpdatingId(null);
   }

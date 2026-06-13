@@ -27,7 +27,7 @@ export async function POST(
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
-  // Récupérer l'abonnement pour avoir le plan et le profile_id
+  // Récupérer l'abonnement
   const { data: subscription, error: fetchError } = await supabase
     .from('subscriptions')
     .select('*')
@@ -38,7 +38,44 @@ export async function POST(
     return NextResponse.json({ error: 'Souscription introuvable' }, { status: 404 });
   }
 
-  const { error } = await supabase
+  // 🔹 Vérifier qu'il n'y a pas déjà un abonnement actif pour le même plan
+  const { data: activeDuplicate } = await supabase
+    .from('subscriptions')
+    .select('id')
+    .eq('profile_id', subscription.profile_id)
+    .eq('plan', subscription.plan)
+    .eq('status', 'active')
+    .neq('id', id)
+    .maybeSingle();
+
+  if (activeDuplicate) {
+    return NextResponse.json({ 
+      error: `Un abonnement ${subscription.plan} actif existe déjà pour cet utilisateur.` 
+    }, { status: 409 });
+  }
+
+  // 🔹 Désactiver tous les autres abonnements actifs (tous plans confondus)
+  const { data: otherActiveSubs } = await supabase
+    .from('subscriptions')
+    .select('id, plan')
+    .eq('profile_id', subscription.profile_id)
+    .eq('status', 'active')
+    .neq('id', id);
+
+  if (otherActiveSubs && otherActiveSubs.length > 0) {
+    const otherIds = otherActiveSubs.map(s => s.id);
+    
+    await supabase
+      .from('subscriptions')
+      .update({ 
+        status: 'canceled',
+        updated_at: new Date().toISOString()
+      })
+      .in('id', otherIds);
+  }
+
+  // Activer cet abonnement
+  const { error: updateError } = await supabase
     .from('subscriptions')
     .update({
       status: 'active',
@@ -46,20 +83,18 @@ export async function POST(
     })
     .eq('id', id);
 
-  if (error) {
+  if (updateError) {
     return NextResponse.json({ error: 'Échec activation' }, { status: 500 });
   }
 
-  // Mettre à jour le plan dans la table profiles
-  if (subscription.profile_id) {
-    await supabase
-      .from('profiles')
-      .update({ 
-        plan: subscription.plan,
-        updated_at: new Date().toISOString() 
-      })
-      .eq('id', subscription.profile_id);
-  }
+  // Mettre à jour le profil
+  await supabase
+    .from('profiles')
+    .update({ 
+      plan: subscription.plan,
+      updated_at: new Date().toISOString() 
+    })
+    .eq('id', subscription.profile_id);
 
   return NextResponse.json({ success: true });
 }

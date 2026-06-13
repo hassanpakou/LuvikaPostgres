@@ -31,14 +31,77 @@ export async function PUT(
   }
 
   // Récupérer l'abonnement existant
-  const { data: subscription, error: fetchError } = await supabase
+  const { data: currentSubscription, error: fetchError } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('id', id)
     .single();
 
-  if (fetchError || !subscription) {
+  if (fetchError || !currentSubscription) {
     return NextResponse.json({ error: 'Souscription introuvable' }, { status: 404 });
+  }
+
+  // 🔹 VÉRIFICATION : Si le plan change, vérifier qu'il n'y a pas déjà un abonnement pour ce plan
+  if (plan && plan !== currentSubscription.plan) {
+    const { data: existingPlan } = await supabase
+      .from('subscriptions')
+      .select('id, plan, status')
+      .eq('profile_id', currentSubscription.profile_id)
+      .eq('plan', plan)
+      .neq('id', id) // Exclure l'abonnement en cours d'édition
+      .maybeSingle();
+
+    if (existingPlan) {
+      return NextResponse.json({ 
+        error: `Cet utilisateur a déjà un abonnement ${plan} (ID: ${existingPlan.id}, statut: ${existingPlan.status}). Supprimez-le d'abord ou modifiez l'existant.` 
+      }, { status: 409 }); // 409 Conflict
+    }
+  }
+
+  // 🔹 VÉRIFICATION : Si on active cet abonnement, vérifier qu'il n'y a pas d'autre actif pour le même plan
+  if (status === 'active') {
+    const targetPlan = plan || currentSubscription.plan;
+    
+    const { data: activeDuplicate } = await supabase
+      .from('subscriptions')
+      .select('id')
+      .eq('profile_id', currentSubscription.profile_id)
+      .eq('plan', targetPlan)
+      .eq('status', 'active')
+      .neq('id', id)
+      .maybeSingle();
+
+    if (activeDuplicate) {
+      // Désactiver automatiquement l'autre abonnement actif
+      await supabase
+        .from('subscriptions')
+        .update({ 
+          status: 'canceled',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', activeDuplicate.id);
+    }
+
+    // Vérifier aussi les autres plans actifs
+    const { data: otherActiveSubs } = await supabase
+      .from('subscriptions')
+      .select('id, plan')
+      .eq('profile_id', currentSubscription.profile_id)
+      .eq('status', 'active')
+      .neq('id', id);
+
+    if (otherActiveSubs && otherActiveSubs.length > 0) {
+      // Désactiver tous les autres abonnements actifs
+      const otherIds = otherActiveSubs.map(s => s.id);
+      
+      await supabase
+        .from('subscriptions')
+        .update({ 
+          status: 'canceled',
+          updated_at: new Date().toISOString()
+        })
+        .in('id', otherIds);
+    }
   }
 
   // Construire l'objet de mise à jour
@@ -47,7 +110,6 @@ export async function PUT(
   };
 
   if (plan !== undefined) {
-    // Vérifier que le plan est valide
     if (!['basic', 'premium', 'entreprise'].includes(plan)) {
       return NextResponse.json({ error: 'Plan invalide' }, { status: 400 });
     }
@@ -55,20 +117,17 @@ export async function PUT(
   }
 
   if (status !== undefined) {
-    // Vérifier que le statut est valide
     if (!['active', 'canceled', 'expired', 'pending'].includes(status)) {
       return NextResponse.json({ error: 'Statut invalide' }, { status: 400 });
     }
     updateData.status = status;
   }
 
-  // Gérer expires_at explicitement
+  // Gérer expires_at
   if (expires_at !== undefined) {
-    // Si null ou chaîne vide → à vie
     if (expires_at === null || expires_at === '') {
-      updateData.expires_at = null;
+      updateData.expires_at = null; // À vie
     } else {
-      // Valider que c'est une date valide
       const date = new Date(expires_at);
       if (isNaN(date.getTime())) {
         return NextResponse.json({ error: 'Date d\'expiration invalide' }, { status: 400 });
@@ -87,30 +146,57 @@ export async function PUT(
 
   if (updateError) {
     console.error('Erreur mise à jour abonnement:', updateError);
+    
+    // Gérer l'erreur de contrainte unique
+    if (updateError.code === '23505') {
+      return NextResponse.json({ 
+        error: 'Cet utilisateur a déjà un abonnement pour ce plan.' 
+      }, { status: 409 });
+    }
+    
     return NextResponse.json({ error: 'Échec de la mise à jour' }, { status: 500 });
   }
 
-  // Synchroniser le plan avec la table profiles si le statut est actif
-  if (updateData.status === 'active' || (updateData.plan && subscription.status === 'active')) {
-    const planToUpdate = updateData.plan || subscription.plan;
-    await supabase
-      .from('profiles')
-      .update({ 
-        plan: planToUpdate,
-        updated_at: new Date().toISOString() 
-      })
-      .eq('id', subscription.profile_id);
-  }
+  // Synchroniser le plan avec la table profiles
+  const finalPlan = updateData.plan || currentSubscription.plan;
+  const finalStatus = updateData.status || currentSubscription.status;
 
-  // Si on désactive, remettre en basic
-  if (updateData.status === 'canceled') {
+  if (finalStatus === 'active') {
     await supabase
       .from('profiles')
       .update({ 
-        plan: 'basic',
+        plan: finalPlan,
         updated_at: new Date().toISOString() 
       })
-      .eq('id', subscription.profile_id);
+      .eq('id', currentSubscription.profile_id);
+  } else if (updateData.status === 'canceled' || updateData.status === 'expired') {
+    // Vérifier s'il reste un abonnement actif
+    const { data: remainingActive } = await supabase
+      .from('subscriptions')
+      .select('plan')
+      .eq('profile_id', currentSubscription.profile_id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (!remainingActive) {
+      // Remettre à basic si aucun abonnement actif
+      await supabase
+        .from('profiles')
+        .update({ 
+          plan: 'basic',
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', currentSubscription.profile_id);
+    } else {
+      // Mettre à jour avec le plan de l'abonnement restant
+      await supabase
+        .from('profiles')
+        .update({ 
+          plan: remainingActive.plan,
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', currentSubscription.profile_id);
+    }
   }
 
   return NextResponse.json(updatedSubscription);

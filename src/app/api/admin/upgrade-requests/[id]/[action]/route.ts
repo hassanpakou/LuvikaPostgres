@@ -26,11 +26,97 @@ export async function POST(
       .eq('id', id)
       .single();
 
-    if (fetchError || !req || req.status !== 'pending') {
-      return NextResponse.json({ error: 'Demande invalide' }, { status: 400 });
+    if (fetchError || !req) {
+      return NextResponse.json({ error: 'Demande introuvable' }, { status: 404 });
+    }
+
+    if (req.status !== 'pending') {
+      return NextResponse.json({ error: 'Cette demande a déjà été traitée' }, { status: 400 });
     }
 
     const { profile_id, target_plan } = req;
+
+    // 🔹 VÉRIFICATION 1 : L'utilisateur a-t-il déjà ce plan ?
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', profile_id)
+      .single();
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 });
+    }
+
+    // Si l'utilisateur a déjà le plan demandé → erreur
+    if (profile.plan === target_plan) {
+      // Rejeter automatiquement la demande car elle n'est plus pertinente
+      await supabase
+        .from('upgrade_requests')
+        .update({ 
+          status: 'rejected',
+          processed_at: new Date().toISOString(),
+          admin_notes: `Rejeté automatiquement : l'utilisateur a déjà le plan ${target_plan}`
+        })
+        .eq('id', id);
+
+      return NextResponse.json({ 
+        error: `L'utilisateur a déjà le plan ${target_plan}. Demande rejetée automatiquement.` 
+      }, { status: 400 });
+    }
+
+    // 🔹 VÉRIFICATION 2 : Y a-t-il d'autres demandes en attente pour le même utilisateur et le même plan ?
+    const { data: duplicateRequests } = await supabase
+      .from('upgrade_requests')
+      .select('id')
+      .eq('profile_id', profile_id)
+      .eq('target_plan', target_plan)
+      .eq('status', 'pending')
+      .neq('id', id); // Exclure la demande actuelle
+
+    if (duplicateRequests && duplicateRequests.length > 0) {
+      // Rejeter les autres demandes en double
+      const duplicateIds = duplicateRequests.map(d => d.id);
+      
+      await supabase
+        .from('upgrade_requests')
+        .update({ 
+          status: 'rejected',
+          processed_at: new Date().toISOString(),
+          admin_notes: `Rejeté automatiquement : demande en double (traitée via ${id})`
+        })
+        .in('id', duplicateIds);
+    }
+
+    // 🔹 VÉRIFICATION 3 : L'utilisateur a-t-il déjà un abonnement actif pour ce plan ?
+    const { data: existingSubscription } = await supabase
+      .from('subscriptions')
+      .select('id, plan, status, expires_at')
+      .eq('profile_id', profile_id)
+      .eq('plan', target_plan)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (existingSubscription) {
+      // Si l'abonnement existe déjà et est valide
+      const now = new Date();
+      const expiresAt = existingSubscription.expires_at ? new Date(existingSubscription.expires_at) : null;
+      
+      if (!expiresAt || expiresAt > now) {
+        // L'abonnement est encore valide → rejeter la demande
+        await supabase
+          .from('upgrade_requests')
+          .update({ 
+            status: 'rejected',
+            processed_at: new Date().toISOString(),
+            admin_notes: `Rejeté automatiquement : abonnement ${target_plan} déjà actif jusqu'au ${expiresAt ? expiresAt.toLocaleDateString('fr-FR') : 'à vie'}`
+          })
+          .eq('id', id);
+
+        return NextResponse.json({ 
+          error: `Un abonnement ${target_plan} est déjà actif pour cet utilisateur` 
+        }, { status: 400 });
+      }
+    }
 
     if (action === 'rejected') {
       // Mise à jour simple pour le rejet
@@ -49,11 +135,6 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const { expires_at, admin_notes } = body;
 
-    // expires_at peut être:
-    // - undefined/null: si on n'a pas envoyé le champ → À VIE
-    // - null explicitement: si isLifetime = true → À VIE
-    // - une date: si choisie
-
     // Met à jour la demande
     await supabase
       .from('upgrade_requests')
@@ -63,6 +144,18 @@ export async function POST(
         admin_notes: admin_notes || null
       })
       .eq('id', id);
+
+    // 🔹 Rejeter automatiquement toutes les autres demandes en attente du même utilisateur
+    await supabase
+      .from('upgrade_requests')
+      .update({ 
+        status: 'rejected',
+        processed_at: new Date().toISOString(),
+        admin_notes: 'Rejeté automatiquement : une autre demande a été approuvée'
+      })
+      .eq('profile_id', profile_id)
+      .eq('status', 'pending')
+      .neq('id', id);
 
     // 1. Annule tous les abonnements actifs existants
     await supabase
@@ -83,9 +176,7 @@ export async function POST(
       started_at: new Date().toISOString(),
     };
 
-    // Gérer expires_at :
-    // - Si expires_at est null ou undefined → à vie (ne pas mettre de expires_at)
-    // - Si expires_at est une date valide → la mettre
+    // Gérer expires_at
     if (expires_at && expires_at !== null) {
       const date = new Date(expires_at);
       if (!isNaN(date.getTime())) {
