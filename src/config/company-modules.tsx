@@ -94,12 +94,18 @@ Object.entries(COMPANY_TYPES_DATA).forEach(([key, value]) => {
   COMPANY_TYPES_MAP_WITH_ICONS[key] = convertToConfig(value);
 });
 
+// src/config/company-modules.tsx - modifier le fallback
+
 export const getCompanyConfig = (type: string): CompanyTypeConfig => {
   return COMPANY_TYPES_MAP_WITH_ICONS[type] || {
     label: 'Autre',
     icon: <MoreHorizontal className="w-4 h-4" />,
     color: 'from-gray-400/60 to-gray-500/60',
     modules: [
+      // ✅ Ajouter les modules de base pour TOUS les types
+      { id: 'orders', label: 'Commandes', description: 'Suivi des commandes', icon: <ShoppingBag className="w-4 h-4" />, path: '/dashboard/entreprise/orders', required: true, category: 'commerce' },
+      { id: 'cards', label: 'Cartes Membres', description: 'Gérez les cartes NFC', icon: <CreditCard className="w-4 h-4" />, path: '/dashboard/entreprise/cards', required: false, category: 'management' },
+      { id: 'analytics', label: 'Analytiques', description: 'Statistiques', icon: <BarChart3 className="w-4 h-4" />, path: '/dashboard/entreprise/analytics', required: false, category: 'management' },
       { id: 'settings', label: 'Paramètres', description: 'Configuration', icon: <Settings className="w-4 h-4" />, path: '/dashboard/entreprise/settings', required: true, category: 'management' },
     ],
     fields: [

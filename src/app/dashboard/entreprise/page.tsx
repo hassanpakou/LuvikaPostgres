@@ -9,7 +9,11 @@ import {
   Settings, Package, Users, TrendingUp, BarChart3, 
   ShoppingBag, Calendar, CreditCard, Star, Image,
   MessageSquare, Bell, ArrowRight, Plus, ChevronRight,
-  Wifi, MapPin, Clock, Phone, Mail, Globe
+  Wifi, MapPin, Clock, Phone, Mail, Globe,
+  ClipboardList,
+  FileText,
+  ImageIcon,
+  Truck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -105,20 +109,124 @@ export default function EnterpriseDashboard() {
   };
 
   // Widgets rapides selon le type
-  const quickActions = {
-    restaurant: [
-      { label: 'Nouveau plat', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
-      { label: 'Voir commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
-    ],
-    hotel: [
-      { label: 'Nouvelle chambre', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/rooms' },
-      { label: 'Réservations', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/bookings' },
-    ],
-    clinic: [
-      { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
-      { label: 'Patients', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/patients' },
-    ],
-  };
+const quickActions: Record<string, { label: string; icon: React.ReactNode; path: string }[]> = {
+  restaurant: [
+    { label: 'Nouveau plat', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+    { label: 'Réservations', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/reservations' },
+  ],
+  bakery: [
+    { label: 'Nouveau produit', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+  bar: [
+    { label: 'Nouvelle boisson', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Événements', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/events' },
+  ],
+  supermarket: [
+    { label: 'Nouveau produit', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+    { label: 'Livraisons', icon: <Truck className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/delivery' },
+  ],
+  clinic: [
+    { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Patients', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/patients' },
+    { label: 'Ordonnances', icon: <ClipboardList className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/prescriptions' },
+  ],
+  medical: [
+    { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Patients', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/patients' },
+  ],
+  pharmacy: [
+    { label: 'Nouveau produit', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+  hotel: [
+    { label: 'Nouvelle chambre', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/rooms' },
+    { label: 'Réservations', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/bookings' },
+    { label: 'Room Service', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+  beauty: [
+    { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Services', icon: <FileText className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+  ],
+  gym: [
+    { label: 'Nouvel abonnement', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Cours', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Membres', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/cards' },
+  ],
+  agency: [
+    { label: 'Nouveau service', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Messages', icon: <MessageSquare className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/messages' },
+  ],
+  tech: [
+    { label: 'Nouveau service', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Équipe', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/staff' },
+  ],
+  repair: [
+    { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+  photography: [
+    { label: 'Nouvelle séance', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Galerie', icon: <ImageIcon className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/gallery' },
+  ],
+  cybercafe: [
+    { label: 'Nouveau forfait', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Cartes', icon: <CreditCard className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/cards' },
+  ],
+  school: [
+    { label: 'Nouvel élève', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/patients' },
+    { label: 'Enseignants', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/staff' },
+    { label: 'Événements', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/events' },
+  ],
+  library: [
+    { label: 'Nouveau livre', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+  transport: [
+    { label: 'Nouveau billet', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/bookings' },
+    { label: 'Abonnés', icon: <CreditCard className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/cards' },
+  ],
+  travel: [
+    { label: 'Nouvelle offre', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Réservations', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/bookings' },
+  ],
+  gasstation: [
+    { label: 'Nouveau produit', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Fidélité', icon: <CreditCard className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/cards' },
+  ],
+  realestate: [
+    { label: 'Nouveau bien', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Visites', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+  ],
+  construction: [
+    { label: 'Nouveau projet', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Équipe', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/staff' },
+  ],
+  farm: [
+    { label: 'Nouveau produit', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+  ngo: [
+    { label: 'Nouveau bénévole', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/staff' },
+    { label: 'Événements', icon: <Calendar className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/events' },
+    { label: 'Messages', icon: <MessageSquare className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/messages' },
+  ],
+  bank: [
+    { label: 'Nouveau RDV', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/appointments' },
+    { label: 'Employés', icon: <Users className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/staff' },
+  ],
+  shop: [
+    { label: 'Nouvel article', icon: <Plus className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/menu' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+    { label: 'Fidélité', icon: <CreditCard className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/cards' },
+  ],
+  other: [
+    { label: 'Cartes', icon: <CreditCard className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/cards' },
+    { label: 'Commandes', icon: <ShoppingBag className="w-3.5 h-3.5" />, path: '/dashboard/entreprise/orders' },
+  ],
+};
 
   return (
     <div className="w-full max-w-full space-y-8">
