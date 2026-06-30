@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ContactSection from './ContactSection';
 import SocialSection from './SocialSection';
+import PublicEventsSection from './PublicEventsSection';
+
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
   Instagram, Globe, Download, ExternalLink, Crown,
@@ -783,6 +785,8 @@ const showLinksSection =
     localProfile.calendly?.trim() ||
     localProfile.portfolio_url?.trim()
   );
+
+
 
   return (
     <div className="relative min-h-screen dynamic-bg">
@@ -1984,6 +1988,11 @@ END:VCARD`;
       </div>
     </div>
   </motion.div>
+)}
+
+{/* ✅ AJOUTEZ ICI */}
+{isSectionEnabled('event', localCardConfigs) && (
+  <PublicEventsSection profileId={localProfile.id} />
 )}
         <ScanTracker profileId={localProfile.id} />
 

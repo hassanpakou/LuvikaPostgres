@@ -25,21 +25,32 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'unread';
     
-    // 📊 Construire la requête
+    // 📊 Construire la requête avec count exact
     let query = supabase
       .from('contact_requests')
-      .select('id', { count: 'exact' })
+      .select('*', { count: 'exact', head: true }) // ✅ Utiliser head:true pour ne récupérer que le count
       .eq('profile_id', user.id);
     
+    // ✅ Vérifier is_read au lieu de read_at
     if (status === 'unread') {
-      query = query.is('read_at', null);
+      query = query.eq('is_read', false);
     }
     
     const { count, error } = await query;
     
     if (error) throw error;
     
-    return NextResponse.json({ count: count || 0 });
+    // ✅ Ajouter les headers anti-cache
+    return NextResponse.json(
+      { count: count || 0 },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      }
+    );
   } catch (error) {
     console.error('❌ Error fetching messages count:', error);
     return NextResponse.json({ count: 0 }, { status: 200 });

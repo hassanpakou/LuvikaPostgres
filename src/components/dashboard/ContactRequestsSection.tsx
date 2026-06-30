@@ -47,24 +47,23 @@ export default function ContactRequestsModal({
     fetchRequests();
   }, [isOpen]);
 
-// Dans ContactRequestsModal.tsx, remplace la fonction markAsRead par :
 const markAsRead = async (id: string) => {
   try {
     const res = await fetch(`/api/contact-requests/${id}/read`, { method: 'PATCH' });
     if (res.ok) {
       setRequests(prev => {
-        const updated = prev.map(req => req.id === id ? { ...req, is_read: true } : req);
+        const updated = prev.map(req => 
+          req.id === id ? { ...req, is_read: true } : req
+        );
+        
+        // ✅ Calculer et notifier dans requestAnimationFrame
+        requestAnimationFrame(() => {
+          const unreadCount = updated.filter(r => !r.is_read).length;
+          onMarkAsRead?.(unreadCount);
+        });
+        
         return updated;
       });
-      
-      // ✅ Recalcule après mise à jour et appelle hors du rendu
-      setTimeout(() => {
-        setRequests(prev => {
-          const unreadCount = prev.filter(r => !r.is_read).length;
-          onMarkAsRead?.(unreadCount);
-          return prev;
-        });
-      }, 0);
     }
   } catch (err) {
     console.error('Erreur marquage lu:', err);

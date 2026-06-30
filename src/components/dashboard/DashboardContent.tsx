@@ -738,7 +738,10 @@ const handleUpgradePlan = () => {
   setActiveModal(null);
 };
 const updateUnreadCount = (count: number) => {
-  setUnreadMessagesCount(Math.max(0, count));
+  // Utiliser requestAnimationFrame pour être sûr d'être hors du cycle de rendu
+  requestAnimationFrame(() => {
+    setUnreadMessagesCount(Math.max(0, count));
+  });
 };
   // 🔹 Références pour les canaux realtime
   const channelsRef = useRef<any>({});
@@ -994,10 +997,12 @@ const activeCard = cards[0];
       alert('❌ Échec de l’export');
     }
   };
+
   const fetchUnreadMessagesCount = async () => {
   try {
     setLoadingMessagesCount(true);
-    const res = await fetch('/api/contact-requests/count?status=unread');
+    // Ajouter un cache-buster pour éviter le cache
+    const res = await fetch(`/api/contact-requests/count?status=unread&_t=${Date.now()}`);
     if (res.ok) {
       const data = await res.json();
       setUnreadMessagesCount(data.count || 0);
@@ -1008,6 +1013,7 @@ const activeCard = cards[0];
     setLoadingMessagesCount(false);
   }
 };
+
   useEffect(() => {
   const checkUpgradeStatus = async () => {
     if (!profile?.id) return;
@@ -1853,10 +1859,25 @@ return (
               </span>
             )}
           </Button>
-          <Button variant="ghost" size="icon"
-            className="h-10 w-10 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300">
-            <Heart size={18} className={(profile?.likes_count ?? 0) > 0 ? 'fill-red-500 text-red-300' : 'text-gray-400'} />
-          </Button>
+          <div className="relative">
+  <Button 
+    variant="ghost" 
+    size="icon"
+    className="h-10 w-10 rounded-xl bg-white/8 hover:bg-white/15 border border-white/15 transition-all duration-300"
+  >
+    <Heart 
+      size={18} 
+      className={(profile?.likes_count ?? 0) > 0 ? 'fill-red-500 text-red-300' : 'text-gray-400'} 
+    />
+  </Button>
+  
+  {/* Compteur de likes */}
+  {(profile?.likes_count ?? 0) > 0 && (
+    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white text-[10px] font-bold flex items-center justify-center border-[3px] border-[#0a0a0f] px-1 leading-none">
+      {profile.likes_count! > 99 ? '99+' : profile.likes_count}
+    </span>
+  )}
+</div>
         </div>
       </div>
 
@@ -3426,17 +3447,23 @@ return (
       totalFollowers={totalFollowers || 0}
     />
   )}
+
 {isContactModalOpen && (
   <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-gradient-to-br from-gray-900/95 to-black/95 border border-white/10 shadow-2xl">
       <ContactRequestsModal
-  isOpen={true}
-  onClose={() => setIsContactModalOpen(false)}
-  onMarkAsRead={updateUnreadCount}
-/>
+        isOpen={true}
+        onClose={() => {
+          setIsContactModalOpen(false);
+          // ✅ Rafraîchir le compteur à la fermeture du modal
+          fetchUnreadMessagesCount();
+        }}
+        onMarkAsRead={updateUnreadCount}
+      />
     </div>
   </div>
 )}
+
 {/* 🔹 MODAL MESSAGES (avec réponse) */}
 {activeModal === 'message' && (
   <CustomMessageModal
