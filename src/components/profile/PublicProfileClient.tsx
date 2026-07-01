@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import ContactSection from './ContactSection';
 import SocialSection from './SocialSection';
-import PublicEventsSection from './PublicEventsSection';
+import EventsSection from './EventsSection';
 
 import {
   Heart, Phone, Mail, MessageCircle, MapPin,
@@ -1990,9 +1990,9 @@ END:VCARD`;
   </motion.div>
 )}
 
-{/* ✅ AJOUTEZ ICI */}
+{/* ✅ Section Événements */}
 {isSectionEnabled('event', localCardConfigs) && (
-  <PublicEventsSection profileId={localProfile.id} />
+  <EventsSection profileId={localProfile.id} />
 )}
         <ScanTracker profileId={localProfile.id} />
 
