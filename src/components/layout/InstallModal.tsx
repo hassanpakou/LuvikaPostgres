@@ -38,11 +38,24 @@ export default function InstallModal() {
       return () => clearTimeout(timer);
     }
 
+     const isSafariDesktop = /^((?!chrome|android).)*safari/i.test(navigator.userAgent) && 
+                          !('ontouchstart' in window);
+  
+  if (isSafariDesktop) {
+    // Ne pas montrer le modal d'installation sur Safari Desktop
+    // car il ne supporte pas l'installation PWA
+    console.log('Safari Desktop détecté - Installation PWA non supportée');
+    localStorage.setItem('install_modal_shown', 'true');
+    return;
+  }
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
 
+
+  
   const handleInstall = () => {
     if ((window as any).deferredPrompt) {
       (window as any).deferredPrompt.prompt();

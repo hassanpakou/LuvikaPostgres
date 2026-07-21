@@ -13,6 +13,7 @@ import { ReviewPrompt } from '../components/system/ReviewPrompt';
 import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import FluidBackground from '../components/effects/FluidBackground';
+import { SafariDesktopAlert } from '../components/layout/SafariDesktopAlert';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,7 +22,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://luvika.me"),
+  metadataBase: new URL('https://luvika.vercel.app'),
   title: {
     default: 'LUVIKA — Révèle qui tu es',
     template: '%s | LUVIKA',
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.ico', apple: '/apple-touch-icon.png' },
   openGraph: {
     type: 'website',
-    url: 'https://luvika.me',
+    url: 'https://luvika.vercel.app',
     title: 'LUVIKA — Révèle qui tu es',
     description: 'Carte de visite intelligente NFC, QR Code et identité numérique africaine.',
     siteName: 'LUVIKA',
@@ -55,8 +56,8 @@ export const metadata: Metadata = {
   },
   verification: { google: 'StrToXBAcUOqWud04cCkAjsXw8jWQEHe8BluylfOEAU' },
   alternates: {
-    canonical: 'https://luvika.me',
-    languages: { 'fr-FR': 'https://luvika.me/fr', 'en-US': 'https://luvika.me/en' },
+    canonical: 'https://luvika.vercel.app',
+    languages: { 'fr-FR': 'https://luvika.vercel.app/fr', 'en-US': 'https://luvika.vercel.app/en' },
   },
 };
 
@@ -67,6 +68,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale} suppressHydrationWarning className="scroll-smooth">
       <head>
+        {/* PWA Meta Tags */}
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#06b6d4" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="LUVIKA" />
+        <link rel="apple-touch-icon" href="/icons/lo-192.png" />
+        
         {/* ✅ Script anti-flash pour le thème */}
         <script
           dangerouslySetInnerHTML={{
@@ -85,6 +94,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           }}
         />
       </head>
+      
       <body className={`${inter.className} min-h-screen bg-transparent text-white relative overflow-x-hidden antialiased`} suppressHydrationWarning>
         <FluidBackground />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="luvika-theme">
@@ -97,6 +107,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </SessionGuard>
                 <CookieBanner />
                 <InstallModal />
+                <SafariDesktopAlert />
               </SessionTimeoutProvider>
             </ClientProviders>
           </NextIntlClientProvider>
@@ -106,19 +117,68 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Script id="sw-register" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
-              window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                  .then(registration => {
+              fetch('/sw.js')
+                .then(response => {
+                  if (!response.ok) {
+                    console.error('❌ sw.js non trouvé (status:', response.status, ')');
+                    return;
+                  }
+                  console.log('✅ sw.js trouvé, enregistrement...');
+                  
+                  return navigator.serviceWorker.register('/sw.js', {
+                    scope: '/'
+                  });
+                })
+                .then(registration => {
+                  if (registration) {
+                    console.log('✅ Service Worker enregistré:', registration.scope);
+                    
                     registration.addEventListener('updatefound', () => {
                       const newWorker = registration.installing;
-                      newWorker?.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                          if (confirm('Nouvelle version disponible. Recharger ?')) {
-                            window.location.reload();
+                      if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('🔄 Nouvelle version disponible');
+                            if (confirm('Nouvelle version disponible. Mettre à jour ?')) {
+                              newWorker.postMessage({ type: 'SKIP_WAITING' });
+                              window.location.reload();
+                            }
                           }
-                        }
-                      });
+                        });
+                      }
                     });
+                    
+                    if (registration.waiting) {
+                      console.log('⏳ Nouvelle version en attente');
+                    }
+                  }
+                })
+                .catch(error => {
+                  console.error('❌ Erreur enregistrement SW:', error);
+                  
+                  fetch('/sw.js')
+                    .then(res => res.text())
+                    .then(scriptContent => {
+                      const blob = new Blob([scriptContent], { type: 'application/javascript' });
+                      const blobUrl = URL.createObjectURL(blob);
+                      
+                      return navigator.serviceWorker.register(blobUrl, { scope: '/' });
+                    })
+                    .then(reg => console.log('✅ SW enregistré via blob:', reg?.scope))
+                    .catch(err => console.error('❌ Échec blob aussi:', err));
+                });
+                
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.getRegistration()
+                  .then(reg => {
+                    if (reg) {
+                      console.log('📊 SW Status:', {
+                        scope: reg.scope,
+                        active: reg.active?.state,
+                        waiting: reg.waiting?.state,
+                        installing: reg.installing?.state
+                      });
+                    }
                   });
               });
             }
