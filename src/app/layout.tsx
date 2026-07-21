@@ -21,7 +21,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://luvika.vercel.app'),
+  metadataBase: new URL("https://luvika.me"),
   title: {
     default: 'LUVIKA — Révèle qui tu es',
     template: '%s | LUVIKA',
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   icons: { icon: '/favicon.ico', apple: '/apple-touch-icon.png' },
   openGraph: {
     type: 'website',
-    url: 'https://luvika.vercel.app',
+    url: 'https://luvika.me',
     title: 'LUVIKA — Révèle qui tu es',
     description: 'Carte de visite intelligente NFC, QR Code et identité numérique africaine.',
     siteName: 'LUVIKA',
@@ -55,8 +55,8 @@ export const metadata: Metadata = {
   },
   verification: { google: 'StrToXBAcUOqWud04cCkAjsXw8jWQEHe8BluylfOEAU' },
   alternates: {
-    canonical: 'https://luvika.vercel.app',
-    languages: { 'fr-FR': 'https://luvika.vercel.app/fr', 'en-US': 'https://luvika.vercel.app/en' },
+    canonical: 'https://luvika.me',
+    languages: { 'fr-FR': 'https://luvika.me/fr', 'en-US': 'https://luvika.me/en' },
   },
 };
 

@@ -458,7 +458,7 @@ const profileWithVisibility: PublicProfile = {
     }).catch(console.warn);
   }, [localProfile.id]);
 
-  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app')
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.me')
     .replace(/\s+$/, '')
     .replace(/\/+$/, '');
   const profileUrl = `${baseUrl}/${profile.username}`;
