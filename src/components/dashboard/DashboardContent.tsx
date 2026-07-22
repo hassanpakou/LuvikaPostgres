@@ -8,7 +8,8 @@ import {
   Heart, Download, X, Mail, Check, Settings, AlertTriangle, MessageSquare, Send, Eye, Award, Folder, Building, Plus, Calendar, 
   QrCode, Package, ArrowUp, Search, Users, ChevronRight, ShoppingBag, UserPlus, UserMinus,Layers,AlertCircle, CreditCard, XCircle,
   User, Globe, Calendar as Briefcase, MapPin, Cake, Link as EyeOff, LogOut, ShieldAlert, Star, Crown, BellRing, Infinity as InfinityIcon, Circle,
-  Info, Lock, Zap, Unlock, MessageCircle, Search as SearchIcon, CheckCircle, BarChart3, Leaf, RefreshCw, Clock, Trophy
+  Info, Lock, Zap, Unlock, MessageCircle, Search as SearchIcon, CheckCircle, BarChart3, Leaf, RefreshCw, Clock, Trophy,
+  MoreHorizontal
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -653,6 +654,8 @@ export default function DashboardContent({
   const [isNFCModalOpen, setIsNFCModalOpen] = useState(false);
   const [isManagementModalOpen, setIsManagementModalOpen] = useState(false);
   const [selectedCardForManagement, setSelectedCardForManagement] = useState<NFCCard | null>(null);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const [nfcCards, setNfcCards] = useState<NFCCard[]>([]);
   const [isTransparent, setIsTransparent] = useState(false);
   const [showCompanyTypeModal, setShowCompanyTypeModal] = useState(false);
@@ -664,6 +667,29 @@ export default function DashboardContent({
   const [sendingReply, setSendingReply] = useState(false);
   const [hasScanReward, setHasScanReward] = useState(false);
   const [showRewardModal, setShowRewardModal] = useState(false);
+
+
+// states (si non déjà présents)
+const [actionsOpen, setActionsOpen] = useState(false);
+const actionsRef = useRef<HTMLDivElement | null>(null);
+
+// close dropdown on outside click / Escape
+useEffect(() => {
+  function onClick(e: MouseEvent) {
+    if (!actionsRef.current) return;
+    if (!(e.target instanceof Node)) return;
+    if (!actionsRef.current.contains(e.target)) setActionsOpen(false);
+  }
+  function onKey(e: KeyboardEvent) {
+    if (e.key === 'Escape') setActionsOpen(false);
+  }
+  document.addEventListener('mousedown', onClick);
+  document.addEventListener('keydown', onKey);
+  return () => {
+    document.removeEventListener('mousedown', onClick);
+    document.removeEventListener('keydown', onKey);
+  };
+}, []);
 
   const [sectionsVisibility, setSectionsVisibility] = useState<Record<string, boolean>>(
     profile.sections_visibility || {
@@ -695,6 +721,55 @@ export default function DashboardContent({
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [leaderboardData, setLeaderboardData] = useState<any[]>([]);
   const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+
+
+ // Archiver / Désarchiver
+async function toggleArchive(eventId: string, archive: boolean) {
+  setIsActionLoading(true);
+  try {
+    const res = await fetch(`/api/events/${eventId}/archive`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: archive ? 'archive' : 'unarchive' }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || 'Échec opération');
+
+    toast.success(archive ? 'Événement archivé' : 'Événement restauré');
+    router.refresh();
+  } catch (err: any) {
+    console.error('Archive error', err);
+    toast.error(err?.message || 'Erreur lors de l’opération');
+  } finally {
+    setIsActionLoading(false);
+  }
+}
+
+// Supprimer
+async function handleDeleteEvent(eventId: string) {
+  if (!confirm('Voulez-vous vraiment supprimer cet événement ? Cette action est irréversible.')) return;
+  setIsActionLoading(true);
+  try {
+    const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data?.error || 'Erreur suppression');
+
+    toast.success('Événement supprimé');
+    setIsEventModalOpen(false); // fermer la modal si nécessaire
+    setSelectedEventId(null);
+    router.refresh();
+  } catch (err: any) {
+    console.error('Delete error', err);
+    toast.error(err?.message || 'Impossible de supprimer');
+  } finally {
+    setIsActionLoading(false);
+  }
+}
+
+// Nettoyer la sélection quand modal ferme
+useEffect(() => {
+  if (!isEventModalOpen) setSelectedEventId(null);
+}, [isEventModalOpen]);
 
   // Fonction pour charger le top 5
   const fetchLeaderboard = async () => {
@@ -3232,7 +3307,7 @@ return (
     </motion.div>
   )}
 </AnimatePresence>
-        {/* 🔹 MODAL ÉVÉNEMENTS - Scroll fluide et sans débordement */}
+
 <AnimatePresence>
   {/* 🔹 MODAL ÉVÉNEMENTS */}
   {isEventModalOpen && (
@@ -3283,28 +3358,117 @@ return (
                 <div className="flex-1 min-h-0 overflow-y-auto ">
 
                   {/* 🔹 HEADER FIXE (ne scroll pas) */}
-                  <div className="sticky top-0 z-40 bg-gradient-to-b from-gray-900/95 to-transparent backdrop-blur-sm border-b border-white/10 py-4 px-6">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-cyan-500/10 rounded-xl">
-                        <Calendar className="w-6 h-6 text-cyan-400" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
-                          Gestion des événements
-                        </h2>
-                        <p className="mt-1.5 text-sm text-gray-400 max-w-2xl">
-                          Visualisez les participants, scannez des QR codes et gérez vos événements en temps réel
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+<div className="sticky top-0 z-40 bg-gradient-to-b from-gray-900/95 to-transparent backdrop-blur-sm border-b border-white/10 py-4 px-6">
+  <div className="flex items-center gap-3">
+    <div className="p-2 bg-cyan-500/10 rounded-xl">
+      <Calendar className="w-6 h-6 text-cyan-400" />
+    </div>
+
+    <div className="flex-1">
+      <h2 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-400">
+        Gestion des événements
+      </h2>
+      <p className="mt-1.5 text-sm text-gray-400 max-w-2xl">
+        Visualisez les participants, scannez des QR codes et gérez vos événements en temps réel
+      </p>
+    </div>
+
+    {/* Responsive actions: desktop (md+) inline, mobile (<md) dropdown */}
+
+<div className="ml-4">
+  {/* Desktop buttons */}
+  <div className="hidden md:flex items-center gap-2">
+    <button
+      onClick={() => toggleArchive(selectedEventId!, true)}
+      disabled={isActionLoading || !selectedEventId}
+      className="px-3 py-1 rounded-md bg-amber-600 text-white text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Archiver l'événement"
+    >
+      Archiver
+    </button>
+
+    <button
+      onClick={() => toggleArchive(selectedEventId!, false)}
+      disabled={isActionLoading || !selectedEventId}
+      className="px-3 py-1 rounded-md bg-emerald-600 text-white text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Désarchiver l'événement"
+    >
+      Désarchiver
+    </button>
+
+    <button
+      onClick={() => handleDeleteEvent(selectedEventId!)}
+      disabled={isActionLoading || !selectedEventId}
+      className="px-3 py-1 rounded-md bg-red-600 text-white text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+      title="Supprimer l'événement"
+    >
+      Supprimer
+    </button>
+  </div>
+
+  {/* Mobile: compact menu */}
+  <div className="relative md:hidden" ref={actionsRef}>
+    <button
+      onClick={() => setActionsOpen((s) => !s)}
+      aria-expanded={actionsOpen}
+      aria-haspopup="menu"
+      className="p-2 rounded-md bg-white/5 hover:bg-white/10 text-gray-200"
+      title="Actions"
+      type="button"
+    >
+      <MoreHorizontal className="w-5 h-5" />
+    </button>
+
+    {/* Dropdown panel */}
+    <div
+      role="menu"
+      aria-label="Actions événement"
+      className={`absolute right-0 mt-2 w-44 origin-top-right rounded-md ring-1 ring-black/30 bg-gray-800 shadow-lg z-50 ${
+        actionsOpen ? 'block' : 'hidden'
+      }`}
+    >
+      <div className="py-1">
+        <button
+          role="menuitem"
+          onClick={() => { setActionsOpen(false); toggleArchive(selectedEventId!, true); }}
+          disabled={isActionLoading || !selectedEventId}
+          className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Archiver
+        </button>
+
+        <button
+          role="menuitem"
+          onClick={() => { setActionsOpen(false); toggleArchive(selectedEventId!, false); }}
+          disabled={isActionLoading || !selectedEventId}
+          className="w-full text-left px-4 py-2 text-sm text-white hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Désarchiver
+        </button>
+
+        <button
+          role="menuitem"
+          onClick={() => { setActionsOpen(false); handleDeleteEvent(selectedEventId!); }}
+          disabled={isActionLoading || !selectedEventId}
+          className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
 
                   {/* 🔹 CONTENU SCROLLABLE (zone principale) */}
                   <div className="flex-grow overflow-y-auto overscroll-contain py-4 px-4 sm:px-6 md:px-8">
                     {/* ✅ Contenu principal avec gestion de scroll */}
                     <div className="space-y-6">
-                      <EventAttendeesSection plan={profile.plan ?? null} />
-                      
+<EventAttendeesSection
+  plan={profile.plan ?? null}
+  onSelectEvent={(id) => setSelectedEventId(id)}
+/>                     
                       {/* 🔹 Espacement en bas pour le footer */}
                       <div className="h-6" />
                     </div>

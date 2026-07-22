@@ -1,15 +1,13 @@
-// src/app/api/events/[eventId]/archive/route.ts
+// src/app/api/events/[eventId]/route.ts
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export async function PATCH(
+export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   const { eventId } = await params;
-  const body = await request.json().catch(() => ({}));
-  const action = (body.action || 'archive').toString(); // 'archive' ou 'unarchive'
 
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -30,7 +28,7 @@ export async function PATCH(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
 
-  // Vérifier que l’événement appartient à l’utilisateur
+  // Vérifier propriétaire
   const { data: event, error: evError } = await supabase
     .from('events')
     .select('profile_id')
@@ -38,7 +36,7 @@ export async function PATCH(
     .single();
 
   if (evError) {
-    console.error('Erreur récupération event (PATCH archive):', evError);
+    console.error('Erreur récupération event (DELETE):', evError);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 
@@ -46,17 +44,16 @@ export async function PATCH(
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
-  const newStatus = action === 'unarchive' ? 'active' : 'archived';
-
+  // Supprimer l'événement (les FK ON DELETE CASCADE devraient nettoyer les participants/attendees)
   const { error } = await supabase
     .from('events')
-    .update({ status: newStatus })
+    .delete()
     .eq('id', eventId);
 
   if (error) {
-    console.error('Erreur mise à jour event status:', error);
-    return NextResponse.json({ error: 'Échec mise à jour' }, { status: 500 });
+    console.error('Erreur suppression event:', error);
+    return NextResponse.json({ error: 'Erreur suppression' }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true, status: newStatus });
+  return NextResponse.json({ success: true });
 }

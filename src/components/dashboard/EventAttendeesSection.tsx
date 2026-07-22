@@ -33,7 +33,14 @@ type Participant = {
   created_at: string;
 };
 
-export default function EventAttendeesSection({ plan }: { plan: string | null }) {
+// ajouter le type prop
+export default function EventAttendeesSection({
+  plan,
+  onSelectEvent,
+}: {
+  plan: string | null;
+  onSelectEvent?: (eventId: string | null) => void;
+}) {
   const isFreePlan = !plan || plan === 'freemium' || plan === 'basic';
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -49,27 +56,31 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
   const locale = useLocale();
 
   const fetchEvents = async () => {
-    try {
-      const res = await fetch('/api/events', {
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
-        throw new Error(errorData.error || `HTTP error ${res.status}`);
+  try {
+    const res = await fetch('/api/events', { credentials: 'include' });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+      if (res.status === 401) {
+        toast.error('Vous devez vous connecter pour gérer vos événements.');
+        // Optionnel : rediriger automatiquement
+        // window.location.href = '/login';
+        return;
       }
-      const { events } = await res.json();
-      const eventsWithLocalisedUrl = events.map((e: Event) => ({
-        ...e,
-        qr_code_url: `/${locale}/events/${e.id}/check-in`
-      }));
-      setEvents(eventsWithLocalisedUrl);
-    } catch (err) {
-      console.error('❌ Failed to load events', err);
-      toast.error(err instanceof Error ? err.message : 'Erreur de chargement des événements');
-    } finally {
-      setLoading(false);
+      if (res.status === 403) {
+        toast.error('Accès refusé : vous n’êtes pas l’organisateur de ces événements.');
+        return;
+      }
+      throw new Error(body.error || `HTTP ${res.status}`);
     }
-  };
+    const { events } = await res.json();
+    setEvents(events.map((e: Event) => ({ ...e, qr_code_url: `/${locale}/events/${e.id}/check-in` })));
+  } catch (err) {
+    console.error('❌ Failed to load events', err);
+    toast.error(err instanceof Error ? err.message : 'Erreur de chargement des événements');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
@@ -88,61 +99,93 @@ export default function EventAttendeesSection({ plan }: { plan: string | null })
   }, [isFreePlan, locale]);
 
   const loadParticipants = async (event: Event) => {
-    setSelectedEvent(event);
-    setLoadingParticipants(true);
-    setParticipants([]);
-    setNewParticipant({ name: '', email: '' });
-    setEditingParticipant(null);
+setSelectedEvent(event);
+onSelectEvent?.(event.id);
+  setParticipants([]);
+  setNewParticipant({ name: '', email: '' });
+  setEditingParticipant(null);
 
-    try {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-        cleanupRef.current = null;
-      }
-
-      const participantsRes = await fetch(`/api/events/${event.id}/participants`, {
-        credentials: 'include',
-      });
-      if (!participantsRes.ok) {
-        throw new Error('Erreur chargement participants');
-      }
-      const loadedParticipants: Participant[] = await participantsRes.json();
-      setParticipants(loadedParticipants);
-
-      const supabase = createClient();
-      const channel = supabase
-        .channel(`event-${event.id}-participants`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'event_participants',
-            filter: `event_id=eq.${event.id},is_checked_in=eq.true`,
-          },
-          (payload) => {
-            const updated = payload.new as Participant;
-            setParticipants((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-            setEvents((prev) =>
-              prev.map((e) =>
-                e.id === event.id ? { ...e, attendee_count: (e.attendee_count || 0) + 1 } : e
-              )
-            );
-          }
-        )
-        .subscribe();
-
-      const cleanup = () => {
-        if (channel) supabase.removeChannel(channel);
-      };
-      cleanupRef.current = cleanup;
-    } catch (err) {
-      console.error('❌ Failed to load participants', err);
-      setParticipants([]);
-    } finally {
-      setLoadingParticipants(false);
+  try {
+    // cleanup previous realtime if any
+    if (cleanupRef.current) {
+      cleanupRef.current();
+      cleanupRef.current = null;
     }
-  };
+
+    const participantsRes = await fetch(`/api/events/${event.id}/participants`, {
+      credentials: 'include',
+    });
+
+    // If not OK, parse body (json or text) for a better message
+    if (!participantsRes.ok) {
+      const ct = participantsRes.headers.get('content-type') || '';
+      let body: any;
+      try {
+        body = ct.includes('application/json') ? await participantsRes.json() : await participantsRes.text();
+      } catch (parseErr) {
+        body = `Unable to parse error body (${parseErr})`;
+      }
+
+      // Handle common statuses with user-friendly message
+      if (participantsRes.status === 401) {
+        toast.error('Non authentifié — reconnectez-vous pour voir les participants.');
+        console.error('Participants fetch 401:', body);
+        return;
+      }
+      if (participantsRes.status === 403) {
+        toast.error("Accès refusé — vous devez être l'organisateur de cet événement pour voir les participants.");
+        console.error('Participants fetch 403:', body);
+        return;
+      }
+
+      // Generic handling for other errors
+      console.error('Participants fetch failed', participantsRes.status, body);
+      toast.error('Erreur lors du chargement des participants.');
+      return;
+    }
+
+    // OK response
+    const loadedParticipants: Participant[] = await participantsRes.json();
+    setParticipants(loadedParticipants);
+
+    // Realtime subscription: update participants/attendee_count on updates
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`event-${event.id}-participants`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'event_participants',
+          filter: `event_id=eq.${event.id},is_checked_in=eq.true`,
+        },
+        (payload) => {
+          const updated = payload.new as Participant;
+          setParticipants((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+          setEvents((prev) =>
+            prev.map((e) => (e.id === event.id ? { ...e, attendee_count: (e.attendee_count || 0) + 1 } : e))
+          );
+        }
+      )
+      .subscribe();
+
+    const cleanup = () => {
+      try {
+        if (channel) supabase.removeChannel(channel);
+      } catch (err) {
+        console.warn('Error cleanup supabase channel', err);
+      }
+    };
+    cleanupRef.current = cleanup;
+  } catch (err) {
+    console.error('❌ Failed to load participants (unexpected):', err);
+    toast.error('Erreur lors du chargement des participants (réseau ou serveur).');
+    setParticipants([]);
+  } finally {
+    setLoadingParticipants(false);
+  }
+};
 
   const handleExportCSV = () => {
     if (!selectedEvent) return;
