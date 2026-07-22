@@ -184,7 +184,7 @@ export default function CheckInClient({
   }
 
   // 2. Événement À VENIR
-  if (eventStatus === 'upcoming' && timeRemaining) {
+if (eventStatus === 'upcoming' && timeRemaining) {
   const startDate = new Date(startsAt);
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
@@ -196,8 +196,17 @@ export default function CheckInClient({
         </p>
         <p className="text-gray-400 text-sm mt-1">
           Prévu le{' '}
-          {startDate.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' })} à{' '}
-          {startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })}
+          {startDate.toLocaleDateString('fr-FR', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric',
+            timeZone: 'Africa/Kinshasa'  // ✅ Spécifier le fuseau
+          })} à{' '}
+          {startDate.toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            timeZone: 'Africa/Kinshasa'  // ✅ Spécifier le fuseau
+          })}
         </p>
         <div className="mt-4 text-4xl font-mono font-bold text-cyan-300">
           {timeRemaining.minutes.toString().padStart(2, '0')}:
@@ -208,7 +217,6 @@ export default function CheckInClient({
     </div>
   );
 }
-
   // 3. Événement TERMINÉ → affiche le message + compteur final
   if (eventStatus === 'ended') {
     return (

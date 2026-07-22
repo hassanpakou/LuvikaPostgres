@@ -16,10 +16,10 @@ import { Switch } from '../../../components/ui/switch';
 
 const formatDateForInput = (dateStr: string): string => {
   const date = new Date(dateStr);
-  // Soustrait le décalage UTC pour que l'input affiche l'heure locale
-  const offset = date.getTimezoneOffset();
-  const localDate = new Date(date.getTime() - offset * 60000);
-  return localDate.toISOString().slice(0, 16);
+  // Convertit en représentation locale pour datetime-local
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  const local = new Date(date.getTime() - tzOffset);
+  return local.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:mm"
 };
 type EventData = {
   title: string;
@@ -47,8 +47,12 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
-  const [startsAt, setStartsAt] = useState(formatDateForInput(new Date(now.getTime() + 15 * 60000).toISOString()));
-  const [endsAt, setEndsAt] = useState(formatDateForInput(new Date(now.getTime() + 2 * 3600000).toISOString()));
+const [startsAt, setStartsAt] = useState(
+  formatDateForInput(new Date(now.getTime() + 15 * 60000).toISOString())
+);
+const [endsAt, setEndsAt] = useState(
+  formatDateForInput(new Date(now.getTime() + 2 * 3600000).toISOString())
+);
   const [maxParticipants, setMaxParticipants] = useState<number | ''>('');
   const [isPublic, setIsPublic] = useState(true);
   
@@ -165,23 +169,23 @@ export default function CreateEventForm({ onSubmit, onCancel, onClose, isLoading
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
- const handleSubmit = async (ev: React.FormEvent) => {
+
+const handleSubmit = async (ev: React.FormEvent) => {
   ev.preventDefault();
   if (!validateStep1() || !validateStep2()) return;
-  
-  // ✅ Convertit explicitement l'heure locale en UTC
-  const localStart = new Date(startsAt);
-  const utcStart = new Date(localStart.getTime() - localStart.getTimezoneOffset() * 60000);
-  
-  const localEnd = endsAt ? new Date(endsAt) : null;
-  const utcEnd = localEnd ? new Date(localEnd.getTime() - localEnd.getTimezoneOffset() * 60000) : undefined;
-  
+
+  // L'input datetime-local (startsAt) est déjà local; new Date(startsAt) l'interprète en local.
+  const utcStart = new Date(startsAt).toISOString();
+  const utcEnd = endsAt ? new Date(endsAt).toISOString() : undefined;
+
+  console.log('Input:', startsAt, ' -> UTC:', utcStart);
+
   await onSubmit({
     title,
     description: description.trim() || undefined,
     location: location.trim() || undefined,
-    starts_at: utcStart.toISOString(),
-    ends_at: utcEnd?.toISOString(),
+    starts_at: utcStart,
+    ends_at: utcEnd,
     is_public: isPublic,
     max_participants: maxParticipants ? Number(maxParticipants) : undefined,
   });
