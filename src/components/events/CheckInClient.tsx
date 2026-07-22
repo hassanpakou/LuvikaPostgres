@@ -337,13 +337,13 @@ export default function CheckInClient({
                 onClick={handleCheckIn}
                 disabled={status === 'checking' || !token}
                 className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
-              >
-                {status === 'checking' ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('checking_button')}</>
-                ) : (
-                  <><CheckCircle className="mr-2 h-4 w-4" />{t('checkin_button')}<ArrowRight className="ml-2 h-4 w-4" /></>
-                )}f
-              </Button>
+               >
+  {status === 'checking' ? (
+    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('checking_button')}</>
+  ) : (
+    <><CheckCircle className="mr-2 h-4 w-4" />{t('checkin_button')}<ArrowRight className="ml-2 h-4 w-4" /></>
+  )}
+</Button>
               {!token && (
                 <p className="text-xs text-gray-400 mt-4 text-center">{t('invalid_qr_hint')}</p>
               )}

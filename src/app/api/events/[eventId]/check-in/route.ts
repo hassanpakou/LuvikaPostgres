@@ -27,35 +27,31 @@ export async function POST(request: Request, { params }: { params: Promise<{ eve
     }
   );
 
-  // 🔐 TRANSACTION SUPABASE pour garantir l'atomicité
-  const { data, error } = await supabase.rpc('check_in_participant', { // Appel d'une fonction RPC ou d'une procédure stockée
-    p_event_id: eventId,
-    p_token: token,
-    p_name: name // Le nom est passé ici
-  });
+const { data, error } = await supabase.rpc('check_in_participant', {
+  p_event_id: eventId,
+  p_token: token,
+  p_name: name
+});
 
-  if (error) {
-    console.error("Erreur de check-in:", error);
-    // Gérer les différents codes d'erreur de la fonction RPC
-    if (error.code === 'EVENT_NOT_FOUND') {
-      return NextResponse.json({ error: 'Événement introuvable ou privé' }, { status: 404 });
-    } else if (error.code === 'TOKEN_NOT_FOUND') {
-      return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
-    } else if (error.code === 'ALREADY_CHECKED_IN') {
-      return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
-    } else if (error.code === 'NAME_MISMATCH') { // Nouveau cas d'erreur
-      return NextResponse.json({ error: 'Nom incorrect pour ce QR' }, { status: 403 });
-    } else if (error.code === 'EVENT_FULL') {
-      return NextResponse.json({ error: 'Événement complet' }, { status: 409 });
-    } else if (error.code === 'EVENT_NOT_ACTIVE_YET') {
-      return NextResponse.json({ error: 'Événement pas encore actif' }, { status: 400 });
-    } else if (error.code === 'EVENT_ENDED') {
-      return NextResponse.json({ error: 'Événement terminé' }, { status: 400 });
-    }
-    // Erreur générique
-    return NextResponse.json({ error: 'Erreur interne du serveur' }, { status: 500 });
+// si erreur fournie par supabase.rpc
+if (error) {
+  console.error('RPC check_in_participant error:', error);
+
+  const msg = (error.message || '').toUpperCase();
+
+  if (msg.includes('TOKEN_NOT_FOUND')) {
+    return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
   }
+  if (msg.includes('ALREADY_CHECKED_IN')) {
+    return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
+  }
+  if (msg.includes('EVENT_NOT_FOUND') || msg.includes('EVENT_NOT_ACTIVE')) {
+    return NextResponse.json({ error: 'Événement non valide ou pas actif' }, { status: 400 });
+  }
+  // autres erreurs connues/attendues
+  return NextResponse.json({ error: error.message || 'Erreur interne' }, { status: 500 });
+}
 
-  // Si succès, renvoyer les infos du participant
-  return NextResponse.json({ success: true, name: data.name, checked_in_at: data.checked_in_at });
+// RPC renvoie normalement une ligne/objet avec name, checked_in_at
+return NextResponse.json({ success: true, name: data?.[0]?.name ?? name, checked_in_at: data?.[0]?.checked_in_at ?? new Date().toISOString() });
 }
