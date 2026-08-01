@@ -1,7 +1,7 @@
 // src/components/layout/Navbar.tsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
@@ -55,6 +55,40 @@ export default function Navbar() {
   const locale = safeLocale(useLocale() as string);
   const t = useTranslations();
   const router = useRouter();
+  const cleanupExtensions = useCallback(() => {
+    if (typeof document === 'undefined') return;
+
+    // Nettoie les attributs existants
+    document.querySelectorAll('[bis_skin_checked]').forEach((el) => {
+      el.removeAttribute('bis_skin_checked');
+    });
+
+    // Observe et empêche les futurs ajouts
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'bis_skin_checked') {
+          const target = mutation.target as Element;
+          if (target.hasAttribute('bis_skin_checked')) {
+            target.removeAttribute('bis_skin_checked');
+          }
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ['bis_skin_checked'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    // Exécute le nettoyage immédiatement et retourne la fonction de nettoyage
+    const cleanup = cleanupExtensions();
+    return cleanup;
+  }, [cleanupExtensions]);
 
   // Récupération utilisateur et profil
   useEffect(() => {

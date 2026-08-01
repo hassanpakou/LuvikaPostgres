@@ -14,6 +14,7 @@ import Script from 'next/script';
 import { ThemeProvider } from 'next-themes';
 import FluidBackground from '../components/effects/FluidBackground';
 import { SafariDesktopAlert } from '../components/layout/SafariDesktopAlert';
+import ExtensionCleaner from '../components/layout/ExtensionCleaner';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -99,17 +100,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <FluidBackground />
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="luvika-theme">
           <NextIntlClientProvider locale={locale} messages={messages}>
-            <ClientProviders>
-              <SessionTimeoutProvider>
-                <SessionGuard>
-                  {children}
-                  <ReviewPrompt />
-                </SessionGuard>
-                <CookieBanner />
-                <InstallModal />
-                <SafariDesktopAlert />
-              </SessionTimeoutProvider>
-            </ClientProviders>
+            <ExtensionCleaner />
+              <ClientProviders>
+                <SessionTimeoutProvider>
+                  <SessionGuard>
+                    {children}
+                    <ReviewPrompt />
+                  </SessionGuard>
+                  <CookieBanner />
+                  <InstallModal />
+                  <SafariDesktopAlert />
+                </SessionTimeoutProvider>
+              </ClientProviders>
           </NextIntlClientProvider>
         </ThemeProvider>
 
