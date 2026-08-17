@@ -1,20 +1,9 @@
-// src/app/api/admin/rewards/route.ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // Utilise le client Supabase standard avec la service role key
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const supabaseAdmin = createClient();
 
     const { data, error } = await supabaseAdmin
       .from('profiles')

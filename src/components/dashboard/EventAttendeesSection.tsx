@@ -1,6 +1,7 @@
+// src/components/dashboard/EventAttendeesSection.tsx
 'use client';
 
-import { useState, useEffect, useRef, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Calendar, User, Clock, MapPin, QrCode, Download, Plus, Edit3, Trash2 } from 'lucide-react';
@@ -8,7 +9,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { createClient } from '@/src/lib/supabase/client';
 import QRModal from '@/src/components/profile/QRModal';
 import { toast } from 'sonner';
 
@@ -33,7 +33,6 @@ type Participant = {
   created_at: string;
 };
 
-// ajouter le type prop
 export default function EventAttendeesSection({
   plan,
   onSelectEvent,
@@ -50,37 +49,34 @@ export default function EventAttendeesSection({
   const [loadingParticipants, setLoadingParticipants] = useState(false);
   const [newParticipant, setNewParticipant] = useState({ name: '', email: '' });
   const [editingParticipant, setEditingParticipant] = useState<Participant | null>(null);
-  const cleanupRef = useRef<(() => void) | null>(null);
   const [selectedParticipantQr, setSelectedParticipantQr] = useState<{ url: string; name: string } | null>(null);
 
   const locale = useLocale();
 
   const fetchEvents = async () => {
-  try {
-    const res = await fetch('/api/events', { credentials: 'include' });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({ error: 'Unknown error' }));
-      if (res.status === 401) {
-        toast.error('Vous devez vous connecter pour gérer vos événements.');
-        // Optionnel : rediriger automatiquement
-        // window.location.href = '/login';
-        return;
+    try {
+      const res = await fetch('/api/events', { credentials: 'include' });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({ error: 'Unknown error' }));
+        if (res.status === 401) {
+          toast.error('Vous devez vous connecter pour gérer vos événements.');
+          return;
+        }
+        if (res.status === 403) {
+          toast.error('Accès refusé : vous n’êtes pas l’organisateur de ces événements.');
+          return;
+        }
+        throw new Error(body.error || `HTTP ${res.status}`);
       }
-      if (res.status === 403) {
-        toast.error('Accès refusé : vous n’êtes pas l’organisateur de ces événements.');
-        return;
-      }
-      throw new Error(body.error || `HTTP ${res.status}`);
+      const { events } = await res.json();
+      setEvents(events.map((e: Event) => ({ ...e, qr_code_url: `/${locale}/events/${e.id}/check-in` })));
+    } catch (err) {
+      console.error('❌ Failed to load events', err);
+      toast.error(err instanceof Error ? err.message : 'Erreur de chargement des événements');
+    } finally {
+      setLoading(false);
     }
-    const { events } = await res.json();
-    setEvents(events.map((e: Event) => ({ ...e, qr_code_url: `/${locale}/events/${e.id}/check-in` })));
-  } catch (err) {
-    console.error('❌ Failed to load events', err);
-    toast.error(err instanceof Error ? err.message : 'Erreur de chargement des événements');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && (window as any)._luvika_disable_analytics) {
@@ -92,100 +88,55 @@ export default function EventAttendeesSection({
     if (!isFreePlan) {
       fetchEvents();
     }
-
-    return () => {
-      if (cleanupRef.current) cleanupRef.current();
-    };
   }, [isFreePlan, locale]);
 
   const loadParticipants = async (event: Event) => {
-setSelectedEvent(event);
-onSelectEvent?.(event.id);
-  setParticipants([]);
-  setNewParticipant({ name: '', email: '' });
-  setEditingParticipant(null);
-
-  try {
-    // cleanup previous realtime if any
-    if (cleanupRef.current) {
-      cleanupRef.current();
-      cleanupRef.current = null;
-    }
-
-    const participantsRes = await fetch(`/api/events/${event.id}/participants`, {
-      credentials: 'include',
-    });
-
-    // If not OK, parse body (json or text) for a better message
-    if (!participantsRes.ok) {
-      const ct = participantsRes.headers.get('content-type') || '';
-      let body: any;
-      try {
-        body = ct.includes('application/json') ? await participantsRes.json() : await participantsRes.text();
-      } catch (parseErr) {
-        body = `Unable to parse error body (${parseErr})`;
-      }
-
-      // Handle common statuses with user-friendly message
-      if (participantsRes.status === 401) {
-        toast.error('Non authentifié — reconnectez-vous pour voir les participants.');
-        console.error('Participants fetch 401:', body);
-        return;
-      }
-      if (participantsRes.status === 403) {
-        toast.error("Accès refusé — vous devez être l'organisateur de cet événement pour voir les participants.");
-        console.error('Participants fetch 403:', body);
-        return;
-      }
-
-      // Generic handling for other errors
-      console.error('Participants fetch failed', participantsRes.status, body);
-      toast.error('Erreur lors du chargement des participants.');
-      return;
-    }
-
-    // OK response
-    const loadedParticipants: Participant[] = await participantsRes.json();
-    setParticipants(loadedParticipants);
-
-    // Realtime subscription: update participants/attendee_count on updates
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`event-${event.id}-participants`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'event_participants',
-          filter: `event_id=eq.${event.id},is_checked_in=eq.true`,
-        },
-        (payload) => {
-          const updated = payload.new as Participant;
-          setParticipants((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
-          setEvents((prev) =>
-            prev.map((e) => (e.id === event.id ? { ...e, attendee_count: (e.attendee_count || 0) + 1 } : e))
-          );
-        }
-      )
-      .subscribe();
-
-    const cleanup = () => {
-      try {
-        if (channel) supabase.removeChannel(channel);
-      } catch (err) {
-        console.warn('Error cleanup supabase channel', err);
-      }
-    };
-    cleanupRef.current = cleanup;
-  } catch (err) {
-    console.error('❌ Failed to load participants (unexpected):', err);
-    toast.error('Erreur lors du chargement des participants (réseau ou serveur).');
+    setSelectedEvent(event);
+    onSelectEvent?.(event.id);
     setParticipants([]);
-  } finally {
-    setLoadingParticipants(false);
-  }
-};
+    setNewParticipant({ name: '', email: '' });
+    setEditingParticipant(null);
+
+    try {
+      const participantsRes = await fetch(`/api/events/${event.id}/participants`, {
+        credentials: 'include',
+      });
+
+      if (!participantsRes.ok) {
+        const ct = participantsRes.headers.get('content-type') || '';
+        let body: any;
+        try {
+          body = ct.includes('application/json') ? await participantsRes.json() : await participantsRes.text();
+        } catch (parseErr) {
+          body = `Unable to parse error body (${parseErr})`;
+        }
+
+        if (participantsRes.status === 401) {
+          toast.error('Non authentifié — reconnectez-vous pour voir les participants.');
+          console.error('Participants fetch 401:', body);
+          return;
+        }
+        if (participantsRes.status === 403) {
+          toast.error("Accès refusé — vous devez être l'organisateur de cet événement pour voir les participants.");
+          console.error('Participants fetch 403:', body);
+          return;
+        }
+
+        console.error('Participants fetch failed', participantsRes.status, body);
+        toast.error('Erreur lors du chargement des participants.');
+        return;
+      }
+
+      const loadedParticipants: Participant[] = await participantsRes.json();
+      setParticipants(loadedParticipants);
+    } catch (err) {
+      console.error('❌ Failed to load participants (unexpected):', err);
+      toast.error('Erreur lors du chargement des participants (réseau ou serveur).');
+      setParticipants([]);
+    } finally {
+      setLoadingParticipants(false);
+    }
+  };
 
   const handleExportCSV = () => {
     if (!selectedEvent) return;
@@ -399,19 +350,19 @@ onSelectEvent?.(event.id);
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
-  <Clock className="w-3.5 h-3.5" />
-  {starts.toLocaleDateString('fr-FR', { 
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric',
-    timeZone: 'UTC'
-  })} ·{' '}
-  {starts.toLocaleTimeString('fr-FR', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    timeZone: 'UTC'
-  })}
-</div>
+                      <Clock className="w-3.5 h-3.5" />
+                      {starts.toLocaleDateString('fr-FR', { 
+                        day: '2-digit', 
+                        month: '2-digit', 
+                        year: 'numeric',
+                        timeZone: 'UTC'
+                      })} ·{' '}
+                      {starts.toLocaleTimeString('fr-FR', { 
+                        hour: '2-digit', 
+                        minute: '2-digit',
+                        timeZone: 'UTC'
+                      })}
+                    </div>
                     {event.location && (
                       <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
                         <MapPin className="w-3.5 h-3.5" />

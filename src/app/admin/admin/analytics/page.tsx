@@ -1,7 +1,7 @@
 // src/app/admin/admin/analytics/page.tsx
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { createClient } from '@/src/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -62,30 +62,25 @@ export default function AnalyticsPage() {
     try {
       const supabase = createClient();
 
-      // Stats générales
-      const [
-        { count: totalUsers },
-        { count: totalScans },
-        { count: totalOrders },
-        { count: totalNfcCards },
-      ] = await Promise.all([
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('scans').select('*', { count: 'exact', head: true }),
-        supabase.from('orders').select('*', { count: 'exact', head: true }),
-        supabase.from('nfc_cards').select('*', { count: 'exact', head: true }),
+      // Stats générales - compatibles avec le shim (pas de count/head)
+      const [profilesData, scansDataRes, ordersData, nfcCardsData] = await Promise.all([
+        supabase.from('profiles').select('id'),
+        supabase.from('scans').select('id'),
+        supabase.from('orders').select('id'),
+        supabase.from('nfc_cards').select('id'),
       ]);
 
       setStats({
-        total_users: totalUsers || 0,
-        total_scans: totalScans || 0,
-        total_orders: totalOrders || 0,
-        total_nfc_cards: totalNfcCards || 0,
+        total_users: profilesData.data?.length || 0,
+        total_scans: scansDataRes.data?.length || 0,
+        total_orders: ordersData.data?.length || 0,
+        total_nfc_cards: nfcCardsData.data?.length || 0,
         scans_last_7d: 0,
         pending_orders: 0,
         active_nfc_cards: 0,
       });
 
-      // Scans (données simulées si pas de RPC)
+      // Scans (données simulées)
       setScansData([
         { period_label: 'Lun', scan_count: 45, unique_users: 30 },
         { period_label: 'Mar', scan_count: 52, unique_users: 35 },
@@ -110,14 +105,14 @@ export default function AnalyticsPage() {
         .limit(5);
 
       const activities: ActivityItem[] = [
-        ...(orders || []).map(o => ({
+        ...(orders || []).map((o: any) => ({
           id: o.id,
           event_type: 'order',
           description: `Commande ${o.status}`,
           user_name: Array.isArray(o.profiles) ? o.profiles[0]?.full_name : (o.profiles as any)?.full_name || 'Inconnu',
           created_at: o.created_at,
         })),
-        ...(users || []).map(u => ({
+        ...(users || []).map((u: any) => ({
           id: u.id,
           event_type: 'user',
           description: 'Nouvelle inscription',

@@ -1,8 +1,15 @@
-// src/app/[locale]/[username]/page.tsx
 import { notFound, redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
-import type { User } from '@supabase/supabase-js';
+import { createServerClient } from '@/src/lib/supabase-shim';
+
+type User = {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    role?: string;
+    [key: string]: any;
+  };
+};
+
 import PublicProfileClientWrapper from '../../../components/profile/PublicProfileClientWrapper';
 
 export const dynamic = 'force-dynamic';
@@ -24,40 +31,19 @@ export default async function PublicProfilePage({
 
   // --- 2️⃣ Vérification des routes réservées ---
   const RESERVED_ROUTES = [
-  'pricing', 'about', 'contact', 'download', 'dashboard',
-  'auth', 'complete-profile', 'api', 'private',
-  'admin', 'rewards',
-];
+    'pricing', 'about', 'contact', 'download', 'dashboard',
+    'auth', 'complete-profile', 'api', 'private',
+    'admin', 'rewards',
+  ];
   if (RESERVED_ROUTES.includes(decodedInput)) notFound();
 
   // --- 3️⃣ Supabase Server Client (ANON) ---
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   // 🔑 CRÉATION DU CLIENT ADMIN (Service Role) POUR card_configs SEULEMENT
   let supabaseAdmin;
   if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    supabaseAdmin = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!, // 🔒 Jamais exposé côté client
-      {
-        cookies: {
-          get(name) { return cookieStore.get(name)?.value; },
-          set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-          remove(name, options) { cookieStore.delete({ name, ...options }); },
-        },
-      }
-    );
+    supabaseAdmin = createServerClient();
   }
 
   // --- 🔹 4️⃣ DÉTECTION : username vs public_id ---
@@ -68,24 +54,24 @@ export default async function PublicProfilePage({
   if (decodedInput.startsWith('lkv_')) {
     searchBy = 'public_id';
     const { data, error } = await supabase
-  .from('profiles')
-  .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
-  .eq('public_id', decodedInput)
-  .maybeSingle();
+      .from('profiles')
+      .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
+      .eq('public_id', decodedInput)
+      .maybeSingle();
     profileData = data;
     profileError = error;
   } else {
     searchBy = 'username';
     const { data, error } = await supabase
-  .from('profiles')
-  .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
-  .ilike('username', decodedInput)
-  .maybeSingle();
+      .from('profiles')
+      .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
+      .ilike('username', decodedInput)
+      .maybeSingle();
 
     if (error || !data) {
       const { data: fallbackData, error: fallbackError } = await supabase
         .from('profiles')
-  .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`) 
+        .select(`*, plan, accepts_contact_requests, cover_url, theme, nfc_cards(*)`)
         .ilike('username', `%${decodedInput}%`)
         .limit(1)
         .maybeSingle();
@@ -102,54 +88,53 @@ export default async function PublicProfilePage({
   }
 
   // 🔑 CORRECTION ULTIME - PRIORITÉ SERVICE ROLE KEY
-let cardConfigsData: any[] = [];
+  let cardConfigsData: any[] = [];
 
-try {
-  // ✅ STRATÉGIE HYBRIDE : Service Role en priorité ABSOLUE
-  if (supabaseAdmin) {
-    console.log('🔑 Utilisation SERVICE_ROLE_KEY pour card_configs');
-    const { data, error } = await supabaseAdmin
-      .from('card_configs')
-      .select('*')
-      .eq('profile_id', profileData.id);
-    
-    if (error) {
-      console.error('❌ Erreur SERVICE_ROLE_KEY:', error);
-      throw error;
-    }
-    cardConfigsData = data || [];
-    console.log(`✅ Card configs chargées via SERVICE_ROLE_KEY (${cardConfigsData.length} configs)`);
-  } 
-  // ✅ Fallback SÉCURISÉ : Uniquement si service role indisponible
-  else {
-    console.log('🔑 Fallback sur ANON_KEY pour card_configs');
-    const { data, error } = await supabase
-      .from('card_configs')
-      .select('*')
-      .eq('profile_id', profileData.id);
-    
-    if (error) {
-      console.error('❌ Erreur ANON_KEY (RLS):', error);
-      // ❌ NE PAS JETER D'ERREUR - utiliser tableau vide SANS bloquer le rendu
-      cardConfigsData = [];
-    } else {
+  try {
+    // ✅ STRATÉGIE HYBRIDE : Service Role en priorité ABSOLUE
+    if (supabaseAdmin) {
+      console.log('🔑 Utilisation SERVICE_ROLE_KEY pour card_configs');
+      const { data, error } = await supabaseAdmin
+        .from('card_configs')
+        .select('*')
+        .eq('profile_id', profileData.id);
+      
+      if (error) {
+        console.error('❌ Erreur SERVICE_ROLE_KEY:', error);
+        throw error;
+      }
       cardConfigsData = data || [];
-      console.log(`✅ Card configs chargées via ANON_KEY (${cardConfigsData.length} configs)`);
+      console.log(`✅ Card configs chargées via SERVICE_ROLE_KEY (${cardConfigsData.length} configs)`);
+    } 
+    // ✅ Fallback SÉCURISÉ : Uniquement si service role indisponible
+    else {
+      console.log('🔑 Fallback sur ANON_KEY pour card_configs');
+      const { data, error } = await supabase
+        .from('card_configs')
+        .select('*')
+        .eq('profile_id', profileData.id);
+      
+      if (error) {
+        console.error('❌ Erreur ANON_KEY (RLS):', error);
+        cardConfigsData = [];
+      } else {
+        cardConfigsData = data || [];
+        console.log(`✅ Card configs chargées via ANON_KEY (${cardConfigsData.length} configs)`);
+      }
     }
+  } catch (err) {
+    console.error('💥 Erreur critique chargement card_configs:', err);
+    cardConfigsData = [];
   }
-} catch (err) {
-  console.error('💥 Erreur critique chargement card_configs:', err);
-  cardConfigsData = []; // Tableau vide mais rendu non bloquant
-}
 
   // --- 🔹 6️⃣ Récupération des statistiques de scans ---
   let scansCount = 0;
   try {
-    const { count } = await supabase
+    const { data: scansData } = await supabase
       .from('scans')
-      .select('*', { count: 'exact', head: true })
+      .select('*')
       .eq('profile_id', profileData.id);
-    scansCount = count || 0;
+    scansCount = scansData?.length || 0;
   } catch (err) {
     console.warn('⚠️ Erreur chargement scans:', err);
   }
@@ -166,28 +151,28 @@ try {
   }
 
   // --- 🔹 9️⃣ Followers ---
-  const { count: followersCount } = await supabase
+  const { data: followersData } = await supabase
     .from('follows')
-    .select('*', { count: 'exact', head: true })
+    .select('*')
     .eq('followed_id', profileData.id);
-  const initialFollowers = followersCount || 0;
+  const initialFollowers = followersData?.length || 0;
 
   // --- 🔹 🔟 Following ---
   let initialFollowing = 0;
   let isInitiallyFollowing = false;
   if (currentUser) {
-    const { count: followingCount } = await supabase
+    const { data: followingData } = await supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('*')
       .eq('follower_id', currentUser.id);
-    initialFollowing = followingCount || 0;
+    initialFollowing = followingData?.length || 0;
 
-    const { count: followingThisUser } = await supabase
+    const { data: followingThisUserData } = await supabase
       .from('follows')
-      .select('*', { count: 'exact', head: true })
+      .select('*')
       .eq('follower_id', currentUser.id)
       .eq('followed_id', profileData.id);
-    isInitiallyFollowing = (followingThisUser || 0) > 0;
+    isInitiallyFollowing = (followingThisUserData?.length || 0) > 0;
   }
 
   // --- 🔹 1️⃣2️⃣ Analytics : Enregistrer le scan NFC ---
@@ -217,7 +202,7 @@ try {
     <PublicProfileClientWrapper
       profile={{
         ...profileData,
-        _cardConfigs: cardConfigsData, // ✅ Tableau complet (jamais undefined)
+        _cardConfigs: cardConfigsData,
       }}
       currentUser={currentUser}
       initialFollowers={initialFollowers}

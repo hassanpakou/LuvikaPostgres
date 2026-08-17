@@ -28,6 +28,15 @@ type Follower = {
   blocked: boolean;
 };
 
+// Type pour les données de profil récupérées
+type ProfileData = {
+  full_name: string | null;
+  username: string | null;
+  avatar_url: string | null;
+  bio_short: string | null;
+  verified: boolean | null;
+};
+
 export default function SubscribersPage() {
   const t = useTranslations('dashboard.subscribers');
   const router = useRouter();
@@ -41,8 +50,73 @@ export default function SubscribersPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { router.push('/auth/sign-in'); return; }
 
-    const { data } = await supabase.rpc('get_user_followers', { p_user_id: user.id });
-    setFollowers(data || []);
+    // 1. Récupérer les abonnements (follows)
+    const { data: followData, error: followError } = await supabase
+      .from('follows')
+      .select('follower_id, created_at, blocked')
+      .eq('followed_id', user.id);
+
+    if (followError) {
+      console.error('Erreur follows:', followError);
+      setFollowers([]);
+      setLoading(false);
+      return;
+    }
+
+    const followerIds = (followData || []).map((f: any) => f.follower_id);
+
+    if (followerIds.length === 0) {
+      setFollowers([]);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Récupérer les profils correspondants
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, bio_short, verified')
+      .in('id', followerIds);
+
+    if (profilesError) {
+      console.error('Erreur profils:', profilesError);
+    }
+
+    const profileMap = new Map<string, ProfileData>(
+      (profilesData || []).map((p: any) => [
+        p.id,
+        {
+          full_name: p.full_name ?? null,
+          username: p.username ?? null,
+          avatar_url: p.avatar_url ?? null,
+          bio_short: p.bio_short ?? null,
+          verified: p.verified ?? null,
+        },
+      ])
+    );
+
+    const combined = (followData || []).map((f: any) => {
+      const profile = profileMap.get(f.follower_id) || {
+        full_name: null,
+        username: null,
+        avatar_url: null,
+        bio_short: null,
+        verified: null,
+      };
+
+      return {
+        id: f.follower_id, // clé unique pour le rendu
+        follower_id: f.follower_id,
+        created_at: f.created_at,
+        full_name: profile.full_name,
+        username: profile.username,
+        avatar_url: profile.avatar_url,
+        bio_short: profile.bio_short,
+        verified: profile.verified,
+        blocked: f.blocked ?? false,
+      };
+    });
+
+    setFollowers(combined as Follower[]);
     setLoading(false);
   };
 

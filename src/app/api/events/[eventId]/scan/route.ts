@@ -1,7 +1,4 @@
-// src/app/api/events/[eventId]/scan/route.ts
-
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request, context: { params: Promise<{ eventId: string }> }) {
@@ -9,45 +6,48 @@ export async function POST(request: Request, context: { params: Promise<{ eventI
   const body = await request.json();
   const { name, email, token } = body;
 
-  // validation minimale
   if (!name && !token) return NextResponse.json({ error: 'Nom ou token requis' }, { status: 400 });
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
-  // Si token fourni -> utiliser la RPC check_in_participant pour atomiticité
+  // Si token fourni -> vérifier et marquer le participant
   if (token) {
-    const { data, error } = await supabase.rpc('check_in_participant', {
-      p_event_id: eventId,
-      p_token: token,
-      p_name: name ?? null
-    });
+    // Vérifier le participant par token
+    const { data: participant } = await supabase
+      .from('event_participants')
+      .select('id, name, is_checked_in')
+      .eq('event_id', eventId)
+      .eq('qr_token', token)
+      .single();
 
-    if (error) {
-      const msg = (error.message || '').toUpperCase();
-      if (msg.includes('TOKEN_NOT_FOUND')) return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
-      if (msg.includes('ALREADY_CHECKED_IN')) return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
-      return NextResponse.json({ error: error.message || 'Erreur interne' }, { status: 500 });
+    if (!participant) {
+      return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
     }
 
-    // Optionel : insert audit log dans event_attendees
+    if (participant.is_checked_in) {
+      return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
+    }
+
+    // Marquer comme présent
+    await supabase
+      .from('event_participants')
+      .update({ is_checked_in: true, checked_in_at: new Date().toISOString() })
+      .eq('id', participant.id);
+
+    // Audit
     await supabase.from('event_attendees').insert({
       event_id: eventId,
       profile_scanned_id: null,
-      name: data?.[0]?.name ?? name,
+      name: participant.name || name || 'Visiteur',
       email: email ?? null,
       scanned_at: new Date().toISOString(),
       is_anonymous: true
     });
 
-    return NextResponse.json({ success: true, name: data?.[0]?.name });
+    return NextResponse.json({ success: true, name: participant.name || name });
   }
 
-  // Si pas de token : ancien comportement (insertion dans event_attendees)
+  // Sans token : insertion directe dans event_attendees
   const { data: inserted, error } = await supabase
     .from('event_attendees')
     .insert({ event_id: eventId, profile_scanned_id: null, name: name ?? 'Visiteur', email: email ?? null })

@@ -1,6 +1,4 @@
-// src/app/api/admin/subscriptions/[id]/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PUT(
@@ -11,18 +9,7 @@ export async function PUT(
   const body = await request.json();
   const { plan, status, expires_at } = body;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   // Vérifier l'authentification et le rôle admin
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -92,7 +79,7 @@ export async function PUT(
 
     if (otherActiveSubs && otherActiveSubs.length > 0) {
       // Désactiver tous les autres abonnements actifs
-      const otherIds = otherActiveSubs.map(s => s.id);
+      const otherIds = otherActiveSubs.map((s: { id: any; }) => s.id);
       
       await supabase
         .from('subscriptions')

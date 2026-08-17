@@ -1,26 +1,17 @@
-// src/app/dashboard/nfc/add/page.tsx
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { Button } from '../../../../../components/ui/button';
 import Link from 'next/link';
-// 🔹 Importe le client component
 
 export default async function AddNFCPage() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect('/auth/sign-in');
 
-  // 🔑 Récupère le plan + username
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
-    .select('plan, id, username') // ✅ username inclus
+    .select('plan, id, username')
     .eq('id', user.id)
     .single();
 
@@ -28,14 +19,13 @@ export default async function AddNFCPage() {
 
   const currentPlan = profile.plan || 'basic';
 
-  // 🔢 Compte les cartes
-  const { count: cardCount } = await supabase
+  // 🔢 Compte les cartes actives/non bloquées (simplifié car le shim ne supporte pas .not)
+  const { data: cards } = await supabase
     .from('nfc_cards')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', user.id)
-    .not('status', 'in', '("blocked")');
+    .select('id, status')
+    .eq('user_id', user.id);
 
-  const actualCardCount = cardCount ?? 0;
+  const actualCardCount = (cards || []).filter((card: { status: string; }) => card.status !== 'blocked').length;
 
   let maxCards = 1;
   if (currentPlan === 'premium') maxCards = 5;
@@ -84,11 +74,7 @@ export default async function AddNFCPage() {
             2. Approchez la carte vierge<br />
             3. Confirmez l’écriture
           </p>
-          {/* ✅ Appel correct 
-          <CardManager 
-            profileId={profile.id} 
-            username={profile.username} 
-          />*/}
+          {/* CardManager component not yet implemented */}
         </div>
 
         <div className="mt-8 text-center text-gray-500 text-sm">

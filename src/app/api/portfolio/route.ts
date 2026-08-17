@@ -1,29 +1,5 @@
-// src/app/api/portfolio/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
-
-// 🔹 ✅ Helper corrigé — async + await
-const createClient = async () => {
-  const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.delete({ name, ...options });
-        },
-      },
-    }
-  );
-};
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -32,15 +8,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'profile_id required' }, { status: 400 });
   }
 
-  const supabase = await createClient(); // ✅ await
+  const supabase = createServerClient();
 
-  const { data : portfolios, error: pErr } = await supabase
+  const { data: portfolios, error: pErr } = await supabase
     .from('portfolios')
     .select('*')
     .eq('profile_id', profileId)
     .order('position', { ascending: true });
 
-  const { data : certificates, error: cErr } = await supabase
+  const { data: certificates, error: cErr } = await supabase
     .from('certificates')
     .select('*')
     .eq('profile_id', profileId)
@@ -54,8 +30,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient(); // ✅ await
-  const { data : { user } } = await supabase.auth.getUser();
+  const supabase = createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
@@ -63,7 +39,7 @@ export async function POST(request: Request) {
   let table = type === 'portfolio' ? 'portfolios' : 'certificates';
   let insertData = { ...data, profile_id: user.id };
 
-  const { data : inserted, error } = await supabase
+  const { data: inserted, error } = await supabase
     .from(table)
     .insert(insertData)
     .select()
@@ -73,10 +49,9 @@ export async function POST(request: Request) {
   return NextResponse.json(inserted);
 }
 
-// 🔹 PUT & DELETE aussi — ajoute `await createClient()` dans chacun
 export async function PUT(request: Request) {
-  const supabase = await createClient();
-  const { data : { user } } = await supabase.auth.getUser();
+  const supabase = createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
@@ -94,8 +69,8 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const supabase = await createClient();
-  const { data : { user } } = await supabase.auth.getUser();
+  const supabase = createServerClient();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');

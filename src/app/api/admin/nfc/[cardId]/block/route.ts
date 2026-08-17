@@ -1,24 +1,14 @@
-// src/app/api/admin/nfc/[cardId]/block/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
-// ✅ CORRECTION NEXT.JS 15 : params est UNE PROMESSE
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ cardId: string }> } // ✅ Type corrigé
+  { params }: { params: Promise<{ cardId: string }> }
 ) {
-  // ✅ OBLIGATOIRE : Attendre la résolution de params
   const { cardId } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
-  // 🔐 Vérification admin (inchangée)
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
@@ -29,7 +19,6 @@ export async function POST(
       return NextResponse.json({ error: 'ID carte manquant' }, { status: 400 });
     }
 
-    // 🔹 Vérifier que la carte existe (inchangé)
     const { data: card, error: cardError } = await supabase
       .from('nfc_cards')
       .select('id, status, user_id, matricule')
@@ -40,7 +29,6 @@ export async function POST(
       return NextResponse.json({ error: 'Carte introuvable' }, { status: 404 });
     }
 
-    // 🔹 Bloquer la carte (inchangé)
     const { error: updateError } = await supabase
       .from('nfc_cards')
       .update({ 
@@ -51,12 +39,11 @@ export async function POST(
 
     if (updateError) throw updateError;
 
-    // 🔹 Journaliser l'action (CORRIGÉ : fallback sécurisé)
     await supabase.from('nfc_card_actions').insert({
       card_id: cardId,
       user_id: user.id,
       action_type: 'block' as const,
-      matricule_verified: card.matricule || `CARD-${cardId.substring(0, 8)}`, // ✅ Sécurisé
+      matricule_verified: card.matricule || `CARD-${cardId.substring(0, 8)}`,
       reason: 'Bloquage manuel par admin',
     });
 

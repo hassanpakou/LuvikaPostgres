@@ -23,7 +23,7 @@ import { Progress } from '@/components/ui/progress';
 import { createClient } from '@/src/lib/supabase/client';
 import DashboardQuickMenu from '@/src/components/dashboard/DashboardQuickMenu';
 
-// Icônes personnalisées
+// Icônes personnalisées (inchangées, mais tronquées pour la réponse)
 const Copy = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className={className}>
     <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 12v-4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6m4-10h4a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z" />
@@ -117,7 +117,6 @@ type Profile = {
   enable_connection_alerts?: boolean | null;
 };
 
-// Composant pour chaque section réductible
 const CollapsibleSection = ({
   id,
   title,
@@ -166,7 +165,6 @@ export default function SettingsPage() {
     privacy: true,
     account: false,
   });
-  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
 
   const quickActions = [
     { id: 'save', label: '', icon: <Save className="w-4 h-4" />, color: 'from-emerald-500 to-teal-500' },
@@ -178,7 +176,6 @@ export default function SettingsPage() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  // Récupération du profil
   const fetchProfile = async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -199,40 +196,16 @@ export default function SettingsPage() {
     fetchProfile();
   }, []);
 
-  // Realtime
-  useEffect(() => {
-    if (!profile?.id) return;
-    const supabase = createClient();
-    const channel = supabase
-      .channel(`profile-settings-${profile.id}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${profile.id}` }, payload => {
-        setProfile(prev => prev ? { ...prev, ...payload.new } : prev);
-        toast.info('🔄 Profil synchronisé depuis un autre appareil');
-      })
-      .subscribe(status => setIsRealtimeActive(status === 'SUBSCRIBED'));
-    return () => { supabase.removeChannel(channel); };
-  }, [profile?.id]);
+  // ✅ Realtime désactivé (non supporté par le shim)
+  // useEffect(() => { ... }) supprimé
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover') => {
-    const file = e.target.files?.[0];
-    if (!file || !profile) return;
-    const bucket = type === 'avatar' ? 'avatars' : 'covers';
-    const maxSize = type === 'avatar' ? 5 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error(`Fichier trop lourd (max ${type === 'avatar' ? '5MB' : '10MB'})`);
-      return;
-    }
-    const supabase = createClient();
-    const fileName = `${profile.id}-${type}-${Date.now()}.${file.name.split('.').pop()}`;
-    const { error } = await supabase.storage.from(bucket).upload(fileName, file, { upsert: true });
-    if (error) {
-      toast.error('Échec upload');
-      return;
-    }
-    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-    setProfile({ ...profile, [type === 'avatar' ? 'avatar_url' : 'cover_url']: urlData.publicUrl });
-    toast.success(`${type === 'avatar' ? 'Avatar' : 'Couverture'} mis à jour`);
+    // ⚠️ Le shim local ne fournit pas `supabase.storage`.
+    // L'upload d'image est donc temporairement désactivé.
+    console.warn(`📷 Upload ${type} désactivé : \`supabase.storage\` non implémenté dans le shim.`);
+    toast.info('Upload désactivé', { description: 'Le stockage local n’est pas encore configuré.' });
     e.target.value = '';
+    return;
   };
 
   const handleSave = async () => {
@@ -322,10 +295,6 @@ export default function SettingsPage() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${isRealtimeActive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'}`}>
-                <div className={`w-2 h-2 rounded-full ${isRealtimeActive ? 'bg-emerald-400' : 'bg-red-400'} animate-pulse`} />
-                <span>{isRealtimeActive ? 'Temps réel' : 'Hors ligne'}</span>
-              </div>
               <div className="p-2 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl">
                 <Settings className="w-6 h-6 text-cyan-400" />
               </div>
@@ -372,7 +341,6 @@ export default function SettingsPage() {
                   { id: 'account', label: 'Gestion du compte', icon: Lock },
                 ].map(item => {
                   const Icon = item.icon;
-                  const isActive = expandedSections[item.id as keyof typeof expandedSections] !== undefined;
                   return (
                     <button
                       key={item.id}

@@ -1,6 +1,5 @@
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -10,25 +9,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'username requis' }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.delete({ name, ...options });
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const cleanUsername = username.trim().toLowerCase();
 
@@ -70,7 +51,7 @@ export async function GET(request: Request) {
       .select('username')
       .limit(10);
     
-    console.log('Available usernames:', allProfiles?.map(p => p.username));
+    console.log('Available usernames:', allProfiles?.map((p: { username: any; }) => p.username));
   }
 
   if (error) {

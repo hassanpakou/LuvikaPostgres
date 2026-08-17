@@ -1,60 +1,40 @@
-// src/app/api/events/[eventId]/participants.csv/route.ts
-
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ eventId: string }> } // ✅ eventId, pas id
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
-  const { eventId } = await params; // ✅ déstructure eventId
+  const { eventId } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set({ name, value, ...options })
-          );
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // Vérifier que l’événement appartient à l’utilisateur
   const { data: event } = await supabase
     .from('events')
     .select('profile_id, title')
-    .eq('id', eventId) // ✅ utilise eventId ici
+    .eq('id', eventId)
     .single();
 
   if (!event || event.profile_id !== user.id) {
     return new NextResponse('Forbidden', { status: 403 });
   }
 
-  // Récupérer tous les participants
   const { data: parts } = await supabase
     .from('event_participants')
     .select('name, email, is_checked_in, checked_in_at, created_at')
-    .eq('event_id', eventId); // ✅ eventId
+    .eq('event_id', eventId);
 
   if (!parts || parts.length === 0) {
     return new NextResponse('Aucun participant', { status: 200 });
   }
 
-  // Générer le CSV
   const headers = ['Nom', 'Email', 'Présent', 'Heure arrivée', 'Inscrit le'];
-  const rows = parts.map(p =>
+  const rows = parts.map((p: { name: any; email: string; is_checked_in: any; checked_in_at: string | number | Date; created_at: string | number | Date; }) =>
     [
       `"${(p.name || '').replace(/"/g, '""')}"`,
       p.email ? `"${p.email.replace(/"/g, '""')}"` : '""',

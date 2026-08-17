@@ -49,28 +49,6 @@ export default function OrdersPage() {
     fetchOrders();
   }, []);
 
-  useEffect(() => {
-    if (!companyId) return;
-
-    const channel = supabase
-      .channel('ecommerce-orders-updates')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'ecommerce_orders',
-        filter: `seller_id=eq.${companyId}`
-      }, (payload: any) => {
-        setOrders(prev => [payload.new, ...prev]);
-        toast('Nouvelle commande', {
-          description: `${payload.new.total_amount} $`,
-          icon: <Package className="w-4 h-4 text-emerald-400/70" />,
-        });
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [companyId]);
-
   const filterByDateRange = (data: any[], range: string) => {
     const now = new Date();
     const start = range === 'today' ? new Date(now.getFullYear(), now.getMonth(), now.getDate()) :

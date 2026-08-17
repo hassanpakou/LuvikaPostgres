@@ -1,7 +1,5 @@
-// src/app/[locale]/card/[cardNumber]/page.tsx
 import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import OrgCardPublicClient from '@/src/components/org/OrgCardPublicClient';
 
 export const dynamic = 'force-dynamic';
@@ -13,18 +11,7 @@ export default async function OrgCardPublicPage({
 }) {
   const { locale, cardNumber } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   // Récupérer la carte
   const { data: orgCard, error } = await supabase

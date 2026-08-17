@@ -1,6 +1,4 @@
-// src/app/api/admin/orders/[id]/[action]/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -21,23 +19,8 @@ export async function POST(
 
   const { id, action } = parsed.data;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
-  // 🔹 ✅ Utilisez getUser() au lieu de getSession()
   const { data : { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
@@ -48,7 +31,7 @@ export async function POST(
 
     const { error } = await supabase
       .from('orders')
-      .update({ status }) // ✅ pas de updated_at
+      .update({ status })
       .eq('id', id);
 
     if (error) throw error;

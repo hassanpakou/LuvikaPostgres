@@ -1,10 +1,7 @@
-// src/app/api/admin/orders/[id]/update-status/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// 🔹 Schéma de validation
 const UpdateStatusSchema = z.object({
   status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
 });
@@ -14,7 +11,6 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 🔹 Validation ID
     const params = await context.params;
     const idResult = z.string().uuid().safeParse(params.id);
     if (!idResult.success) {
@@ -22,7 +18,6 @@ export async function POST(
     }
     const orderId = idResult.data;
 
-    // 🔹 Validation body
     const body = await request.json();
     const parsed = UpdateStatusSchema.safeParse(body);
     if (!parsed.success) {
@@ -30,36 +25,28 @@ export async function POST(
     }
     const { status } = parsed.data;
 
-    // 🔹 Authentification admin
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => cookieStore.getAll() } }
-    );
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.user_metadata?.role !== 'admin') {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
-    // 🔹 Mise à jour BDD
     const { error } = await supabase
       .from('orders')
       .update({ 
         status,
-        updated_at: new Date().toISOString() // ✅ Ajout timestamp
+        updated_at: new Date().toISOString()
       })
       .eq('id', orderId)
       .select('id, status, profiles(full_name, email)');
 
     if (error) throw error;
 
-    // ✅ Succès avec données enrichies
     return NextResponse.json({ 
       success: true,
       message: `Statut mis à jour : ${status}`,
-      order: error ? null : null 
+      order: null
     });
   } catch (error: any) {
     console.error('❌ Erreur update-status:', error);

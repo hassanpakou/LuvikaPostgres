@@ -1,7 +1,5 @@
-// src/app/events/[id]/page.tsx
 import { notFound } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import CheckInClient from '../../../components/events/CheckInClient';
 
 export default async function EventCheckInPage({
@@ -14,21 +12,7 @@ export default async function EventCheckInPage({
   const eventId = params.id;
   const token = typeof searchParams.token === 'string' ? searchParams.token : null;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set({ name, value, ...options })
-          );
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data: event } = await supabase
     .from('events')
@@ -40,7 +24,6 @@ export default async function EventCheckInPage({
 
   const requiresName = !event.is_public;
 
-  // ✅ Passer toutes les props requises par CheckInClient
   return (
     <CheckInClient
       eventId={eventId}

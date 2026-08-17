@@ -1,48 +1,16 @@
-// src/app/api/events/[eventId]/participants/route.ts
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { v4 as uuidv4 } from 'uuid';
-
-const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-/**
- * Accept either a ReadonlyRequestCookies or a Promise<ReadonlyRequestCookies>.
- * Awaiting inside avoids TS mismatch when cookies() is sync or async in different contexts.
- */
-async function createSupabaseServer(
-  cookieStoreOrPromise: ReturnType<typeof cookies> | Promise<ReturnType<typeof cookies>>
-) {
-  const cookieStore = await cookieStoreOrPromise;
-
-  return createServerClient(SUPABASE_URL!, SUPABASE_KEY!, {
-    cookies: {
-      // required shape for upcoming versions: getAll and setAll
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
-        cookiesToSet.forEach(({ name, value, options }) =>
-          // cookieStore.set supports { name, value, ...options } in Next's API
-          cookieStore.set({ name, value, ...options })
-        );
-      },
-    },
-  });
-}
 
 export async function GET(request: Request, { params }: { params: Promise<{ eventId: string }> }) {
   const { eventId } = await params;
 
   try {
-    const cookieStore = cookies(); // pass the result (may be sync or promise) - helper will await
-    const supabase = await createSupabaseServer(cookieStore);
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    // verify organizer
     const { data: event, error: evError } = await supabase
       .from('events')
       .select('profile_id')
@@ -87,13 +55,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ eve
       return NextResponse.json({ error: 'Le nom du participant est requis' }, { status: 400 });
     }
 
-    const cookieStore = cookies();
-    const supabase = await createSupabaseServer(cookieStore);
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    // verify organizer owns event
     const { data: event, error: evError } = await supabase
       .from('events')
       .select('profile_id')
@@ -129,7 +95,6 @@ export async function POST(request: Request, { params }: { params: Promise<{ eve
       return NextResponse.json({ error: error.message || 'Erreur serveur' }, { status: 500 });
     }
 
-    // Optionally return qr_code_url (server knows APP_URL? use env)
     const APP_URL = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '';
     const qr_code_url = APP_URL ? `${APP_URL.replace(/\/$/, '')}/events/${eventId}?token=${encodeURIComponent(insertedParticipant.qr_token)}` : null;
 
@@ -151,13 +116,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ even
       return NextResponse.json({ error: 'ID et nouveau nom requis' }, { status: 400 });
     }
 
-    const cookieStore = cookies();
-    const supabase = await createSupabaseServer(cookieStore);
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    // verify organizer owns event
     const { data: event, error: evError } = await supabase
       .from('events')
       .select('profile_id')
@@ -202,13 +165,11 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ e
       return NextResponse.json({ error: 'participantId requis' }, { status: 400 });
     }
 
-    const cookieStore = cookies();
-    const supabase = await createSupabaseServer(cookieStore);
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
 
-    // verify organizer owns event
     const { data: event, error: evError } = await supabase
       .from('events')
       .select('profile_id')

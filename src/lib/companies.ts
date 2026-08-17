@@ -1,12 +1,10 @@
-// src/lib/companies.ts
-import { type SupabaseClient } from '@supabase/supabase-js';
-
+// Le type SupabaseClient est remplacé par any car le shim n'exporte pas ce type.
 export async function ensureCompanyExists(
-  supabase: SupabaseClient,
+  supabase: any,
   userId: string,
   profile: { full_name?: string | null; username?: string | null }
 ) {
-  const { data : existingCompany } = await supabase
+  const { data: existingCompany } = await supabase
     .from('companies')
     .select('id')
     .eq('owner_id', userId)

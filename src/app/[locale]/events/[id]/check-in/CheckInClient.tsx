@@ -1,7 +1,7 @@
 // src/app/[locale]/events/[id]/check-in/CheckInClient.tsx
 'use client';
 
-import { useState, useEffect, useCallback } from 'react'; // ✅ Ajout useCallback
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/src/lib/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,16 +36,15 @@ export default function CheckInClient({
   const [error, setError] = useState<string | null>(null);
   
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
-  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [loadingCount, setLoadingCount] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const [timeRemaining, setTimeRemaining] = useState<{ minutes: number; seconds: number } | null>(null);
   const [eventStatus, setEventStatus] = useState<'upcoming' | 'live' | 'ended'>('upcoming');
 
-  // ✅ Créer le client Supabase UNE SEULE FOIS avec useCallback
   const supabase = useCallback(() => createClient(), []);
 
+  // Gestion du statut de l'événement (upcoming / live / ended)
   useEffect(() => {
     const updateStatus = () => {
       const now = new Date();
@@ -71,37 +70,28 @@ export default function CheckInClient({
     return () => clearInterval(interval);
   }, [startsAt, endsAt]);
 
-  // ✅ Supprimer supabase des dépendances
+  // Chargement initial du nombre de participants (compatible shim)
   useEffect(() => {
     const client = supabase();
     
     const fetchInitialCount = async () => {
-      const { count, error } = await client
-        .from('event_participants')
-        .select('*', { count: 'exact', head: true })
-        .eq('event_id', eventId);
+      try {
+        const { data, error } = await client
+          .from('event_participants')
+          .select('id')
+          .eq('event_id', eventId);
 
-      if (!error) setParticipantsCount(count || 0);
-      setLoadingCount(false);
-    };
-    fetchInitialCount();
-  }, [eventId, supabase]);
-
-  // ✅ Supprimer supabase des dépendances
-  useEffect(() => {
-    const client = supabase();
-    
-    const channel = client
-      .channel(`event-participants-${eventId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_participants', filter: `event_id=eq.${eventId}` },
-        () => {
-          setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
+        if (!error) {
+          setParticipantsCount(data?.length || 0);
           setLastUpdate(new Date());
         }
-      )
-      .subscribe((status) => setIsRealtimeActive(status === 'SUBSCRIBED'));
-
-    return () => { client.removeChannel(channel); };
+      } catch (err) {
+        console.warn('Erreur chargement compteur:', err);
+      } finally {
+        setLoadingCount(false);
+      }
+    };
+    fetchInitialCount();
   }, [eventId, supabase]);
 
   const handleCheckIn = async (e: React.FormEvent) => {
@@ -130,6 +120,8 @@ export default function CheckInClient({
       if (error) throw error;
 
       setCheckedIn(true);
+      setParticipantsCount(prev => prev !== null ? prev + 1 : 1);
+      setLastUpdate(new Date());
       toast.success('Check-in réussi !');
     } catch (err: any) {
       console.error('Erreur check-in:', err);
@@ -224,7 +216,6 @@ export default function CheckInClient({
               <Users className="w-4 h-4 text-cyan-400/60" />
               <span className="text-lg font-semibold text-white/80">{participantsCount}</span>
               <span className="text-xs text-gray-400/60 font-light">participant{participantsCount !== 1 ? 's' : ''}</span>
-              <span className={`ml-2 w-1.5 h-1.5 rounded-full ${isRealtimeActive ? 'bg-emerald-400/60' : 'bg-red-400/60'}`} />
             </div>
           )}
         </motion.div>

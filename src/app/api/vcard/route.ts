@@ -1,6 +1,4 @@
-// src/app/api/vcard/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 import { generateQRBase64 } from '../../../../lib/qr';
 
@@ -15,24 +13,19 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'username ou id requis' }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
   // 🔹 Récupère le profil
   let profile;
   if (profileId) {
-    const { data : p } = await supabase
+    const { data: p } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', profileId)
       .single();
     profile = p;
   } else {
-    const { data : p } = await supabase
+    const { data: p } = await supabase
       .from('profiles')
       .select('*')
       .eq('username', username!)

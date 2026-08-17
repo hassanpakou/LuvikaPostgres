@@ -1,11 +1,9 @@
-// api/auth/biometric/register/verify/route.ts
 import { verifyRegistrationResponse } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { cookies } from 'next/headers';
 import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
 
-// Fonction utilitaire locale pour convertir un Buffer en base64url
 function toBase64Url(buffer: Buffer): string {
   return buffer.toString('base64')
     .replace(/\+/g, '-')
@@ -22,20 +20,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Challenge expiré ou manquant' }, { status: 400 });
     }
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set({ name, value, ...options })
-            );
-          },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -47,7 +32,6 @@ export async function POST(req: Request) {
       const buffer = Buffer.from(body.rawId);
       body.id = toBase64Url(buffer);
     } else if (body.id) {
-      // Si rawId absent, on tente de convertir body.id
       let buffer: Buffer;
       try {
         buffer = Buffer.from(body.id, 'base64');

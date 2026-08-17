@@ -1,5 +1,4 @@
-// src/app/api/cron/cleanup-events/route.ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -8,11 +7,7 @@ export async function GET(request: Request) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
-  // ✅ Utilise createClient (pas createServerClient)
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚠️ Important : utilise la clé service
-  );
+  const supabase = createClient();
 
   const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 

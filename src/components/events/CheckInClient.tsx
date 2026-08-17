@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { 
-  Loader2, QrCode, User, AlertCircle, Users, Wifi, WifiOff,
+  Loader2, QrCode, User, AlertCircle, Users,
   CheckCircle, XCircle, Clock, Lock, ArrowRight, RefreshCw
 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -44,8 +44,6 @@ export default function CheckInClient({
   const [eventStatus, setEventStatus] = useState<'upcoming' | 'live' | 'ended'>('upcoming');
 
   const [participantsCount, setParticipantsCount] = useState<number | null>(null);
-  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [loadingCount, setLoadingCount] = useState(true);
 
   const supabase = createClient();
@@ -86,45 +84,17 @@ export default function CheckInClient({
     }
 
     const fetchInitialCount = async () => {
-      const { count, error } = await supabase
+      const { data, error } = await supabase
         .from('event_participants')
-        .select('*', { count: 'exact', head: true })
+        .select('id')
         .eq('event_id', eventId);
 
       if (!error) {
-        setParticipantsCount(count || 0);
+        setParticipantsCount(data?.length || 0);
       }
       setLoadingCount(false);
     };
     fetchInitialCount();
-  }, [eventId, isPublic]);
-
-  // 🔹 Abonnement Realtime
-  useEffect(() => {
-    if (!isPublic) return;
-
-    const channel = supabase
-      .channel(`event-participants-${eventId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'event_participants',
-          filter: `event_id=eq.${eventId}`
-        },
-        (payload) => {
-          setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
-          setLastUpdate(new Date());
-        }
-      )
-      .subscribe((status) => {
-        setIsRealtimeActive(status === 'SUBSCRIBED');
-      });
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, [eventId, isPublic]);
 
   // 🔹 Gestion du check-in
@@ -153,6 +123,8 @@ export default function CheckInClient({
       if (res.ok) {
         setStatus('success');
         setMessage(t('welcome_message', { name: data.name || 'participant' }));
+        // Incrémenter le compteur localement
+        setParticipantsCount(prev => (prev !== null ? prev + 1 : 1));
         toast.success(t('checkin_success_toast'));
       } else {
         setStatus('error');
@@ -167,7 +139,7 @@ export default function CheckInClient({
   };
 
   // ========================
-  // 🔹 RENDU CONDITIONNEL - ORDRE CORRIGÉ
+  // 🔹 RENDU CONDITIONNEL
   // ========================
 
   // 1. Événement PRIVÉ → bloqué en premier
@@ -184,40 +156,41 @@ export default function CheckInClient({
   }
 
   // 2. Événement À VENIR
-if (eventStatus === 'upcoming' && timeRemaining) {
-  const startDate = new Date(startsAt);
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
-      <Card className="glass-border p-8 text-center max-w-md">
-        <Clock className="w-16 h-16 mx-auto text-cyan-400 mb-4 animate-pulse" />
-        <h2 className="text-2xl font-bold text-white mb-2">{t('upcoming_title')}</h2>
-        <p className="text-gray-300 text-lg">
-          {t('upcoming_description', { title: eventTitle })}
-        </p>
-        <p className="text-gray-400 text-sm mt-1">
-          Prévu le{' '}
-          {startDate.toLocaleDateString('fr-FR', { 
-            day: '2-digit', 
-            month: '2-digit', 
-            year: 'numeric',
-            timeZone: 'Africa/Kinshasa'  // ✅ Spécifier le fuseau
-          })} à{' '}
-          {startDate.toLocaleTimeString('fr-FR', { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            timeZone: 'Africa/Kinshasa'  // ✅ Spécifier le fuseau
-          })}
-        </p>
-        <div className="mt-4 text-4xl font-mono font-bold text-cyan-300">
-          {timeRemaining.minutes.toString().padStart(2, '0')}:
-          {timeRemaining.seconds.toString().padStart(2, '0')}
-        </div>
-        <p className="text-sm text-gray-400 mt-2">{t('minutes_seconds_label')}</p>
-      </Card>
-    </div>
-  );
-}
-  // 3. Événement TERMINÉ → affiche le message + compteur final
+  if (eventStatus === 'upcoming' && timeRemaining) {
+    const startDate = new Date(startsAt);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-blue-900/20 p-4">
+        <Card className="glass-border p-8 text-center max-w-md">
+          <Clock className="w-16 h-16 mx-auto text-cyan-400 mb-4 animate-pulse" />
+          <h2 className="text-2xl font-bold text-white mb-2">{t('upcoming_title')}</h2>
+          <p className="text-gray-300 text-lg">
+            {t('upcoming_description', { title: eventTitle })}
+          </p>
+          <p className="text-gray-400 text-sm mt-1">
+            Prévu le{' '}
+            {startDate.toLocaleDateString('fr-FR', { 
+              day: '2-digit', 
+              month: '2-digit', 
+              year: 'numeric',
+              timeZone: 'Africa/Kinshasa'
+            })} à{' '}
+            {startDate.toLocaleTimeString('fr-FR', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              timeZone: 'Africa/Kinshasa'
+            })}
+          </p>
+          <div className="mt-4 text-4xl font-mono font-bold text-cyan-300">
+            {timeRemaining.minutes.toString().padStart(2, '0')}:
+            {timeRemaining.seconds.toString().padStart(2, '0')}
+          </div>
+          <p className="text-sm text-gray-400 mt-2">{t('minutes_seconds_label')}</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // 3. Événement TERMINÉ
   if (eventStatus === 'ended') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900/10 to-indigo-900/20 py-12 px-4">
@@ -275,24 +248,8 @@ if (eventStatus === 'upcoming' && timeRemaining) {
                 <span className="text-gray-400 text-sm">
                   {participantsCount === 1 ? t('participant_singular') : t('participant_plural')}
                 </span>
-                <div className={`flex items-center gap-1 ml-2 px-2 py-1 rounded-full text-xs ${
-                  isRealtimeActive
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                    : 'bg-red-500/20 text-red-300 border border-red-500/30'
-                }`}>
-                  {isRealtimeActive ? (
-                    <><Wifi className="w-3 h-3" /><span>{t('live_status')}</span></>
-                  ) : (
-                    <><WifiOff className="w-3 h-3" /><span>{t('offline_status')}</span></>
-                  )}
-                </div>
               </Card>
             </div>
-          )}
-          {lastUpdate && (
-            <p className="text-xs text-gray-500 mt-1">
-              {t('last_update', { time: lastUpdate.toLocaleTimeString() })}
-            </p>
           )}
           {loadingCount && (
             <div className="mt-4">
@@ -345,13 +302,13 @@ if (eventStatus === 'upcoming' && timeRemaining) {
                 onClick={handleCheckIn}
                 disabled={status === 'checking' || !token}
                 className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500"
-               >
-  {status === 'checking' ? (
-    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('checking_button')}</>
-  ) : (
-    <><CheckCircle className="mr-2 h-4 w-4" />{t('checkin_button')}<ArrowRight className="ml-2 h-4 w-4" /></>
-  )}
-</Button>
+              >
+                {status === 'checking' ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('checking_button')}</>
+                ) : (
+                  <><CheckCircle className="mr-2 h-4 w-4" />{t('checkin_button')}<ArrowRight className="ml-2 h-4 w-4" /></>
+                )}
+              </Button>
               {!token && (
                 <p className="text-xs text-gray-400 mt-4 text-center">{t('invalid_qr_hint')}</p>
               )}

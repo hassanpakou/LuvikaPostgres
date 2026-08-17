@@ -1,57 +1,67 @@
-// src/app/api/events/[eventId]/check-in/route.ts
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 
-export async function POST(request: Request, { params }: { params: Promise<{ eventId: string }> }) { // ✅ 'eventId'
-  const { eventId } = await params; // ✅ Extraire 'eventId'
+export async function POST(request: Request, { params }: { params: Promise<{ eventId: string }> }) {
+  const { eventId } = await params;
   const { token, name } = await request.json();
 
   if (!token || typeof token !== 'string') {
     return NextResponse.json({ error: 'Token invalide ou manquant' }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() { return cookieStore.getAll(); },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set({ name, value, ...options })
-          );
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
-const { data, error } = await supabase.rpc('check_in_participant', {
-  p_event_id: eventId,
-  p_token: token,
-  p_name: name
-});
+  // Vérifier l'événement
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, is_public, profile_id')
+    .eq('id', eventId)
+    .single();
 
-// si erreur fournie par supabase.rpc
-if (error) {
-  console.error('RPC check_in_participant error:', error);
+  if (!event) {
+    return NextResponse.json({ error: 'Événement introuvable' }, { status: 404 });
+  }
 
-  const msg = (error.message || '').toUpperCase();
+  // Vérifier le token du participant
+  const { data: participant } = await supabase
+    .from('event_participants')
+    .select('id, name, is_checked_in, checked_in_at')
+    .eq('event_id', eventId)
+    .eq('qr_token', token)
+    .single();
 
-  if (msg.includes('TOKEN_NOT_FOUND')) {
+  if (!participant) {
     return NextResponse.json({ error: 'QR code non reconnu' }, { status: 404 });
   }
-  if (msg.includes('ALREADY_CHECKED_IN')) {
+
+  if (participant.is_checked_in) {
     return NextResponse.json({ error: 'Déjà scanné' }, { status: 409 });
   }
-  if (msg.includes('EVENT_NOT_FOUND') || msg.includes('EVENT_NOT_ACTIVE')) {
-    return NextResponse.json({ error: 'Événement non valide ou pas actif' }, { status: 400 });
-  }
-  // autres erreurs connues/attendues
-  return NextResponse.json({ error: error.message || 'Erreur interne' }, { status: 500 });
-}
 
-// RPC renvoie normalement une ligne/objet avec name, checked_in_at
-return NextResponse.json({ success: true, name: data?.[0]?.name ?? name, checked_in_at: data?.[0]?.checked_in_at ?? new Date().toISOString() });
+  // Marquer comme présent
+  const { error: updateError } = await supabase
+    .from('event_participants')
+    .update({ is_checked_in: true, checked_in_at: new Date().toISOString() })
+    .eq('id', participant.id);
+
+  if (updateError) {
+    console.error('Erreur check-in:', updateError);
+    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+  }
+
+  // Insérer dans event_attendees pour audit
+  await supabase.from('event_attendees').insert({
+    event_id: eventId,
+    profile_scanned_id: null,
+    name: participant.name || name || 'Visiteur',
+    email: null,
+    scanned_at: new Date().toISOString(),
+    is_anonymous: true
+  });
+
+  return NextResponse.json({ 
+    success: true, 
+    name: participant.name || name,
+    checked_in_at: new Date().toISOString()
+  });
 }

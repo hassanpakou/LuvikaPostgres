@@ -1,14 +1,8 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
   try {
     // 🔐 1. Vérification authentification
@@ -18,7 +12,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // 🔐 2. VÉRIFICATION ADMIN VIA profiles (CORRECTION CRITIQUE)
+    // 🔐 2. VÉRIFICATION ADMIN VIA profiles
     const { data: adminProfile, error: profileError } = await supabase
       .from('profiles')
       .select('role, id')
@@ -37,7 +31,7 @@ export async function GET() {
       }, { status: 403 });
     }
 
-    // ✅ 3. Récupération SÉCURISÉE des profils SANS banned_until (cause de l'erreur TS)
+    // ✅ 3. Récupération des profils
     const { data: profiles, error } = await supabase
       .from('profiles')
       .select(`
@@ -56,12 +50,11 @@ export async function GET() {
       throw error;
     }
 
-    // ✅ 4. Transformation SANS banned_until (on le gère côté frontend si nécessaire)
-    const usersWithStatus = (profiles || []).map(profile => ({
+    // ✅ 4. Transformation
+    const usersWithStatus = (profiles || []).map((profile: any) => ({
       ...profile,
-      // 🔑 CORRECTION : banned_until n'existe PAS dans profiles - on le simule
       banned_until: null,
-      isBanned: false, // On gère le ban via une autre logique si nécessaire
+      isBanned: false,
     }));
 
     console.log(`✅ API /api/admin/users: ${usersWithStatus.length} utilisateurs retournés`);

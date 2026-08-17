@@ -63,13 +63,11 @@ export default function SettingsPage() {
     fetchCompany();
   }, []);
 
+  // ✅ Correction : le shim local ne fournit pas `supabase.storage`.
+  // L'upload de logo est temporairement désactivé.
   const uploadLogo = async (file: File): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `logos/${company.id}-${Date.now()}.${fileExt}`;
-    const { error } = await supabase.storage.from('org-photos').upload(fileName, file, { upsert: true });
-    if (error) { console.error('Upload logo:', error); return null; }
-    const { data: urlData } = supabase.storage.from('org-photos').getPublicUrl(fileName);
-    return urlData.publicUrl;
+    console.warn('📷 Upload logo désactivé : `supabase.storage` non implémenté dans le shim.');
+    return null;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

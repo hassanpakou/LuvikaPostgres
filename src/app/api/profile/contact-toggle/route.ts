@@ -1,31 +1,18 @@
-// src/app/api/profile/contact-toggle/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
     const { user_id, enabled } = await req.json();
 
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { 
-        cookies: { 
-          get: (name) => cookieStore.get(name)?.value 
-        } 
-      }
-    );
+    const supabase = createServerClient();
 
-    // ✅ Correction : déstructuration exacte
-    const { data : { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user || user.id !== user_id) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
-    // ✅ Met à jour
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ accepts_contact_requests: enabled })

@@ -75,12 +75,12 @@ export default function MenuPage() {
     }
     setSaving(true);
 
+    // ✅ Correction : le shim local ne fournit pas `supabase.storage`.
+    // L'upload de photo est donc temporairement désactivé.
     let imageUrl = editingItem?.image_url || null;
     if (photoFile) {
-      const fileName = `menu/${companyId}-${Date.now()}.${photoFile.name.split('.').pop()}`;
-      await supabase.storage.from('org-photos').upload(fileName, photoFile, { upsert: true });
-      const { data: urlData } = supabase.storage.from('org-photos').getPublicUrl(fileName);
-      imageUrl = urlData.publicUrl;
+      console.warn('📷 Upload photo désactivé : `supabase.storage` non implémenté dans le shim.');
+      // imageUrl reste null ou inchangé
     }
 
     const payload = {

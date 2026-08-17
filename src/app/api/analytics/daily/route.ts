@@ -1,6 +1,4 @@
-// src/app/api/analytics/daily/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -13,18 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'profile_id requis' }, { status: 400 });
     }
 
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name) {
-            return cookieStore.get(name)?.value;
-          },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     // ✅ AUTH SÉCURISÉE
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -32,7 +19,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // ✅ CONTRÔLE D'ACCÈS ÉLARGI (admin peut accéder)
+    // ✅ CONTRÔLE D'ACCÈS
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, role')
@@ -46,7 +33,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    // 🔹 Requête directe sur la table scans
+    // 🔹 Requête sur la table scans
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 

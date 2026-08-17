@@ -1,26 +1,13 @@
-// src/app/api/admin/orders/[id]/cancel/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // ✅ Promise<{ id: string }>
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // ✅ Extraction avec await
+  const { id } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.user || session.user.user_metadata?.role !== 'admin') {

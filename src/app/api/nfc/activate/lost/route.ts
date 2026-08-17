@@ -1,6 +1,4 @@
-// src/app/api/nfc/lost/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
@@ -11,18 +9,7 @@ const LostSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name) { return cookieStore.get(name)?.value; },
-          set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-          remove(name, options) { cookieStore.delete({ name, ...options }); },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -33,7 +20,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const parsed = LostSchema.parse(body);
 
-    // 🔐 Vérifie que c'est bien sa carte
     const cardRes = await supabase
       .from('nfc_cards')
       .select('user_id, status')
@@ -53,7 +39,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Déjà déclarée perdue' }, { status: 400 });
     }
 
-    // ✅ Met à jour
     const updateRes = await supabase
       .from('nfc_cards')
       .update({ 
@@ -64,7 +49,6 @@ export async function POST(req: NextRequest) {
 
     if (updateRes.error) throw updateRes.error;
 
-    // ✅ Notification admin
     await supabase.from('admin_actions').insert({
       admin_id: null,
       action: 'nfc_card_lost_report',

@@ -1,6 +1,4 @@
-// src/app/api/admin/send-welcome-email/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
@@ -9,18 +7,7 @@ const resend = process.env.RESEND_API_KEY
   : null;
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   // Vérification auth
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -46,7 +33,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email et nom requis' }, { status: 400 });
     }
 
-    // Vérifier Resend
     if (!resend) {
       console.error('❌ RESEND_API_KEY manquante');
       return NextResponse.json({ 
@@ -54,7 +40,6 @@ export async function POST(request: Request) {
       }, { status: 500 });
     }
 
-    // Envoi email
     const { error: emailError } = await resend.emails.send({
       from: 'LUVIKA <welcome@luvika.me>',
       to: [email],

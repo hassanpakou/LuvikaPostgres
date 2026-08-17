@@ -1,6 +1,4 @@
-// src/app/api/admin/subscriptions/[id]/activate/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -9,25 +7,13 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
-  // Récupérer l'abonnement
   const { data: subscription, error: fetchError } = await supabase
     .from('subscriptions')
     .select('*')
@@ -38,7 +24,6 @@ export async function POST(
     return NextResponse.json({ error: 'Souscription introuvable' }, { status: 404 });
   }
 
-  // 🔹 Vérifier qu'il n'y a pas déjà un abonnement actif pour le même plan
   const { data: activeDuplicate } = await supabase
     .from('subscriptions')
     .select('id')
@@ -54,7 +39,6 @@ export async function POST(
     }, { status: 409 });
   }
 
-  // 🔹 Désactiver tous les autres abonnements actifs (tous plans confondus)
   const { data: otherActiveSubs } = await supabase
     .from('subscriptions')
     .select('id, plan')
@@ -63,7 +47,7 @@ export async function POST(
     .neq('id', id);
 
   if (otherActiveSubs && otherActiveSubs.length > 0) {
-    const otherIds = otherActiveSubs.map(s => s.id);
+    const otherIds = otherActiveSubs.map((s: { id: any; }) => s.id);
     
     await supabase
       .from('subscriptions')
@@ -74,7 +58,6 @@ export async function POST(
       .in('id', otherIds);
   }
 
-  // Activer cet abonnement
   const { error: updateError } = await supabase
     .from('subscriptions')
     .update({
@@ -87,7 +70,6 @@ export async function POST(
     return NextResponse.json({ error: 'Échec activation' }, { status: 500 });
   }
 
-  // Mettre à jour le profil
   await supabase
     .from('profiles')
     .update({ 

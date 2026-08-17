@@ -204,9 +204,10 @@ export function useBiometricAuth() {
         description: 'Vous êtes connecté avec votre biométrie',
       });
       
-      // Rafraîchir la session Supabase
+            // Rafraîchir la session (le shim ne supporte pas refreshSession)
       const supabase = (await import('@/src/lib/supabase/client')).createClient();
-      await supabase.auth.refreshSession();
+      const { data: { session } } = await supabase.auth.getSession();
+      // Si besoin, vous pouvez vérifier session?.user ici
       
       return true;
     } catch (error: any) {

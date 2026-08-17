@@ -1,0 +1,28 @@
+# .env.local — Développement local
+
+# Supabase (public)
+NEXT_PUBLIC_SUPABASE_URL=https://fjtjgbnjswyeciifekfu.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqdGpnYm5qc3d5ZWNpaWZla2Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYyNjczNDAsImV4cCI6MjA4MTg0MzM0MH0.oAbaIsHvMXuWMEmgFqbmVrEWuNaOOVXf5k7wehfVWuo
+
+# Site URL (doit correspondre exactement à l'URL où tourne l'app)
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+# WebAuthn RP ID (domaine SANS protocole, SANS port, SANS slash)
+NEXT_PUBLIC_WEBAUTHN_RP_ID=localhost
+
+# Email & Service Role (inchangés)
+RESEND_API_KEY=re_9v2jZTPP_F2CHjVEiJ9TXi5uuVdoWAxzH
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqdGpnYm5qc3d5ZWNpaWZla2Z1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NjI2NzM0MCwiZXhwIjoyMDgxODQzMzQwfQ.mUsPltv14SdR0Kcrg7CZiRcYRd9t4pVQRU_hsJiEozs
+
+# Review Prompt
+NEXT_PUBLIC_REVIEW_MIN_TIME=120000
+NEXT_PUBLIC_REVIEW_MIN_VIEWS=3
+NEXT_PUBLIC_REVIEW_REMINDER_DAYS=7
+
+# Google Analytics
+GOOGLE_ANALYTICS_PROPERTY_ID=523635782
+GOOGLE_ANALYTICS_SERVICE_ACCOUNT_KEY={"type":"service_account","project_id":"application-mobile-campus","private_key_id":"9db436e8f92fbcc2635ee008466acd2fd944e286","private_key":"-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC1jmb2hDQQ4hrk\ntFQzQI1AfrC8RO4k9Fi8v6NyaVZ1Xs+kFdxSF25CxUptWhMQG2sKsrkC6yj631AG\n19o8e8cAT497hTFazwiWPlgDd9UkJ3sWpleUh7/AIVlvkceKFIAajC3bNogHqUB/\ndyxcQIQUjk+S6qqIHe9Za5BbeQs3JdAR4BLBmj2v/pvcyRheM4pD5tDXYEhO22O8\nPRaGU0wxbKErlFnk26WXCTvb58UZet/HGowmSVsP+tIzLajiwddW1CWWZAHWlSGL\nbKwh2ayir8H3LnWtHKEYB2ezNHeT30dMPTQvuCgB8UoACjLcCE37k2K1ID18WCaA\nkBRuGZRpAgMBAAECggEAAYpt/5fl9Iy5VgkyZmWdApfwpQW1ZaqN2ZA2HAxJImGF\nw+qMPkVvofEYWBmPFtsSC1BdTJPf+v0L1KWz9uvFUmXacwhm1P1JITPx6ERLPULO\ngxsx8WiTgoG7R2dGeRACeaHd6RcrNrFuLYa+jCE0sxNKw+rqO+cmdwJNgnviUftP\nAhceBcM0Ac//wpJoM5iCIKn/zsENwaNjjkTpEInCqgpYsr0OTl5GepT4yTsZrxJw\nrHWgnCBgZMRz+fvEAaKn6m+YugSGhSStyVsmmRFZgNlxHwem21/pwsEfZgAIMXIr\ntMXfawKl0XaPJ+vYsD1AUL3ZWb5Dsvk9dqNGOEKy/wKBgQDaEyWqHx987aeuUUfS\nFQwEMCCyKq1jMeMOvM25PvkKM2/x8OOXHuO84QQIJ3HosW1EiCBAg8GDjqEeji4E\ngITw4AjKMNJdJ1KMmNsdmlho9LFqlPV7qGw+dTnLg/NpcJzjT/ktgua5Y1GHVf1V\ncD14Q30nGSm2AoxfHaGkMR6GJwKBgQDVIWwu//f7cHsuVkOfbZMNjexp+CyPo+wy\nyV24Nd2AdB/JgOv2+Y9+JFwueMBQeXy7IRLQAYLE81f6e3XxOLybs2Td6gR4HKRF\n6hT95YF2OGnpAL6q1evuVa5RBgNdFpZS+wCBUgiEIC0rUDcVsN04r37oQOzju1bR\nCDiI2Q667wKBgFKkVu21hbVOSvFglBslJryfkIR0b+jbivSW0E+XccFP5OiHJXir\nmBqIG4MLj7tjIcmK3M4WIEu+zYhK0V2bZsXx4OLexZnPwRTPCJqbV03PDT0a3jzS\ngtLYkeJySth2eL4cHI4GwXEYFll3WN37/w+IY/FhM9Fp/dA95nfWtX6ZAoGAYcAk\niCHqMK5UMNprxXFSIsNXDPtAJNk/+cMVculxn/qioZ65mtq3D1nJ1Z6YRdCSfpka\nscAfpAkf7sg1Pd+R0a+jsYwlZJluVoqX+iMLD5esK6ulx2C6BuPRQWQKouU7KO/q\nOWXQdhjz3ou51/74V4lWIVu1ynUfyluE4m77LI0CgYEA2EVHl3Aqbsq2j959Fd3Z\nUPYYprcBljEcKqrdD6gyAdp1hqh3i+fnOQWgWuQOCQ9J3RlenON3Fl9kl6H7gEaE\n192TqIBTJcXj/MViaXUJOM3i/ETbtIzUYPNU7IQ+PW/7Eeep41oEMLqEKUD3l/52\ng9sUBF33PkMQHYQ8W6cC4LM=\n-----END PRIVATE KEY-----\n","client_email":"luvika-analytics-reader@application-mobile-campus.iam.gserviceaccount.com","client_id":"118183341701040812788","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_x509_cert_url":"https://www.googleapis.com/robot/v1/metadata/x509/luvika-analytics-reader%40application-mobile-campus.iam.gserviceaccount.com","universe_domain":"googleapis.com"}
+
+# Email Contact (doit être une adresse Gmail, et le mot de passe doit être un mot de passe applicatif généré dans votre compte Google)
+EMAIL_USER=phakunestor@gmail.com
+EMAIL_PASS=yqgc hczx llam pbve

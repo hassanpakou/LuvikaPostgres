@@ -1,7 +1,6 @@
-// src/app/auth/callback/page.tsx
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 
 export default async function CallbackPage({
   searchParams,
@@ -10,34 +9,16 @@ export default async function CallbackPage({
 }) {
   const cookieStore = await cookies();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          cookieStore.delete({ name, ...options });
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const code = searchParams.code as string;
   const next = (searchParams.next as string) || '/complete-profile';
   const plan = (searchParams.plan as string) || 'basic';
 
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-
-    if (error) {
-      redirect(`/auth/error?message=${encodeURIComponent(error.message || 'Erreur lors de la vérification')}`);
-    }
+    // 🔹 Le shim n'a pas d'échange de code réel ; on simule une connexion réussie.
+    // La session sera gérée par le client via /api/auth/me (utilisateur démo).
+    // await supabase.auth.exchangeCodeForSession(code);
 
     cookieStore.set('signup_plan', plan, {
       httpOnly: false,

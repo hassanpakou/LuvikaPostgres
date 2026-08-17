@@ -1,4 +1,4 @@
-// src/src/components/dashboard/DashboardClient.tsx
+// src/components/dashboard/DashboardClient.tsx
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
@@ -65,14 +65,12 @@ export default function DashboardClient() {
     if (data) setProfile(data);
   };
 
-
   useEffect(() => {
     const supabase = createClient();
 
     const init = async () => {
       try {
-        // 🔹 ✅ UTILISE getUser() — validation côté serveur
-        const { data : { user: authUser }, error: authError } = await supabase.auth.getUser();
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
 
         if (authError || !authUser) {
           if (!hasRedirected.current) {
@@ -84,20 +82,17 @@ export default function DashboardClient() {
 
         setUser(authUser);
 
-       // 🔹 ✅ CORRECTION CLÉ : syntaxe valide sans commentaires
-const { data: profileData, error: profileError } = await supabase
-  .from('profiles')
-  .select(`
-    *,
-    nfc_cards(*),
-    portfolios(*),
-    certificates(*)
-  `)
-  .eq('id', authUser.id)
-  .single();
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select(`
+            *,
+            nfc_cards(*),
+            portfolios(*),
+            certificates(*)
+          `)
+          .eq('id', authUser.id)
+          .single();
 
-
-        // 🔹 ✅ Redirige vers /complete-profile si profil absent
         if (profileError || !profileData) {
           if (!hasRedirected.current) {
             hasRedirected.current = true;
@@ -106,7 +101,6 @@ const { data: profileData, error: profileError } = await supabase
           return;
         }
 
-        // 🔹 ✅ Redirige si onboarding non terminé
         if (profileData.onboarding_done !== true) {
           if (!hasRedirected.current) {
             hasRedirected.current = true;
@@ -117,15 +111,15 @@ const { data: profileData, error: profileError } = await supabase
 
         setProfile(profileData);
 
-        // 🔹 Followers
-        const { count } = await supabase
+        // 🔹 Followers (comptage via length)
+        const { data: followersData } = await supabase
           .from('follows')
-          .select('*', { count: 'exact', head: true })
+          .select('id')
           .eq('followed_id', authUser.id);
-        setFollowers(count || 0);
+        setFollowers(followersData?.length || 0);
 
-        // 🔹 Scans
-        const { data : scansData } = await supabase
+        // 🔹 Scans (derniers)
+        const { data: scansData } = await supabase
           .from('scans')
           .select('*, profiles!left(username, full_name)')
           .eq('profile_id', authUser.id)
@@ -134,7 +128,7 @@ const { data: profileData, error: profileError } = await supabase
         setScans(scansData || []);
         setTotalScans(scansData?.length || 0);
 
-        // 🔹 ✅ Protection QR : vérifie que username existe
+        // 🔹 QR Code
         if (profileData.username) {
           const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://luvika.vercel.app')
             .trim()
@@ -149,31 +143,7 @@ const { data: profileData, error: profileError } = await supabase
         }
 
         setLoading(false);
-
-        // 🔹 Realtime scans
-        const realtimeChannel = supabase
-          .channel(`scans-${authUser.id}`)
-          .on('postgres_changes', {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'scans',
-            filter: `profile_id=eq.${authUser.id}`,
-          }, async (payload) => {
-            const newScan = payload.new as Scan;
-            const { data : scannerProfile } = await supabase
-              .from('profiles')
-              .select('username, full_name')
-              .eq('id', newScan.scanner_id)
-              .single();
-            newScan.profiles = scannerProfile || { username: 'inconnu', full_name: 'Utilisateur supprimé' };
-            setScans(prev => [newScan, ...prev.slice(0, 4)]);
-            setTotalScans(prev => prev + 1);
-          })
-          .subscribe();
-
-        return () => {
-          supabase.removeChannel(realtimeChannel);
-        };
+        // ✅ Realtime désactivé : le shim ne supporte pas `channel`.
       } catch (err) {
         console.error('❌ Erreur DashboardClient:', err);
         if (!hasRedirected.current) {
@@ -186,8 +156,7 @@ const { data: profileData, error: profileError } = await supabase
     init();
   }, [router]);
 
-  
-
+  if (loading) return null;
   if (!profile) return null;
 
   const isAdmin = profile.role === 'admin';
@@ -209,7 +178,7 @@ const { data: profileData, error: profileError } = await supabase
       profileUrl={`https://luvika.me/${profile.username}`}
       planColors={PLAN_COLORS}
       isAdmin={isAdmin}
-      refreshProfile={refreshProfile}   // 👈 nouvelle prop
+      refreshProfile={refreshProfile}
     />
   );
 }

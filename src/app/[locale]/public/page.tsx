@@ -1,7 +1,5 @@
-// src/app/[locale]/public/page.tsx
 import { redirect } from 'next/navigation';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { HomePageContent } from '../../../components/home/HomePageContent';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
@@ -10,15 +8,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   // 🔹 Validation locale
   const supported = ['ar','en','es','fr','kg','ln','nl','pt','sw'] as const;
   if (!supported.includes(locale as any)) {
-  redirect('/fr');
-}
+    redirect('/fr');
+  }
+
   // 🔹 Auth check
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (user) {
@@ -29,7 +23,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       .single();
 
     const role = profile?.role || user.user_metadata?.role || 'user';
-    redirect(role === 'admin' ? '/admin' : '/${locale}/dashboard');
+    redirect(role === 'admin' ? '/admin' : `/${locale}/dashboard`);
   }
 
   return <HomePageContent />;

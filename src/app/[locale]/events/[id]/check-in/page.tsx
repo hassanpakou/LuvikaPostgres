@@ -1,6 +1,4 @@
-// src/app/[locale]/events/[id]/check-in/page.tsx
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { notFound } from 'next/navigation';
 import CheckInClient from './CheckInClient';
 
@@ -14,12 +12,7 @@ export default async function CheckInPage({
   const { id: eventId } = await params;
   const { token } = await searchParams;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
   const { data: event, error } = await supabase
     .from('events')

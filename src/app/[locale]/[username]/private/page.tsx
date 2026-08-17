@@ -1,8 +1,15 @@
-// src/app/[locale]/[username]/private/page.tsx
 import { notFound, redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
-import type { User } from '@supabase/supabase-js';
+import { createServerClient } from '@/src/lib/supabase-shim';
+
+type User = {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    role?: string;
+    [key: string]: any;
+  };
+};
+
 import { motion } from 'framer-motion';
 import { Lock, User as UserIcon, EyeOff, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,26 +22,14 @@ export default async function PrivateProfilePage({
 }) {
   const { locale, username } = await params;
 
-  // 🔹 Validation de la locale → REDIRECTION, pas notFound()
   const supported = ['ar', 'en', 'es', 'fr', 'kg', 'ln', 'nl', 'pt', 'sw'] as const;
   if (!supported.includes(locale as any)) {
     redirect('/fr');
   }
 
   const decodedUsername = decodeURIComponent(username).toLowerCase().trim();
-  const cookieStore = await cookies();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   /**
    * 🔹 Étape 1 — Lecture minimale (autorisée par RLS)
@@ -69,7 +64,7 @@ export default async function PrivateProfilePage({
    */
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-900/10 to-indigo-900/20 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      {/* 🔹 Fond animé subtil */}
+      {/* Fond animé subtil */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(124,58,237,0.08),transparent_70%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(59,130,246,0.05),transparent_70%)]"></div>
@@ -81,18 +76,18 @@ export default async function PrivateProfilePage({
         transition={{ duration: 0.5 }}
         className="glass-border bg-gradient-to-br from-white/5 to-white/10 backdrop-blur-2xl rounded-3xl border border-white/15 p-8 md:p-10 max-w-md w-full relative overflow-hidden shadow-2xl shadow-black/40"
       >
-        {/* 🔹 Décoration intérieure */}
+        {/* Décoration intérieure */}
         <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-3xl opacity-30 blur-xl"></div>
         <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-30"></div>
         
         <div className="relative z-10 text-center">
-          {/* 🔹 Icône premium */}
+          {/* Icône premium */}
           <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-purple-500/30 relative overflow-hidden">
             <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
             <Lock className="w-10 h-10 text-white relative z-10" />
           </div>
 
-          {/* 🔹 Titre et sous-titre */}
+          {/* Titre et sous-titre */}
           <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-300 mb-2">
             {visibility.full_name || visibility.username}
           </h1>
@@ -113,14 +108,14 @@ export default async function PrivateProfilePage({
             )}
           </div>
 
-          {/* 🔹 Message principal */}
+          {/* Message principal */}
           <p className="text-gray-300 text-lg mb-6 max-w-md mx-auto leading-relaxed">
             Ce profil est actuellement <span className="font-medium text-purple-300">masqué au public</span>.
             <br />
             Son propriétaire a choisi de le garder privé.
           </p>
 
-          {/* 🔹 Caractéristiques */}
+          {/* Caractéristiques */}
           <div className="grid grid-cols-2 gap-4 mb-8">
             {[
               { icon: EyeOff, label: 'Visibilité limitée', desc: 'Contenu non accessible' },
@@ -138,7 +133,7 @@ export default async function PrivateProfilePage({
             ))}
           </div>
 
-          {/* 🔹 Bouton d'action */}
+          {/* Bouton d'action */}
           <Button 
             variant="outline"
             className="w-full bg-white/5 hover:bg-white/10 border-white/20 text-gray-300 hover:text-white text-lg py-6 rounded-xl font-medium transition-all duration-300 group"
@@ -150,7 +145,7 @@ export default async function PrivateProfilePage({
             </span>
           </Button>
 
-          {/* 🔹 Signature */}
+          {/* Signature */}
           <div className="mt-8 pt-6 border-t border-white/10 text-[11px] text-gray-500">
             <p className="flex items-center justify-center gap-1.5">
               <Lock className="w-3 h-3 text-purple-400" />

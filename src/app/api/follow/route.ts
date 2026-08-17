@@ -1,21 +1,8 @@
-// src/app/api/follow/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data : { session } } = await supabase.auth.getSession();
   if (!session?.user) {
@@ -42,12 +29,15 @@ export async function POST(request: NextRequest) {
     }
 
     // 🔁 Retourne les nouveaux compteurs
-    const [{ count: followers }, { count: following }] = await Promise.all([
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('followed_id', targetId),
-      supabase.from('follows').select('*', { count: 'exact', head: true }).eq('follower_id', session.user.id),
+    const [followersData, followingData] = await Promise.all([
+      supabase.from('follows').select('id').eq('followed_id', targetId),
+      supabase.from('follows').select('id').eq('follower_id', session.user.id),
     ]);
 
-    return NextResponse.json({ success: true, followers: followers ?? 0, following: following ?? 0 });
+    const followers = followersData.data?.length || 0;
+    const following = followingData.data?.length || 0;
+
+    return NextResponse.json({ success: true, followers, following });
   } catch (err) {
     console.error('Erreur follow:', err);
     return NextResponse.json({ error: 'Échec de l’action' }, { status: 500 });

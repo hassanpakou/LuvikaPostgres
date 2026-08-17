@@ -1,33 +1,25 @@
-// src/middleware.ts
-import { createServerClient } from '@supabase/ssr';
+// src/proxy.ts
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export async function middleware(request: NextRequest) {
-  const cookieStore = request.cookies;
-  const response = NextResponse.next();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { response.cookies.set({ name, value, ...options }); },
-        remove(name, options) { response.cookies.delete({ name, ...options }); },
-      },
-    }
-  );
+export async function proxy(request: NextRequest) {
+  const cookieString = request.cookies.toString();
+  const supabase = createServerClient(cookieString);
 
   const { data: { user } } = await supabase.auth.getUser();
   const path = request.nextUrl.pathname;
 
   // ✅ Routes publiques : toujours accessibles
-  const publicPaths = ['/auth/sign-in', '/auth/sign-up', '/auth/forgot-password', '/auth/callback', '/auth/error', '/', '/privacy', '/terms', '/cookies', '/contact'];
+  const publicPaths = [
+    '/auth/sign-in', '/auth/sign-up', '/auth/forgot-password',
+    '/auth/callback', '/auth/error', '/auth/update-password',
+    '/', '/privacy', '/terms', '/cookies', '/contact',
+  ];
   const isPublicPath = publicPaths.some(p => path === p || path.startsWith(p + '/'));
-  
+
   if (isPublicPath) {
-    return response;
+    return NextResponse.next();
   }
 
   // ✅ Routes protégées : si pas connecté → redirection vers sign-in
@@ -63,7 +55,7 @@ export async function middleware(request: NextRequest) {
       // Si on est dans les routes entreprise
       if (path.startsWith('/dashboard/entreprise')) {
         const isSetupRoute = path.startsWith('/dashboard/entreprise/setup');
-        
+
         // Si pas sur une page de setup, vérifier que l'entreprise est configurée
         if (!isSetupRoute) {
           const { data: company } = await supabase
@@ -84,16 +76,16 @@ export async function middleware(request: NextRequest) {
 
           // Entreprise a un type mais pas configurée
           const hasConfig = company.company_config && Object.keys(company.company_config).length > 0;
-          
+
           if (!hasConfig) {
             // Routes autorisées sans configuration complète
             const allowedWithoutConfig = [
               '/dashboard/entreprise',
               '/dashboard/entreprise/settings',
             ];
-            
+
             const isAllowed = allowedWithoutConfig.some(p => path === p || path.startsWith(p + '/'));
-            
+
             if (!isAllowed) {
               return NextResponse.redirect(
                 new URL(`/dashboard/entreprise/setup/${company.company_type}`, request.url)
@@ -115,7 +107,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(path.replace('/events/', '/fr/events/'), request.url));
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

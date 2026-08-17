@@ -1,6 +1,4 @@
-// src/app/api/followers/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -13,18 +11,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'ID manquant' }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data : { session } } = await supabase.auth.getSession();
   const userId = session?.user?.id;
@@ -38,26 +25,28 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ followers: [], total: 0 });
   }
 
-  // Compter le total des followers
-  const { count: total } = await supabase
-    .from('follows')
-    .select('*', { count: 'exact' })
-    .eq('followed_id', profile_id);
-
-  // Récupérer les followers avec pagination
-  const { data : followers } = await supabase
+  // Récupérer tous les followers (pas de .range() dans le shim)
+  const { data: allFollowers, error } = await supabase
     .from('follows')
     .select(`
       follower_id,
       created_at,
       follower:profiles!follower_id (full_name, username, avatar_url, plan)
     `)
-    .eq('followed_id', profile_id)
-    .range((page - 1) * limit, page * limit - 1);
+    .eq('followed_id', profile_id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const total = allFollowers?.length || 0;
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const followers = allFollowers?.slice(start, end) || [];
 
   return NextResponse.json({ 
-    followers: followers || [], 
-    total: total || 0,
+    followers, 
+    total,
     page,
     limit
   });

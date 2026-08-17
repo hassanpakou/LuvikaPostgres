@@ -1,9 +1,6 @@
-// src/app/api/upgrade-request/route.ts
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 
-// 🔹 Types explicites
 type Plan = 'basic' | 'premium' | 'entreprise';
 
 const planOrder: Record<Plan, number> = {
@@ -14,12 +11,7 @@ const planOrder: Record<Plan, number> = {
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { get: (name) => cookieStore.get(name)?.value } }
-    );
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -50,14 +42,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Vous avez déjà ce plan' }, { status: 400 });
     }
 
-    // ✅ Validation du parcours : basic → premium → entreprise
     if (planOrder[target_plan] !== planOrder[currentPlan] + 1) {
       return NextResponse.json({ 
         error: 'Mise à niveau invalide : vous devez suivre le parcours étape par étape' 
       }, { status: 400 });
     }
 
-    // 🔹 Enregistre la demande SANS créer l'entreprise
     const { error: insertError } = await supabase
       .from('upgrade_requests')
       .insert({

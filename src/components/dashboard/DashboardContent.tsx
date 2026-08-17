@@ -818,9 +818,7 @@ const updateUnreadCount = (count: number) => {
     setUnreadMessagesCount(Math.max(0, count));
   });
 };
-  // 🔹 Références pour les canaux realtime
-  const channelsRef = useRef<any>({});
-  
+
 // Ajoutez cet état
 const [subscriptionData, setSubscriptionData] = useState<{
   plan: string;
@@ -1205,9 +1203,9 @@ const fetchCards = async () => {
 
     // 🔹 Calculer les statistiques
     const totalScans = scansData?.length || 0;
-    const uniqueVisitors = new Set(
-      scansData?.map(scan => scan.scanner_id).filter(Boolean) || []
-    ).size;
+   const uniqueVisitors = new Set(
+  scansData?.map((scan: any) => scan.scanner_id).filter(Boolean) || []
+).size;
 
     setActiveCardStats({
       scans: totalScans,
@@ -1417,296 +1415,7 @@ useEffect(() => {
   }
 }, [profile.accepts_contact_requests]);
 
-  // 🔹 Synchronisation en temps réel - Améliorée avec gestion d'erreurs et reconnexion
-  useEffect(() => {
-    const supabase = createClient();
-    
-    // Obtenir l'utilisateur de manière asynchrone
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
-
-      // 🔹 Canal pour les messages non lus
-      const messagesChannel = supabase
-        .channel(`messages-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'contact_requests',
-            filter: `profile_id=eq.${user.id}`
-          },
-          async () => {
-            // 🔹 Rafraîchir le compteur de messages non lus
-            try {
-              const res = await fetch('/api/contact-requests/count?status=unread');
-              if (res.ok) {
-                const data = await res.json();
-                setUnreadMessagesCount(data.count || 0);
-              }
-            } catch (err) {
-              console.warn('Erreur mise à jour messages:', err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal messages connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal messages');
-          }
-        });
-
-      // 🔹 Canal pour les cartes NFC
-      const nfcChannel = supabase
-        .channel(`nfc-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'nfc_cards',
-            filter: `user_id=eq.${user.id}`
-          },
-          async () => {
-            // 🔹 Rafraîchir les informations NFC
-            try {
-              const { data } = await supabase
-                .from('nfc_cards')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
-              
-              setNfcCards(data || []);
-              
-              // 🔹 Rafraîchir les stats
-              const { data: scansData } = await supabase
-                .from('scans')
-                .select('scanner_id')
-                .eq('profile_id', user.id)
-                .eq('scan_type', 'nfc');
-
-              const totalScans = scansData?.length || 0;
-              const uniqueVisitors = new Set(
-                scansData?.map(scan => scan.scanner_id).filter(Boolean) || []
-              ).size;
-
-              setActiveCardStats({
-                scans: totalScans,
-                unique_visitors: uniqueVisitors
-              });
-            } catch (err) {
-              console.warn('Erreur mise à jour NFC:', err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal NFC connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal NFC');
-          }
-        });
-
-      // 🔹 Canal pour les statistiques de scans
-      const scansChannel = supabase
-        .channel(`scans-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'scans',
-            filter: `profile_id=eq.${user.id}`
-          },
-          async () => {
-            // 🔹 Rafraîchir les statistiques en temps réel
-            try {
-              const res = await fetch(`/api/analytics?profile_id=${user.id}&range=all`);
-              const data = await res.json();
-              setScansCount(data.total || 0);
-            } catch (err) {
-              console.warn('Erreur mise à jour scans:', err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal scans connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal scans');
-          }
-        });
-
-      // 🔹 Canal pour les likes
-      const likesChannel = supabase
-        .channel(`likes-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'likes',
-            filter: `profile_id=eq.${user.id}`
-          },
-          async () => {
-            // 🔹 Rafraîchir le compte de likes
-            try {
-              const { count } = await supabase
-                .from('likes')
-                .select('*', { count: 'exact', head: true })
-                .eq('profile_id', user.id);
-              
-              // Mettre à jour le profil avec le nouveau compte
-              const updatedProfile = { ...profile, likes_count: count };
-              // Note: Dans un cas réel, on mettrait à jour l'état global ou le store
-            } catch (err) {
-              console.warn('Erreur mise à jour likes:', err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal likes connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal likes');
-          }
-        });
-
-      // 🔹 Canal pour les followers
-      const followersChannel = supabase
-        .channel(`followers-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'follows',
-            filter: `followed_id=eq.${user.id}`
-          },
-          async () => {
-            // 🔹 Rafraîchir le compte de followers
-            try {
-              const { count } = await supabase
-                .from('follows')
-                .select('*', { count: 'exact', head: true })
-                .eq('followed_id', user.id);
-              
-              // Mettre à jour le totalFollowers
-              // Note: Dans un cas réel, on mettrait à jour l'état global ou le store
-            } catch (err) {
-              console.warn('Erreur mise à jour followers:', err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal followers connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal followers');
-          }
-        });
-
-      // 🔹 Canal pour les portfolios et certifications
-      const portfolioChannel = supabase
-        .channel(`portfolio-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'portfolios',
-            filter: `profile_id=eq.${user.id}`
-          },
-          async () => {
-            // 🔹 Rafraîchir les portfolios via l'API
-            try {
-              const res = await fetch(`/api/portfolio?profile_id=${user.id}`);
-              const { portfolios, certificates } = await res.json();
-           
-              // Note: Dans un cas réel, on mettrait à jour l'état global ou le store
-            } catch (err) {
-              console.warn('Erreur mise à jour portfolio:', err);
-            }
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal portfolio connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal portfolio');
-          }
-        });
-
-      // 🔹 Canal pour les informations du profil
-      const profileChannel = supabase
-        .channel(`profile-${user.id}`)
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`
-          },
-          (payload) => {
-            // 🔹 Mettre à jour les informations du profil
-            const updatedProfile = { ...profile, ...payload.new };
-            // Note: Dans un cas réel, on mettrait à jour l'état global ou le store
-          }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('✅ Canal profile connecté');
-          } else if (status === 'CHANNEL_ERROR') {
-            console.warn('⚠️ Erreur canal profile');
-          }
-        });
-
-      // 🔹 Gestionnaire de reconnexion
-      const handleReconnect = () => {
-        console.log('🔄 Tentative de reconnexion aux canaux realtime');
-        // Les canaux se reconnectent automatiquement avec Supabase
-      };
-
-      // 🔹 Écouteur de connexion réseau
-      const handleOnline = () => {
-        console.log('🌐 Connexion réseau restaurée');
-        handleReconnect();
-      };
-
-      window.addEventListener('online', handleOnline);
-
-      // 🔹 Stocker les références pour le cleanup
-      channelsRef.current = {
-        messages: messagesChannel,
-        nfc: nfcChannel,
-        scans: scansChannel,
-        likes: likesChannel,
-        followers: followersChannel,
-        portfolio: portfolioChannel,
-        profile: profileChannel,
-        handleOnline
-      };
-
-    }).catch(console.error);
-
-    return () => {
-      const channels = channelsRef.current;
-      if (channels) {
-        if (channels.messages) supabase.removeChannel(channels.messages);
-        if (channels.nfc) supabase.removeChannel(channels.nfc);
-        if (channels.scans) supabase.removeChannel(channels.scans);
-        if (channels.likes) supabase.removeChannel(channels.likes);
-        if (channels.followers) supabase.removeChannel(channels.followers);
-        if (channels.portfolio) supabase.removeChannel(channels.portfolio);
-        if (channels.profile) supabase.removeChannel(channels.profile);
-        if (channels.handleOnline) {
-          window.removeEventListener('online', channels.handleOnline);
-        }
-      }
-    };
-  }, [profile.id]);
+  
   // 🔹 ✅ Nouveaux quickActions - version compacte et glassmorphic
 const quickActions: Action[] = [
   { id: 'profile', label: 'Profil', icon: <User size={18} />, color: 'from-cyan-500 to-blue-500' },
@@ -1827,7 +1536,7 @@ const handleSearch = async (query: string) => {
     
     // Charger le statut de suivi
     if (data && data.length > 0) {
-      const followerIds = data.map(p => p.id);
+      const followerIds = data.map((p: { id: any; }) => p.id);
       const { data: followers } = await supabase
         .from('followers')
         .select('follower_id')
@@ -1835,7 +1544,7 @@ const handleSearch = async (query: string) => {
         .in('follower_id', followerIds);
 
       const statusMap: Record<string, boolean> = {};
-      (followers || []).forEach(f => {
+      (followers || []).forEach((f: { follower_id: string | number; }) => {
         statusMap[f.follower_id] = true;
       });
       setFollowStatus(statusMap);

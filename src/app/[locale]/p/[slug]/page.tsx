@@ -1,7 +1,5 @@
-// src/app/[locale]/p/[slug]/page.tsx
 import { notFound } from 'next/navigation';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { Button } from '../../../../../components/ui/button';
 import { Card, CardContent } from '../../../../../components/ui/card';
 import { Heart, ShoppingCart, MapPin, Store } from 'lucide-react';
@@ -21,18 +19,7 @@ export default async function ProductPublicPage({
     return notFound();
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   // 🔑 Récupère le produit + entreprise (sans username)
   const { data: product, error } = await supabase
@@ -168,7 +155,7 @@ export default async function ProductPublicPage({
                 </p>
               )}
             </div>
-<ProductActions productId={product.id} locale={locale} />
+            <ProductActions productId={product.id} locale={locale} />
           </div>
         </div>
       </div>

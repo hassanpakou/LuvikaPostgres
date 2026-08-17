@@ -1,6 +1,4 @@
-// src/app/api/subscription/apply-scan-reward/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -10,14 +8,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'profile_id requis' }, { status: 400 });
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
-  // Récupérer les badges actuels
   const { data: profile } = await supabase
     .from('profiles')
     .select('badges')
@@ -26,7 +18,6 @@ export async function POST(request: Request) {
 
   const currentBadges = profile?.badges || [];
   
-  // Ajouter le badge s'il n'existe pas déjà
   if (!currentBadges.includes('scan_10k_reward')) {
     const newBadges = [...currentBadges, 'scan_10k_reward'];
     

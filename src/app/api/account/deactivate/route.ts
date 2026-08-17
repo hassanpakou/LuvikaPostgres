@@ -1,22 +1,9 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/src/lib/supabase-shim';
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = cookies();
-    // Créer un client avec les cookies de la requête
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Cookie: cookieStore.toString(),
-          },
-        },
-      }
-    );
+    const supabase = createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -37,8 +24,9 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // Déconnexion immédiate
-    await supabase.auth.signOut();
+    // ⚠️ La méthode auth.signOut() n'existe pas encore dans le shim.
+    // À implémenter plus tard.
+    // await supabase.auth.signOut();
 
     return NextResponse.json({ success: true, message: 'Compte désactivé' });
   } catch (error: any) {

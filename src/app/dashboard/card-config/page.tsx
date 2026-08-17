@@ -76,7 +76,7 @@ export default function CardConfigPage() {
 
     const { data } = await supabase.from('card_configs').select('scan_type, enabled').eq('profile_id', user.id).in('scan_type', scanOptions.map(o => o.scan_type));
     const map: Record<string, boolean> = {};
-    data?.forEach(cfg => { map[cfg.scan_type] = cfg.enabled; });
+    data?.forEach((cfg: any) => { map[cfg.scan_type] = cfg.enabled; }); // ✅ Correction ici
     setConfigs(map);
     setLoading(false);
   };
@@ -156,16 +156,16 @@ export default function CardConfigPage() {
           ))}
         </div>
         <div className="flex items-center gap-3 text-sm">
-  <div className="flex items-center gap-1.5 text-cyan-400">
-    <Zap className="w-4 h-4" />
-    <span className="font-medium">{stats.active} </span>
-  </div>
-  <div className="flex items-center gap-1.5 text-amber-400">
-    <Shield className="w-4 h-4" />
-    <span className="font-medium">{stats.locked} </span>
-  </div>
-  {getPlanBadge(isPremium, userPlan)}
-</div>
+          <div className="flex items-center gap-1.5 text-cyan-400">
+            <Zap className="w-4 h-4" />
+            <span className="font-medium">{stats.active} </span>
+          </div>
+          <div className="flex items-center gap-1.5 text-amber-400">
+            <Shield className="w-4 h-4" />
+            <span className="font-medium">{stats.locked} </span>
+          </div>
+          {getPlanBadge(isPremium, userPlan)}
+        </div>
       </div>
 
       {/* Liste */}

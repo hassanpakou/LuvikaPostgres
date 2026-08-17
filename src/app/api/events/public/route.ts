@@ -1,5 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
@@ -7,12 +6,7 @@ export async function GET(request: Request) {
   const profileId = searchParams.get('profile_id');
   if (!profileId) return NextResponse.json({ error: 'Missing profile_id' }, { status: 400 });
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
-  );
+  const supabase = createServerClient();
 
   const now = new Date().toISOString();
   const { data: events, error } = await supabase

@@ -1,30 +1,15 @@
-//api/auth/biometric/register/route.ts
 import { generateRegistrationOptions } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { cookies } from 'next/headers';
 import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
 
-// ✅ CORRECTION : Définir le type localement pour éviter l'erreur d'import
 type AuthenticatorTransportFuture = 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'usb';
 
 export async function POST() {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set({ name, value, ...options })
-            );
-          },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     // 1. Vérifier l'utilisateur
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -39,8 +24,7 @@ export async function POST() {
       .eq('user_id', user.id)
       .eq('is_active', true);
 
-    // ✅ Utilisation du type local ici pour le cast
-    const excludeCredentials = existingCredentials?.map((cred) => ({
+    const excludeCredentials = existingCredentials?.map((cred: { credential_id: any; }) => ({
       id: cred.credential_id,
       type: 'public-key' as const,
       transports: ['internal', 'hybrid'] as AuthenticatorTransportFuture[], 
@@ -49,7 +33,7 @@ export async function POST() {
     // 3. Générer les options
     const options = await generateRegistrationOptions({
       rpName: 'LUVIKA',
-      rpID: getRpId(),                 // ✅ Utilisation de la fonction
+      rpID: getRpId(),
       userID: new TextEncoder().encode(user.id),
       userName: user.email || '',
       attestationType: 'none',

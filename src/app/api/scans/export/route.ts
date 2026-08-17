@@ -1,24 +1,11 @@
-// src/app/api/scans/export/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 
 export async function POST(req: NextRequest) {
   try {
     const { user_id } = await req.json();
 
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name) { return cookieStore.get(name)?.value; },
-          set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-          remove(name, options) { cookieStore.delete({ name, ...options }); },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     const sessionResult = await supabase.auth.getSession();
     const session = sessionResult.data.session;
@@ -32,7 +19,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    const {  data } = await supabase
+    const { data } = await supabase
       .from('scans')
       .select(`
         created_at,
@@ -47,10 +34,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Aucun scan trouvé' }, { status: 404 });
     }
 
-    // ✅ Gestion safe de profiles (tableau ou null)
     const csvRows = [
       ['Date', 'Type', 'IP', 'Visiteur'],
-      ...data.map(row => {
+      ...data.map((row: { profiles: any[]; created_at: string | number | Date; scan_type: any; scanner_ip: any; }) => {
         const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
         return [
           new Date(row.created_at).toLocaleString('fr-FR'),
@@ -63,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     const csv = csvRows
       .map(row => 
-        row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
+        row.map((cell: any) => `"${String(cell).replace(/"/g, '""')}"`).join(',')
       )
       .join('\n');
 

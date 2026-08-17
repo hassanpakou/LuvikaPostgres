@@ -51,28 +51,16 @@ export function AdminSidebar() {
           .single();
         if (profileData) setProfile(profileData);
 
-        const { count } = await supabase
+        const { data } = await supabase
           .from('contact_requests')
-          .select('id', { count: 'exact', head: true })
+          .select('id')
           .eq('is_read', false);
-        setUnreadCount(count || 0);
+        setUnreadCount(data?.length || 0);
       }
     };
     fetchData();
-
-    const supabase = createClient();
-    const channel = supabase
-      .channel('contact-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_requests' }, async () => {
-        const { count } = await supabase
-          .from('contact_requests')
-          .select('id', { count: 'exact', head: true })
-          .eq('is_read', false);
-        setUnreadCount(count || 0);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    // ✅ Realtime désactivé : le shim ne supporte pas `channel`.
+    return () => {};
   }, []);
 
   const handleSignOut = async () => {

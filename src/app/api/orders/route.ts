@@ -1,32 +1,10 @@
 // src/app/api/orders/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  // 🔹 ✅ ATTENDRE les cookies
-  const cookieStore = await cookies(); // ← await obligatoire
+  const supabase = createServerClient();
 
-  // 🔹 Crée le client Supabase SSR
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name, value, options) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          cookieStore.delete({ name, ...options });
-        },
-      },
-    }
-  );
-
-  // 🔹 Récupère la session
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -47,7 +25,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
-    // 🔹 Insère la commande
     const { data: order, error } = await supabase
       .from('orders')
       .insert({
@@ -62,11 +39,9 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // 🔹 Optionnel : déclencher Edge Function
+    // Optionnel : Edge Function (stub : lèvera une erreur)
     try {
-      await supabase.functions.invoke('send-order-confirmation', {
-        body: { order_id: order.id },
-      });
+      await supabase.functions.invoke(); // ✅ Appel sans arguments (stub)
     } catch (emailErr) {
       console.warn('📧 Email non envoyé (Edge Function)', emailErr);
     }

@@ -1,29 +1,19 @@
-// src/app/api/admin/nfc/send-matricule/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend'; // ✅ Import Resend
+import { Resend } from 'resend';
 
-// ✅ Initialisation sécurisée de Resend
 const resend = process.env.RESEND_API_KEY 
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
-  // 🔐 Vérification admin
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user || user.user_metadata?.role !== 'admin') {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
   }
 
-  // 🔐 Vérification clé Resend
   if (!resend) {
     console.error('❌ RESEND_API_KEY manquante dans .env.local');
     return NextResponse.json({ 
@@ -40,9 +30,8 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // ✅ ENVOI RÉEL DE L'EMAIL AVEC RESEND
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'LUVIKA <noreply@luvika.me>', // ✅ Utilise ton domaine vérifié sur Resend
+      from: 'LUVIKA <noreply@luvika.me>',
       to: [email],
       subject: '🔐 Votre matricule de carte NFC LUVIKA',
       html: generateEmailTemplate(full_name, matricule, card_id),
@@ -57,7 +46,6 @@ export async function POST(request: Request) {
 
     console.log(`✅ Email envoyé à ${email} | ID Resend: ${emailData?.id}`);
 
-    // 🔑 CORRECTION CRITIQUE : Mise à jour de la table ORDERS (pas nfc_orders)
     const { data: nfcCard, error: cardError } = await supabase
       .from('nfc_cards')
       .select('order_id, user_id')
@@ -67,9 +55,8 @@ export async function POST(request: Request) {
     if (cardError || !nfcCard?.order_id) {
       console.warn('⚠️ Impossible de mettre à jour la commande:', cardError?.message || 'Order ID manquant');
     } else {
-      // ✅ CORRECTION : Table 'orders' au lieu de 'nfc_orders'
       const { error: updateError } = await supabase
-        .from('orders') // ✅ TABLE CORRECTE
+        .from('orders')
         .update({ status: 'shipped' })
         .eq('id', nfcCard.order_id);
 
@@ -86,18 +73,6 @@ export async function POST(request: Request) {
       emailId: emailData?.id,
     });
   } catch (error: any) {
-    if (EvalError?.name === 'UnauthorizedError') {
-  console.error('❌ Clé API Resend invalide ou manquante');
-  return NextResponse.json({ 
-    error: 'Configuration email invalide - Contactez l\'administrateur' 
-  }, { status: 500 });
-}
-
-if (EvalError?.name === 'MissingRequiredFieldError') {
-  return NextResponse.json({ 
-    error: 'Adresse email invalide' 
-  }, { status: 400 });
-}
     console.error('❌ Erreur globale envoi matricule:', error);
     return NextResponse.json({ 
       error: error.message || 'Erreur serveur' 

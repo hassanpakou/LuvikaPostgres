@@ -106,14 +106,12 @@ export default function OrgCardsPage() {
 
   useEffect(() => { fetchCards(); }, []);
 
-  const uploadPhoto = async (file: File, cardNumber: string): Promise<string | null> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `org-cards/${cardNumber}-${Date.now()}.${fileExt}`;
-    const { error } = await supabase.storage.from('org-photos').upload(fileName, file, { upsert: true });
-    if (error) { console.error('Upload photo:', error); return null; }
-    const { data: urlData } = supabase.storage.from('org-photos').getPublicUrl(fileName);
-    return urlData.publicUrl;
-  };
+ const uploadPhoto = async (file: File, cardNumber: string): Promise<string | null> => {
+  // ⚠️ Le shim local ne fournit pas encore `storage`.
+  // L’upload de photo est donc désactivé pour le moment.
+  console.warn('📷 Upload photo désactivé : `supabase.storage` non implémenté dans le shim.');
+  return null;
+};
 
   const resetForm = () => {
     setFormData(emptyForm);

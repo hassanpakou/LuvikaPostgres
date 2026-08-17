@@ -1,46 +1,34 @@
-import { cookies } from 'next/headers';
+// src/app/api/profiles/debug/route.ts
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 
 export async function GET() {
-  const cookieStore = await cookies();
+  const supabase = createServerClient();
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options });
-        },
-        remove(name: string, options: any) {
-          cookieStore.delete({ name, ...options });
-        },
-      },
-    }
-  );
-
-  // Get all profiles with more details
-  const { data: profiles, error, count } = await supabase
+  // Récupération des profils sans count exact
+  const { data: profiles, error } = await supabase
     .from('profiles')
-    .select('id, username, full_name, email, created_at, role, plan, onboarding_done', { count: 'exact' })
+    .select('id, username, full_name, email, created_at, role, plan, onboarding_done')
     .order('created_at', { ascending: false })
     .limit(50);
 
   if (error) {
     return NextResponse.json({ 
       error: 'Erreur base de données', 
-      details: error.message,
-      code: error.code 
+      details: typeof error === 'string' ? error : (error as any)?.message || 'Erreur inconnue',
+      code: (error as any)?.code
     }, { status: 500 });
   }
 
-  // Check auth.users table to see if there are registered users
+  const count = profiles?.length || 0;
+
+  // Stub auth.admin.listUsers : renvoie une liste vide
   const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
   
+  const sampleEmails = Array.isArray(authUsers?.users) 
+    ? authUsers.users.slice(0, 5).map((u: any) => u.email).filter(Boolean)
+    : [];
+
   return NextResponse.json({
     diagnostics: {
       total_profiles: count,
@@ -51,12 +39,12 @@ export async function GET() {
     profiles_table: {
       count: count,
       sample_data: profiles || [],
-      usernames: profiles?.map(p => p.username) || []
+      usernames: profiles?.map((p: any) => p.username) || []
     },
     auth_users: {
       count: authUsers?.users?.length || 0,
       note: authError ? "Impossible d'accéder aux utilisateurs auth (permissions)" : "OK",
-      sample_emails: authUsers?.users?.slice(0, 5).map(u => u.email) || []
+      sample_emails: sampleEmails
     },
     next_steps: count === 0 ? [
       "1. Créez un compte utilisateur via votre interface d'inscription",

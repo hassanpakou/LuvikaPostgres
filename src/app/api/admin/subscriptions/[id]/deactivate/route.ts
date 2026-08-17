@@ -1,6 +1,4 @@
-// src/app/api/admin/subscriptions/[id]/deactivate/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(
@@ -9,18 +7,7 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return cookieStore.get(name)?.value; },
-        set(name, value, options) { cookieStore.set({ name, value, ...options }); },
-        remove(name, options) { cookieStore.delete({ name, ...options }); },
-      },
-    }
-  );
+  const supabase = createServerClient();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user || user.user_metadata?.role !== 'admin') {
@@ -37,11 +24,10 @@ export async function POST(
     return NextResponse.json({ error: 'Souscription introuvable' }, { status: 404 });
   }
 
-  // ❌ Utiliser 'canceled' au lieu de 'inactive' (conformément à la contrainte CHECK)
   const { error: updateError } = await supabase
     .from('subscriptions')
     .update({
-      status: 'canceled', // Changé de 'inactive' à 'canceled'
+      status: 'canceled',
       updated_at: new Date().toISOString(),
     })
     .eq('id', id);
@@ -51,7 +37,6 @@ export async function POST(
     return NextResponse.json({ error: 'Échec de la désactivation' }, { status: 500 });
   }
 
-  // Mettre aussi à jour le profil (remettre en basic)
   if (subscription.profile_id) {
     await supabase
       .from('profiles')

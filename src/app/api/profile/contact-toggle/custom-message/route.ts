@@ -1,28 +1,19 @@
-// src/app/api/profile/custom-message/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   try {
     const { user_id, message } = await req.json();
-    const cookieStore = await cookies();
+    const supabase = createServerClient();
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { get: (name) => cookieStore.get(name)?.value } }
-    );
-
-    const { data : { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user || user.id !== user_id) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 403 });
     }
 
-    // ✅ Enregistre dans une table `user_feedback`
     const { error } = await supabase
       .from('user_feedback')
-      .insert({ 
+      .insert({
         user_id,
         message,
         type: 'custom',

@@ -1,22 +1,15 @@
-// src/app/api/admin/nfc/[cardId]/activate/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 // ✅ CORRECTION NEXT.JS 15 : params est UNE PROMESSE
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ cardId: string }> } // ✅ Type corrigé
+  { params }: { params: Promise<{ cardId: string }> }
 ) {
   // ✅ OBLIGATOIRE : Attendre la résolution de params
   const { cardId } = await params;
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { get: (name) => cookieStore.get(name)?.value } }
-  );
+  const supabase = createServerClient();
 
   // 🔐 Vérification admin (inchangée)
   const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -64,7 +57,7 @@ export async function POST(
       card_id: cardId,
       user_id: user.id,
       action_type: 'reactivate' as const,
-      matricule_verified: card.matricule || `CARD-${cardId.substring(0, 8)}`, // ✅ Sécurisé
+      matricule_verified: card.matricule || `CARD-${cardId.substring(0, 8)}`,
       reason: 'Réactivation manuelle par admin',
     });
 

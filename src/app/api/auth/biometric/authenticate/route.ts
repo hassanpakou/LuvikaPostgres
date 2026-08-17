@@ -1,34 +1,18 @@
-//api/auth/biometric/authenticate/route.ts
 import { generateAuthenticationOptions } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { cookies } from 'next/headers';
 import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
 
-// ✅ CORRECTION : Définir le type localement au lieu de l'importer
 type AuthenticatorTransport = 'ble' | 'cable' | 'hybrid' | 'internal' | 'nfc' | 'usb';
 
 export async function POST() {
   try {
     const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set({ name, value, ...options })
-            );
-          },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     const { data: { user } } = await supabase.auth.getUser();
     
-    // ✅ Utilisation du type local ici
     let allowCredentials: {
       id: string;
       type: 'public-key';
@@ -43,22 +27,20 @@ export async function POST() {
         .eq('is_active', true);
       
       if (data) {
-        allowCredentials = data.map(cred => ({
+        allowCredentials = data.map((cred: { credential_id: any; }) => ({
           id: cred.credential_id,
           type: 'public-key' as const,
-          // Optionnel : si vous stockez les transports en DB, mappez-les ici
-          // sinon, laissez undefined pour laisser le navigateur décider
         }));
       }
     }
 
-const options = await generateAuthenticationOptions({
-  rpID: getRpId(),                    // ✅
-  allowCredentials,
-  userVerification: 'preferred',
-});
+    const options = await generateAuthenticationOptions({
+      rpID: getRpId(),
+      allowCredentials,
+      userVerification: 'preferred',
+    });
 
-    // Stocker le challenge
+    // Stocker le challenge (utilise toujours les cookies)
     cookieStore.set('webauthn_auth_challenge', options.challenge, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

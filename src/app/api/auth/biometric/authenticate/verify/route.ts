@@ -1,9 +1,9 @@
-//api/auth/biometric/authenticate/verify/route.ts
 import { verifyAuthenticationResponse } from '@simplewebauthn/server';
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { cookies } from 'next/headers';
 import { getRpId, getOrigin } from '@/src/lib/webauthn/utils';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -14,20 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Challenge expiré' }, { status: 400 });
     }
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll: () => cookieStore.getAll(),
-          setAll: (cookiesToSet) => {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set({ name, value, ...options })
-            );
-          },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
     // Récupérer la clé publique depuis la DB
     const { data: credentialData, error: fetchError } = await supabase
@@ -45,11 +32,11 @@ export async function POST(req: Request) {
     const verification = await verifyAuthenticationResponse({
       response: body,
       expectedChallenge: challenge,
-        expectedOrigin: getOrigin(),         // ✅
-  expectedRPID: getRpId(),             // ✅
+      expectedOrigin: getOrigin(),
+      expectedRPID: getRpId(),
       credential: {
         id: credentialData.credential_id,
-        publicKey: new Uint8Array(credentialData.public_key), // Conversion Bytea -> Uint8Array
+        publicKey: new Uint8Array(credentialData.public_key),
         counter: Number(credentialData.sign_count),
       },
       requireUserVerification: true,

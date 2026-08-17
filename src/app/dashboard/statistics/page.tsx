@@ -1,7 +1,7 @@
 // src/app/dashboard/statistics/page.tsx
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
@@ -65,9 +65,9 @@ export default function StatisticsPage() {
     const { data: scans } = await supabase.from('scans').select('id, scan_type, created_at, profiles(full_name, username)')
       .eq('profile_id', user.id).gte('created_at', start.toISOString()).order('created_at', { ascending: false });
 
-    const byType = ['nfc', 'qr_profile', 'qr_event'].map(type => ({ type, count: scans?.filter(s => s.scan_type === type).length || 0 }));
+    const byType = ['nfc', 'qr_profile', 'qr_event'].map(type => ({ type, count: scans?.filter((s: any) => s.scan_type === type).length || 0 }));
     const dayMap = new Map<string, number>();
-    scans?.forEach(s => { const d = new Date(s.created_at).toLocaleDateString('fr-FR'); dayMap.set(d, (dayMap.get(d) || 0) + 1); });
+    scans?.forEach((s: any) => { const d = new Date(s.created_at).toLocaleDateString('fr-FR'); dayMap.set(d, (dayMap.get(d) || 0) + 1); });
     const byDay = Array.from(dayMap.entries()).map(([date, count]) => ({ date, count })).slice(0, 14);
 
     setData({ total: scans?.length || 0, byType, byDay, recent: scans?.slice(0, 10) || [] });
@@ -81,7 +81,7 @@ export default function StatisticsPage() {
     if (!user) return;
     const { data: scans } = await supabase.from('scans').select('created_at, scan_type, profiles(full_name, username)').eq('profile_id', user.id).order('created_at', { ascending: false });
     if (!scans?.length) { toast.warning('Aucun scan'); return; }
-    const csv = [['Date', 'Type', 'Visiteur'].join(','), ...scans.map(s => [`"${new Date(s.created_at).toLocaleString('fr-FR')}"`, s.scan_type, `"${s.profiles?.[0]?.full_name || s.profiles?.[0]?.username || 'Anonyme'}"`].join(','))].join('\n');
+    const csv = [['Date', 'Type', 'Visiteur'].join(','), ...scans.map((s: any) => [`"${new Date(s.created_at).toLocaleString('fr-FR')}"`, s.scan_type, `"${s.profiles?.[0]?.full_name || s.profiles?.[0]?.username || 'Anonyme'}"`].join(','))].join('\n');
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `stats_${new Date().toISOString().slice(0,10)}.csv`; a.click();
     toast.success('✅ Export CSV téléchargé');

@@ -1,16 +1,12 @@
-// src/app/api/admin/upgrade-requests/[id]/[action]/route.ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(
   request: Request,
   context: { params: Promise<{ id: string; action: string }> }
 ) {
-  // Service role pour contourner RLS
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  // Le shim ne fait pas de différence entre anon et service_role
+  const supabase = createClient();
 
   const { id, action } = await context.params;
 
@@ -49,7 +45,6 @@ export async function POST(
 
     // Si l'utilisateur a déjà le plan demandé → erreur
     if (profile.plan === target_plan) {
-      // Rejeter automatiquement la demande car elle n'est plus pertinente
       await supabase
         .from('upgrade_requests')
         .update({ 
@@ -71,11 +66,10 @@ export async function POST(
       .eq('profile_id', profile_id)
       .eq('target_plan', target_plan)
       .eq('status', 'pending')
-      .neq('id', id); // Exclure la demande actuelle
+      .neq('id', id);
 
     if (duplicateRequests && duplicateRequests.length > 0) {
-      // Rejeter les autres demandes en double
-      const duplicateIds = duplicateRequests.map(d => d.id);
+      const duplicateIds = duplicateRequests.map((d: { id: any; }) => d.id);
       
       await supabase
         .from('upgrade_requests')
@@ -97,12 +91,10 @@ export async function POST(
       .maybeSingle();
 
     if (existingSubscription) {
-      // Si l'abonnement existe déjà et est valide
       const now = new Date();
       const expiresAt = existingSubscription.expires_at ? new Date(existingSubscription.expires_at) : null;
       
       if (!expiresAt || expiresAt > now) {
-        // L'abonnement est encore valide → rejeter la demande
         await supabase
           .from('upgrade_requests')
           .update({ 
@@ -119,7 +111,6 @@ export async function POST(
     }
 
     if (action === 'rejected') {
-      // Mise à jour simple pour le rejet
       await supabase
         .from('upgrade_requests')
         .update({ 
@@ -135,7 +126,6 @@ export async function POST(
     const body = await request.json().catch(() => ({}));
     const { expires_at, admin_notes } = body;
 
-    // Met à jour la demande
     await supabase
       .from('upgrade_requests')
       .update({ 
@@ -167,7 +157,7 @@ export async function POST(
       .eq('profile_id', profile_id)
       .eq('status', 'active');
 
-    // 2. Crée le nouvel abonnement avec la date d'expiration
+    // 2. Crée le nouvel abonnement
     const newSubscription: any = {
       profile_id,
       plan: target_plan,
@@ -176,14 +166,12 @@ export async function POST(
       started_at: new Date().toISOString(),
     };
 
-    // Gérer expires_at
     if (expires_at && expires_at !== null) {
       const date = new Date(expires_at);
       if (!isNaN(date.getTime())) {
         newSubscription.expires_at = date.toISOString();
       }
     }
-    // Sinon, expires_at reste undefined → NULL en base → à vie
 
     await supabase
       .from('subscriptions')

@@ -117,38 +117,36 @@ export default function SignUpPage() {
   };
 
   const handleSignUp = async () => {
-    if (!isValidEmail || !allPasswordRulesMet || emailExists) return;
+  if (!isValidEmail || !allPasswordRulesMet || emailExists) return;
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    try {
-      const supabase = createClient();
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email.trim(),
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
+  try {
+    const supabase = createClient();
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: formData.email.trim(),
+      password: formData.password,
+      options: {
+        // Pas d'emailRedirectTo nécessaire pour notre système local
+      },
+    });
 
-      if (signUpError) throw signUpError;
+    if (signUpError) throw signUpError;
 
-      setSuccess(t('check_email'));
-      setTimeout(() => {
-        setShowWelcomeModal(true);
-        setTimeout(() => router.push('/auth/sign-in'), 3000);
-      }, 1000);
-    } catch (err: any) {
-      if (err.message?.includes('User already registered')) {
-        setError(t('email_exists'));
-      } else {
-        setError(err.message || t('error_generic'));
-      }
-    } finally {
-      setLoading(false);
+    // Redirection immédiate vers le dashboard
+    router.push('/dashboard');
+    router.refresh();
+  } catch (err: any) {
+    if (err.message?.includes('User already registered')) {
+      setError(t('email_exists'));
+    } else {
+      setError(err.message || t('error_generic'));
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const isNextDisabled = () => {
     if (step === 'email') return !isValidEmail || emailExists || checkingEmail;

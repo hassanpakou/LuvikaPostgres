@@ -1,14 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/src/lib/supabase-shim';
 
 export function createAdminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false
-      }
-    }
-  )
+  // Le shim ne prend pas d'arguments ; on ignore les variables d'environnement Supabase.
+  return createClient();
 }

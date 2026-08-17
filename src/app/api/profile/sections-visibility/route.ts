@@ -1,10 +1,7 @@
-// src/app/api/profile/sections-visibility/route.ts
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// 🔹 Schéma de validation
 const UpdateVisibilitySchema = z.object({
   user_id: z.string().uuid(),
   sections_visibility: z.record(
@@ -15,38 +12,20 @@ const UpdateVisibilitySchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() { return cookieStore.getAll(); },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          },
-        },
-      }
-    );
+    const supabase = createServerClient();
 
-    // 🔐 Vérification auth
-    const { data : { session }, error: authError } = await supabase.auth.getSession();
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
     if (authError || !session?.user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 });
     }
 
-    // 📥 Parsing + validation
     const body = await request.json();
     const parsed = UpdateVisibilitySchema.parse(body);
 
-    // 🔐 Vérification propriétaire
     if (session.user.id !== parsed.user_id) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 });
     }
 
-    // ✅ Mise à jour
     const { error } = await supabase
       .from('profiles')
       .update({ sections_visibility: parsed.sections_visibility })
@@ -60,15 +39,15 @@ export async function POST(request: Request) {
   } catch (err: any) {
     console.error('❌ sections-visibility API error:', err);
     if (err instanceof z.ZodError) {
-  return NextResponse.json({ 
-    error: 'Données invalides', 
-    details: err.issues.map(issue => ({
-      path: issue.path.join('.'),
-      message: issue.message,
-      code: issue.code,
-    }))
-  }, { status: 400 });
-}
+      return NextResponse.json({ 
+        error: 'Données invalides', 
+        details: err.issues.map(issue => ({
+          path: issue.path.join('.'),
+          message: issue.message,
+          code: issue.code,
+        }))
+      }, { status: 400 });
+    }
     return NextResponse.json({ error: err.message || 'Erreur serveur' }, { status: 500 });
   }
 }

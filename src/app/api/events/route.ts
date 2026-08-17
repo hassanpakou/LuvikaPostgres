@@ -1,77 +1,15 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
-
-const SUPABASE_URL = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-/**
- * Create a supabase server client and provide cookie methods compatible
- * with both older and newer cookie shapes. We assert `as any` when passing
- * to createServerClient to avoid TypeScript overload errors.
- */
-async function createSupabaseServer(cookieStoreOrPromise: ReturnType<typeof cookies> | Promise<ReturnType<typeof cookies>>) {
-  const cookieStore = await cookieStoreOrPromise;
-
-  const cookieMethods = {
-    // legacy methods
-    get(name: string) {
-      return cookieStore.get(name)?.value;
-    },
-    set(name: string, value: string, options?: Record<string, any>) {
-      // cookieStore.set exists in Next.js server `cookies()`
-      try {
-        (cookieStore as any).set({ name, value, ...options });
-      } catch (e) {
-        // best-effort fallback
-        console.warn('cookieStore.set not available', e);
-      }
-    },
-    remove(name: string) {
-      // best-effort remove: try delete() or expire cookie
-      try {
-        if ((cookieStore as any).delete) {
-          (cookieStore as any).delete(name);
-        } else {
-          (cookieStore as any).set({ name, value: '', expires: new Date(0) });
-        }
-      } catch (e) {
-        console.warn('cookieStore.delete not available', e);
-      }
-    },
-
-    // new methods
-    getAll() {
-      return cookieStore.getAll();
-    },
-    setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
-      cookiesToSet.forEach(({ name, value, options }) => {
-        try {
-          (cookieStore as any).set({ name, value, ...options });
-        } catch (e) {
-          console.warn('cookieStore.set failed', e);
-        }
-      });
-    },
-  };
-
-  // cast to any to satisfy either overload (avoids TypeScript errors)
-  return createServerClient(SUPABASE_URL!, SUPABASE_KEY!, {
-    cookies: cookieMethods as any,
-  });
-}
 
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const searchParams = url.searchParams;
-    const profileId = searchParams.get('profile_id'); // optionnel
+    const profileId = searchParams.get('profile_id');
     const locale = searchParams.get('locale') || 'fr';
 
-    const cookieStore = cookies(); // pass promise or value — helper awaits internally
-    const supabase = await createSupabaseServer(cookieStore);
+    const supabase = createServerClient();
 
-    // try to get user (null if not authenticated)
     const {
       data: { user }
     } = await supabase.auth.getUser();
@@ -116,20 +54,18 @@ export async function GET(request: Request) {
 
     const eventsWithCount = await Promise.all(
       (events || []).map(async (event: any) => {
-        const { count, error: cErr } = await supabase
+        const { data: checkedParticipants } = await supabase
           .from('event_participants')
-          .select('*', { count: 'exact', head: true })
+          .select('id')
           .eq('event_id', event.id)
           .eq('is_checked_in', true);
 
-        if (cErr) {
-          console.warn('Erreur count participants pour event', event.id, cErr);
-        }
+        const attendee_count = checkedParticipants?.length || 0;
 
         return {
           ...event,
           name: event.title,
-          attendee_count: count || 0,
+          attendee_count,
           qr_code_url: `/${locale}/events/${event.id}/check-in`,
         };
       })
@@ -151,8 +87,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Titre et date de début requis' }, { status: 400 });
     }
 
-    const cookieStore = cookies();
-    const supabase = await createSupabaseServer(cookieStore);
+    const supabase = createServerClient();
 
     const {
       data: { user }

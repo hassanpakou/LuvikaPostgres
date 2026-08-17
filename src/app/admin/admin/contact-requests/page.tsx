@@ -52,7 +52,7 @@ export default function NewUsersPage() {
       // Vérifier si un email de bienvenue a déjà été envoyé (localStorage admin)
       const sentUsers = JSON.parse(localStorage.getItem('luvika_welcome_emails_sent') || '[]');
       
-      setUsers((data || []).map(u => ({
+      setUsers((data || []).map((u: any) => ({
         ...u,
         welcome_email_sent: sentUsers.includes(u.id),
       })));
