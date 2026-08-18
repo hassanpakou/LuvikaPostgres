@@ -1,18 +1,26 @@
-import { createServerClient } from '@/src/lib/supabase-shim';
+import { createServerClient as createShimServerClient } from '@/src/lib/supabase-shim';
+import { cookies } from 'next/headers';
 
+// Utilisé côté server components / layouts.
+// Récupère automatiquement la cookie entrante et la passe au shim.
 export function createClientForPage() {
-  return createServerClient();
+  const cookieString = cookies().toString();
+  return createShimServerClient(cookieString);
 }
 
-// ✅ Alias pour Route Handlers
-export const createClientForAction = createClientForPage;
+// Alias : pour les cas où on voudrait forcer une cookie spécifique,
+// on accepte un param optionnel (fallback sur cookies() si non fourni).
+export function createClientForAction(cookieString?: string) {
+  return createShimServerClient(cookieString ?? cookies().toString());
+}
 
-// ✅ Helper pour récupérer l'utilisateur
+// Helper pour récupérer l'utilisateur côté serveur (utilise la cookie entrante).
 export const auth = {
   async getUser() {
-    const supabase = await createClientForPage();
+    const supabase = createClientForPage();
     return supabase.auth.getUser();
   },
 };
 
-export { createServerClient };
+// Expose également le createServerClient du shim pour usage direct dans des route handlers.
+export { createShimServerClient as createServerClient };
