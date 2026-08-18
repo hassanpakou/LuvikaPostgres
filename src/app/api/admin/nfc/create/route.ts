@@ -2,7 +2,8 @@ import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
-  const supabase = createServerClient();
+  const cookieString = request.headers.get('cookie') || '';
+  const supabase = createServerClient(cookieString);
 
   const { data : { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user || user.user_metadata?.role !== 'admin') {
