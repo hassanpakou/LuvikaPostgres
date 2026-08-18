@@ -2,7 +2,8 @@ import { createServerClient } from '@/src/lib/supabase-shim';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
-  const supabase = createServerClient();
+  const cookieString = request.headers.get('cookie') || '';
+  const supabase = createServerClient(cookieString);
 
   const { data : { session } } = await supabase.auth.getSession();
   if (!session?.user) {
