@@ -10,7 +10,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  const supabase = createServerClient();
+  const cookieString = request.headers.get('cookie') || '';
+  const supabase = createServerClient(cookieString);
 
   try {
     let anonymizedIp = null;
