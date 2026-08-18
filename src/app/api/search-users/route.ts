@@ -9,7 +9,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ users: [] });
   }
 
-  const supabase = createServerClient();
+  const cookieString = request.headers.get('cookie') || '';
+  const supabase = createServerClient(cookieString);
 
   const { data, error } = await supabase
     .from('profiles')
