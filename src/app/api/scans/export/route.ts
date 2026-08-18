@@ -5,7 +5,8 @@ export async function POST(req: NextRequest) {
   try {
     const { user_id } = await req.json();
 
-    const supabase = createServerClient();
+    const cookieString = req.headers.get('cookie') || '';
+    const supabase = createServerClient(cookieString);
 
     const sessionResult = await supabase.auth.getSession();
     const session = sessionResult.data.session;
